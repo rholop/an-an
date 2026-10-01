@@ -1,10 +1,17 @@
-import type { TurnHistoryEntry, TurnResponse } from '@anan/core';
+import type { SentenceGenResponse, TurnHistoryEntry, TurnResponse } from '@anan/core';
 
 export interface ProviderResult {
   response: TurnResponse;
   provider: 'gemini' | 'openai';
   model: string;
   /** Token usage, for the daily-budget accounting and per-request logging. */
+  usage: { inputTokens: number; outputTokens: number };
+}
+
+export interface SentenceProviderResult {
+  response: SentenceGenResponse;
+  provider: 'gemini' | 'openai';
+  model: string;
   usage: { inputTokens: number; outputTokens: number };
 }
 
@@ -29,4 +36,12 @@ export interface ProviderAdapter {
    * orchestrator.ts's buildEffectiveSystemPrompt) — adapters don't need to
    * know about the regeneration loop at all. */
   generateTurn(systemPrompt: string, history: TurnHistoryEntry[]): Promise<ProviderResult>;
+}
+
+/** A separate, narrower interface rather than folding into ProviderAdapter
+ * (different response shape, no chat history) — GeminiAdapter/OpenAiAdapter
+ * implement both, reusing the same client/API key setup. */
+export interface SentenceGenAdapter {
+  readonly name: 'gemini' | 'openai';
+  generateSentences(systemPrompt: string): Promise<SentenceProviderResult>;
 }

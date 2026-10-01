@@ -1,4 +1,4 @@
-import type { SkillCard } from '@anan/core';
+import type { ChatLineSource, Scenario, SkillCard } from '@anan/core';
 import type { AnanDB } from './schema.js';
 
 /** Count of cards due on each of the next `days` calendar days (today
@@ -41,4 +41,29 @@ export async function recognitionCardsByWordId(db: AnanDB): Promise<Map<string, 
     if (card.skill === 'recognition') map.set(card.item.id, card);
   }
   return map;
+}
+
+/** Every chat turn ever recorded, shaped for core's selectClozeSource()
+ * (phase doc 04 §2's "an NPC or learner line from chat history containing
+ * the word"). `scenarios` supplies the title/NPC name a conversation row
+ * only references by id — not stored in Dexie since scenario data is a
+ * static fetched asset, not learner-owned state (see useScenarios.ts). */
+export async function allChatLines(db: AnanDB, scenarios: Scenario[]): Promise<ChatLineSource[]> {
+  const scenarioById = new Map(scenarios.map((s) => [s.id, s]));
+  const [turns, conversations] = await Promise.all([db.turns.toArray(), db.conversations.toArray()]);
+  const conversationById = new Map(conversations.map((c) => [c.id!, c]));
+
+  const lines: ChatLineSource[] = [];
+  for (const turn of turns) {
+    const conv = conversationById.get(turn.conversationId);
+    const scenario = conv ? scenarioById.get(conv.scenarioId) : undefined;
+    lines.push({
+      zh: turn.zh,
+      role: turn.role,
+      scenarioTitle: scenario?.title ?? conv?.scenarioId ?? 'a past conversation',
+      npcName: scenario?.npc.name,
+      at: turn.at,
+    });
+  }
+  return lines;
 }

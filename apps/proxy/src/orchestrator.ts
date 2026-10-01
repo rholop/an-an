@@ -1,6 +1,12 @@
 import type { TurnHistoryEntry } from '@anan/core';
 import { PromptCache } from './cache.js';
-import { ProviderRetryableError, type ProviderAdapter, type ProviderResult } from './providers/types.js';
+import {
+  ProviderRetryableError,
+  type ProviderAdapter,
+  type ProviderResult,
+  type SentenceGenAdapter,
+  type SentenceProviderResult,
+} from './providers/types.js';
 
 export interface OrchestratorLogEntry {
   provider: 'gemini' | 'openai';
@@ -44,6 +50,55 @@ export function createOrchestrator(primary: ProviderAdapter, fallback: ProviderA
         if (!(err instanceof ProviderRetryableError)) throw err;
 
         const result = await fallback.generateTurn(systemPrompt, history);
+        cache.set(cacheKey, result);
+        return {
+          result,
+          log: {
+            provider: result.provider,
+            model: result.model,
+            cached: false,
+            usage: result.usage,
+            fallbackReason: err.reason,
+          },
+        };
+      }
+    },
+  };
+}
+
+export interface SentenceOrchestrator {
+  run(systemPrompt: string): Promise<{ result: SentenceProviderResult; log: OrchestratorLogEntry }>;
+}
+
+/**
+ * Same Gemini-first/OpenAI-fallback/cache shape as createOrchestrator, for
+ * POST /v1/sentences — kept as its own small function rather than
+ * generalizing createOrchestrator over a type parameter: the two "run"
+ * shapes differ (prompt+history vs. prompt-only, which changes the cache
+ * key), and duplicating this ~15-line control flow is simpler than a
+ * generic abstraction two call sites don't otherwise need.
+ */
+export function createSentenceOrchestrator(
+  primary: SentenceGenAdapter,
+  fallback: SentenceGenAdapter,
+  cache: PromptCache<SentenceProviderResult>,
+): SentenceOrchestrator {
+  return {
+    async run(systemPrompt) {
+      const cacheKey = PromptCache.keyForPrompt(systemPrompt);
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        return { result: cached, log: { provider: cached.provider, model: cached.model, cached: true, usage: cached.usage } };
+      }
+
+      try {
+        const result = await primary.generateSentences(systemPrompt);
+        cache.set(cacheKey, result);
+        return { result, log: { provider: result.provider, model: result.model, cached: false, usage: result.usage } };
+      } catch (err) {
+        if (!(err instanceof ProviderRetryableError)) throw err;
+
+        const result = await fallback.generateSentences(systemPrompt);
         cache.set(cacheKey, result);
         return {
           result,

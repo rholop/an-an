@@ -18,19 +18,20 @@ export default defineConfig(({ command }) => ({
         icons: [],
       },
       workbox: {
-        // The built lexicon (data/build/lexicon.v1.json, served from
-        // public/lexicon/) is a few MB and rarely changes — too big/dynamic
-        // for the precache manifest, but every page that needs it
-        // (reader/review/placement/anki-import) calls fetch() for it, so a
+        // Built data files (lexicon, scenarios, per-level sentence banks —
+        // all served as static JSON from public/) are too big/dynamic for
+        // the precache manifest, but pages fetch() them directly, so a
         // CacheFirst runtime rule is what actually makes "works offline"
-        // true after the first visit, not just the app shell.
+        // true after the first visit, not just the app shell. A cloze
+        // session (phase doc 04) in particular needs the sentence bank
+        // cached to build a session with no network at all.
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.includes('/lexicon/'),
+            urlPattern: ({ url }) => /\/(lexicon|scenarios|sentences)\//.test(url.pathname),
             handler: 'CacheFirst',
             options: {
-              cacheName: 'lexicon-cache',
-              expiration: { maxEntries: 5 },
+              cacheName: 'anan-data-cache',
+              expiration: { maxEntries: 20 },
             },
           },
         ],

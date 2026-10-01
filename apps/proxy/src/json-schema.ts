@@ -54,3 +54,34 @@ export const TURN_RESPONSE_JSON_SCHEMA = {
   },
   required: ['reply_zh', 'reply_en', 'tokens', 'targets_used', 'suggested_replies', 'goal_progress'],
 } as const;
+
+/** Same approach as TURN_RESPONSE_JSON_SCHEMA above, for SentenceGenResponse
+ * (POST /v1/sentences — phase doc 04 §1). */
+export const SENTENCE_GEN_RESPONSE_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    sentences: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          zh: { type: 'string' },
+          en: { type: 'string' },
+          tokens: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                text: { type: 'string' },
+                lemma: { type: 'string' },
+              },
+              required: ['text'],
+            },
+          },
+        },
+        required: ['zh', 'en', 'tokens'],
+      },
+    },
+  },
+  required: ['sentences'],
+} as const;

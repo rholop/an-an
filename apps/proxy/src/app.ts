@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { TurnRequestSchema } from '@anan/core';
+import { SentenceGenRequestSchema, TurnRequestSchema } from '@anan/core';
 import type { Env } from './env.js';
-import { buildEffectiveSystemPrompt, type Orchestrator } from './orchestrator.js';
-import { buildSystemPrompt } from './prompt.js';
+import { buildEffectiveSystemPrompt, type Orchestrator, type SentenceOrchestrator } from './orchestrator.js';
+import { buildSentenceGenPrompt, buildSystemPrompt } from './prompt.js';
 import type { RateLimiter } from './rate-limit.js';
 import type { ScenarioStore } from './scenarios.js';
 
@@ -12,6 +12,8 @@ export interface AppDeps {
   scenarioStore: ScenarioStore;
   promptTemplate: string;
   orchestrator: Orchestrator;
+  sentencePromptTemplate: string;
+  sentenceOrchestrator: SentenceOrchestrator;
   rateLimiter: RateLimiter;
   log?: (entry: Record<string, unknown>) => void;
 }
@@ -72,6 +74,48 @@ export function createApp(deps: AppDeps): Hono {
     } catch (err) {
       log({ route: '/v1/turn', installId, scenarioId: turnRequest.scenarioId, error: String(err) });
       return c.json({ error: 'turn generation failed' }, 502);
+    }
+  });
+
+  app.post('/v1/sentences', async (c) => {
+    const installId = c.req.header('x-install-id');
+    if (!installId) return c.json({ error: 'missing X-Install-Id header' }, 400);
+
+    const rateCheck = deps.rateLimiter.check(installId);
+    if (!rateCheck.allowed) {
+      if (rateCheck.reason === 'daily_budget') {
+        return c.json({ error: 'daily token budget exhausted, try again tomorrow' }, 429);
+      }
+      return c.json(
+        { error: 'rate limited, please retry shortly', retryAfterMs: rateCheck.retryAfterMs },
+        429,
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = await c.req.json();
+    } catch {
+      return c.json({ error: 'invalid JSON body' }, 400);
+    }
+
+    const parsed = SentenceGenRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return c.json({ error: 'invalid SentenceGenRequest', details: parsed.error.flatten() }, 400);
+    }
+    const sentenceRequest = parsed.data;
+
+    const prompt = buildSentenceGenPrompt(deps.sentencePromptTemplate, sentenceRequest);
+
+    try {
+      const { result, log: runLog } = await deps.sentenceOrchestrator.run(prompt);
+      const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
+      deps.rateLimiter.recordUsage(installId, totalTokens);
+      log({ route: '/v1/sentences', installId, headword: sentenceRequest.word.headword, totalTokens, ...runLog });
+      return c.json(result.response);
+    } catch (err) {
+      log({ route: '/v1/sentences', installId, headword: sentenceRequest.word.headword, error: String(err) });
+      return c.json({ error: 'sentence generation failed' }, 502);
     }
   });
 

@@ -31,6 +31,8 @@ function card(itemId: string, stability: number): SkillCard {
     lapses: 0,
     leech: false,
     leechTreatmentsTried: [],
+    clozeRung: 1,
+    clozeStreak: 0,
     familiarity: 0,
     readingDependence: 0,
     flags: {},

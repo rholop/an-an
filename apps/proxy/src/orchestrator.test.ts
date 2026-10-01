@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { TurnHistoryEntry } from '@anan/core';
 import { PromptCache } from './cache.js';
-import { buildEffectiveSystemPrompt, createOrchestrator } from './orchestrator.js';
-import { fakeTurnResponse, FakeProviderAdapter } from './providers/fake.js';
+import { buildEffectiveSystemPrompt, createOrchestrator, createSentenceOrchestrator } from './orchestrator.js';
+import { fakeSentenceGenResponse, fakeTurnResponse, FakeProviderAdapter, FakeSentenceGenAdapter } from './providers/fake.js';
+import type { SentenceProviderResult } from './providers/types.js';
 
 const history: TurnHistoryEntry[] = [{ role: 'learner', zh: '我要一杯珍珠奶茶' }];
 
@@ -88,6 +89,53 @@ describe('createOrchestrator', () => {
 
     expect(second.log.cached).toBe(false);
     expect(gemini.calls).toBe(2);
+  });
+});
+
+describe('createSentenceOrchestrator', () => {
+  it('serves from Gemini (primary) on a normal success', async () => {
+    const gemini = new FakeSentenceGenAdapter('gemini', { kind: 'success', response: fakeSentenceGenResponse() });
+    const openai = new FakeSentenceGenAdapter('openai', { kind: 'success', response: fakeSentenceGenResponse() });
+    const orchestrator = createSentenceOrchestrator(gemini, openai, new PromptCache<SentenceProviderResult>());
+
+    const { log } = await orchestrator.run('system prompt');
+    expect(log.provider).toBe('gemini');
+    expect(log.cached).toBe(false);
+    expect(gemini.calls).toBe(1);
+    expect(openai.calls).toBe(0);
+  });
+
+  it('forcing a Gemini 429 makes the request succeed via OpenAI', async () => {
+    const gemini = new FakeSentenceGenAdapter('gemini', { kind: 'error', reason: 'rate_limit' });
+    const openai = new FakeSentenceGenAdapter('openai', { kind: 'success', response: fakeSentenceGenResponse() });
+    const orchestrator = createSentenceOrchestrator(gemini, openai, new PromptCache<SentenceProviderResult>());
+
+    const { result, log } = await orchestrator.run('system prompt');
+    expect(log.provider).toBe('openai');
+    expect(log.fallbackReason).toBe('rate_limit');
+    expect(result.response.sentences).toHaveLength(1);
+  });
+
+  it('does NOT fall back on a non-retryable error', async () => {
+    const gemini = new FakeSentenceGenAdapter('gemini', { kind: 'throw', error: new Error('network down') });
+    const openai = new FakeSentenceGenAdapter('openai', { kind: 'success', response: fakeSentenceGenResponse() });
+    await expect(
+      createSentenceOrchestrator(gemini, openai, new PromptCache<SentenceProviderResult>()).run('p'),
+    ).rejects.toThrow('network down');
+    expect(openai.calls).toBe(0);
+  });
+
+  it('caches a successful result, keyed by the prompt alone (no history)', async () => {
+    const gemini = new FakeSentenceGenAdapter('gemini', { kind: 'success', response: fakeSentenceGenResponse() });
+    const openai = new FakeSentenceGenAdapter('openai', { kind: 'success', response: fakeSentenceGenResponse() });
+    const cache = new PromptCache<SentenceProviderResult>();
+    const orchestrator = createSentenceOrchestrator(gemini, openai, cache);
+
+    await orchestrator.run('system prompt');
+    const second = await orchestrator.run('system prompt');
+
+    expect(second.log.cached).toBe(true);
+    expect(gemini.calls).toBe(1);
   });
 });
 

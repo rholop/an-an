@@ -3,6 +3,10 @@ import type { Evidence, ItemRef, ItemState, Skill } from '../types.js';
 
 export type LeechTreatment = 'new_context' | 'char_breakdown' | 'mnemonic_prompt' | 'contrast_confusable';
 
+/** Phase 4 cloze difficulty ladder: 1 word bank, 2 multiple choice, 3 typed
+ * from memory. See cloze/ladder.ts. */
+export type ClozeRung = 1 | 2 | 3;
+
 export const LEECH_TREATMENTS: readonly LeechTreatment[] = [
   'new_context',
   'char_breakdown',
@@ -21,6 +25,12 @@ export interface SkillCard {
   lapses: number;
   leech: boolean;
   leechTreatmentsTried: LeechTreatment[];
+  /** Phase 4: cloze/ladder.ts's nextLadderState() output, persisted here so
+   * the next session knows which exercise type to offer for this item. */
+  clozeRung: ClozeRung;
+  /** Consecutive no-hint-correct answers at the current rung — resets on
+   * promotion, on a hint, and on a lapse. */
+  clozeStreak: number;
   /** Weak-signal counter nudged by chat_read_no_lookup; see applyEvidence. */
   familiarity: number;
   /** 0 (reads characters, no pinyin dependence) .. 1 (always needs pinyin). */

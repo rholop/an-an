@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Scenario, TurnRequest } from '@anan/core';
-import { buildSystemPrompt, loadPromptTemplate } from './prompt.js';
+import type { Scenario, SentenceGenRequest, TurnRequest } from '@anan/core';
+import { buildSentenceGenPrompt, buildSystemPrompt, loadPromptTemplate, loadSentenceGenPromptTemplate } from './prompt.js';
 
 const scenario: Scenario = {
   id: 'tea-shop',
@@ -81,5 +81,51 @@ describe('buildSystemPrompt', () => {
     });
     expect(empty).toContain('(none provided)');
     expect(empty).toContain('(none due)');
+  });
+});
+
+const sentenceGenRequest: SentenceGenRequest = {
+  word: { headword: '珍珠奶茶', pinyin: 'zhēn zhū nǎi chá', level: 'N2', glossEn: 'bubble tea' },
+  allowedVocab: ['我', '要', '一杯', '好喝'],
+  count: 5,
+};
+
+describe('loadSentenceGenPromptTemplate', () => {
+  it('loads the real v1 template from data/prompts', () => {
+    const template = loadSentenceGenPromptTemplate('v1');
+    expect(template).toContain('{{headword}}');
+    expect(template.length).toBeGreaterThan(100);
+  });
+
+  it('throws for a version that does not exist', () => {
+    expect(() => loadSentenceGenPromptTemplate('v999')).toThrow();
+  });
+});
+
+describe('buildSentenceGenPrompt', () => {
+  const template = loadSentenceGenPromptTemplate('v1');
+
+  it('substitutes every placeholder (none left over)', () => {
+    const result = buildSentenceGenPrompt(template, sentenceGenRequest);
+    expect(result).not.toMatch(/\{\{\w+\}\}/);
+  });
+
+  it('includes the word, reading, level, gloss, and vocab budget', () => {
+    const result = buildSentenceGenPrompt(template, sentenceGenRequest);
+    expect(result).toContain('珍珠奶茶');
+    expect(result).toContain('zhēn zhū nǎi chá');
+    expect(result).toContain('N2');
+    expect(result).toContain('bubble tea');
+    expect(result).toContain('我、要、一杯、好喝');
+  });
+
+  it('includes the requested sentence count', () => {
+    const result = buildSentenceGenPrompt(template, { ...sentenceGenRequest, count: 3 });
+    expect(result).toContain('exactly 3 sentences');
+  });
+
+  it('falls back to a placeholder label for an empty vocab list', () => {
+    const result = buildSentenceGenPrompt(template, { ...sentenceGenRequest, allowedVocab: [] });
+    expect(result).toContain('(none — compose using only the target word itself)');
   });
 });

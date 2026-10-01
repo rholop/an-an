@@ -21,6 +21,9 @@ apps/web/public/lexicon/
 # Same deal for scenarios (`pnpm sync:scenarios`).
 apps/web/public/scenarios/
 
+# Same deal for the sentence bank (`pnpm sync:sentences`).
+apps/web/public/sentences/
+
 # Playwright/e2e run artifacts — regenerate with `pnpm --filter @anan/web test:e2e`.
 apps/web/test-results/
 apps/web/playwright-report/

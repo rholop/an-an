@@ -23,6 +23,8 @@ function freshCard(now = NOW, overrides: Partial<SkillCard> = {}): SkillCard {
     lapses: 0,
     leech: false,
     leechTreatmentsTried: [],
+    clozeRung: 1,
+    clozeStreak: 0,
     familiarity: 0,
     readingDependence: 0,
     flags: {},
@@ -82,6 +84,46 @@ describe('applyEvidence: direct FSRS mapping rows', () => {
     const current = freshCard();
     const result = applyEvidence(current, ev('journal_misuse'), NOW, config, fsrsInstance);
     expect(result.card!.lapses).toBe(0); // Hard does not increment FSRS lapses
+  });
+});
+
+describe('applyEvidence: cloze difficulty ladder (clozeRung/clozeStreak)', () => {
+  it('a plain review_* evidence kind leaves clozeRung/clozeStreak untouched', () => {
+    const current = freshCard(NOW, { clozeRung: 2, clozeStreak: 1 });
+    const result = applyEvidence(current, ev('review_good'), NOW, config, fsrsInstance);
+    expect(result.card!.clozeRung).toBe(2);
+    expect(result.card!.clozeStreak).toBe(1);
+  });
+
+  it('promotes after 2 consecutive cloze_correct_nohint at the same rung', () => {
+    let current = freshCard(NOW, { clozeRung: 1, clozeStreak: 0 });
+    current = applyEvidence(current, ev('cloze_correct_nohint'), NOW, config, fsrsInstance).card!;
+    expect(current.clozeRung).toBe(1);
+    expect(current.clozeStreak).toBe(1);
+
+    current = applyEvidence(current, ev('cloze_correct_nohint'), NOW, config, fsrsInstance).card!;
+    expect(current.clozeRung).toBe(2);
+    expect(current.clozeStreak).toBe(0);
+  });
+
+  it('cloze_correct_hint ("right word, wrong tone") resets the streak without demoting', () => {
+    const current = freshCard(NOW, { clozeRung: 2, clozeStreak: 1 });
+    const result = applyEvidence(current, ev('cloze_correct_hint'), NOW, config, fsrsInstance);
+    expect(result.card!.clozeRung).toBe(2);
+    expect(result.card!.clozeStreak).toBe(0);
+  });
+
+  it('cloze_wrong demotes one rung and resets the streak', () => {
+    const current = freshCard(NOW, { clozeRung: 3, clozeStreak: 1 });
+    const result = applyEvidence(current, ev('cloze_wrong'), NOW, config, fsrsInstance);
+    expect(result.card!.clozeRung).toBe(2);
+    expect(result.card!.clozeStreak).toBe(0);
+  });
+
+  it('cloze_wrong on a brand-new item starts the ladder at rung 1, not below', () => {
+    const result = applyEvidence(undefined, ev('cloze_wrong'), NOW, config, fsrsInstance);
+    expect(result.card!.clozeRung).toBe(1);
+    expect(result.card!.clozeStreak).toBe(0);
   });
 });
 

@@ -1,0 +1,58 @@
+.cloze-level-note { opacity: 0.7; font-size: 0.85rem; }
+
+.cloze-header { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; opacity: 0.8; margin-bottom: 0.5rem; }
+.cloze-badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.15);
+  font-size: 0.75rem;
+}
+.cloze-source-label { font-size: 0.8rem; opacity: 0.7; font-style: italic; margin-bottom: 0.75rem; }
+
+.cloze-exercise { margin-top: 0.5rem; }
+.cloze-sentence { font-size: 1.4rem; line-height: 2.2; }
+.cloze-blank {
+  display: inline-block;
+  min-width: 2.5em;
+  border-bottom: 2px solid currentColor;
+  text-align: center;
+}
+.cloze-prompt { font-size: 1.2rem; }
+
+.cloze-mode-toggle { display: flex; gap: 0.4rem; margin: 0.5rem 0; }
+.cloze-mode-toggle button { padding: 0.25rem 0.6rem; font-size: 0.8rem; }
+.cloze-mode--active { font-weight: bold; text-decoration: underline; }
+
+.cloze-input-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.cloze-input-row input { flex: 1; padding: 0.5rem; font-size: 1.1rem; }
+
+.cloze-options { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+.cloze-chip {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(127, 127, 127, 0.4);
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+.cloze-chip:disabled { cursor: default; }
+.cloze-chip--correct { border-color: #2e7d32; color: #2e7d32; font-weight: bold; }
+.cloze-chip--wrong { border-color: #c62828; color: #c62828; }
+
+.cloze-reorder-answer {
+  min-height: 2.5rem;
+  font-size: 1.4rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed currentColor;
+  margin-bottom: 0.5rem;
+}
+
+.cloze-feedback { margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(127, 127, 127, 0.1); }
+.cloze-feedback--correct { background: rgba(46, 125, 50, 0.12); }
+.cloze-feedback--correct_wrong_tone { background: rgba(239, 108, 0, 0.12); }
+.cloze-feedback--wrong { background: rgba(198, 40, 40, 0.12); }
+
+.cloze-summary { list-style: none; padding: 0; font-size: 1.1rem; }
+
+.cloze-bonus { margin-top: 1rem; padding: 1rem; border-radius: 8px; background: rgba(127, 127, 127, 0.08); }
+.cloze-bonus-answer { margin-top: 0.5rem; font-weight: bold; }

@@ -26,6 +26,12 @@ export const SkillCardSchema = z.object({
   lapses: z.number(),
   leech: z.boolean(),
   leechTreatmentsTried: z.array(LeechTreatmentSchema),
+  // Phase 4 additions — defaulted so a backup exported before Phase 4 still
+  // imports cleanly (same schemaVersion, no version bump needed for a
+  // purely additive field; see CLAUDE.md's Dexie-bump guidance, which is
+  // about index/store shape, not every new field).
+  clozeRung: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(1),
+  clozeStreak: z.number().default(0),
   familiarity: z.number(),
   readingDependence: z.number(),
   flags: z.object({ imported: z.boolean().optional(), probablyKnown: z.boolean().optional() }),

@@ -7,18 +7,26 @@ implements.
 
 ## What it does
 
-- `POST /v1/turn` — the only endpoint the chat UI calls. Builds the system
+- `POST /v1/turn` — the endpoint the chat UI calls. Builds the system
   prompt for the requested scenario (`data/build/scenarios.json`, compiled
   from `data/scenarios/*.yaml` — run `pnpm pipeline:build` first), calls
   Gemini, and on a rate limit / quota error / invalid JSON falls back to
   OpenAI once. Logs which provider actually served the request.
+- `POST /v1/sentences` — called by `packages/data-pipeline`'s offline batch
+  sentence-bank build (phase doc 04 §1), never during a live review
+  session. Same Gemini-primary/OpenAI-fallback/cache/rate-limit machinery
+  as `/v1/turn`, just a different prompt (`data/prompts/sentence-gen.*.md`)
+  and response shape (`SentenceGenResponse`) — see `scripts/scripted-run.ts`
+  for a Phase-3-style harness pattern, or `data-pipeline`'s
+  `build-sentences.ts` for the real caller. The pipeline is responsible for
+  validating candidates against the lexicon (`analyzeText`) and dropping
+  failures — this endpoint only schema-validates the LLM's JSON.
 - `GET /v1/health` — liveness check, no auth.
 - Per-client (`X-Install-Id` header) rate limiting and a daily token
   budget, both in-memory (see the caveat below).
 - Response caching keyed by a hash of the full prompt (scenario openers and
   repeated hints are the common case).
-- `POST /v1/journal-review` and `POST /v1/sentences` are **not implemented
-  yet** — Phases 4/5 add them.
+- `POST /v1/journal-review` is **not implemented yet** — Phase 5 adds it.
 
 ## Environment variables
 

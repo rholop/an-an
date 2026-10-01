@@ -1,4 +1,5 @@
 import { Rating, State, type Card, type FSRS, type Grade } from 'ts-fsrs';
+import { nextLadderState, type ClozeOutcome } from '../cloze/ladder.js';
 import type { Evidence } from '../types.js';
 import { buildFsrs, computeItemState, emptyCard } from './fsrs-instance.js';
 import { DEFAULT_LEARNER_CONFIG, type LearnerConfig, type ModelUpdate, type SkillCard } from './types.js';
@@ -14,6 +15,8 @@ function blankSkillCard(evidence: Evidence, card: Card, now: Date): SkillCard {
     lapses: 0,
     leech: false,
     leechTreatmentsTried: [],
+    clozeRung: 1,
+    clozeStreak: 0,
     familiarity: 0,
     readingDependence: 0,
     flags: {},
@@ -45,6 +48,31 @@ function applyFsrsRating(
   const base = current ?? blankSkillCard(evidence, emptyCard(now), now);
   const { card } = fsrsInstance.next(base.card, now, grade);
   return { card: withCard(base, card, now, config), appliedEffect: `fsrs:${Rating[grade].toLowerCase()}` };
+}
+
+/** cloze_correct_nohint/cloze_correct_hint/cloze_wrong: an FSRS rating (same
+ * as a real review) PLUS the Phase 4 difficulty-ladder transition
+ * (cloze/ladder.ts), kept together so a cloze answer always updates both in
+ * one step. `current` may be a brand-new card (applyFsrsRating handles the
+ * introduce-via-blankSkillCard case), in which case the ladder starts fresh
+ * from rung 1 — matching a cloze exercise always being offered on an
+ * already-introduced item in practice, but safe either way. */
+function applyClozeAnswer(
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+  config: LearnerConfig,
+  fsrsInstance: FSRS,
+  outcome: ClozeOutcome,
+  grade: Grade,
+): ModelUpdate {
+  const rated = applyFsrsRating(current, evidence, now, grade, config, fsrsInstance);
+  if (!rated.card) return rated;
+  const ladder = nextLadderState({ rung: current?.clozeRung ?? 1, streak: current?.clozeStreak ?? 0 }, outcome);
+  return {
+    card: { ...rated.card, clozeRung: ladder.rung, clozeStreak: ladder.streak },
+    appliedEffect: `${rated.appliedEffect} + ladder:rung${ladder.rung}(streak ${ladder.streak})`,
+  };
 }
 
 /** chat_read_no_lookup: weak positive. Never schedules a full FSRS review on
@@ -166,9 +194,9 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   review_good: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
   review_easy: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Easy, cfg, f),
 
-  cloze_correct_nohint: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
-  cloze_correct_hint: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
-  cloze_wrong: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Again, cfg, f),
+  cloze_correct_nohint: (c, e, n, cfg, f) => applyClozeAnswer(c, e, n, cfg, f, 'correct', Rating.Good),
+  cloze_correct_hint: (c, e, n, cfg, f) => applyClozeAnswer(c, e, n, cfg, f, 'correct_wrong_tone', Rating.Hard),
+  cloze_wrong: (c, e, n, cfg, f) => applyClozeAnswer(c, e, n, cfg, f, 'wrong', Rating.Again),
 
   journal_correct_use: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
   journal_misuse: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),

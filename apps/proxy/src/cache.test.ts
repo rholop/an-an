@@ -39,4 +39,18 @@ describe('PromptCache', () => {
       vi.useRealTimers();
     }
   });
+
+  it('keyForPrompt is deterministic for the same prompt and differs otherwise', () => {
+    const a = PromptCache.keyForPrompt('system');
+    const b = PromptCache.keyForPrompt('system');
+    const c = PromptCache.keyForPrompt('different system');
+    expect(a).toBe(b);
+    expect(a).not.toBe(c);
+  });
+
+  it('works generically over a non-ProviderResult type (e.g. SentenceProviderResult)', () => {
+    const cache = new PromptCache<{ value: number }>();
+    cache.set('k', { value: 42 });
+    expect(cache.get('k')).toEqual({ value: 42 });
+  });
 });
