@@ -1,0 +1,913 @@
+# Lexicon build review report — v1
+
+Built 2026-09-30. 7918 words.
+
+> **Open item**: no source sheet for level(s) L6 in data/raw/tocfl-words.xlsx — see CLAUDE.md "Open items to verify, not assume".
+
+## Row normalization
+
+### variant-merged (96)
+
+- `你/妳` / `nǐ` — 你, 妳 merged as spelling variants of one word (shared reading "nǐ")
+- `他/她` / `tā` — 他, 她 merged as spelling variants of one word (shared reading "tā")
+- `你們/妳們` / `nǐmen` — 你們, 妳們 merged as spelling variants of one word (shared reading "nǐmen")
+- `他們/她們` / `tāmen` — 他們, 她們 merged as spelling variants of one word (shared reading "tāmen")
+- `台灣/臺灣` / `táiwān` — 台灣, 臺灣 merged as spelling variants of one word (shared reading "táiwān")
+- `什麼/甚麼` / `shénme` — 什麼, 甚麼 merged as spelling variants of one word (shared reading "shénme")
+- `週末/周末` / `zhōumò` — 週末, 周末 merged as spelling variants of one word (shared reading "zhōumò")
+- `念/唸` / `niàn` — 念, 唸 merged as spelling variants of one word (shared reading "niàn")
+- `裡面/裏面` / `lǐmiàn` — 裡面, 裏面 merged as spelling variants of one word (shared reading "lǐmiàn")
+- `裡/裏` / `lǐ` — 裡, 裏 merged as spelling variants of one word (shared reading "lǐ")
+- `老闆/老板` / `lǎobǎn` — 老闆, 老板 merged as spelling variants of one word (shared reading "lǎobǎn")
+- `計畫/計劃` / `jìhuà` — 計畫, 計劃 merged as spelling variants of one word (shared reading "jìhuà")
+- `部分/部份` / `bùfen` — 部分, 部份 merged as spelling variants of one word (shared reading "bùfen")
+- `其他/其它` / `qítā` — 其他, 其它 merged as spelling variants of one word (shared reading "qítā")
+- `聲音/聲` / `shēngyīn` — 聲音, 聲 merged as spelling variants of one word (shared reading "shēngyīn")
+- `做法/作法` / `zuòfǎ` — 做法, 作法 merged as spelling variants of one word (shared reading "zuòfǎ")
+- `念書/唸書` / `niànshū` — 念書, 唸書 merged as spelling variants of one word (shared reading "niànshū")
+- `了解/瞭解` / `liǎojiě` — 了解, 瞭解 merged as spelling variants of one word (shared reading "liǎojiě")
+- `濕/溼` / `shī` — 濕, 溼 merged as spelling variants of one word (shared reading "shī")
+- `老闆娘/老板娘` / `lǎobǎnniáng` — 老闆娘, 老板娘 merged as spelling variants of one word (shared reading "lǎobǎnniáng")
+- `嚐/嘗` / `cháng` — 嚐, 嘗 merged as spelling variants of one word (shared reading "cháng")
+- `保證/証` / `bǎozhèng` — 保證, 証 merged as spelling variants of one word (shared reading "bǎozhèng")
+- `布/佈置` / `bùzhì` — 布, 佈置 merged as spelling variants of one word (shared reading "bùzhì")
+- `嘗試/嚐試` / `chángshì` — 嘗試, 嚐試 merged as spelling variants of one word (shared reading "chángshì")
+- `當作/當做` / `dàngzuò` — 當作, 當做 merged as spelling variants of one word (shared reading "dàngzuò")
+- `訪問/訪` / `fǎngwèn` — 訪問, 訪 merged as spelling variants of one word (shared reading "fǎngwèn")
+- `古蹟/跡` / `gǔjī` — 古蹟, 跡 merged as spelling variants of one word (shared reading "gǔjī")
+- `舅舅 /舅` / `jiùjiu` — 舅舅, 舅 merged as spelling variants of one word (shared reading "jiùjiu")
+- `連絡/聯絡` / `liánluò` — 連絡, 聯絡 merged as spelling variants of one word (shared reading "liánluò")
+- `秘密/祕密` / `mìmì` — 秘密, 祕密 merged as spelling variants of one word (shared reading "mìmì")
+- `兇/凶` / `xiōng` — 兇, 凶 merged as spelling variants of one word (shared reading "xiōng")
+- `做夢/作夢` / `zuòmèng` — 做夢, 作夢 merged as spelling variants of one word (shared reading "zuòmèng")
+- `布告/佈告` / `bùgào` — 布告, 佈告 merged as spelling variants of one word (shared reading "bùgào")
+- `布告欄/佈告欄` / `bùgàolán` — 布告欄, 佈告欄 merged as spelling variants of one word (shared reading "bùgàolán")
+- `嘗試/嚐試` / `chángshì` — 嘗試, 嚐試 merged as spelling variants of one word (shared reading "chángshì")
+- `潮溼/潮濕` / `cháoshī` — 潮溼, 潮濕 merged as spelling variants of one word (shared reading "cháoshī")
+- `澈底/徹底` / `chèdǐ` — 澈底, 徹底 merged as spelling variants of one word (shared reading "chèdǐ")
+- `沉/沈` / `chén` — 沉, 沈 merged as spelling variants of one word (shared reading "chén")
+- `成分/成份` / `chéngfèn` — 成分, 成份 merged as spelling variants of one word (shared reading "chéngfèn")
+- `充分/充份` / `chōngfèn` — 充分, 充份 merged as spelling variants of one word (shared reading "chōngfèn")
+- `詞典/辭典` / `cídiǎn` — 詞典, 辭典 merged as spelling variants of one word (shared reading "cídiǎn")
+- `電視台/電視臺` / `diànshìtái` — 電視台, 電視臺 merged as spelling variants of one word (shared reading "diànshìtái")
+- `電台/電臺` / `diàntái` — 電台, 電臺 merged as spelling variants of one word (shared reading "diàntái")
+- `度過/渡過` / `dùguò` — 度過, 渡過 merged as spelling variants of one word (shared reading "dùguò")
+- `分布/分佈` / `fēnbù` — 分布, 分佈 merged as spelling variants of one word (shared reading "fēnbù")
+- `公布/公佈` / `gōngbù` — 公布, 公佈 merged as spelling variants of one word (shared reading "gōngbù")
+- `規畫/規劃` / `guīhuà` — 規畫, 規劃 merged as spelling variants of one word (shared reading "guīhuà")
+- `櫃臺/櫃台/櫃檯` / `guìtái` — 櫃臺, 櫃台, 櫃檯 merged as spelling variants of one word (shared reading "guìtái")
+- `漸漸/漸` / `jiànjiàn` — 漸漸, 漸 merged as spelling variants of one word (shared reading "jiànjiàn")
+- `精彩/精采` / `jīngcǎi` — 精彩, 精采 merged as spelling variants of one word (shared reading "jīngcǎi")
+- `決/絕` / `jué` — 決, 絕 merged as spelling variants of one word (shared reading "jué")
+- `裡頭/裏頭` / `lǐtou` — 裡頭, 裏頭 merged as spelling variants of one word (shared reading "lǐtou")
+- `秘書/祕書` / `mìshū` — 秘書, 祕書 merged as spelling variants of one word (shared reading "mìshū")
+- `黏/粘` / `nián` — 黏, 粘 merged as spelling variants of one word (shared reading "nián")
+- `偶而/偶爾` / `ǒuér` — 偶而, 偶爾 merged as spelling variants of one word (shared reading "ǒuér")
+- `群/羣` / `qún` — 群, 羣 merged as spelling variants of one word (shared reading "qún")
+- `上台/上臺` / `shàngtái` — 上台, 上臺 merged as spelling variants of one word (shared reading "shàngtái")
+- `神秘/神祕` / `shénmì` — 神秘, 神祕 merged as spelling variants of one word (shared reading "shénmì")
+- `水分/水份` / `shuǐfèn` — 水分, 水份 merged as spelling variants of one word (shared reading "shuǐfèn")
+- `舞台/舞臺` / `wǔtái` — 舞台, 舞臺 merged as spelling variants of one word (shared reading "wǔtái")
+- `消夜/宵夜` / `xiāoyè` — 消夜, 宵夜 merged as spelling variants of one word (shared reading "xiāoyè")
+- `宣布/宣佈` / `xuānbù` — 宣布, 宣佈 merged as spelling variants of one word (shared reading "xuānbù")
+- `煙/菸` / `yān` — 煙, 菸 merged as spelling variants of one word (shared reading "yān")
+- `占/佔` / `zhàn` — 占, 佔 merged as spelling variants of one word (shared reading "zhàn")
+- `占有/佔有` / `zhànyǒu` — 占有, 佔有 merged as spelling variants of one word (shared reading "zhànyǒu")
+- `制定/制訂` / `zhìdìng` — 制定, 制訂 merged as spelling variants of one word (shared reading "zhìdìng")
+- `准考證/准考証` / `zhǔnkǎozhèng` — 准考證, 准考証 merged as spelling variants of one word (shared reading "zhǔnkǎozhèng")
+- `做客/作客` / `zuòkè` — 做客, 作客 merged as spelling variants of one word (shared reading "zuòkè")
+- `不至於/不致於` / `bùzhìyú` — 不至於, 不致於 merged as spelling variants of one word (shared reading "bùzhìyú")
+- `策畫/策劃` / `cèhuà` — 策畫, 策劃 merged as spelling variants of one word (shared reading "cèhuà")
+- `沉默/沈默` / `chénmò` — 沉默, 沈默 merged as spelling variants of one word (shared reading "chénmò")
+- `沉重/沈重` / `chénzhòng` — 沉重, 沈重 merged as spelling variants of one word (shared reading "chénzhòng")
+- `獨占/獨佔` / `dúzhàn` — 獨占, 獨佔 merged as spelling variants of one word (shared reading "dúzhàn")
+- `雇/僱` / `gù` — 雇, 僱 merged as spelling variants of one word (shared reading "gù")
+- `雇用/僱用` / `gùyòng` — 雇用, 僱用 merged as spelling variants of one word (shared reading "gùyòng")
+- `迴響/回響` / `huíxiǎng` — 迴響, 回響 merged as spelling variants of one word (shared reading "huíxiǎng")
+- `伙伴/夥伴` / `huǒbàn` — 伙伴, 夥伴 merged as spelling variants of one word (shared reading "huǒbàn")
+- `飢餓/饑餓` / `jīè` — 飢餓, 饑餓 merged as spelling variants of one word (shared reading "jīè")
+- `刻畫/刻劃` / `kèhuà` — 刻畫, 刻劃 merged as spelling variants of one word (shared reading "kèhuà")
+- `聯繫/連繫` / `liánxì` — 聯繫, 連繫 merged as spelling variants of one word (shared reading "liánxì")
+- `連結/聯結` / `liánjié` — 連結, 聯結 merged as spelling variants of one word (shared reading "liánjié")
+- `囉嗦/囉唆` / `luōsuō` — 囉嗦, 囉唆 merged as spelling variants of one word (shared reading "luōsuō")
+- `默默/默` / `mòmò` — 默默, 默 merged as spelling variants of one word (shared reading "mòmò")
+- `橋樑/橋梁` / `qiáoliáng` — 橋樑, 橋梁 merged as spelling variants of one word (shared reading "qiáoliáng")
+- `散布/散佈` / `sànbù` — 散布, 散佈 merged as spelling variants of one word (shared reading "sànbù")
+- `剎車/煞車` / `shāchē` — 剎車, 煞車 merged as spelling variants of one word (shared reading "shāchē")
+- `似的/似地` / `sìde` — 似的, 似地 merged as spelling variants of one word (shared reading "sìde")
+- `提升/提昇` / `tíshēng` — 提升, 提昇 merged as spelling variants of one word (shared reading "tíshēng")
+- `鮮艶/鮮豔` / `xiānyàn` — 鮮艶, 鮮豔 merged as spelling variants of one word (shared reading "xiānyàn")
+- `小伙子/小夥子` / `xiǎohuǒzi` — 小伙子, 小夥子 merged as spelling variants of one word (shared reading "xiǎohuǒzi")
+- `養分/養份` / `yǎngfèn` — 養分, 養份 merged as spelling variants of one word (shared reading "yǎngfèn")
+- `讚嘆/讚歎` / `zàntàn` — 讚嘆, 讚歎 merged as spelling variants of one word (shared reading "zàntàn")
+- `占據/佔據` / `zhànjù` — 占據, 佔據 merged as spelling variants of one word (shared reading "zhànjù")
+- `占領/佔領` / `zhànlǐng` — 占領, 佔領 merged as spelling variants of one word (shared reading "zhànlǐng")
+- `注定/註定` / `zhùdìng` — 注定, 註定 merged as spelling variants of one word (shared reading "zhùdìng")
+- `作證/做證` / `zuòzhèng` — 作證, 做證 merged as spelling variants of one word (shared reading "zuòzhèng")
+
+### bopomofo-annotation-stripped (37)
+
+- `名字(˙ㄗ)` / `míngzi` — "名字(˙ㄗ)" -> "名字" (pronunciation hint, not part of the word)
+- `沒關係(˙ㄒㄧ)` / `méiguānxi ` — "沒關係(˙ㄒㄧ)" -> "沒關係" (pronunciation hint, not part of the word)
+- `外頭(˙ㄊㄡ)` / `wàitou ` — "外頭(˙ㄊㄡ)" -> "外頭" (pronunciation hint, not part of the word)
+- `部分(˙ㄈㄣ)/部份(˙ㄈㄣ)` / `bùfen` — "部分(˙ㄈㄣ)/部份(˙ㄈㄣ)" -> "部分/部份" (pronunciation hint, not part of the word)
+- `窗(子)/窗戶(˙ㄏㄨ)` / `chuāng(zi )/chuānghu` — "窗(子)/窗戶(˙ㄏㄨ)" -> "窗(子)/窗戶" (pronunciation hint, not part of the word)
+- `故事(˙ㄕ)` / `gùshi` — "故事(˙ㄕ)" -> "故事" (pronunciation hint, not part of the word)
+- `有時候(˙ㄏㄡ)/有時` / `yŏushíhou/yŏushí ` — "有時候(˙ㄏㄡ)/有時" -> "有時候/有時" (pronunciation hint, not part of the word)
+- `客氣(˙ㄑㄧ)` / `kèqi` — "客氣(˙ㄑㄧ)" -> "客氣" (pronunciation hint, not part of the word)
+- `喂(ㄨㄟˊ)` / `wéi` — "喂(ㄨㄟˊ)" -> "喂" (pronunciation hint, not part of the word)
+- `麻煩(˙ㄈㄢ)` / `máfan ` — "麻煩(˙ㄈㄢ)" -> "麻煩" (pronunciation hint, not part of the word)
+- `舒服(˙ㄈㄨ)` / `shūfu` — "舒服(˙ㄈㄨ)" -> "舒服" (pronunciation hint, not part of the word)
+- `白天(˙ㄊㄧㄢ)` / `báitian ` — "白天(˙ㄊㄧㄢ)" -> "白天" (pronunciation hint, not part of the word)
+- `伯伯(˙ㄅㄛ)/伯` / `bóbo/bó ` — "伯伯(˙ㄅㄛ)/伯" -> "伯伯/伯" (pronunciation hint, not part of the word)
+- `叔叔(˙ㄕㄨ)/叔` / `shúshu/shú` — "叔叔(˙ㄕㄨ)/叔" -> "叔叔/叔" (pronunciation hint, not part of the word)
+- `姑姑(˙ㄍㄨ)` / `gūgu` — "姑姑(˙ㄍㄨ)" -> "姑姑" (pronunciation hint, not part of the word)
+- `有意思(˙ㄙ)` / `yŏuyìsi` — "有意思(˙ㄙ)" -> "有意思" (pronunciation hint, not part of the word)
+- `熱鬧(˙ㄋㄠ)` / `rènao ` — "熱鬧(˙ㄋㄠ)" -> "熱鬧" (pronunciation hint, not part of the word)
+- `底下(˙ㄒㄧㄚ)` / `dĭxia ` — "底下(˙ㄒㄧㄚ)" -> "底下" (pronunciation hint, not part of the word)
+- `枕頭(˙ㄊㄡ)` / `zhěntou ` — "枕頭(˙ㄊㄡ)" -> "枕頭" (pronunciation hint, not part of the word)
+- `老太太(˙ㄊㄞ)` / `lăotàitai ` — "老太太(˙ㄊㄞ)" -> "老太太" (pronunciation hint, not part of the word)
+- `豆腐(˙ㄈㄨ)` / `dòufu` — "豆腐(˙ㄈㄨ)" -> "豆腐" (pronunciation hint, not part of the word)
+- `葡萄(˙ㄊㄠ)` / `pútao ` — "葡萄(˙ㄊㄠ)" -> "葡萄" (pronunciation hint, not part of the word)
+- `新鮮(˙ㄒㄧㄢ)` / `xīnxian ` — "新鮮(˙ㄒㄧㄢ)" -> "新鮮" (pronunciation hint, not part of the word)
+- `多多(˙ㄉㄨㄛ)少少` / `duōduoshăoshăo ` — "多多(˙ㄉㄨㄛ)少少" -> "多多少少" (pronunciation hint, not part of the word)
+- `嗯(˙ㄣ)` / `en ` — "嗯(˙ㄣ)" -> "嗯" (pronunciation hint, not part of the word)
+- `姑娘（˙ㄋㄧㄤ）` / `gūniang` — "姑娘（˙ㄋㄧㄤ）" -> "姑娘" (pronunciation hint, not part of the word)
+- `舅舅(˙ㄐㄧㄡ) /舅` / `jiùjiu ` — "舅舅(˙ㄐㄧㄡ) /舅" -> "舅舅 /舅" (pronunciation hint, not part of the word)
+- `石頭(˙ㄊㄡ) /石` / `shítou/shí` — "石頭(˙ㄊㄡ) /石" -> "石頭 /石" (pronunciation hint, not part of the word)
+- `娃娃(˙ㄨㄚ)` / `wáwa ` — "娃娃(˙ㄨㄚ)" -> "娃娃" (pronunciation hint, not part of the word)
+- `著(ㄓㄠ)急` / `zhāojí ` — "著(ㄓㄠ)急" -> "著急" (pronunciation hint, not part of the word)
+- `看看(˙ㄎㄢ)` / `kànkan` — "看看(˙ㄎㄢ)" -> "看看" (pronunciation hint, not part of the word)
+- `馬虎(ㄏㄨ)` / `măhū` — "馬虎(ㄏㄨ)" -> "馬虎" (pronunciation hint, not part of the word)
+- `群/羣(ㄑㄩㄣˊ)` / `qún ` — "群/羣(ㄑㄩㄣˊ)" -> "群/羣" (pronunciation hint, not part of the word)
+- `出息(˙ㄒㄧ)` / `chūxi ` — "出息(˙ㄒㄧ)" -> "出息" (pronunciation hint, not part of the word)
+- `攪和(ㄏㄨㄛˋ)` / `jiăohuò` — "攪和(ㄏㄨㄛˋ)" -> "攪和" (pronunciation hint, not part of the word)
+- `結實(˙ㄕ)` / `jiéshi ` — "結實(˙ㄕ)" -> "結實" (pronunciation hint, not part of the word)
+- `剎(ㄕㄚ)車/煞車` / `shāchē ` — "剎(ㄕㄚ)車/煞車" -> "剎車/煞車" (pronunciation hint, not part of the word)
+
+### split-alternates (126)
+
+- `爸爸/爸` / `bàba/bà` — split into 2 distinct words: 爸爸/bàba, 爸/bà
+- `媽媽/媽` / `māma/mā` — split into 2 distinct words: 媽媽/māma, 媽/mā
+- `哥哥/哥` / `gēge/gē` — split into 2 distinct words: 哥哥/gēge, 哥/gē
+- `弟弟/弟` / `dìdi/dì` — split into 2 distinct words: 弟弟/dìdi, 弟/dì
+- `妹妹/妹` / `mèimei/mèi` — split into 2 distinct words: 妹妹/mèimei, 妹/mèi
+- `公共汽車/公車` / `gōnggòngqìchē/gōngchē` — split into 2 distinct words: 公共汽車/gōnggòngqìchē, 公車/gōngchē
+- `星期天/星期日` / `xīngqítiān/xīngqírì` — split into 2 distinct words: 星期天/xīngqítiān, 星期日/xīngqírì
+- `應該/應` / `yīnggāi /yīng` — split into 2 distinct words: 應該/yīnggāi, 應/yīng
+- `醫生/醫師` / `yīshēng/yīshī` — split into 2 distinct words: 醫生/yīshēng, 醫師/yīshī
+- `一點/一點兒/一點點` / `yīdiǎn/yīdiǎnr/yīdiǎndiǎn` — split into 3 distinct words: 一點/yīdiǎn, 一點兒/yīdiǎnr, 一點點/yīdiǎndiǎn
+- `餐廳/飯館` / `cāntīng/fànguǎn` — split into 2 distinct words: 餐廳/cāntīng, 飯館/fànguǎn
+- `畫/畫兒` / `huà/huàr` — split into 2 distinct words: 畫/huà, 畫兒/huàr
+- `花/花兒` / `huā/huār` — split into 2 distinct words: 花/huā, 花兒/huār
+- `常常/常` / `chángcháng/cháng` — split into 2 distinct words: 常常/chángcháng, 常/cháng
+- `事/事兒` / `shì/shìr` — split into 2 distinct words: 事/shì, 事兒/shìr
+- `嘴巴/嘴` / `zuǐba/zuǐ` — split into 2 distinct words: 嘴巴/zuǐba, 嘴/zuǐ
+- `衣服/衣` / `yīfú/yī` — split into 2 distinct words: 衣服/yīfú, 衣/yī
+- `一共/共` / `yīgòng /gòng` — split into 2 distinct words: 一共/yīgòng, 共/gòng
+- `邊/邊兒` / `biān/biānr` — split into 2 distinct words: 邊/biān, 邊兒/biānr
+- `有點/有一點/有一點兒` / `yǒudiǎn/yǒuyīdiǎn/yǒuyīdiǎnr` — split into 3 distinct words: 有點/yǒudiǎn, 有一點/yǒuyīdiǎn, 有一點兒/yǒuyīdiǎnr
+- `城市/城` / `chéngshì/chéng` — split into 2 distinct words: 城市/chéngshì, 城/chéng
+- `剛剛/剛` / `gānggāng/gāng` — split into 2 distinct words: 剛剛/gānggāng, 剛/gāng
+- `一會兒/一會` / `yīhuǐr/yīhuǐ` — split into 2 distinct words: 一會兒/yīhuǐr, 一會/yīhuǐ
+- `春天/春` / `chūntiān/chūn` — split into 2 distinct words: 春天/chūntiān, 春/chūn
+- `夏天/夏` / `xiàtiān/xià` — split into 2 distinct words: 夏天/xiàtiān, 夏/xià
+- `秋天/秋` / `qiūtiān/qiū` — split into 2 distinct words: 秋天/qiūtiān, 秋/qiū
+- `冬天/冬` / `dōngtiān/dōng` — split into 2 distinct words: 冬天/dōngtiān, 冬/dōng
+- `華語/華文` / `huáyǔ/huáwén` — split into 2 distinct words: 華語/huáyǔ, 華文/huáwén
+- `洗手間/廁所` / `xǐshǒujiān/cèsuǒ` — split into 2 distinct words: 洗手間/xǐshǒujiān, 廁所/cèsuǒ
+- `窗(子)/窗戶` / `chuāng(zi )/chuānghu` — split into 2 distinct words: 窗(子)/chuāng(zi ), 窗戶/chuānghu
+- `盒/盒(子)` / `hé/hézi` — split into 2 distinct words: 盒/hé, 盒(子)/hézi
+- `有空/有空兒` / `yǒukòng/yǒukòngr` — split into 2 distinct words: 有空/yǒukòng, 有空兒/yǒukòngr
+- `跑/跑步` / `pǎo/pǎobù` — split into 2 distinct words: 跑/pǎo, 跑步/pǎobù
+- `腳踏車/自行車` / `jiǎotàchē/zìxíngchē` — split into 2 distinct words: 腳踏車/jiǎotàchē, 自行車/zìxíngchē
+- `聊天/聊天兒` / `liáotiān/liáotiānr` — split into 2 distinct words: 聊天/liáotiān, 聊天兒/liáotiānr
+- `有時候/有時` / `yǒushíhou/yǒushí` — split into 2 distinct words: 有時候/yǒushíhou, 有時/yǒushí
+- `飛機場/機場` / `fēijīchǎng/jīchǎng` — split into 2 distinct words: 飛機場/fēijīchǎng, 機場/jīchǎng
+- `照相機/相機` / `zhàoxiàngjī/xiàngjī` — split into 2 distinct words: 照相機/zhàoxiàngjī, 相機/xiàngjī
+- `照片/相片/相片兒` / `zhàopiàn/xiàngpiàn/xiàngpiànr` — split into 3 distinct words: 照片/zhàopiàn, 相片/xiàngpiàn, 相片兒/xiàngpiànr
+- `南/南部` / `nán/nánbù` — split into 2 distinct words: 南/nán, 南部/nánbù
+- `西/西部` / `xī/ xībù` — split into 2 distinct words: 西/xī, 西部/xībù
+- `北/北部` / `běi/běibù` — split into 2 distinct words: 北/běi, 北部/běibù
+- `東/東部` / `dōng/dōngbù` — split into 2 distinct words: 東/dōng, 東部/dōngbù
+- `頭髮/髮` / `tóufǎ/fǎ` — split into 2 distinct words: 頭髮/tóufǎ, 髮/fǎ
+- `手指(頭)/指頭` / `shǒuzhǐ(tou)/zhǐtou` — split into 2 distinct words: 手指(頭)/shǒuzhǐ(tou), 指頭/zhǐtou
+- `超級市場/超市` / `chāojíshìchǎng/chāoshì` — split into 2 distinct words: 超級市場/chāojíshìchǎng, 超市/chāoshì
+- `比較/較` / `bǐjiào/jiào` — split into 2 distinct words: 比較/bǐjiào, 較/jiào
+- `一半/一半兒` / `yībàn/yībànr` — split into 2 distinct words: 一半/yībàn, 一半兒/yībànr
+- `但是/但` / `dànshì/dàn` — split into 2 distinct words: 但是/dànshì, 但/dàn
+- `一下(子)/一下子兒` / `yīxià(zi)/yīxiàzir` — split into 2 distinct words: 一下(子)/yīxià(zi), 一下子兒/yīxiàzir
+- `鐘/時鐘` / `zhōng/shízhōng` — split into 2 distinct words: 鐘/zhōng, 時鐘/shízhōng
+- `伯伯/伯` / `bóbo/bó` — split into 2 distinct words: 伯伯/bóbo, 伯/bó
+- `叔叔/叔` / `shúshu/shú` — split into 2 distinct words: 叔叔/shúshu, 叔/shú
+- `箱/箱(子)` / `xiāng /xiāng(zi)` — split into 2 distinct words: 箱/xiāng, 箱(子)/xiāng(zi)
+- `刷(子) / 刷` / `shuā(zi)/shuā` — split into 2 distinct words: 刷(子)/shuā(zi), 刷/shuā
+- `茶館/茶館兒` / `cháguǎn/cháguǎnr` — split into 2 distinct words: 茶館/cháguǎn, 茶館兒/cháguǎnr
+- `一塊/一塊兒` / `yīkuài/yīkuàir` — split into 2 distinct words: 一塊/yīkuài, 一塊兒/yīkuàir
+- `摩托車/機車` / `mótuōchē/jīchē` — split into 2 distinct words: 摩托車/mótuōchē, 機車/jīchē
+- `船/船兒` / `chuán/chuánr` — split into 2 distinct words: 船/chuán, 船兒/chuánr
+- `冰塊/冰塊兒` / `bīngkuài/bīngkuàir` — split into 2 distinct words: 冰塊/bīngkuài, 冰塊兒/bīngkuàir
+- `味/味兒` / `wèi/wèir` — split into 2 distinct words: 味/wèi, 味兒/wèir
+- `等/等等` / `děng/děngděng` — split into 2 distinct words: 等/děng, 等等/děngděng
+- `白/白白` / `bái/báibái` — split into 2 distinct words: 白/bái, 白白/báibái
+- `比如/比如說` / `bǐrú/bǐrúshuō` — split into 2 distinct words: 比如/bǐrú, 比如說/bǐrúshuō
+- `差點/差點兒/差一點兒` / `chādiǎn/chādiǎnr/chāyīdiǎnr` — split into 3 distinct words: 差點/chādiǎn, 差點兒/chādiǎnr, 差一點兒/chāyīdiǎnr
+- `翻譯/翻/譯` / `fānyì/fān/yì` — split into 3 distinct words: 翻譯/fānyì, 翻/fān, 譯/yì
+- `個子/個兒` / `gèzi/gèr` — split into 2 distinct words: 個子/gèzi, 個兒/gèr
+- `根據/據` / `gēnjù/jù` — split into 2 distinct words: 根據/gēnjù, 據/jù
+- `好好/好好兒` / `hǎohǎo/hǎohǎor` — split into 2 distinct words: 好好/hǎohǎo, 好好兒/hǎohǎor
+- `忽然/忽` / `hūrán/hū` — split into 2 distinct words: 忽然/hūrán, 忽/hū
+- `老虎/虎` / `lǎohǔ/hǔ` — split into 2 distinct words: 老虎/lǎohǔ, 虎/hǔ
+- `石頭 /石` / `shítou/shí` — split into 2 distinct words: 石頭/shítou, 石/shí
+- `似乎/似` / `sìhū/sì` — split into 2 distinct words: 似乎/sìhū, 似/sì
+- `文章/文` / `wénzhāng/wén` — split into 2 distinct words: 文章/wénzhāng, 文/wén
+- `夜裡/裏` / `yèlǐ/lǐ` — split into 2 distinct words: 夜裡/yèlǐ, 裏/lǐ
+- `一點/一點兒` / `yīdiǎn/yīdiǎnr` — split into 2 distinct words: 一點/yīdiǎn, 一點兒/yīdiǎnr
+- `增加/增` / `zēngjiā/zēng` — split into 2 distinct words: 增加/zēngjiā, 增/zēng
+- `癌症/癌` / `áizhèng/ái` — split into 2 distinct words: 癌症/áizhèng, 癌/ái
+- `翅膀/翅` / `chìbǎng/chì` — split into 2 distinct words: 翅膀/chìbǎng, 翅/chì
+- `待會/待會兒` / `dāihuì /dāihuìr` — split into 2 distinct words: 待會/dāihuì, 待會兒/dāihuìr
+- `電扇/電風扇` / `diànshàn/diànfēngshàn` — split into 2 distinct words: 電扇/diànshàn, 電風扇/diànfēngshàn
+- `多半/多半兒` / `duōbàn/duōbànr` — split into 2 distinct words: 多半/duōbàn, 多半兒/duōbànr
+- `份/份兒` / `fèn/fènr` — split into 2 distinct words: 份/fèn, 份兒/fènr
+- `港口/港` / `gǎngkǒu/gǎng` — split into 2 distinct words: 港口/gǎngkǒu, 港/gǎng
+- `骨頭/骨` / `gútou/gǔ` — split into 2 distinct words: 骨頭/gútou, 骨/gǔ
+- `喉嚨/喉` / `hóulóng/hóu` — split into 2 distinct words: 喉嚨/hóulóng, 喉/hóu
+- `回教/伊斯蘭教` / `Huíjiào /Yīsīlánjiào` — split into 2 distinct words: 回教/Huíjiào, 伊斯蘭教/Yīsīlánjiào
+- `駕駛/駕` / `jiàshǐ/jià` — split into 2 distinct words: 駕駛/jiàshǐ, 駕/jià
+- `嫉妒/忌妒` / `jídù/jìdù` — split into 2 distinct words: 嫉妒/jídù, 忌妒/jìdù
+- `巨大/巨` / `jùdà/jù` — split into 2 distinct words: 巨大/jùdà, 巨/jù
+- `空/空兒` / `kòng/kòngr` — split into 2 distinct words: 空/kòng, 空兒/kòngr
+- `蜜蜂/蜂` / `mìfēng/fēng` — split into 2 distinct words: 蜜蜂/mìfēng, 蜂/fēng
+- `農民/農夫` / `nóngmín/nóngfū` — split into 2 distinct words: 農民/nóngmín, 農夫/nóngfū
+- `偏/偏偏` / `piān/piānpiān` — split into 2 distinct words: 偏/piān, 偏偏/piānpiān
+- `乒乓球/桌球` / `pīngpāngqiú /zhuōqiú` — split into 2 distinct words: 乒乓球/pīngpāngqiú, 桌球/zhuōqiú
+- `貧窮/貧` / `pínqióng/pín` — split into 2 distinct words: 貧窮/pínqióng, 貧/pín
+- `妻/妻子` / `qī/qīzǐ` — split into 2 distinct words: 妻/qī, 妻子/qīzǐ
+- `牆/牆壁` / `qiáng/qiángbì` — split into 2 distinct words: 牆/qiáng, 牆壁/qiángbì
+- `悄悄/悄` / `qiǎoqiǎo/qiǎo` — split into 2 distinct words: 悄悄/qiǎoqiǎo, 悄/qiǎo
+- `人情味/人情味兒` / `rénqíngwèi/rénqíngwèir` — split into 2 distinct words: 人情味/rénqíngwèi, 人情味兒/rénqíngwèir
+- `舌頭/舌` / `shétou/shé` — split into 2 distinct words: 舌頭/shétou, 舌/shé
+- `鼠/老鼠` / `shǔ /lǎoshǔ` — split into 2 distinct words: 鼠/shǔ, 老鼠/lǎoshǔ
+- `偷/偷偷` / `tōu/tōutōu` — split into 2 distinct words: 偷/tōu, 偷偷/tōutōu
+- `尾巴/尾` / `wěibā/wěi` — split into 2 distinct words: 尾巴/wěibā, 尾/wěi
+- `象/大象` / `xiàng/dàxiàng` — split into 2 distinct words: 象/xiàng, 大象/dàxiàng
+- `預先/預` / `yùxiān/yù` — split into 2 distinct words: 預先/yùxiān, 預/yù
+- `製造/製` / `zhìzào/zhì` — split into 2 distinct words: 製造/zhìzào, 製/zhì
+- `頒發/頒` / `bānfā/bān` — split into 2 distinct words: 頒發/bānfā, 頒/bān
+- `凡/凡是` / `fán/fánshì` — split into 2 distinct words: 凡/fán, 凡是/fánshì
+- `墳墓/墳/墓` / `fénmù/fén/mù` — split into 3 distinct words: 墳墓/fénmù, 墳/fén, 墓/mù
+- `斧頭/斧` / `fǔtou/fǔ` — split into 2 distinct words: 斧頭/fǔtou, 斧/fǔ
+- `棺材/棺` / `guāncái/guān` — split into 2 distinct words: 棺材/guāncái, 棺/guān
+- `號子/證券行` / `hàozi /zhèngquànháng` — split into 2 distinct words: 號子/hàozi, 證券行/zhèngquànháng
+- `活/活兒` / `huó/huór` — split into 2 distinct words: 活/huó, 活兒/huór
+- `架/架(子)` / `jià/jià(zi)` — split into 2 distinct words: 架/jià, 架(子)/jià(zi)
+- `勁/勁兒` / `jìn/jìnr` — split into 2 distinct words: 勁/jìn, 勁兒/jìnr
+- `開頭/開頭兒` / `kāitóu/kāitóur` — split into 2 distinct words: 開頭/kāitóu, 開頭兒/kāitóur
+- `老頭兒/老頭(子)` / `lǎotóur/lǎotóu(zi)` — split into 2 distinct words: 老頭兒/lǎotóur, 老頭(子)/lǎotóu(zi)
+- `眉毛/眉` / `méimáo/méi` — split into 2 distinct words: 眉毛/méimáo, 眉/méi
+- `乃/乃是` / `nǎi/nǎishì` — split into 2 distinct words: 乃/nǎi, 乃是/nǎishì
+- `譬如/譬如說` / `pìrú/pìrúshuō` — split into 2 distinct words: 譬如/pìrú, 譬如說/pìrúshuō
+- `松樹/松` / `sōngshù/sōng` — split into 2 distinct words: 松樹/sōngshù, 松/sōng
+- `烏龜/龜` / `wūguī/guī` — split into 2 distinct words: 烏龜/wūguī, 龜/guī
+- `懸崖/崖` / `xuányái/yái` — split into 2 distinct words: 懸崖/xuányái, 崖/yái
+- `鷹/老鷹` / `yīng/lǎoyīng` — split into 2 distinct words: 鷹/yīng, 老鷹/lǎoyīng
+- `字眼/字眼兒` / `zìyǎn/zìyǎnr` — split into 2 distinct words: 字眼/zìyǎn, 字眼兒/zìyǎnr
+
+### unparseable-alternates (7)
+
+- `姊姊/姐姐/姊/姐` / `jiějie/jiě` — 4 headword alternatives but 2 pinyin alternatives — counts don't match; kept "姊姊"/"jiějie" only, rest need manual review
+- `這裡/這裏/這兒` / `zhèlǐ/zhèr` — 3 headword alternatives but 2 pinyin alternatives — counts don't match; kept "這裡"/"zhèlǐ" only, rest need manual review
+- `那裡/那裏/那兒` / `nàlǐ/nàr` — 3 headword alternatives but 2 pinyin alternatives — counts don't match; kept "那裡"/"nàlǐ" only, rest need manual review
+- `哪裡/哪裏/哪兒` / `nǎlǐ/nǎr` — 3 headword alternatives but 2 pinyin alternatives — counts don't match; kept "哪裡"/"nǎlǐ" only, rest need manual review
+- `手錶/手表/錶/表` / `shǒubiǎo/biǎo` — 4 headword alternatives but 2 pinyin alternatives — counts don't match; kept "手錶"/"shǒubiǎo" only, rest need manual review
+- `以至/以致/以至於/以致於` / `yǐzhì/yǐzhìyú` — 4 headword alternatives but 2 pinyin alternatives — counts don't match; kept "以至"/"yǐzhì" only, rest need manual review
+- `嘴唇/嘴脣/唇/脣` / `zuǐchún/chún` — 4 headword alternatives but 2 pinyin alternatives — counts don't match; kept "嘴唇"/"zuǐchún" only, rest need manual review
+
+### optional-char (78)
+
+- `小孩(子)` / `xiăohái(zi) ` — "小孩子" (xiǎoháizi) / "小孩" (xiǎohái) — optional component, kept as two variants of one word
+- `電視(機)` / `diànshì(jī) ` — "電視機" (diànshìjī) / "電視" (diànshì) — optional component, kept as two variants of one word
+- `車(子)` / `chē(zi) ` — "車子" (chēzi) / "車" (chē) — optional component, kept as two variants of one word
+- `房(子)` / `fáng(zi) ` — "房子" (fángzi) / "房" (fáng) — optional component, kept as two variants of one word
+- `桌(子)` / `zhuō(zi) ` — "桌子" (zhuōzi) / "桌" (zhuō) — optional component, kept as two variants of one word
+- `椅(子)` / `yĭ(zi)` — "椅子" (yǐzi) / "椅" (yǐ) — optional component, kept as two variants of one word
+- `上(面)` / `shàng(miàn)` — "上面" (shàngmiàn) / "上" (shàng) — optional component, kept as two variants of one word
+- `下(面)` / `xià(miàn) ` — "下面" (xiàmiàn) / "下" (xià) — optional component, kept as two variants of one word
+- `外(面)` / `wài(miàn)` — "外面" (wàimiàn) / "外" (wài) — optional component, kept as two variants of one word
+- `前(面)` / `qián(miàn)` — "前面" (qiánmiàn) / "前" (qián) — optional component, kept as two variants of one word
+- `後(面)` / `hòu(miàn)` — "後面" (hòumiàn) / "後" (hòu) — optional component, kept as two variants of one word
+- `左(邊)` / `zuŏ(biān)` — "左邊" (zuǒbiān) / "左" (zuǒ) — optional component, kept as two variants of one word
+- `右(邊)` / `yòu(biān)` — "右邊" (yòubiān) / "右" (yòu) — optional component, kept as two variants of one word
+- `旁(邊)` / `páng(biān)` — "旁邊" (pángbiān) / "旁" (páng) — optional component, kept as two variants of one word
+- `鼻(子)` / `bí(zi)` — "鼻子" (bízi) / "鼻" (bí) — optional component, kept as two variants of one word
+- `鞋(子)` / `xié(zi)` — "鞋子" (xiézi) / "鞋" (xié) — optional component, kept as two variants of one word
+- `筷(子)` / `kuài(zi) ` — "筷子" (kuàizi) / "筷" (kuài) — optional component, kept as two variants of one word
+- `杯(子)` / `bēi(zi) ` — "杯子" (bēizi) / "杯" (bēi) — optional component, kept as two variants of one word
+- `餃(子)` / `jiăo(zi) ` — "餃子" (jiǎozi) / "餃" (jiǎo) — optional component, kept as two variants of one word
+- `屋(子)` / `wū(zi) ` — "屋子" (wūzi) / "屋" (wū) — optional component, kept as two variants of one word
+- `冷氣(機)` / `lěngqì(jī) ` — "冷氣機" (lěngqìjī) / "冷氣" (lěngqì) — optional component, kept as two variants of one word
+- `肚(子)` / `dù(zi) ` — "肚子" (dùzi) / "肚" (dù) — optional component, kept as two variants of one word
+- `襪(子)` / `wà(zi) ` — "襪子" (wàzi) / "襪" (wà) — optional component, kept as two variants of one word
+- `裙(子)` / `qún(zi) ` — "裙子" (qúnzi) / "裙" (qún) — optional component, kept as two variants of one word
+- `褲(子)` / `kù(zi) ` — "褲子" (kùzi) / "褲" (kù) — optional component, kept as two variants of one word
+- `帽(子)` / `mào(zi) ` — "帽子" (màozi) / "帽" (mào) — optional component, kept as two variants of one word
+- `叉(子)` / `chā(zi)` — "叉子" (chāzi) / "叉" (chā) — optional component, kept as two variants of one word
+- `刀(子)` / `dāo(zi)` — "刀子" (dāozi) / "刀" (dāo) — optional component, kept as two variants of one word
+- `盤/盤(子)` / `pán(zi) ` — "盤子" (pánzi) / "盤" (pán) — optional component, kept as two variants of one word
+- `瓶/瓶(子)` / `píng(zi)` — "瓶子" (píngzi) / "瓶" (píng) — optional component, kept as two variants of one word
+- `例(子)` / `lì(zi) ` — "例子" (lìzi) / "例" (lì) — optional component, kept as two variants of one word
+- `院(子)` / `yuàn(zi)` — "院子" (yuànzi) / "院" (yuàn) — optional component, kept as two variants of one word
+- `櫃(子)` / `guì(zi) ` — "櫃子" (guìzi) / "櫃" (guì) — optional component, kept as two variants of one word
+- `蚊(子)` / `wén(zi)` — "蚊子" (wénzi) / "蚊" (wén) — optional component, kept as two variants of one word
+- `籃(子)` / `lán(zi) ` — "籃子" (lánzi) / "籃" (lán) — optional component, kept as two variants of one word
+- `脖(子)` / `bó(zi) ` — "脖子" (bózi) / "脖" (bó) — optional component, kept as two variants of one word
+- `橘(子)` / `jú(zi )` — "橘子" (júzi) / "橘" (jú) — optional component, kept as two variants of one word
+- `不見(了)` / `bùjiàn(le)` — "不見了" (bùjiànle) / "不見" (bùjiàn) — optional component, kept as two variants of one word
+- `蟲(子)` / `chóng(zi)` — "蟲子" (chóngzi) / "蟲" (chóng) — optional component, kept as two variants of one word
+- `金(子)` / `jīn(zi)` — "金子" (jīnzi) / "金" (jīn) — optional component, kept as two variants of one word
+- `腦(子)` / `năo(zi) ` — "腦子" (nǎozi) / "腦" (nǎo) — optional component, kept as two variants of one word
+- `牌(子)` / `pái(zi)` — "牌子" (páizi) / "牌" (pái) — optional component, kept as two variants of one word
+- `獅(子)` / `shī(zi) ` — "獅子" (shīzi) / "獅" (shī) — optional component, kept as two variants of one word
+- `兔(子)` / `tù(zi) ` — "兔子" (tùzi) / "兔" (tù) — optional component, kept as two variants of one word
+- `鴨(子)` / `yā(zi) ` — "鴨子" (yāzi) / "鴨" (yā) — optional component, kept as two variants of one word
+- `案(子)` / `àn(zi) ` — "案子" (ànzi) / "案" (àn) — optional component, kept as two variants of one word
+- `棒(子)` / `bàng(zi) ` — "棒子" (bàngzi) / "棒" (bàng) — optional component, kept as two variants of one word
+- `被(子)` / `bèi(zi) ` — "被子" (bèizi) / "被" (bèi) — optional component, kept as two variants of one word
+- `帶(子)` / `dài(zi) ` — "帶子" (dàizi) / "帶" (dài) — optional component, kept as two variants of one word
+- `單(子)` / `dān(zi) ` — "單子" (dānzi) / "單" (dān) — optional component, kept as two variants of one word
+- `凳(子)` / `dèng(zi) ` — "凳子" (dèngzi) / "凳" (dèng) — optional component, kept as two variants of one word
+- `蓋(子)` / `gài(zi)` — "蓋子" (gàizi) / "蓋" (gài) — optional component, kept as two variants of one word
+- `罐(子)` / `guàn(zi) ` — "罐子" (guànzi) / "罐" (guàn) — optional component, kept as two variants of one word
+- `鍋(子)` / `guō(zi)` — "鍋子" (guōzi) / "鍋" (guō) — optional component, kept as two variants of one word
+- `猴(子)` / `hóu(zi) ` — "猴子" (hóuzi) / "猴" (hóu) — optional component, kept as two variants of one word
+- `鬍(子)` / `hú(zi) ` — "鬍子" (húzi) / "鬍" (hú) — optional component, kept as two variants of one word
+- `鏡(子)` / `jìng(zi)` — "鏡子" (jìngzi) / "鏡" (jìng) — optional component, kept as two variants of one word
+- `梨(子)` / `lí(zi)` — "梨子" (lízi) / "梨" (lí) — optional component, kept as two variants of one word
+- `輪(子)` / `lún(zi) ` — "輪子" (lúnzi) / "輪" (lún) — optional component, kept as two variants of one word
+- `旗(子)` / `qí(zi) ` — "旗子" (qízi) / "旗" (qí) — optional component, kept as two variants of one word
+- `繩(子)` / `shéng(zi)` — "繩子" (shéngzi) / "繩" (shéng) — optional component, kept as two variants of one word
+- `桃(子)` / `táo(zi) ` — "桃子" (táozi) / "桃" (táo) — optional component, kept as two variants of one word
+- `蝦(子)` / `xiā(zi)` — "蝦子" (xiāzi) / "蝦" (xiā) — optional component, kept as two variants of one word
+- `巷(子)` / `xiàng(zi)` — "巷子" (xiàngzi) / "巷" (xiàng) — optional component, kept as two variants of one word
+- `靴(子)` / `xuē(zi)` — "靴子" (xuēzi) / "靴" (xuē) — optional component, kept as two variants of one word
+- `葉(子)` / `yè(zi) ` — "葉子" (yèzi) / "葉" (yè) — optional component, kept as two variants of one word
+- `影(子)` / `yĭng(zi) ` — "影子" (yǐngzi) / "影" (yǐng) — optional component, kept as two variants of one word
+- `竹(子)` / `zhú(zi)` — "竹子" (zhúzi) / "竹" (zhú) — optional component, kept as two variants of one word
+- `腸(子)` / `cháng(zi) ` — "腸子" (chángzi) / "腸" (cháng) — optional component, kept as two variants of one word
+- `池(子)` / `chí(zi)` — "池子" (chízi) / "池" (chí) — optional component, kept as two variants of one word
+- `鴿(子)` / `gē(zi) ` — "鴿子" (gēzi) / "鴿" (gē) — optional component, kept as two variants of one word
+- `管(子)` / `guăn(zi) ` — "管子" (guǎnzi) / "管" (guǎn) — optional component, kept as two variants of one word
+- `棍(子)` / `gùn(zi) ` — "棍子" (gùnzi) / "棍" (gùn) — optional component, kept as two variants of one word
+- `籠(子)` / `lóng(zi) ` — "籠子" (lóngzi) / "籠" (lóng) — optional component, kept as two variants of one word
+- `爐(子)` / `lú(zi) ` — "爐子" (lúzi) / "爐" (lú) — optional component, kept as two variants of one word
+- `麥(子)` / `mài(zi) ` — "麥子" (màizi) / "麥" (mài) — optional component, kept as two variants of one word
+- `燕(子)` / `yàn(zi) ` — "燕子" (yànzi) / "燕" (yàn) — optional component, kept as two variants of one word
+- `柱(子)` / `zhù(zi) ` — "柱子" (zhùzi) / "柱" (zhù) — optional component, kept as two variants of one word
+
+### multi-pos-split (280)
+
+- `叫` / `jiào ` — "叫" has 2 POS tags (Vst, V) -> one sense per POS
+- `天` / `tiān ` — "天" has 2 POS tags (N, M) -> one sense per POS
+- `在` / `zài ` — "在" has 2 POS tags (Prep, Vst) -> one sense per POS
+- `畫/畫兒` / `huà/huàr` — "畫/畫兒" has 2 POS tags (V, N) -> one sense per POS
+- `畫/畫兒` / `huà/huàr` — zipped 2 alternatives 1:1 with 2 POS tags rather than cross-producing: 畫/V, 畫兒/N
+- `考試` / `kăoshì ` — "考試" has 2 POS tags (V-sep, N) -> one sense per POS
+- `運動` / `yùndòng ` — "運動" has 2 POS tags (Vi, N) -> one sense per POS
+- `要` / `yào ` — "要" has 2 POS tags (V, Vaux) -> one sense per POS
+- `多` / `duō ` — "多" has 2 POS tags (Vs-pred, Adv) -> one sense per POS
+- `碗` / `wăn ` — "碗" has 2 POS tags (N, M) -> one sense per POS
+- `習慣` / `xíguàn ` — "習慣" has 2 POS tags (N, Vs) -> one sense per POS
+- `計畫/計劃` / `jìhuà` — "計畫/計劃" has 2 POS tags (V, N) -> one sense per POS
+- `班` / `bān ` — "班" has 2 POS tags (M, N) -> one sense per POS
+- `回答` / `huídá` — "回答" has 2 POS tags (V, N) -> one sense per POS
+- `部分(˙ㄈㄣ)/部份(˙ㄈㄣ)` / `bùfen` — "部分(˙ㄈㄣ)/部份(˙ㄈㄣ)" has 2 POS tags (Det, N) -> one sense per POS
+- `練習` / `liànxí ` — "練習" has 2 POS tags (V, N) -> one sense per POS
+- `決定` / `juédìng ` — "決定" has 2 POS tags (N, Vp) -> one sense per POS
+- `盒/盒(子)` / `hé/hézi` — "盒/盒(子)" has 2 POS tags (M, N) -> one sense per POS
+- `盒/盒(子)` / `hé/hézi` — zipped 2 alternatives 1:1 with 2 POS tags rather than cross-producing: 盒/M, 盒子/N
+- `發現` / `fāxiàn ` — "發現" has 2 POS tags (Vp, N) -> one sense per POS
+- `比賽` / `bĭsài ` — "比賽" has 2 POS tags (Vi, N) -> one sense per POS
+- `旅行` / `lǚxíng ` — "旅行" has 2 POS tags (Vi, N) -> one sense per POS
+- `健康` / `jiànkāng ` — "健康" has 2 POS tags (Vs, N) -> one sense per POS
+- `差不多` / `chabùduō ` — "差不多" has 2 POS tags (Vs, Adv) -> one sense per POS
+- `盤/盤(子)` / `pán(zi) ` — "盤/盤(子)" has 2 POS tags (M, N) -> one sense per POS
+- `瓶/瓶(子)` / `píng(zi)` — "瓶/瓶(子)" has 2 POS tags (M, N) -> one sense per POS
+- `不過` / `bùguò ` — "不過" has 2 POS tags (Adv, Conj) -> one sense per POS
+- `正好` / `zhènghăo ` — "正好" has 2 POS tags (Adv, Vs) -> one sense per POS
+- `安全` / `ānquán ` — "安全" has 2 POS tags (Vs, N) -> one sense per POS
+- `報告` / `bàogào ` — "報告" has 2 POS tags (V, N) -> one sense per POS
+- `作文` / `zuòwén ` — "作文" has 2 POS tags (N, Vi) -> one sense per POS
+- `除` / `chú ` — "除" has 3 POS tags (Prep, Vst, V) -> one sense per POS
+- `研究` / `yánjiù ` — "研究" has 2 POS tags (N, V) -> one sense per POS
+- `教育` / `jiàoyù ` — "教育" has 2 POS tags (N, V) -> one sense per POS
+- `選擇` / `xuănzé ` — "選擇" has 2 POS tags (N, V) -> one sense per POS
+- `建議` / `jiànyì ` — "建議" has 2 POS tags (N, V) -> one sense per POS
+- `箱/箱(子)` / `xiāng /xiāng(zi)` — "箱/箱(子)" has 2 POS tags (M, N) -> one sense per POS
+- `箱/箱(子)` / `xiāng /xiāng(zi)` — zipped 2 alternatives 1:1 with 2 POS tags rather than cross-producing: 箱/M, 箱子/N
+- `刷(子) / 刷` / `shuā(zi)/shuā ` — "刷(子) / 刷" has 2 POS tags (N, V) -> one sense per POS
+- `刷(子) / 刷` / `shuā(zi)/shuā ` — zipped 2 alternatives 1:1 with 2 POS tags rather than cross-producing: 刷子/N, 刷/V
+- `遊戲` / `yóuxì ` — "遊戲" has 2 POS tags (N, Vi) -> one sense per POS
+- `要求` / `yāoqiú ` — "要求" has 2 POS tags (N, V) -> one sense per POS
+- `約會` / `yuēhuì ` — "約會" has 2 POS tags (N, Vi) -> one sense per POS
+- `現代` / `xiàndài ` — "現代" has 2 POS tags (N, Vs) -> one sense per POS
+- `自由` / `zìyóu ` — "自由" has 2 POS tags (N, Vs) -> one sense per POS
+- `鎖` / `suŏ ` — "鎖" has 2 POS tags (N, V) -> one sense per POS
+- `標準` / `biāozhŭn ` — "標準" has 2 POS tags (N, Vs) -> one sense per POS
+- `影響` / `yĭngxiăng ` — "影響" has 2 POS tags (N, V) -> one sense per POS
+- `感覺` / `gănjué ` — "感覺" has 2 POS tags (N, Vst) -> one sense per POS
+- `困難` / `kùnnán ` — "困難" has 2 POS tags (N, Vs) -> one sense per POS
+- `那樣` / `nàyàng` — "那樣" has 2 POS tags (Adv, Vs) -> one sense per POS
+- `同樣` / `tóngyàng ` — "同樣" has 2 POS tags (Adv, Vs-attr) -> one sense per POS
+- `連` / `lián ` — "連" has 2 POS tags (Conj, Vst) -> one sense per POS
+- `另外` / `lìngwài ` — "另外" has 2 POS tags (Conj, Det) -> one sense per POS
+- `左右` / `zuŏyòu ` — "左右" has 2 POS tags (N, V) -> one sense per POS
+- `安排` / `ānpái ` — "安排" has 2 POS tags (N, V) -> one sense per POS
+- `保證/証` / `băozhèng ` — "保證/証" has 2 POS tags (N, V) -> one sense per POS
+- `變化` / `biànhuà ` — "變化" has 2 POS tags (N, Vs) -> one sense per POS
+- `表現` / `biăoxiàn ` — "表現" has 2 POS tags (N, V) -> one sense per POS
+- `表演` / `biăoyăn ` — "表演" has 2 POS tags (V, N) -> one sense per POS
+- `不斷` / `bùduàn ` — "不斷" has 2 POS tags (Adv, Vs) -> one sense per POS
+- `不少` / `bùshăo ` — "不少" has 2 POS tags (Det, Vs) -> one sense per POS
+- `刺激` / `cìjī ` — "刺激" has 2 POS tags (N, Vs) -> one sense per POS
+- `代表` / `dàibiăo ` — "代表" has 2 POS tags (N, V) -> one sense per POS
+- `到` / `dào` — "到" has 2 POS tags (Conj, Prep) -> one sense per POS
+- `到底` / `dàodĭ` — "到底" has 2 POS tags (Adv, Vs-pred) -> one sense per POS
+- `點` / `diăn` — "點" has 3 POS tags (M, N, V) -> one sense per POS
+- `對` / `duì ` — "對" has 3 POS tags (M, Prep, V) -> one sense per POS
+- `發明` / `fāmíng ` — "發明" has 2 POS tags (N, Vpt) -> one sense per POS
+- `非` / `fēi ` — "非" has 2 POS tags (Adv, Vst) -> one sense per POS
+- `負擔` / `fùdān ` — "負擔" has 2 POS tags (N, V) -> one sense per POS
+- `改變` / `găibiàn ` — "改變" has 2 POS tags (N, V) -> one sense per POS
+- `跟` / `gēn ` — "跟" has 2 POS tags (Prep, V) -> one sense per POS
+- `根` / `gēn ` — "根" has 2 POS tags (M, V) -> one sense per POS
+- `貢獻` / `gòngxiàn ` — "貢獻" has 2 POS tags (N, V) -> one sense per POS
+- `怪` / `guài ` — "怪" has 2 POS tags (V, Vs) -> one sense per POS
+- `廣播` / `guăngbò ` — "廣播" has 2 POS tags (N, Vi) -> one sense per POS
+- `過去` / `guòqù` — "過去" has 2 POS tags (N, Vi) -> one sense per POS
+- `後` / `hòu ` — "後" has 2 POS tags (Det, N) -> one sense per POS
+- `基本` / `jīběn ` — "基本" has 2 POS tags (N, Vs) -> one sense per POS
+- `擠` / `jĭ` — "擠" has 2 POS tags (V, Vs) -> one sense per POS
+- `記` / `jì ` — "記" has 2 POS tags (Vst, V) -> one sense per POS
+- `記錄` / `jìlù ` — "記錄" has 2 POS tags (N, V) -> one sense per POS
+- `紀念` / `jìniàn  ` — "紀念" has 2 POS tags (N, Vst) -> one sense per POS
+- `建設` / `jiànshè ` — "建設" has 2 POS tags (N, V) -> one sense per POS
+- `解釋` / `jiěshì ` — "解釋" has 2 POS tags (V, N) -> one sense per POS
+- `經過` / `jīngguò ` — "經過" has 2 POS tags (N, Prep) -> one sense per POS
+- `科學` / `kēxué ` — "科學" has 2 POS tags (Vs, N) -> one sense per POS
+- `可` / `kě ` — "可" has 2 POS tags (Adv, Vaux) -> one sense per POS
+- `刻` / `kè` — "刻" has 2 POS tags (M, V) -> one sense per POS
+- `來` / `lái ` — "來" has 2 POS tags (Adv, Ptc) -> one sense per POS
+- `理想` / `lĭxiăng ` — "理想" has 2 POS tags (N, Vs) -> one sense per POS
+- `旅遊` / `lǚyóu ` — "旅遊" has 2 POS tags (Vi, N) -> one sense per POS
+- `滿` / `măn ` — "滿" has 2 POS tags (Det, Vs) -> one sense per POS
+- `沒` / `méi` — "沒" has 2 POS tags (Ptc, Vp) -> one sense per POS
+- `面` / `miàn ` — "面" has 2 POS tags (M, N) -> one sense per POS
+- `起` / `qĭ` — "起" has 2 POS tags (N, V) -> one sense per POS
+- `氣` / `qì ` — "氣" has 2 POS tags (N, Det) -> one sense per POS
+- `前` / `qián ` — "前" has 2 POS tags (N, Det) -> one sense per POS
+- `去` / `qù ` — "去" has 2 POS tags (Adv, Ptc) -> one sense per POS
+- `如` / `rú ` — "如" has 2 POS tags (Conj, Prep) -> one sense per POS
+- `設計` / `shèjì ` — "設計" has 2 POS tags (N, V) -> one sense per POS
+- `說明` / `shuōmíng ` — "說明" has 2 POS tags (N, V) -> one sense per POS
+- `所` / `suŏ ` — "所" has 2 POS tags (M, Ptc) -> one sense per POS
+- `堂` / `táng` — "堂" has 2 POS tags (N, M) -> one sense per POS
+- `通知` / `tōngzhī ` — "通知" has 2 POS tags (V, N) -> one sense per POS
+- `同` / `tóng ` — "同" has 2 POS tags (Det, Prep) -> one sense per POS
+- `下` / `xià ` — "下" has 2 POS tags (Det, M) -> one sense per POS
+- `想像` / `xiăngxiàng ` — "想像" has 2 POS tags (N, Vst) -> one sense per POS
+- `現實` / `xiànshí ` — "現實" has 2 POS tags (N, Vs) -> one sense per POS
+- `孝順` / `xiàoshùn ` — "孝順" has 2 POS tags (Vs, Vst) -> one sense per POS
+- `與` / `yŭ` — "與" has 2 POS tags (Conj, Prep) -> one sense per POS
+- `只有` / `zhĭyŏu ` — "只有" has 2 POS tags (Adv, Conj) -> one sense per POS
+- `照` / `zhào ` — "照" has 2 POS tags (V, Prep) -> one sense per POS
+- `真正` / `zhēnzhèng ` — "真正" has 2 POS tags (Adv, Vs-attr) -> one sense per POS
+- `這樣子` / `zhèyàngzi ` — "這樣子" has 2 POS tags (Vs, Adv) -> one sense per POS
+- `主要` / `zhŭyào ` — "主要" has 2 POS tags (Adv, Vs-attr) -> one sense per POS
+- `祝福` / `zhùfú ` — "祝福" has 2 POS tags (N, V) -> one sense per POS
+- `愛好` / `àihào ` — "愛好" has 2 POS tags (N, Vst) -> one sense per POS
+- `報導` / `bàodăo` — "報導" has 2 POS tags (V, N) -> one sense per POS
+- `暴力` / `bàolì ` — "暴力" has 2 POS tags (N, Vs) -> one sense per POS
+- `保障` / `băozhàng ` — "保障" has 2 POS tags (N, V) -> one sense per POS
+- `包裝` / `bāozhuāng ` — "包裝" has 2 POS tags (N, V) -> one sense per POS
+- `便` / `biàn ` — "便" has 2 POS tags (Adv, N) -> one sense per POS
+- `變動` / `biàndòng ` — "變動" has 2 POS tags (N, Vp) -> one sense per POS
+- `比較` / `bĭjiào ` — "比較" has 2 POS tags (N, V) -> one sense per POS
+- `並` / `bìng ` — "並" has 2 POS tags (Adv, Conj) -> one sense per POS
+- `筆試` / `bĭshì ` — "筆試" has 2 POS tags (N, Vi) -> one sense per POS
+- `補助` / `bŭzhù ` — "補助" has 2 POS tags (N, V) -> one sense per POS
+- `測驗` / `cèyàn ` — "測驗" has 2 POS tags (N, V) -> one sense per POS
+- `成` / `chéng ` — "成" has 2 POS tags (M, Vpt) -> one sense per POS
+- `愁` / `chóu ` — "愁" has 2 POS tags (Vs, N) -> one sense per POS
+- `創作` / `chuàngzuò ` — "創作" has 2 POS tags (N, V) -> one sense per POS
+- `傳說` / `chuánshuō ` — "傳說" has 2 POS tags (N, V) -> one sense per POS
+- `初步` / `chūbù ` — "初步" has 2 POS tags (Adv, Vs-attr) -> one sense per POS
+- `出口` / `chūkŏu ` — "出口" has 2 POS tags (V, N) -> one sense per POS
+- `待` / `dài` — "待" has 2 POS tags (V, Vi) -> one sense per POS
+- `代` / `dài ` — "代" has 2 POS tags (N, V) -> one sense per POS
+- `貸款` / `dàikuăn ` — "貸款" has 2 POS tags (N, V-sep) -> one sense per POS
+- `大意` / `dàyì ` — "大意" has 2 POS tags (Vs, N) -> one sense per POS
+- `大致` / `dàzhì ` — "大致" has 2 POS tags (Adv, Vs-attr) -> one sense per POS
+- `滴` / `dī ` — "滴" has 2 POS tags (M, V) -> one sense per POS
+- `典型` / `diănxíng ` — "典型" has 2 POS tags (Vs, N) -> one sense per POS
+- `雕刻` / `diāokè  ` — "雕刻" has 2 POS tags (N, V) -> one sense per POS
+- `定期` / `dìngqí ` — "定期" has 2 POS tags (Adv, Vs-attr) -> one sense per POS
+- `毒` / `dú ` — "毒" has 2 POS tags (N, Vs) -> one sense per POS
+- `反` / `făn ` — "反" has 2 POS tags (V, Vst) -> one sense per POS
+- `發音` / `fāyīn ` — "發音" has 2 POS tags (Vi, N) -> one sense per POS
+- `發展` / `fāzhăn ` — "發展" has 2 POS tags (V, N) -> one sense per POS
+- `分別` / `fēnbié ` — "分別" has 3 POS tags (Adv, N, V) -> one sense per POS
+- `分明` / `fēnmíng ` — "分明" has 2 POS tags (Vs-pred, Adv) -> one sense per POS
+- `分析` / `fēnxī ` — "分析" has 2 POS tags (N, V) -> one sense per POS
+- `服` / `fú ` — "服" has 2 POS tags (V, Vst) -> one sense per POS
+- `幹嘛` / `gànma` — "幹嘛" has 2 POS tags (Adv, Vi) -> one sense per POS
+- `感受` / `gănshòu ` — "感受" has 2 POS tags (N, Vst) -> one sense per POS
+- `高度` / `gāodù ` — "高度" has 2 POS tags (N, Vs-attr) -> one sense per POS
+- `隔` / `gé ` — "隔" has 2 POS tags (Vst, Prep) -> one sense per POS
+- `根本` / `gēnběn ` — "根本" has 2 POS tags (Adv, N) -> one sense per POS
+- `慣` / `guàn ` — "慣" has 2 POS tags (Vp, V) -> one sense per POS
+- `光` / `guāng ` — "光" has 2 POS tags (Adv, Vp) -> one sense per POS
+- `觀光` / `guānguāng ` — "觀光" has 2 POS tags (Vi, N) -> one sense per POS
+- `規定` / `guīdìng ` — "規定" has 2 POS tags (N, V) -> one sense per POS
+- `規畫/規劃` / `guīhuà ` — "規畫/規劃" has 2 POS tags (N, V) -> one sense per POS
+- `規則` / `guīzé ` — "規則" has 2 POS tags (N, Vs) -> one sense per POS
+- `鼓勵` / `gŭlì ` — "鼓勵" has 2 POS tags (N, V) -> one sense per POS
+- `含` / `hán ` — "含" has 2 POS tags (V, Vst) -> one sense per POS
+- `合` / `hé ` — "合" has 2 POS tags (Vi, Vs) -> one sense per POS
+- `滑` / `huá ` — "滑" has 2 POS tags (Vp, Vs) -> one sense per POS
+- `化` / `huà ` — "化" has 2 POS tags (Vst, Vp) -> one sense per POS
+- `花費` / `huāfèi ` — "花費" has 2 POS tags (N, V) -> one sense per POS
+- `幻想` / `huànxiăng ` — "幻想" has 2 POS tags (N, Vi) -> one sense per POS
+- `灰` / `huī ` — "灰" has 2 POS tags (Vs-attr, N) -> one sense per POS
+- `回憶` / `huíyì ` — "回憶" has 2 POS tags (Vst, N) -> one sense per POS
+- `集` / `jí ` — "集" has 2 POS tags (M, V) -> one sense per POS
+- `甲` / `jiă ` — "甲" has 2 POS tags (N, M) -> one sense per POS
+- `建築` / `jiànzhú ` — "建築" has 2 POS tags (N, V) -> one sense per POS
+- `交易` / `jiāoyì ` — "交易" has 2 POS tags (N, Vi) -> one sense per POS
+- `駕駛/駕` / `jiàshĭ/jià` — "駕駛/駕" has 2 POS tags (N, V) -> one sense per POS
+- `駕駛/駕` / `jiàshĭ/jià` — zipped 2 alternatives 1:1 with 2 POS tags rather than cross-producing: 駕駛/N, 駕/V
+- `結果` / `jiéguŏ ` — "結果" has 2 POS tags (N, Vp-sep) -> one sense per POS
+- `接近` / `jiējìn ` — "接近" has 2 POS tags (V, Vs) -> one sense per POS
+- `警告` / `jĭnggào  ` — "警告" has 2 POS tags (N, V) -> one sense per POS
+- `經歷` / `jīnglì ` — "經歷" has 2 POS tags (N, Vst) -> one sense per POS
+- `集中` / `jízhōng  ` — "集中" has 2 POS tags (V, Vs) -> one sense per POS
+- `具` / `jù ` — "具" has 2 POS tags (M, Vst) -> one sense per POS
+- `捐款` / `juānkuăn ` — "捐款" has 2 POS tags (N, V-sep) -> one sense per POS
+- `決心` / `juéxīn ` — "決心" has 2 POS tags (N, Vp) -> one sense per POS
+- `卡` / `kă ` — "卡" has 2 POS tags (M, Vi) -> one sense per POS
+- `空` / `kōng ` — "空" has 2 POS tags (Adv, N) -> one sense per POS
+- `口試` / `kŏushì  ` — "口試" has 2 POS tags (N, Vi) -> one sense per POS
+- `理` / `lĭ` — "理" has 2 POS tags (V, Vst) -> one sense per POS
+- `論` / `lùn ` — "論" has 2 POS tags (V, Prep) -> one sense per POS
+- `夢想` / `mèngxiăng ` — "夢想" has 2 POS tags (N, V) -> one sense per POS
+- `命令` / `mìnglìng ` — "命令" has 2 POS tags (N, V) -> one sense per POS
+- `民主` / `mínzhŭ ` — "民主" has 2 POS tags (N, Vs) -> one sense per POS
+- `迷信` / `míxìn ` — "迷信" has 2 POS tags (N, Vs) -> one sense per POS
+- `黏/粘` / `nián ` — "黏/粘" has 2 POS tags (V, Vs) -> one sense per POS
+- `尿` / `niào ` — "尿" has 2 POS tags (N, Vi) -> one sense per POS
+- `暖` / `nuăn` — "暖" has 2 POS tags (Vs, V) -> one sense per POS
+- `排` / `pái ` — "排" has 2 POS tags (M, V) -> one sense per POS
+- `批` / `pī ` — "批" has 2 POS tags (M, V) -> one sense per POS
+- `起` / `qĭ` — "起" has 2 POS tags (M, V) -> one sense per POS
+- `企圖` / `qìtú ` — "企圖" has 2 POS tags (N, Vaux) -> one sense per POS
+- `全面` / `quánmiàn ` — "全面" has 2 POS tags (Adv, Vs-attr) -> one sense per POS
+- `區別` / `qūbié ` — "區別" has 2 POS tags (N, V) -> one sense per POS
+- `惹` / `rě ` — "惹" has 2 POS tags (V, Vst) -> one sense per POS
+- `熱情` / `rèqíng ` — "熱情" has 2 POS tags (N, Vs) -> one sense per POS
+- `容` / `róng ` — "容" has 2 POS tags (Vst, V) -> one sense per POS
+- `如何` / `rúhé ` — "如何" has 2 POS tags (Adv, Vs) -> one sense per POS
+- `散` / `sàn` — "散" has 2 POS tags (V, Vp) -> one sense per POS
+- `閃` / `shăn ` — "閃" has 2 POS tags (Vi, Vp) -> one sense per POS
+- `傷` / `shāng ` — "傷" has 2 POS tags (N, Vs) -> one sense per POS
+- `實驗` / `shíyàn ` — "實驗" has 2 POS tags (N, Vi) -> one sense per POS
+- `受` / `shòu ` — "受" has 2 POS tags (Prep, Vst) -> one sense per POS
+- `順` / `shùn ` — "順" has 2 POS tags (Prep, Vs) -> one sense per POS
+- `四處` / `sìchù ` — "四處" has 2 POS tags (Adv, N) -> one sense per POS
+- `損失` / `sŭnshī ` — "損失" has 2 POS tags (N, Vpt) -> one sense per POS
+- `燙` / `tàng ` — "燙" has 2 POS tags (V, Vs) -> one sense per POS
+- `挺` / `tĭng ` — "挺" has 2 POS tags (V, Vs) -> one sense per POS
+- `通` / `tōng` — "通" has 2 POS tags (M, Vst) -> one sense per POS
+- `同` / `tóng ` — "同" has 2 POS tags (Adv, Vs) -> one sense per POS
+- `突破` / `túpò  ` — "突破" has 2 POS tags (N, V) -> one sense per POS
+- `威脅` / `wēixié ` — "威脅" has 2 POS tags (N, V) -> one sense per POS
+- `吻` / `wěn ` — "吻" has 2 POS tags (N, V) -> one sense per POS
+- `誤` / `wù ` — "誤" has 2 POS tags (Adv, Vst) -> one sense per POS
+- `消費` / `xiāofèi ` — "消費" has 2 POS tags (N, V) -> one sense per POS
+- `信仰` / `xìnyăng ` — "信仰" has 2 POS tags (N, Vst) -> one sense per POS
+- `宣傳` / `xuānchuán ` — "宣傳" has 2 POS tags (N, V) -> one sense per POS
+- `葉(子)` / `yè(zi) ` — "葉(子)" has 2 POS tags (M, N) -> one sense per POS
+- `用心` / `yòngxīn ` — "用心" has 2 POS tags (Vs-sep, N) -> one sense per POS
+- `有關` / `yŏuguān ` — "有關" has 2 POS tags (Prep, Vs) -> one sense per POS
+- `有些` / `yŏuxiē ` — "有些" has 2 POS tags (Adv, Det) -> one sense per POS
+- `冤枉` / `yuānwăng ` — "冤枉" has 2 POS tags (Vs, Vst) -> one sense per POS
+- `則` / `zé ` — "則" has 2 POS tags (Adv, M) -> one sense per POS
+- `占/佔` / `zhàn ` — "占/佔" has 2 POS tags (V, Vst) -> one sense per POS
+- `展覽` / `zhănlăn ` — "展覽" has 2 POS tags (N, V) -> one sense per POS
+- `整` / `zhěng ` — "整" has 2 POS tags (N, Vs) -> one sense per POS
+- `之` / `zhī ` — "之" has 2 POS tags (N, Ptc) -> one sense per POS
+- `指示` / `zhĭshì ` — "指示" has 2 POS tags (N, V) -> one sense per POS
+- `重傷` / `zhòngshāng ` — "重傷" has 2 POS tags (N, Vs) -> one sense per POS
+- `轉` / `zhuăn ` — "轉" has 2 POS tags (V, Vp) -> one sense per POS
+- `轉向` / `zhuănxiàng ` — "轉向" has 2 POS tags (V, Vi) -> one sense per POS
+- `主張` / `zhŭzhāng ` — "主張" has 2 POS tags (N, V) -> one sense per POS
+- `綜合` / `zònghé ` — "綜合" has 2 POS tags (V, Vs-attr) -> one sense per POS
+- `足` / `zú` — "足" has 2 POS tags (Vs, Det) -> one sense per POS
+- `作為` / `zuòwéi ` — "作為" has 2 POS tags (Vst, N) -> one sense per POS
+- `組織` / `zŭzhī ` — "組織" has 2 POS tags (N, V) -> one sense per POS
+- `編輯` / `biānjí ` — "編輯" has 2 POS tags (N, V) -> one sense per POS
+- `處分` / `chŭfèn ` — "處分" has 2 POS tags (N, V) -> one sense per POS
+- `傳奇` / `chuánqí ` — "傳奇" has 2 POS tags (N, Vs) -> one sense per POS
+- `頂` / `dĭng ` — "頂" has 2 POS tags (Adv, V) -> one sense per POS
+- `頓` / `dùn ` — "頓" has 2 POS tags (Adv, Vi) -> one sense per POS
+- `風光` / `fēngguāng ` — "風光" has 2 POS tags (N, Vs) -> one sense per POS
+- `俘虜` / `fúlŭ ` — "俘虜" has 2 POS tags (N, V) -> one sense per POS
+- `歸` / `guī ` — "歸" has 2 POS tags (V, Vst) -> one sense per POS
+- `哼` / `hēng ` — "哼" has 2 POS tags (Ptc, Vi) -> one sense per POS
+- `極端` / `jíduān ` — "極端" has 2 POS tags (N, Vs) -> one sense per POS
+- `架/架(子)` / `jià/jià(zi)` — "架/架(子)" has 2 POS tags (V, N) -> one sense per POS
+- `架/架(子)` / `jià/jià(zi)` — zipped 2 alternatives 1:1 with 2 POS tags rather than cross-producing: 架/V, 架子/N
+- `截` / `jié ` — "截" has 2 POS tags (M, V) -> one sense per POS
+- `困擾` / `kùnrăo ` — "困擾" has 2 POS tags (N, Vs) -> one sense per POS
+- `聯` / `lián ` — "聯" has 2 POS tags (N, V) -> one sense per POS
+- `臨` / `lín ` — "臨" has 2 POS tags (Adv, Prep) -> one sense per POS
+- `配` / `pèi ` — "配" has 2 POS tags (V, Vs) -> one sense per POS
+- `便宜` / `piányí` — "便宜" has 2 POS tags (N, Vst) -> one sense per POS
+- `生育` / `shēngyù` — "生育" has 2 POS tags (N, V) -> one sense per POS
+- `隨` / `suí ` — "隨" has 2 POS tags (Adv, Prep) -> one sense per POS
+- `調和` / `tiáohé ` — "調和" has 2 POS tags (V, Vs) -> one sense per POS
+- `象徵` / `xiàngzhēng ` — "象徵" has 2 POS tags (N, Vst) -> one sense per POS
+- `消遣` / `xiāoqiăn ` — "消遣" has 2 POS tags (N, V) -> one sense per POS
+- `協調` / `xiétiáo ` — "協調" has 2 POS tags (V, Vs) -> one sense per POS
+- `協議` / `xiéyì ` — "協議" has 2 POS tags (N, V) -> one sense per POS
+- `亦` / `yì ` — "亦" has 2 POS tags (Adv, Conj) -> one sense per POS
+- `應` / `yìng` — "應" has 2 POS tags (Prep, V) -> one sense per POS
+- `餘` / `yú ` — "餘" has 2 POS tags (N, Vst) -> one sense per POS
+- `遭` / `zāo ` — "遭" has 3 POS tags (M, Prep, Vst) -> one sense per POS
+- `指揮` / `zhĭhuī ` — "指揮" has 2 POS tags (N, V) -> one sense per POS
+- `至` / `zhì` — "至" has 2 POS tags (Conj, Prep) -> one sense per POS
+- `逐` / `zhú ` — "逐" has 2 POS tags (Prep, V) -> one sense per POS
+- `尊` / `zūn ` — "尊" has 2 POS tags (M, Vst) -> one sense per POS
+
+### stray-char-stripped (6)
+
+- `電子郵件` / `diàn​zĭ​yóu​jiàn` — stripped stray character U+200B
+- `電子郵件` / `diàn​zĭ​yóu​jiàn` — stripped stray character U+200B
+- `電子郵件` / `diàn​zĭ​yóu​jiàn` — stripped stray character U+200B
+- `部分(˙ㄈㄣ)/部份(˙ㄈㄣ)` / `bùfen` — stripped stray character U+F8F8
+- `部分(˙ㄈㄣ)/部份(˙ㄈㄣ)` / `bùfen` — stripped stray character U+F8F8
+- `留言` / `liú​yán` — stripped stray character U+200B
+
+### paren-unrecognized (8)
+
+- `窗(子)/窗戶(˙ㄏㄨ)` / `chuāng(zi )/chuānghu` — "窗(子)" (chuāng(zi )) -> "窗子" (chuāngzi ) (expanded stray optional-char parens with no matched counterpart for this alternative)
+- `盒/盒(子)` / `hé/hézi` — "盒(子)" (hézi) -> "盒子" (hézi) (expanded stray optional-char parens with no matched counterpart for this alternative)
+- `手指(頭)/指頭` / `shŏuzhĭ(tou)/zhĭtou` — "手指(頭)" (shǒuzhǐ(tou)) -> "手指頭" (shǒuzhǐtou) (expanded stray optional-char parens with no matched counterpart for this alternative)
+- `一下(子)/一下子兒` / `yīxià(zi)/yīxiàzir` — "一下(子)" (yīxià(zi)) -> "一下子" (yīxiàzi) (expanded stray optional-char parens with no matched counterpart for this alternative)
+- `箱/箱(子)` / `xiāng /xiāng(zi)` — "箱(子)" (xiāng(zi)) -> "箱子" (xiāngzi) (expanded stray optional-char parens with no matched counterpart for this alternative)
+- `刷(子) / 刷` / `shuā(zi)/shuā ` — "刷(子)" (shuā(zi)) -> "刷子" (shuāzi) (expanded stray optional-char parens with no matched counterpart for this alternative)
+- `架/架(子)` / `jià/jià(zi)` — "架(子)" (jià(zi)) -> "架子" (jiàzi) (expanded stray optional-char parens with no matched counterpart for this alternative)
+- `老頭兒/老頭(子)` / `lăotóur/lăotóu(zi) ` — "老頭(子)" (lǎotóu(zi)) -> "老頭子" (lǎotóuzi) (expanded stray optional-char parens with no matched counterpart for this alternative)
+
+## MOE reading mismatches (38)
+
+TOCFL list pinyin vs MOE pinyin — MOE was used in the built lexicon.
+
+- `姊姊` (N1): list says `jiějie`, MOE says `zǐ zi`
+- `它們` (N2): list says `tāmen`, MOE says `tuō men`
+- `畫兒` (N2): list says `huàr`, MOE says `huà ér`
+- `花兒` (N2): list says `huār`, MOE says `huā ér`
+- `事兒` (N2): list says `shìr`, MOE says `shì ér`
+- `邊兒` (N2): list says `biānr`, MOE says `biān ér`
+- `有一點兒` (N2): list says `yǒuyīdiǎnr`, MOE says `yǒu yī diǎn ér`
+- `有空兒` (L1): list says `yǒukòngr`, MOE says `yǒu kòng ér`
+- `聊天兒` (L1): list says `liáotiānr`, MOE says `liáo tiān ér`
+- `相片兒` (L1): list says `xiàngpiànr`, MOE says `xiàng piàn ér`
+- `一半兒` (L1): list says `yībànr`, MOE says `yī bàn ér`
+- `一下子兒` (L1): list says `yīxiàzir`, MOE says `yī xià zi ér`
+- `茶館兒` (L2): list says `cháguǎnr`, MOE says `chá guǎn ér`
+- `船兒` (L2): list says `chuánr`, MOE says `chuán ér`
+- `冰塊兒` (L2): list says `bīngkuàir`, MOE says `bīng kuài ér`
+- `布` (L3): list says `bùzhì`, MOE says `bù`
+- `成熟` (L3): list says `chéngshóu`, MOE says `chéng shú`
+- `好好兒` (L3): list says `hǎohǎor`, MOE says `hǎo hǎo ér`
+- `姊妹` (L3): list says `jiěmèi`, MOE says `zǐ mèi`
+- `牛仔褲` (L3): list says `niúzǎikù`, MOE says `niú zǐ kù`
+- `情況` (L3): list says `qǐngjià`, MOE says `qíng kuàng`
+- `熟悉` (L3): list says `shoúxī`, MOE says `shú xī`
+- `癌症` (L4): list says `áizhèng`, MOE says `yán zhèng`
+- `待會兒` (L4): list says `dāihuìr`, MOE says `dāi huì ér`
+- `多半兒` (L4): list says `duōbànr`, MOE says `duō bàn ér`
+- `份兒` (L4): list says `fènr`, MOE says `fèn ér`
+- `國立` (L4): list says `guòjié`, MOE says `guó lì`
+- `過節` (L4): list says `guólì`, MOE says `guò jié`
+- `模樣` (L4): list says `móyàng`, MOE says `mú yàng`
+- `人情味兒` (L4): list says `rénqíngwèir`, MOE says `rén qíng wèi ér`
+- `給予` (L5): list says `gěiyǔ`, MOE says `jǐ yǔ`
+- `供給` (L5): list says `gōnjǐ`, MOE says `gōng jǐ`
+- `接洽` (L5): list says `jiēqià`, MOE says `jiē xiá`
+- `勁兒` (L5): list says `jìnr`, MOE says `jìn ér`
+- `開頭兒` (L5): list says `kāitóur`, MOE says `kāi tóu ér`
+- `使勁` (L5): list says `shǐjìng`, MOE says `shǐ jìn`
+- `欸` (supplement): list says `ê`, MOE says `āi`
+- `那個` (supplement): list says `nèige`, MOE says `nǎ ge`
+
+## Unverified readings — not found in MOE at all (0)
+
+
+## Duplicate headword+reading+POS across sheets (24)
+
+Kept the lowest-level occurrence, dropped the rest.
+
+- `喂` (wèi, Ptc): kept L1, dropped duplicate at L1
+- `點` (diǎn, M): kept N1, dropped duplicate at L3
+- `進` (jìn, V): kept N2, dropped duplicate at L3
+- `可以` (kě yǐ, Vaux): kept N1, dropped duplicate at L3
+- `在` (zài, Vst): kept N2, dropped duplicate at L3
+- `最後` (zuì hòu, N): kept L1, dropped duplicate at L3
+- `成` (chéng, Vpt): kept L3, dropped duplicate at L4
+- `出口` (chū kǒu, N): kept L2, dropped duplicate at L4
+- `當中` (dāng zhōng, N): kept L2, dropped duplicate at L4
+- `頓` (dùn, M): kept L3, dropped duplicate at L4
+- `翻` (fān, V): kept L3, dropped duplicate at L4
+- `光` (guāng, Vp): kept L2, dropped duplicate at L4
+- `接` (jiē, V): kept L1, dropped duplicate at L4
+- `排` (pái, V): kept L3, dropped duplicate at L4
+- `起` (qǐ, V): kept L3, dropped duplicate at L4
+- `上` (shàng, V): kept L2, dropped duplicate at L4
+- `提` (tí, V): kept L2, dropped duplicate at L4
+- `之間` (zhī jiān, N): kept L3, dropped duplicate at L4
+- `轉` (zhuǎn, V): kept L1, dropped duplicate at L4
+- `傳` (chuán, V): kept L2, dropped duplicate at L5
+- `配` (pèi, V): kept L3, dropped duplicate at L5
+- `上下` (shàng xià, N): kept L4, dropped duplicate at L5
+- `通` (tōng, M): kept L4, dropped duplicate at L5
+- `團` (tuán, M): kept L4, dropped duplicate at L5
+
+## Missing gloss (neither TOCFL list nor MOE/CC-CEDICT had one) (166)
+
+- `台灣`
+- `小孩子`
+- `哪裡`
+- `手機`
+- `真的`
+- `畫兒`
+- `花兒`
+- `事兒`
+- `邊兒`
+- `有一點`
+- `有一點兒`
+- `可愛`
+- `華語`
+- `有空兒`
+- `聊天兒`
+- `小朋友`
+- `相片兒`
+- `手指頭`
+- `超市`
+- `褲子`
+- `一半兒`
+- `一下子兒`
+- `加上`
+- `汙染`
+- `茶館兒`
+- `船兒`
+- `月台`
+- `老闆娘`
+- `冰塊兒`
+- `別的`
+- `除了`
+- `比如說`
+- `不見了`
+- `差點`
+- `從不`
+- `電池`
+- `對了`
+- `感興趣`
+- `還要`
+- `好好兒`
+- `好了`
+- `秘密`
+- `哪些`
+- `碰上`
+- `如下`
+- `受得了`
+- `說起來`
+- `提到`
+- `聽起來`
+- `想到`
+- `醒來`
+- `要不是`
+- `一般來說`
+- `之間`
+- `這樣子`
+- `這樣子`
+- `自殺`
+- `走走`
+- `最多`
+- `最佳`
+- `布告`
+- `布告欄`
+- `潮溼`
+- `成人`
+- `成為`
+- `從沒`
+- `待會`
+- `待會兒`
+- `電視台`
+- `電台`
+- `多半兒`
+- `份兒`
+- `分布`
+- `感到`
+- `幹嘛`
+- `幹嘛`
+- `光是`
+- `關上`
+- `規畫`
+- `規畫`
+- `還不如`
+- `合乎`
+- `或多或少`
+- `加上`
+- `接到`
+- `接下來`
+- `就是說`
+- `絕大部分`
+- `來自`
+- `懶得`
+- `老實說`
+- `夢到`
+- `秘書`
+- `難以`
+- `鈕扣`
+- `前院`
+- `人情味兒`
+- `人事`
+- `如果說`
+- `上台`
+- `神經`
+- `神秘`
+- `事實上`
+- `受到`
+- `算帳`
+- `俗話說`
+- `隨著`
+- `彎腰`
+- `舞台`
+- `鮮奶`
+- `校車`
+- `心目中`
+- `吸菸`
+- `用得著`
+- `原則上`
+- `原子筆`
+- `遭到`
+- `占有`
+- `之間`
+- `之類`
+- `種族`
+- `處於`
+- `單親`
+- `多元`
+- `而是`
+- `而言`
+- `反之`
+- `附上`
+- `共產`
+- `雇用`
+- `證券行`
+- `划得來`
+- `極為`
+- `簡體`
+- `勁兒`
+- `進而`
+- `開頭兒`
+- `女方`
+- `虐待`
+- `譬如說`
+- `橋樑`
+- `翹課`
+- `散布`
+- `身為`
+- `視為`
+- `搜集`
+- `台階`
+- `為人`
+- `文明`
+- `汙染`
+- `鮮艶`
+- `小伙子`
+- `血壓`
+- `眼看`
+- `意識到`
+- `有所`
+- `占據`
+- `占領`
+- `照例`
+- `之內`
+- `之所以`
+- `主見`
+- `注定`
+- `轉帳`
+- `字眼兒`
+- `嘴唇`

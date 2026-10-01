@@ -1,0 +1,45 @@
+.zhuyin-test-page {
+  font-size: 1.8rem;
+  padding: 2rem;
+}
+.zhuyin-test-page h2 {
+  font-size: 1rem;
+  font-family: ui-monospace, monospace;
+  margin-top: 2rem;
+}
+
+.zt-sample {
+  border: 1px solid #8884;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+/* (a) ruby-position: inter-character — spec-defined for exactly this use
+   case, but support is inconsistent across engines (see docs). */
+.zt-a-ruby {
+  ruby-position: inter-character;
+}
+
+/* (b) custom flex layout: zhuyin column uses vertical writing-mode, which
+   has solid cross-browser support (used for vertical CJK text generally),
+   rather than depending on ruby-position. */
+.zt-b-word {
+  display: inline-flex;
+  margin-right: 1em;
+}
+.zt-b-cell {
+  display: inline-flex;
+  align-items: flex-start;
+  margin: 0 2px;
+}
+.zt-b-char {
+  font-size: 1em;
+}
+.zt-b-zhuyin {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 0.35em;
+  line-height: 1;
+  margin-left: 2px;
+  color: #666;
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@anan/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm sync:lexicon && vite",
+    "build": "pnpm sync:lexicon && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "sync:lexicon": "node scripts/sync-lexicon.mjs",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@anan/core": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vite-plugin-pwa": "^0.20.5"
+  }
+}

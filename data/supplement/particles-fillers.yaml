@@ -1,0 +1,176 @@
+# Hand-curated supplement entries: particles, fillers, chunks, Taiwan-specific
+# terms and NPC names that the SC-TOP TOCFL list omits or under-specifies.
+#
+# Shape mirrors `Word` (see CLAUDE.md), minus fields the pipeline derives:
+#   id            -> "supp-" + stable hash (pipeline)
+#   chars         -> split from headword (pipeline)
+#   pinyinNumeric -> derived from pinyin (pipeline)
+# `pinyin`/`zhuyin` here are a hint; the pipeline still verifies against MOE and
+# records any mismatch in the review report, same as for TOCFL rows.
+# `level: null` unless noted — these are pragmatic day-1 vocabulary, not banded.
+
+- headword: "喔"
+  variants: []
+  pos: ["Ptc"]
+  level: null
+  pinyin: "ō"
+  glossEn: "sentence-final particle: softens a statement, mild reminder"
+  tags: ["particle", "register:casual"]
+
+- headword: "啦"
+  variants: []
+  pos: ["Ptc"]
+  level: null
+  pinyin: "la"
+  glossEn: "sentence-final particle: 了 + 啊 fused, adds emphasis/casualness"
+  tags: ["particle", "register:casual"]
+
+- headword: "欸"
+  variants: ["誒"]
+  pos: ["Ptc"]
+  level: null
+  pinyin: "ei"
+  glossEn: "hey; oh (attention-getting or mild surprise interjection)"
+  tags: ["particle", "interjection", "register:casual"]
+
+- headword: "蛤"
+  variants: []
+  pos: ["Ptc"]
+  level: null
+  pinyin: "há"
+  glossEn: "huh? (asking for repetition, surprise)"
+  senseNote: "Not the clam sense (蛤蜊); this entry is the interjection only."
+  tags: ["particle", "interjection", "register:casual"]
+
+- headword: "耶"
+  variants: []
+  pos: ["Ptc"]
+  level: null
+  pinyin: "yē"
+  glossEn: "sentence-final particle: mild exclamation, yay/oh"
+  tags: ["particle", "register:casual"]
+
+- headword: "吧"
+  variants: []
+  pos: ["Ptc"]
+  level: null
+  pinyin: "ba"
+  glossEn: "sentence-final particle: suggestion or soft assumption"
+  tags: ["particle"]
+
+- headword: "欸"
+  variants: []
+  pos: ["Int"]
+  level: null
+  pinyin: "ê"
+  glossEn: "um... (hesitation filler)"
+  senseNote: "Filler/hesitation sense, distinct from the attention-getting 欸 (ei) above — pipeline should keep these as separate senses."
+  tags: ["filler", "register:casual"]
+
+- headword: "那個"
+  variants: ["那个"]
+  pos: ["Int"]
+  level: null
+  pinyin: "nèige"
+  glossEn: "um, that, so... (hesitation filler, not literal 'that thing')"
+  senseNote: "Filler sense; the literal demonstrative sense is already covered by 那個 in the TOCFL list."
+  tags: ["filler", "register:casual"]
+
+- headword: "不好意思"
+  variants: []
+  pos: ["Ptc"]
+  level: "N1"
+  pinyin: "bùhǎoyìsi"
+  glossEn: "excuse me; sorry (mild apology, getting attention)"
+  tags: ["chunk", "politeness"]
+
+- headword: "沒關係"
+  variants: ["没关系"]
+  pos: ["Ptc"]
+  level: "N1"
+  pinyin: "méiguānxi"
+  glossEn: "it's okay; never mind; no worries"
+  tags: ["chunk", "politeness"]
+
+- headword: "隨便"
+  variants: ["随便"]
+  pos: ["Vs", "Adv"]
+  level: "L1"
+  pinyin: "suíbiàn"
+  glossEn: "whatever, up to you; casual/careless"
+  tags: ["chunk", "register:casual"]
+
+- headword: "而已"
+  variants: []
+  pos: ["Ptc"]
+  level: "L1"
+  pinyin: "éryǐ"
+  glossEn: "that's all; just, only (sentence-final)"
+  tags: ["chunk"]
+
+- headword: "機車"
+  variants: ["机车"]
+  pos: ["N", "Vs"]
+  level: "N2"
+  pinyin: "jīchē"
+  glossEn: "scooter/motorbike; (slang, Vs) annoying, difficult to deal with"
+  senseNote: "Two senses: the vehicle (already on the TOCFL list) and the Taiwan slang adjective sense 'annoying' — pipeline should split these if the TOCFL row is vehicle-only."
+  tags: ["taiwan-specific", "slang"]
+
+- headword: "夜市"
+  variants: []
+  pos: ["N"]
+  level: "N2"
+  pinyin: "yèshì"
+  glossEn: "night market"
+  tags: ["taiwan-specific"]
+
+- headword: "捷運"
+  variants: ["捷运"]
+  pos: ["N"]
+  level: "N2"
+  pinyin: "jiéyùn"
+  glossEn: "MRT / metro system (Taipei, Kaohsiung)"
+  tags: ["taiwan-specific"]
+
+- headword: "悠遊卡"
+  variants: ["悠游卡"]
+  pos: ["N"]
+  level: null
+  pinyin: "yōuyóukǎ"
+  glossEn: "EasyCard (Taipei transit smart card)"
+  tags: ["taiwan-specific", "proper-noun"]
+
+- headword: "便利商店"
+  variants: []
+  pos: ["N"]
+  level: "N2"
+  pinyin: "biànlì shāngdiàn"
+  glossEn: "convenience store"
+  tags: ["taiwan-specific"]
+
+# --- NPC names (custom/proper nouns, not real TOCFL vocabulary) ---
+
+- headword: "陳雅婷"
+  variants: []
+  pos: ["Nb"]
+  level: null
+  pinyin: "Chén Yǎtíng"
+  glossEn: "(NPC name)"
+  tags: ["name", "npc"]
+
+- headword: "林志明"
+  variants: []
+  pos: ["Nb"]
+  level: null
+  pinyin: "Lín Zhìmíng"
+  glossEn: "(NPC name)"
+  tags: ["name", "npc"]
+
+- headword: "小安"
+  variants: []
+  pos: ["Nb"]
+  level: null
+  pinyin: "Xiǎo Ān"
+  glossEn: "(NPC name — also doubles as the game's own name, An'an)"
+  tags: ["name", "npc"]

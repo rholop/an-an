@@ -1,0 +1,120 @@
+.an-text {
+  font-size: 1.5rem;
+  line-height: 3.2;
+  word-break: break-word;
+}
+
+.an-token {
+  position: relative;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0 1px;
+}
+.an-token:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+/* Per-token level colour coding (reader page §9) */
+.level-n1, .level-n2 { color: #2e7d32; }
+.level-l1 { color: #1565c0; }
+.level-l2 { color: #6a1b9a; }
+.level-l3 { color: #ef6c00; }
+.level-l4 { color: #c62828; }
+.level-l5, .level-l6 { color: #4e342e; }
+.level-unleveled { color: inherit; opacity: 0.85; }
+
+.an-passthrough--number,
+.an-passthrough--latin { font-family: ui-monospace, monospace; }
+.an-passthrough--punct { opacity: 0.7; }
+.an-passthrough--unknown { text-decoration: underline wavy #c62828; text-decoration-skip-ink: none; }
+
+/* --- mode: off / always / tone-only use native <ruby><rt> --- */
+.an-word--pinyin rt,
+.an-word--tone-only rt {
+  font-size: 0.55em;
+  font-family: ui-monospace, monospace;
+  color: #666;
+  user-select: none;
+}
+
+/* mode "hover": annotation hidden until the token is hovered or tapped-open */
+.an-token--hover-mode .an-word rt,
+.an-token--hover-mode .an-zhuyin-col {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+.an-token--hover-mode:hover .an-word rt,
+.an-token--hover-mode:hover .an-zhuyin-col,
+.an-token--hover-mode[data-visible='true'] .an-word rt,
+.an-token--hover-mode[data-visible='true'] .an-zhuyin-col {
+  opacity: 1;
+}
+
+/* --- zhuyin: custom layout, one column per character --- */
+.an-word--zhuyin {
+  display: inline-flex;
+}
+.an-char-cell {
+  display: inline-flex;
+  align-items: flex-start;
+  margin: 0 1px;
+}
+.an-char {
+  font-size: 1em;
+}
+.an-zhuyin-col {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 0.4em;
+  line-height: 1;
+  margin-left: 1px;
+  color: #666;
+  user-select: none;
+  align-self: flex-start;
+}
+
+.an-confidence-low {
+  color: #c62828;
+  font-style: italic;
+}
+
+/* --- popover --- */
+.an-popover {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 10;
+  background: var(--an-popover-bg, #1f1f1f);
+  color: var(--an-popover-fg, #fff);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+.an-popover-close {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.an-popover-close:hover { opacity: 1; }
+.an-popover-level {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+@media (prefers-color-scheme: light) {
+  .an-popover {
+    --an-popover-bg: #2a2a2a;
+    --an-popover-fg: #fff;
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@anan/data-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:lexicon": "tsx src/build-lexicon.ts",
+    "gen:taiwanness": "tsx src/gen-taiwanness-data.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anan/core": "workspace:*",
+    "js-yaml": "^4.1.0",
+    "xlsx": "^0.18.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
