@@ -76,5 +76,10 @@ jobs:
       - name: Sync lexicon into apps/web/public
         run: pnpm --filter @anan/web sync:lexicon
 
+      # Chat and Cloze load scenarios.json at runtime; without it they sit on
+      # "Loading…" and their e2e specs time out.
+      - name: Sync scenarios into apps/web/public
+        run: pnpm --filter @anan/web sync:scenarios
+
       - name: E2E tests
         run: pnpm --filter @anan/web exec playwright test
