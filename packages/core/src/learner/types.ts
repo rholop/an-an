@@ -1,0 +1,75 @@
+import type { Card } from 'ts-fsrs';
+import type { Evidence, ItemRef, ItemState, Skill } from '../types.js';
+
+export type LeechTreatment = 'new_context' | 'char_breakdown' | 'mnemonic_prompt' | 'contrast_confusable';
+
+export const LEECH_TREATMENTS: readonly LeechTreatment[] = [
+  'new_context',
+  'char_breakdown',
+  'mnemonic_prompt',
+  'contrast_confusable',
+];
+
+/** Per item, per skill. See CLAUDE.md "Shared core types" / phase doc §"Data models". */
+export interface SkillCard {
+  item: ItemRef;
+  skill: Skill;
+  card: Card;
+  state: ItemState;
+  /** Mirrors card.lapses — kept top-level so storage layers (Dexie) can index
+   * it without reaching into the nested FSRS card. */
+  lapses: number;
+  leech: boolean;
+  leechTreatmentsTried: LeechTreatment[];
+  /** Weak-signal counter nudged by chat_read_no_lookup; see applyEvidence. */
+  familiarity: number;
+  /** 0 (reads characters, no pinyin dependence) .. 1 (always needs pinyin). */
+  readingDependence: number;
+  flags: { imported?: boolean; probablyKnown?: boolean };
+  updatedAt: Date;
+}
+
+export interface LearnerConfig {
+  /** FSRS target retention, 0.85–0.90 per CLAUDE.md, user-configurable. */
+  requestRetention: number;
+  /** Stability (days) at/above which a card is considered "mature". */
+  matureStabilityDays: number;
+  /** Lapses at/above which a card is flagged a leech. */
+  leechThreshold: number;
+  /** chat_read_no_lookup requires this many occurrences (while due) before
+   * it counts as a Good; below that it only nudges `familiarity`. */
+  readNoLookupGoodThreshold: number;
+  /** Per-event nudge size for familiarity / readingDependence (0..1 scale). */
+  familiarityStep: number;
+  readingDependenceStep: number;
+  /** Conservative initial stability (days) for anki_import_seen. */
+  importedInitialStability: number;
+}
+
+export const DEFAULT_LEARNER_CONFIG: LearnerConfig = {
+  requestRetention: 0.9,
+  matureStabilityDays: 21,
+  leechThreshold: 4,
+  readNoLookupGoodThreshold: 2,
+  familiarityStep: 0.25,
+  readingDependenceStep: 0.15,
+  importedInitialStability: 3,
+};
+
+/** Result of applying one piece of evidence to one (possibly nonexistent)
+ * SkillCard. `card` is undefined only when the evidence was a no-op (e.g. a
+ * weak signal on an item that has never been introduced — see applyEvidence). */
+export interface ModelUpdate {
+  card: SkillCard | undefined;
+  /** Short machine-readable tag for tests/debugging, e.g. "fsrs:good",
+   * "familiarity:+1", "ignored:unseen-weak-signal". */
+  appliedEffect: string;
+}
+
+export interface LearnerRepo {
+  getCard(item: ItemRef, skill: Skill): Promise<SkillCard | undefined>;
+  putCards(cards: SkillCard[]): Promise<void>;
+  appendEvidence(e: Evidence[]): Promise<void>;
+  dueCards(now: Date, limit: number): Promise<SkillCard[]>;
+  knownSet(minState: ItemState): Promise<Set<string>>;
+}

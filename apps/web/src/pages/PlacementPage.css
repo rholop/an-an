@@ -1,0 +1,40 @@
+.placement-page { max-width: 480px; margin: 0 auto; text-align: center; }
+
+.placement-start-btn {
+  font-size: 1.1rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid rgba(127, 127, 127, 0.4);
+  background: transparent;
+  color: inherit;
+}
+.placement-manual { margin-top: 2rem; opacity: 0.85; }
+.placement-manual-levels { display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; }
+.placement-manual-levels button {
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(127, 127, 127, 0.3);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.placement-round { margin-top: 2rem; }
+.placement-progress { opacity: 0.6; font-size: 0.85rem; }
+.placement-word { font-size: 2.5rem; margin: 2rem 0; }
+.placement-buttons { display: flex; gap: 1rem; justify-content: center; }
+.placement-btn {
+  font-size: 1rem;
+  padding: 0.7rem 1.3rem;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  color: inherit;
+}
+.placement-btn--no { border: 1px solid #c62828; }
+.placement-btn--yes { border: 1px solid #2e7d32; }
+
+.placement-summary { margin-top: 1.5rem; text-align: left; }
+.placement-bulk-note { opacity: 0.7; font-size: 0.85rem; }
+.placement-level-summary { font-family: ui-monospace, monospace; }

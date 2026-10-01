@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { parseSyllableTone, type Level, type ReadingResult, type Token } from '@anan/core';
 import './AnnotatedText.css';
 
@@ -7,6 +7,9 @@ export interface AnnotatedToken {
   reading: ReadingResult;
   level: Level | null;
   gloss: string;
+  /** The lexicon Word id this token resolved to, if any — needed to turn a
+   * lookup into learner-model evidence (Phase 2 §7). */
+  wordId?: string;
 }
 
 export type AnnotationMode = 'always' | 'hover' | 'off' | 'tone-only';
@@ -16,7 +19,11 @@ export interface AnnotatedTextProps {
   tokens: AnnotatedToken[];
   mode: AnnotationMode;
   script: AnnotationScript;
-  onLookup?: (tokenId: string, kind: 'gloss' | 'reading') => void;
+  /** 'gloss': the learner opened the popover (meaning + reading) — the
+   * stronger "didn't know this" signal (chat_lookup_gloss). 'reading': the
+   * learner just hovered/glanced at the reading without opening it
+   * (chat_hover_reading) — doesn't touch meaning, only readingDependence. */
+  onLookup?: (at: AnnotatedToken, kind: 'gloss' | 'reading') => void;
 }
 
 const tokenId = (t: Token) => `${t.start}-${t.end}`;
@@ -101,6 +108,7 @@ function Popover({ at, onClose }: { at: AnnotatedToken; onClose: () => void }) {
 
 export function AnnotatedText({ tokens, mode, script, onLookup }: AnnotatedTextProps) {
   const [openId, setOpenId] = useState<string | null>(null);
+  const hoveredIds = useRef(new Set<string>());
 
   return (
     <div className="an-text" onClick={() => setOpenId(null)}>
@@ -136,8 +144,13 @@ export function AnnotatedText({ tokens, mode, script, onLookup }: AnnotatedTextP
             data-visible={mode === 'hover' ? isOpen : showAnnotation}
             onClick={(e) => {
               e.stopPropagation();
-              onLookup?.(id, 'reading');
+              if (!isOpen) onLookup?.(at, 'gloss');
               setOpenId(isOpen ? null : id);
+            }}
+            onMouseEnter={() => {
+              if (hoveredIds.current.has(id)) return;
+              hoveredIds.current.add(id);
+              onLookup?.(at, 'reading');
             }}
           >
             {inner}

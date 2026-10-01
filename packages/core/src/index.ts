@@ -6,3 +6,7 @@ export * from './level.js';
 export * from './taiwanness.js';
 export * from './heteronyms.js';
 export * from './pinyin.js';
+export * from './learner/index.js';
+export * from './curriculum.js';
+export * from './placement.js';
+export * from './anki-import.js';

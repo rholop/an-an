@@ -81,4 +81,9 @@ export class Lexicon {
   get size(): number {
     return this.wordsById.size;
   }
+
+  /** Every Word in the lexicon, one entry per sense (not deduped by headword). */
+  allWords(): Word[] {
+    return [...this.wordsById.values()];
+  }
 }

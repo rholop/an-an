@@ -1,0 +1,199 @@
+import { Rating, State, type Card, type FSRS, type Grade } from 'ts-fsrs';
+import type { Evidence } from '../types.js';
+import { buildFsrs, computeItemState, emptyCard } from './fsrs-instance.js';
+import { DEFAULT_LEARNER_CONFIG, type LearnerConfig, type ModelUpdate, type SkillCard } from './types.js';
+
+const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+
+function blankSkillCard(evidence: Evidence, card: Card, now: Date): SkillCard {
+  return {
+    item: evidence.item,
+    skill: evidence.skill,
+    card,
+    state: 'unseen',
+    lapses: 0,
+    leech: false,
+    leechTreatmentsTried: [],
+    familiarity: 0,
+    readingDependence: 0,
+    flags: {},
+    updatedAt: now,
+  };
+}
+
+function withCard(base: SkillCard, card: Card, now: Date, config: LearnerConfig): SkillCard {
+  return {
+    ...base,
+    card,
+    state: computeItemState(card, config),
+    lapses: card.lapses,
+    leech: card.lapses >= config.leechThreshold,
+    updatedAt: now,
+  };
+}
+
+/** The one place a rating (Again/Hard/Good/Easy) is turned into a new FSRS
+ * card. Used by every "real review" evidence kind. */
+function applyFsrsRating(
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+  grade: Grade,
+  config: LearnerConfig,
+  fsrsInstance: FSRS,
+): ModelUpdate {
+  const base = current ?? blankSkillCard(evidence, emptyCard(now), now);
+  const { card } = fsrsInstance.next(base.card, now, grade);
+  return { card: withCard(base, card, now, config), appliedEffect: `fsrs:${Rating[grade].toLowerCase()}` };
+}
+
+/** chat_read_no_lookup: weak positive. Never schedules a full FSRS review on
+ * its own — only after `readNoLookupGoodThreshold` occurrences AND the card
+ * being due does it finally count as a Good. No-ops on an item that was
+ * never introduced (nothing to nudge). */
+function applyReadNoLookup(
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+  config: LearnerConfig,
+  fsrsInstance: FSRS,
+): ModelUpdate {
+  if (!current) return { card: undefined, appliedEffect: 'ignored:unseen-weak-signal' };
+
+  const isDue = current.card.due <= now;
+  const nextFamiliarity = current.familiarity + 1;
+
+  if (isDue && nextFamiliarity >= config.readNoLookupGoodThreshold) {
+    const { card } = fsrsInstance.next(current.card, now, Rating.Good);
+    return {
+      card: { ...withCard(current, card, now, config), familiarity: 0 },
+      appliedEffect: 'fsrs:good (via chat_read_no_lookup threshold)',
+    };
+  }
+
+  return {
+    card: { ...current, familiarity: nextFamiliarity, updatedAt: now },
+    appliedEffect: `familiarity:+1 (${nextFamiliarity}/${config.readNoLookupGoodThreshold})`,
+  };
+}
+
+/** chat_lookup_gloss: Again on recognition if the card is already in review
+ * (they forgot something they'd learned); otherwise just introduce it —
+ * instantiate the SkillCard with no FSRS rating consumed yet. Callers are
+ * expected to emit this with skill: 'recognition' (CLAUDE.md evidence
+ * table) — applyEvidence trusts evidence.skill rather than hardcoding it. */
+function applyLookupGloss(
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+  config: LearnerConfig,
+  fsrsInstance: FSRS,
+): ModelUpdate {
+  if (current && (current.state === 'review' || current.state === 'mature')) {
+    const { card } = fsrsInstance.next(current.card, now, Rating.Again);
+    return { card: withCard(current, card, now, config), appliedEffect: 'fsrs:again (lookup after review)' };
+  }
+  if (current) return { card: { ...current, updatedAt: now }, appliedEffect: 'ignored:already-introduced' };
+  const base = blankSkillCard(evidence, emptyCard(now), now);
+  return { card: { ...base, state: 'introduced' }, appliedEffect: 'introduce' };
+}
+
+/** chat_hover_reading: never touches meaning/FSRS; only nudges
+ * readingDependence, used by readingDisplay() for pinyin fading. No-ops on
+ * an item that hasn't been introduced yet. */
+function applyHoverReading(current: SkillCard | undefined, now: Date, config: LearnerConfig): ModelUpdate {
+  if (!current) return { card: undefined, appliedEffect: 'ignored:unseen-weak-signal' };
+  const readingDependence = clamp01(current.readingDependence + config.readingDependenceStep);
+  return { card: { ...current, readingDependence, updatedAt: now }, appliedEffect: `readingDependence:+${config.readingDependenceStep}` };
+}
+
+function applyAnkiImportSeen(evidence: Evidence, now: Date, config: LearnerConfig): ModelUpdate {
+  const card: Card = {
+    ...emptyCard(now),
+    state: State.Review,
+    stability: config.importedInitialStability,
+    difficulty: 5,
+    scheduled_days: config.importedInitialStability,
+    reps: 1,
+    due: new Date(now.getTime() + config.importedInitialStability * 86_400_000),
+    last_review: now,
+  };
+  const base = blankSkillCard(evidence, card, now);
+  return {
+    card: { ...base, state: computeItemState(card, config), flags: { imported: true } },
+    appliedEffect: 'init:imported-review',
+  };
+}
+
+function applyPlacement(evidence: Evidence, now: Date, config: LearnerConfig, known: boolean): ModelUpdate {
+  if (!known) {
+    const base = blankSkillCard(evidence, emptyCard(now), now);
+    return { card: { ...base, state: 'unseen' }, appliedEffect: 'init:placement-unknown' };
+  }
+  const stability = config.importedInitialStability / 2;
+  const card: Card = {
+    ...emptyCard(now),
+    state: State.Review,
+    stability,
+    difficulty: 5,
+    scheduled_days: stability,
+    reps: 1,
+    due: new Date(now.getTime() + stability * 86_400_000),
+    last_review: now,
+  };
+  const base = blankSkillCard(evidence, card, now);
+  return {
+    card: { ...base, state: computeItemState(card, config), flags: { probablyKnown: true } },
+    appliedEffect: 'init:placement-known',
+  };
+}
+
+export type EvidenceHandler = (
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+  config: LearnerConfig,
+  fsrsInstance: FSRS,
+) => ModelUpdate;
+
+/**
+ * Evidence -> effect, kept as data (one row per CLAUDE.md phase-2 table)
+ * rather than scattered if/else, per the phase doc's explicit requirement.
+ */
+export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
+  review_again: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Again, cfg, f),
+  review_hard: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
+  review_good: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
+  review_easy: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Easy, cfg, f),
+
+  cloze_correct_nohint: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
+  cloze_correct_hint: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
+  cloze_wrong: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Again, cfg, f),
+
+  journal_correct_use: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
+  journal_misuse: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
+
+  chat_read_no_lookup: (c, e, n, cfg, f) => applyReadNoLookup(c, e, n, cfg, f),
+  chat_lookup_gloss: (c, e, n, cfg, f) => applyLookupGloss(c, e, n, cfg, f),
+  chat_hover_reading: (c, _e, n, cfg) => applyHoverReading(c, n, cfg),
+
+  anki_import_seen: (_c, e, n, cfg) => applyAnkiImportSeen(e, n, cfg),
+  placement_known: (_c, e, n, cfg) => applyPlacement(e, n, cfg, true),
+  placement_unknown: (_c, e, n, cfg) => applyPlacement(e, n, cfg, false),
+};
+
+/**
+ * The only function allowed to change a learner's model (phase doc §1).
+ * Pure: no I/O, no Date.now() — `now` is always injected. Persistence
+ * (fetching `current`, writing the result, appending the evidence log) is
+ * the caller's job (apps/web's LearnerRepo).
+ */
+export function applyEvidence(
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+  config: LearnerConfig = DEFAULT_LEARNER_CONFIG,
+  fsrsInstance: FSRS = buildFsrs(config),
+): ModelUpdate {
+  return EVIDENCE_HANDLERS[evidence.kind](current, evidence, now, config, fsrsInstance);
+}

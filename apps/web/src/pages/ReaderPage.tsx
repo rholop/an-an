@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { checkTaiwanness, coverage, type Level } from '@anan/core';
-import { AnnotatedText, type AnnotationMode, type AnnotationScript } from '../components/AnnotatedText.js';
+import { AnnotatedText, type AnnotatedToken, type AnnotationMode, type AnnotationScript } from '../components/AnnotatedText.js';
+import { learnerService } from '../db/instance.js';
 import { annotate } from '../lib/annotate.js';
 import { useLexicon } from '../lib/useLexicon.js';
 
@@ -17,6 +18,11 @@ export function ReaderPage() {
   const [mode, setMode] = useState<AnnotationMode>('always');
   const [script, setScript] = useState<AnnotationScript>('pinyin');
   const [lookupLog, setLookupLog] = useState<string[]>([]);
+  const [knownSet, setKnownSet] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    learnerService.knownSet('review').then(setKnownSet);
+  }, []);
 
   const annotated = useMemo(() => {
     if (lexiconState.status !== 'ready') return [];
@@ -30,9 +36,9 @@ export function ReaderPage() {
     return coverage(
       annotated.map((a) => a.token),
       lexiconState.lexicon,
-      new Set(), // Phase 1 has no learner model yet (Phase 2)
+      knownSet,
     );
-  }, [annotated, lexiconState]);
+  }, [annotated, lexiconState, knownSet]);
 
   if (lexiconState.status === 'loading') return <p>Loading lexicon…</p>;
   if (lexiconState.status === 'error') {
@@ -41,6 +47,24 @@ export function ReaderPage() {
         Failed to load lexicon: {lexiconState.error}. Run <code>pnpm pipeline:build</code> then{' '}
         <code>pnpm --filter @anan/web sync:lexicon</code>.
       </p>
+    );
+  }
+
+  async function handleLookup(at: AnnotatedToken, kind: 'gloss' | 'reading') {
+    const line = `${new Date().toISOString()} lookup ${kind} ${at.token.text}`;
+    console.log(line);
+    setLookupLog((log) => [line, ...log].slice(0, 20));
+
+    if (!at.wordId) return; // no lexicon entry to attach evidence to
+    const now = new Date();
+    await learnerService.record(
+      {
+        item: { kind: 'word', id: at.wordId },
+        skill: 'recognition',
+        kind: kind === 'gloss' ? 'chat_lookup_gloss' : 'chat_hover_reading',
+        at: now,
+      },
+      now,
     );
   }
 
@@ -82,16 +106,7 @@ export function ReaderPage() {
         </label>
       </div>
 
-      <AnnotatedText
-        tokens={annotated}
-        mode={mode}
-        script={script}
-        onLookup={(id, kind) => {
-          const line = `${new Date().toISOString()} lookup ${kind} ${id}`;
-          console.log(line);
-          setLookupLog((log) => [line, ...log].slice(0, 20));
-        }}
-      />
+      <AnnotatedText tokens={annotated} mode={mode} script={script} onLookup={handleLookup} />
 
       {!taiwanness.isClean && (
         <div className="taiwanness-warnings">
@@ -121,12 +136,16 @@ export function ReaderPage() {
             ))}
             {cov.byLevel.unleveled && <li>unleveled: {cov.byLevel.unleveled}</li>}
           </ul>
+          <p className="coverage-known-note">
+            {cov.knownCount} known / {cov.unknownCount} unknown word tokens (known = recognition card in review or
+            mature)
+          </p>
         </div>
       )}
 
       {lookupLog.length > 0 && (
         <div className="lookup-log">
-          <h2>Lookup events (console + last 20)</h2>
+          <h2>Lookup events (console + last 20, now feeding the learner model)</h2>
           <pre>{lookupLog.join('\n')}</pre>
         </div>
       )}

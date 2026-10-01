@@ -25,7 +25,7 @@ export default [
     },
     rules: {
       ...tseslint.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
   {
@@ -43,8 +43,14 @@ export default [
     languageOptions: { globals: globals.browser },
   },
   {
-    files: ['apps/web/scripts/**/*.mjs', 'apps/web/playwright.config.ts', 'apps/web/e2e/**/*.ts'],
+    files: ['apps/web/scripts/**/*.mjs', 'apps/web/playwright.config.ts'],
     languageOptions: { globals: globals.node },
+  },
+  {
+    // e2e specs run under Node (Playwright test runner) but also reference
+    // browser globals inside page.evaluate() closures.
+    files: ['apps/web/e2e/**/*.ts'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
     // packages/core must stay platform-agnostic: no DOM, no Dexie, no Node builtins, no fetch.
