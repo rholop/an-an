@@ -1,0 +1,97 @@
+.garden-meta {
+  opacity: 0.8;
+}
+.garden-legend {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+.garden-plots {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.garden-plot {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: rgba(46, 125, 50, 0.1);
+  border: 1px solid rgba(46, 125, 50, 0.3);
+}
+.garden-plot--thirsty {
+  background: rgba(191, 144, 0, 0.1);
+  border-color: rgba(191, 144, 0, 0.4);
+}
+.garden-plot header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.garden-plot h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+.garden-plot-count {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+}
+.garden-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.6rem 0;
+}
+.garden-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.1);
+}
+.garden-plant {
+  font-size: 1.4rem;
+  line-height: 1.2;
+  transition: transform 0.2s;
+}
+.garden-word {
+  font-size: 0.85rem;
+}
+.garden-tile--wilting {
+  opacity: 0.75;
+  filter: saturate(0.5);
+}
+.garden-tile--wilting .garden-plant {
+  transform: rotate(-18deg) translateY(2px);
+}
+.garden-tile--withered {
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+.garden-tile--withered .garden-plant {
+  transform: rotate(-40deg) translateY(4px);
+}
+.garden-wilt-mark {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #b36b00;
+}
+.garden-water {
+  cursor: pointer;
+  padding: 0.35rem 0.7rem;
+}
+.garden-ok {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #2e7d32;
+}
+@media (prefers-reduced-motion: reduce) {
+  .garden-plant {
+    transition: none;
+  }
+}

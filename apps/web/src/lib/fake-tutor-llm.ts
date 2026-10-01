@@ -96,6 +96,11 @@ export class FakeTutorLLM implements TutorLLM {
   private static readonly GOAL_STEPS: Record<string, string[]> = {
     'tea-shop': ['order-drink', 'specify-ice', 'specify-sugar', 'size-and-takeaway', 'pay'],
     'easycard-topup': ['state-need', 'specify-amount', 'payment-method', 'confirm-done'],
+    'convenience-store': ['greet-and-total', 'bag', 'payment-method', 'receipt'],
+    'night-market': ['choose-food', 'ask-spicy', 'ask-price', 'pay-and-thank'],
+    'clinic-call': ['say-reason', 'choose-time', 'give-name', 'confirm-bring'],
+    youbike: ['ask-how', 'use-card', 'ask-return', 'ask-cost'],
+    'landlord-deposit': ['ask-rent', 'ask-deposit', 'ask-return', 'ask-bills'],
   };
 
   static defaultScript: FakeTurnScript = (req, callIndex) => {

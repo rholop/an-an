@@ -14,7 +14,7 @@ import {
   type TurnResponse,
   type TutorLLM,
 } from '@anan/core';
-import type { AnanDB, TurnRow } from '../db/schema.js';
+import type { AnanDB, ConversationRow, TurnRow } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
 
 export interface ChatServiceConfig {
@@ -72,6 +72,8 @@ export class ChatService {
     private readonly tutorLLM: TutorLLM,
     private readonly config: ChatServiceConfig = DEFAULT_CHAT_SERVICE_CONFIG,
     private readonly rng: () => number = Math.random,
+    /** Phase 6: called once when a conversation completes (all goals done). */
+    private readonly onCompleted?: (conversation: ConversationRow) => Promise<void>,
   ) {}
 
   /** Starts a conversation: the scenario's opener is authored data, not
@@ -82,6 +84,9 @@ export class ChatService {
       npcId: scenario.npc.id,
       startedAt: now,
       goalStepsDone: [],
+      completed: false,
+      stuckCount: 0,
+      englishFallbackUsed: false,
     });
     await this.db.turns.add({
       conversationId: conversationId as number,
@@ -101,18 +106,30 @@ export class ChatService {
    * that was NOT looked up becomes chat_read_no_lookup evidence. Call this
    * once, right before sending the learner's reply, with the set of word
    * ids the UI recorded a lookup/hover for on that message. */
-  async recordNoLookupEvidence(npcText: string, lookedUpWordIds: ReadonlySet<string>, now: Date = new Date()): Promise<void> {
+  async recordNoLookupEvidence(
+    npcText: string,
+    lookedUpWordIds: ReadonlySet<string>,
+    now: Date = new Date(),
+  ): Promise<void> {
     const tokens = segment(npcText, this.lexicon);
     const events: Evidence[] = [];
     for (const token of tokens) {
       if (token.kind !== 'word') continue;
       const candidates = this.lexicon.lookup(token.text);
       for (const word of candidates) {
-        const card = await this.learnerService.getCard({ kind: 'word', id: word.id }, 'recognition');
+        const card = await this.learnerService.getCard(
+          { kind: 'word', id: word.id },
+          'recognition',
+        );
         if (!card) continue;
         const isDueOrLearning = card.state === 'learning' || card.card.due <= now;
         if (isDueOrLearning && !lookedUpWordIds.has(word.id)) {
-          events.push({ item: { kind: 'word', id: word.id }, skill: 'recognition', kind: 'chat_read_no_lookup', at: now });
+          events.push({
+            item: { kind: 'word', id: word.id },
+            skill: 'recognition',
+            kind: 'chat_read_no_lookup',
+            at: now,
+          });
         }
         break; // first matching sense is enough to attribute the signal
       }
@@ -150,13 +167,23 @@ export class ChatService {
     conversationId: number,
     scenario: Scenario,
     learnerText: string,
-    options: { learnerLevel: TurnRequest['learnerLevel']; scaffolding: TurnRequest['scaffolding']; englishFallback: boolean },
+    options: {
+      learnerLevel: TurnRequest['learnerLevel'];
+      scaffolding: TurnRequest['scaffolding'];
+      englishFallback: boolean;
+    },
     now: Date = new Date(),
   ): Promise<SendTurnResult> {
     await this.db.turns.add({ conversationId, role: 'learner', zh: learnerText, at: now });
+    if (options.englishFallback)
+      await this.db.conversations.update(conversationId, { englishFallbackUsed: true });
 
     const priorTurns = await this.getTurns(conversationId);
-    const history: TurnHistoryEntry[] = priorTurns.map((t) => ({ role: t.role, zh: t.zh, en: t.en }));
+    const history: TurnHistoryEntry[] = priorTurns.map((t) => ({
+      role: t.role,
+      zh: t.zh,
+      en: t.en,
+    }));
 
     const [knownCards, { ids: allowedExtraIds }] = await Promise.all([
       this.learnerService.knownSet('review'),
@@ -165,7 +192,9 @@ export class ChatService {
     const dueCards = await this.learnerService.dueCards(now, 10_000);
     const dueWordIds = dueCards.filter((c) => c.skill === 'recognition').map((c) => c.item.id);
     const allCards: SkillCard[] = dueCards; // best-effort pool for nextNewItems' "touched" check
-    const targets = nextNewItems(allCards, this.lexicon, this.config.newTargetsPerTurn, { scenarioTags: [scenario.id] });
+    const targets = nextNewItems(allCards, this.lexicon, this.config.newTargetsPerTurn, {
+      scenarioTags: [scenario.id],
+    });
     const targetIds = targets.map((w) => w.id);
 
     const req: TurnRequest = {
@@ -174,7 +203,9 @@ export class ChatService {
       history,
       learnerLevel: options.learnerLevel,
       vocab: {
-        knownSample: this.headwordsOf(sample([...knownCards], this.config.knownSampleSize, this.rng)),
+        knownSample: this.headwordsOf(
+          sample([...knownCards], this.config.knownSampleSize, this.rng),
+        ),
         due: this.headwordsOf(sample(dueWordIds, this.config.dueSampleSize, this.rng)),
         targets: this.headwordsOf(targetIds),
         allowedExtras: this.headwordsOf(allowedExtraIds),
@@ -183,7 +214,11 @@ export class ChatService {
       englishFallback: options.englishFallback,
     };
 
-    const analyzeCtx = await this.buildAnalyzeContext(options.learnerLevel, targetIds, allowedExtraIds);
+    const analyzeCtx = await this.buildAnalyzeContext(
+      options.learnerLevel,
+      targetIds,
+      allowedExtraIds,
+    );
 
     let attempts = 0;
     let response: TurnResponse | undefined;
@@ -193,7 +228,11 @@ export class ChatService {
     while (attempts <= this.config.maxRegenerations) {
       attempts++;
       response = await this.tutorLLM.generateTurn({ ...req, feedback });
-      report = analyzeText(response.reply_zh, analyzeCtx, [], { coverageThreshold: 0.95, maxUnknownTokens: 4, ...this.config });
+      report = analyzeText(response.reply_zh, analyzeCtx, [], {
+        coverageThreshold: 0.95,
+        maxUnknownTokens: 4,
+        ...this.config,
+      });
       if (report.pass) break;
       feedback = buildFeedback(report);
     }
@@ -208,7 +247,12 @@ export class ChatService {
       // learner model with a gloss the UI can show inline.
       const introduceEvents: Evidence[] = finalReport.unknown
         .filter((c) => c.wordId)
-        .map((c) => ({ item: { kind: 'word', id: c.wordId! }, skill: 'recognition', kind: 'chat_lookup_gloss', at: now }));
+        .map((c) => ({
+          item: { kind: 'word', id: c.wordId! },
+          skill: 'recognition',
+          kind: 'chat_lookup_gloss',
+          at: now,
+        }));
       if (introduceEvents.length > 0) await this.learnerService.recordBulk(introduceEvents, now);
     }
 
@@ -243,6 +287,17 @@ export class ChatService {
     return { npcTurn: npcTurn!, report: finalReport, attempts };
   }
 
+  /** Phase 6: "I'm stuck" pressed (once per press, however many hint levels
+   * that press reveals) — one of the scenario star criteria. */
+  async recordStuck(conversationId: number): Promise<void> {
+    await this.db.conversations
+      .where('id')
+      .equals(conversationId)
+      .modify((c) => {
+        c.stuckCount += 1;
+      });
+  }
+
   async endConversation(conversationId: number, now: Date = new Date()): Promise<void> {
     await this.db.conversations.update(conversationId, { endedAt: now });
   }
@@ -252,7 +307,11 @@ export class ChatService {
    * as startConversation's opener) and ends the conversation. Safe to call
    * after every learner turn — a no-op once already ended or incomplete.
    * Returns whether it just completed the conversation. */
-  async maybeCompleteConversation(conversationId: number, scenario: Scenario, now: Date = new Date()): Promise<boolean> {
+  async maybeCompleteConversation(
+    conversationId: number,
+    scenario: Scenario,
+    now: Date = new Date(),
+  ): Promise<boolean> {
     const conv = await this.db.conversations.get(conversationId);
     if (!conv || conv.endedAt) return false;
     const allDone = scenario.goalSteps.every((step) => conv.goalStepsDone.includes(step.id));
@@ -266,6 +325,9 @@ export class ChatService {
       at: now,
     });
     await this.endConversation(conversationId, now);
+    await this.db.conversations.update(conversationId, { completed: true });
+    const done = await this.db.conversations.get(conversationId);
+    if (done && this.onCompleted) await this.onCompleted(done);
     return true;
   }
 
@@ -273,7 +335,9 @@ export class ChatService {
     const turns = await this.getTurns(conversationId);
     const npcTurns = turns.filter((t) => t.role === 'npc' && t.validatorReport);
     const avgCoverage =
-      npcTurns.length > 0 ? npcTurns.reduce((sum, t) => sum + (t.validatorReport?.coverage ?? 0), 0) / npcTurns.length : 1;
+      npcTurns.length > 0
+        ? npcTurns.reduce((sum, t) => sum + (t.validatorReport?.coverage ?? 0), 0) / npcTurns.length
+        : 1;
     const conversation = await this.db.conversations.get(conversationId);
 
     // "Words you encountered" (phase doc §7's summary): chat_lookup_gloss and
@@ -285,7 +349,10 @@ export class ChatService {
     // learner model's evidence log scenario-agnostic).
     const lower = conversation?.startedAt ?? new Date(0);
     const upper = conversation?.endedAt ?? new Date();
-    const evidenceInRange = await this.db.evidence.where('at').between(lower, upper, true, true).toArray();
+    const evidenceInRange = await this.db.evidence
+      .where('at')
+      .between(lower, upper, true, true)
+      .toArray();
     const encounteredIds = new Set(
       evidenceInRange
         .filter((e) => e.kind === 'chat_lookup_gloss' || e.kind === 'chat_hover_reading')

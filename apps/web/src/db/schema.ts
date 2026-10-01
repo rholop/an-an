@@ -16,7 +16,7 @@ import type {
 /** Schema version for export/import compatibility checks — bump whenever a
  * Dexie `.version()` changes the stored shape in a way old backups can't
  * satisfy. Independent of the lexicon version (data/build/lexicon.v*.json). */
-export const DB_SCHEMA_VERSION = 2;
+export const DB_SCHEMA_VERSION = 3;
 
 export function itemPk(item: ItemRef, skill: Skill): string {
   return `${item.kind}:${item.id}:${skill}`;
@@ -59,6 +59,22 @@ export interface ConversationRow {
   endedAt?: Date;
   /** Latest known goal_progress, keyed by step id — updated as turns land. */
   goalStepsDone: string[];
+  /** Phase 6 (v3). Every goal step done, as opposed to ended early. */
+  completed: boolean;
+  /** Phase 6: times "I'm stuck" was pressed. */
+  stuckCount: number;
+  /** Phase 6: English fallback was on for any learner turn. */
+  englishFallbackUsed: boolean;
+}
+
+/** Phase 6: the reward ledger. Rows are RewardEvents from core; `id` is
+ * deterministic so awarding twice is harmless. */
+export interface RewardRow {
+  id: string;
+  kind: string;
+  points: number;
+  at: Date;
+  refId?: string;
 }
 
 export interface TurnRow {
@@ -145,6 +161,8 @@ export class AnanDB extends Dexie {
   journalEntries!: EntityTable<JournalEntryRow, 'id'>;
   journalReviews!: EntityTable<JournalReviewRow, 'entryId'>;
   errorItems!: EntityTable<ErrorItem, 'id'>;
+  /** Phase 6: points ledger. */
+  rewardEvents!: EntityTable<RewardRow, 'id'>;
 
   constructor(name = 'anan') {
     super(name);
@@ -167,6 +185,22 @@ export class AnanDB extends Dexie {
       })
       .upgrade(async (tx) => {
         await tx.table('meta').put({ key: 'journalEnabledAt', value: new Date() });
+      });
+    // v3 (Phase 6): reward ledger + per-conversation game fields. Existing
+    // conversations can't be classified retroactively (completion depends on
+    // scenario data the upgrade doesn't have), so they get no stars: not
+    // completed, but also no "stuck"/English marks.
+    this.version(3)
+      .stores({ rewardEvents: 'id, at, kind' })
+      .upgrade(async (tx) => {
+        await tx
+          .table('conversations')
+          .toCollection()
+          .modify((c: Partial<ConversationRow>) => {
+            c.completed ??= false;
+            c.stuckCount ??= 0;
+            c.englishFallbackUsed ??= false;
+          });
       });
   }
 }

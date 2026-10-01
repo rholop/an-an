@@ -1,6 +1,14 @@
-.chat-level-note { opacity: 0.7; font-size: 0.85rem; }
+.chat-level-note {
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
 
-.chat-scenario-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; }
+.chat-scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
 .chat-scenario-card {
   text-align: left;
   padding: 0.75rem 1rem;
@@ -9,32 +17,87 @@
   background: none;
   cursor: pointer;
 }
-.chat-scenario-card:disabled { opacity: 0.4; cursor: not-allowed; }
-.chat-scenario-title { font-weight: bold; }
-.chat-scenario-range { font-size: 0.8rem; opacity: 0.7; }
+.chat-scenario-card:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.chat-scenario-title {
+  font-weight: bold;
+}
+.chat-scenario-range {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
 
-.chat-dev-toggle { display: block; margin-top: 1rem; font-size: 0.85rem; opacity: 0.8; }
+.chat-dev-toggle {
+  display: block;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
 
-.chat-header { display: flex; align-items: center; gap: 1rem; }
-.chat-header h1 { font-size: 1.2rem; margin: 0; }
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.chat-header h1 {
+  font-size: 1.2rem;
+  margin: 0;
+}
 
-.chat-goals { list-style: none; padding: 0; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
-.chat-goals li { padding: 0.15rem 0; opacity: 0.6; }
-.chat-goals li.chat-goal--done { opacity: 1; text-decoration: line-through; }
+.chat-goals {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 1rem;
+  font-size: 0.9rem;
+}
+.chat-goals li {
+  padding: 0.15rem 0;
+  opacity: 0.6;
+}
+.chat-goals li.chat-goal--done {
+  opacity: 1;
+  text-decoration: line-through;
+}
 
-.chat-messages { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
 .chat-bubble {
   max-width: 85%;
   padding: 0.5rem 0.75rem;
   border-radius: 10px;
   background: rgba(127, 127, 127, 0.1);
 }
-.chat-bubble--npc { align-self: flex-start; }
-.chat-bubble--learner { align-self: flex-end; background: rgba(66, 133, 244, 0.15); }
+.chat-bubble--npc {
+  align-self: flex-start;
+}
+.chat-bubble--learner {
+  align-self: flex-end;
+  background: rgba(66, 133, 244, 0.15);
+}
 
-.chat-recast { font-size: 0.8rem; opacity: 0.75; font-style: italic; margin-bottom: 0.25rem; }
-.chat-en { font-size: 0.85rem; opacity: 0.7; margin-top: 0.25rem; }
-.chat-debug { font-size: 0.7rem; opacity: 0.6; margin-top: 0.25rem; font-family: ui-monospace, monospace; }
+.chat-recast {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  font-style: italic;
+  margin-bottom: 0.25rem;
+}
+.chat-en {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-top: 0.25rem;
+}
+.chat-debug {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-top: 0.25rem;
+  font-family: ui-monospace, monospace;
+}
 
 .chat-error {
   padding: 0.5rem 0.75rem;
@@ -44,7 +107,12 @@
   margin-bottom: 0.5rem;
 }
 
-.chat-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+.chat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
 .chat-chip {
   padding: 0.3rem 0.6rem;
   border-radius: 999px;
@@ -54,10 +122,21 @@
   font-size: 0.9rem;
 }
 
-.chat-hint { font-size: 0.85rem; opacity: 0.85; margin-bottom: 0.5rem; }
+.chat-hint {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-bottom: 0.5rem;
+}
 
-.chat-input-row { display: flex; gap: 0.5rem; }
-.chat-input { flex: 1; padding: 0.5rem; font-size: 1rem; }
+.chat-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.chat-input {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
 
 .chat-controls {
   display: flex;
@@ -73,4 +152,23 @@
   border-radius: 8px;
   background: rgba(46, 125, 50, 0.1);
 }
-.chat-summary-words { opacity: 0.85; }
+.chat-summary-words {
+  opacity: 0.85;
+}
+
+.chat-stars {
+  margin-top: 0.25rem;
+  letter-spacing: 0.1em;
+  color: #b8860b;
+}
+.chat-best-time {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  letter-spacing: 0;
+  color: inherit;
+}
+.chat-coverage {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  margin-top: 0.15rem;
+}

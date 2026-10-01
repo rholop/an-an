@@ -1,0 +1,56 @@
+# Scenario: renting a YouBike at a docking station — a practical first
+# conversation with a station helper.
+id: youbike
+title: Renting a YouBike
+levelRange:
+  min: L1
+  max: L3
+
+npc:
+  id: bike-helper
+  name: 站務人員
+  personality: >
+    Friendly young staff member who works at a busy YouBike kiosk. Happy to
+    help visitors who haven't used the system before.
+  speechStyle: >
+    Clear, step-by-step instructions in short sentences. Points out where to
+    tap the card and when to take the bike out.
+  particles: ["喔", "好", "囉"]
+
+setting: >
+  A YouBike docking station beside an MRT exit in Taipei. The learner wants to
+  rent a bike for a short ride and has an EasyCard.
+
+goalSteps:
+  - id: ask-how
+    description: Ask how to rent a bike.
+    keywordHints: ["怎麼", "租", "借"]
+  - id: use-card
+    description: Say you will pay with your EasyCard.
+    keywordHints: ["悠遊卡", "刷卡", "感應"]
+  - id: ask-return
+    description: Ask where you can return the bike.
+    keywordHints: ["還", "哪裡", "車站"]
+  - id: ask-cost
+    description: Ask how much it costs.
+    keywordHints: ["多少", "錢", "元"]
+
+vocabExtras:
+  - 腳踏車
+  - 悠遊卡
+  - 車站
+  - 騎
+  - 租
+  - 借
+  - 還
+  - 出口
+  - 感應
+  - 免費
+
+opener:
+  zh: 你好，你要借腳踏車嗎？
+  en: Hello, do you want to rent a bike?
+
+successLine:
+  zh: 好了，可以騎了，記得還到任何一個車站喔，小心！
+  en: "All set, you can ride now — remember to return it at any station. Be careful!"

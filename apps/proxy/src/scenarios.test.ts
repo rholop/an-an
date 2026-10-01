@@ -4,8 +4,19 @@ import { loadScenarioStore } from './scenarios.js';
 describe('loadScenarioStore', () => {
   it('loads the real data/build/scenarios.json (run `pnpm pipeline:build` if this fails)', () => {
     const store = loadScenarioStore();
-    const ids = store.all().map((s) => s.id).sort();
-    expect(ids).toEqual(['easycard-topup', 'tea-shop']);
+    const ids = store
+      .all()
+      .map((s) => s.id)
+      .sort();
+    expect(ids).toEqual([
+      'clinic-call',
+      'convenience-store',
+      'easycard-topup',
+      'landlord-deposit',
+      'night-market',
+      'tea-shop',
+      'youbike',
+    ]);
   });
 
   it('get() resolves a known scenario by id', () => {

@@ -2,9 +2,168 @@
   "meta": {
     "version": "v1",
     "buildDate": "2026-10-01",
-    "contentHash": "e28ff0532e3e736b0dc6fc51a75ac666a14674dc133f943f8aaf505455895431"
+    "contentHash": "d6034c63663ba8ca3ea58d8e65d7d3bdedf7d0fe15d9e0849eaa4bda2ae91879"
   },
   "scenarios": [
+    {
+      "id": "clinic-call",
+      "title": "Calling a clinic to make an appointment",
+      "levelRange": {
+        "min": "L2",
+        "max": "L4"
+      },
+      "npc": {
+        "id": "receptionist",
+        "name": "櫃台小姐",
+        "personality": "Calm, efficient and reassuring. Used to nervous callers, so she confirms each detail back before moving on.\n",
+        "speechStyle": "Polite, fairly formal clinic Mandarin (請問/麻煩您/好的). Asks for one piece of information at a time and repeats numbers back.\n",
+        "particles": [
+          "喔",
+          "好的"
+        ]
+      },
+      "setting": "A phone call to a neighbourhood clinic in Taiwan. The learner does not feel well and wants to see a doctor soon.\n",
+      "goalSteps": [
+        {
+          "id": "say-reason",
+          "description": "Say you are not feeling well and want to see a doctor.",
+          "keywordHints": [
+            "不舒服",
+            "看醫生",
+            "發燒",
+            "頭痛"
+          ]
+        },
+        {
+          "id": "choose-time",
+          "description": "Agree on a day and time for the appointment.",
+          "keywordHints": [
+            "明天",
+            "今天",
+            "點",
+            "下午"
+          ]
+        },
+        {
+          "id": "give-name",
+          "description": "Give your name and phone number.",
+          "keywordHints": [
+            "名字",
+            "電話",
+            "號碼"
+          ]
+        },
+        {
+          "id": "confirm-bring",
+          "description": "Confirm the appointment and ask what to bring.",
+          "keywordHints": [
+            "健保卡",
+            "好的",
+            "謝謝"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "診所",
+        "醫生",
+        "看病",
+        "預約",
+        "掛號",
+        "發燒",
+        "頭痛",
+        "咳嗽",
+        "藥",
+        "健保卡",
+        "生病",
+        "電話",
+        "名字"
+      ],
+      "opener": {
+        "zh": "您好，這裡是診所，請問有什麼需要幫忙的嗎？",
+        "en": "Hello, this is the clinic, how can I help you?"
+      },
+      "successLine": {
+        "zh": "好的，明天下午三點，請帶健保卡，謝謝您。",
+        "en": "Okay, tomorrow at 3 pm — please bring your health insurance card. Thank you."
+      }
+    },
+    {
+      "id": "convenience-store",
+      "title": "Paying at a convenience store",
+      "levelRange": {
+        "min": "N1",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "store-clerk",
+        "name": "店員",
+        "personality": "Quick, polite and a little tired at the end of a shift. Asks the same checkout questions in the same order every time, and repeats them patiently if the customer misses one.\n",
+        "speechStyle": "Very short checkout phrases. Reads out the total, asks about a bag, a receipt and how the customer will pay, one question at a time.\n",
+        "particles": [
+          "喔",
+          "好",
+          "囉"
+        ]
+      },
+      "setting": "The checkout counter of a Taiwan convenience store. The learner has put a drink and a snack on the counter and is paying.\n",
+      "goalSteps": [
+        {
+          "id": "greet-and-total",
+          "description": "Greet the clerk and hear the total.",
+          "keywordHints": [
+            "你好",
+            "多少",
+            "元"
+          ]
+        },
+        {
+          "id": "bag",
+          "description": "Say whether you need a bag.",
+          "keywordHints": [
+            "袋子",
+            "不用",
+            "要"
+          ]
+        },
+        {
+          "id": "payment-method",
+          "description": "Say how you are paying (cash, card or EasyCard).",
+          "keywordHints": [
+            "現金",
+            "信用卡",
+            "悠遊卡"
+          ]
+        },
+        {
+          "id": "receipt",
+          "description": "Say whether you want the receipt, then say thanks.",
+          "keywordHints": [
+            "發票",
+            "謝謝"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "便利商店",
+        "袋子",
+        "發票",
+        "結帳",
+        "現金",
+        "信用卡",
+        "悠遊卡",
+        "不用",
+        "一共",
+        "找錢"
+      ],
+      "opener": {
+        "zh": "你好，一共六十五元。",
+        "en": "Hello, that comes to NT$65."
+      },
+      "successLine": {
+        "zh": "好的，發票給你，謝謝，再見！",
+        "en": "Okay, here is your receipt, thank you, goodbye!"
+      }
+    },
     {
       "id": "easycard-topup",
       "title": "Buying or topping up an EasyCard at an MRT station",
@@ -80,6 +239,162 @@
       "successLine": {
         "zh": "好了，加值五百元完成，餘額是五百二十元，謝謝！",
         "en": "All done — topped up NT$500, your balance is NT$520, thank you!"
+      }
+    },
+    {
+      "id": "landlord-deposit",
+      "title": "Asking a landlord about the deposit",
+      "levelRange": {
+        "min": "L3",
+        "max": "L5"
+      },
+      "npc": {
+        "id": "landlord",
+        "name": "房東",
+        "personality": "A middle-aged landlord who is fair but careful about money. Friendly in tone, direct about rules, and happy to explain things twice.\n",
+        "speechStyle": "Plain, slightly formal spoken Mandarin. Explains terms in short clear sentences and checks that the tenant understood before moving on.\n",
+        "particles": [
+          "喔",
+          "啊",
+          "囉"
+        ]
+      },
+      "setting": "The landlord is showing the learner a small apartment in Taipei. The learner likes it and wants to understand the rent and the deposit before deciding.\n",
+      "goalSteps": [
+        {
+          "id": "ask-rent",
+          "description": "Ask how much the monthly rent is.",
+          "keywordHints": [
+            "房租",
+            "一個月",
+            "多少"
+          ]
+        },
+        {
+          "id": "ask-deposit",
+          "description": "Ask how much the deposit is and what it covers.",
+          "keywordHints": [
+            "押金",
+            "幾個月"
+          ]
+        },
+        {
+          "id": "ask-return",
+          "description": "Ask when and how the deposit is returned when you move out.",
+          "keywordHints": [
+            "退",
+            "搬走",
+            "搬出去"
+          ]
+        },
+        {
+          "id": "ask-bills",
+          "description": "Ask whether water and electricity are included in the rent.",
+          "keywordHints": [
+            "水電",
+            "包含",
+            "電費"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "房東",
+        "房租",
+        "押金",
+        "租",
+        "合約",
+        "簽",
+        "搬家",
+        "退",
+        "包含",
+        "水電",
+        "修理",
+        "公寓"
+      ],
+      "opener": {
+        "zh": "房子你都看過了，覺得怎麼樣？有什麼想問的嗎？",
+        "en": "You've seen the whole place — what do you think? Anything you'd like to ask?"
+      },
+      "successLine": {
+        "zh": "好，房租一個月一萬二，押金兩個月，退租的時候沒問題就會還你，水電另外算。",
+        "en": "Okay — rent is NT$12,000 a month, a two-month deposit returned if there's no damage when you leave; utilities are separate."
+      }
+    },
+    {
+      "id": "night-market",
+      "title": "Buying snacks at a night market",
+      "levelRange": {
+        "min": "N2",
+        "max": "L3"
+      },
+      "npc": {
+        "id": "stall-owner",
+        "name": "老闆",
+        "personality": "Loud, warm and a bit of a salesperson. Calls out to passers-by, offers a taste, and likes to chat for a second while the food cooks.\n",
+        "speechStyle": "Casual, friendly Taiwanese-flavoured Mandarin. Short sentences, lots of 喔/啦/啊. Names the price right after the order.\n",
+        "particles": [
+          "喔",
+          "啦",
+          "啊",
+          "囉"
+        ]
+      },
+      "setting": "A busy night market (夜市) in Taiwan. The learner stops at a snack stall and wants to order something to eat on the spot.\n",
+      "goalSteps": [
+        {
+          "id": "choose-food",
+          "description": "Say what you would like to eat.",
+          "keywordHints": [
+            "我要",
+            "我想吃",
+            "一份"
+          ]
+        },
+        {
+          "id": "ask-spicy",
+          "description": "Answer whether you want it spicy or not.",
+          "keywordHints": [
+            "辣",
+            "不要辣",
+            "小辣"
+          ]
+        },
+        {
+          "id": "ask-price",
+          "description": "Ask how much it is.",
+          "keywordHints": [
+            "多少錢",
+            "幾塊",
+            "元"
+          ]
+        },
+        {
+          "id": "pay-and-thank",
+          "description": "Pay and thank the owner.",
+          "keywordHints": [
+            "給你",
+            "謝謝"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "夜市",
+        "小吃",
+        "老闆",
+        "便宜",
+        "辣",
+        "一份",
+        "好吃",
+        "現金",
+        "算"
+      ],
+      "opener": {
+        "zh": "來來來，要吃什麼？我們的很好吃喔！",
+        "en": "Come on over, what would you like? Ours is really good!"
+      },
+      "successLine": {
+        "zh": "好，一份五十元，小心燙喔，謝謝！",
+        "en": "Okay, one portion is NT$50, careful, it's hot — thank you!"
       }
     },
     {
@@ -171,6 +486,84 @@
       "successLine": {
         "zh": "好了，珍珠奶茶一杯，少冰微糖，大杯外帶，35元，謝謝！",
         "en": "Here you go — one bubble tea, less ice less sugar, large to-go, NT$35, thank you!"
+      }
+    },
+    {
+      "id": "youbike",
+      "title": "Renting a YouBike",
+      "levelRange": {
+        "min": "L1",
+        "max": "L3"
+      },
+      "npc": {
+        "id": "bike-helper",
+        "name": "站務人員",
+        "personality": "Friendly young staff member who works at a busy YouBike kiosk. Happy to help visitors who haven't used the system before.\n",
+        "speechStyle": "Clear, step-by-step instructions in short sentences. Points out where to tap the card and when to take the bike out.\n",
+        "particles": [
+          "喔",
+          "好",
+          "囉"
+        ]
+      },
+      "setting": "A YouBike docking station beside an MRT exit in Taipei. The learner wants to rent a bike for a short ride and has an EasyCard.\n",
+      "goalSteps": [
+        {
+          "id": "ask-how",
+          "description": "Ask how to rent a bike.",
+          "keywordHints": [
+            "怎麼",
+            "租",
+            "借"
+          ]
+        },
+        {
+          "id": "use-card",
+          "description": "Say you will pay with your EasyCard.",
+          "keywordHints": [
+            "悠遊卡",
+            "刷卡",
+            "感應"
+          ]
+        },
+        {
+          "id": "ask-return",
+          "description": "Ask where you can return the bike.",
+          "keywordHints": [
+            "還",
+            "哪裡",
+            "車站"
+          ]
+        },
+        {
+          "id": "ask-cost",
+          "description": "Ask how much it costs.",
+          "keywordHints": [
+            "多少",
+            "錢",
+            "元"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "腳踏車",
+        "悠遊卡",
+        "車站",
+        "騎",
+        "租",
+        "借",
+        "還",
+        "出口",
+        "感應",
+        "免費"
+      ],
+      "opener": {
+        "zh": "你好，你要借腳踏車嗎？",
+        "en": "Hello, do you want to rent a bike?"
+      },
+      "successLine": {
+        "zh": "好了，可以騎了，記得還到任何一個車站喔，小心！",
+        "en": "All set, you can ride now — remember to return it at any station. Be careful!"
       }
     }
   ]

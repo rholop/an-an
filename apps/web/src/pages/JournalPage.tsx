@@ -12,7 +12,7 @@ import {
   type Word,
 } from '@anan/core';
 import { JournalProgress } from '../components/JournalProgress.js';
-import { db, learnerService } from '../db/instance.js';
+import { db, gameService, learnerService } from '../db/instance.js';
 import { recognitionCardsByWordId } from '../db/queries.js';
 import type { JournalEntryRow, JournalReviewRow } from '../db/schema.js';
 import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
@@ -37,7 +37,15 @@ export function JournalPage() {
   const service = useMemo(
     () =>
       lexiconState.status === 'ready'
-        ? new JournalService(db, lexiconState.lexicon, learnerService, tutorLLM)
+        ? new JournalService(
+            db,
+            lexiconState.lexicon,
+            learnerService,
+            tutorLLM,
+            undefined,
+            undefined,
+            (entryId, selfFixed, at) => gameService.onJournalFinished(entryId, selfFixed, at),
+          )
         : null,
     [lexiconState, tutorLLM],
   );
