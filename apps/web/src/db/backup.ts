@@ -2,17 +2,31 @@ import { type Backup, BackupSchema } from './backup-schema.js';
 import { type AnanDB, DB_SCHEMA_VERSION, itemPk } from './schema.js';
 
 export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise<Backup> {
-  const [items, evidence, settings, meta, customWords, journalEntries, journalReviews, errorItems] =
-    await Promise.all([
-      db.items.toArray(),
-      db.evidence.toArray(),
-      db.settings.toArray(),
-      db.meta.toArray(),
-      db.customWords.toArray(),
-      db.journalEntries.toArray(),
-      db.journalReviews.toArray(),
-      db.errorItems.toArray(),
-    ]);
+  const [
+    items,
+    evidence,
+    settings,
+    meta,
+    customWords,
+    journalEntries,
+    journalReviews,
+    errorItems,
+    conversations,
+    turns,
+    rewardEvents,
+  ] = await Promise.all([
+    db.items.toArray(),
+    db.evidence.toArray(),
+    db.settings.toArray(),
+    db.meta.toArray(),
+    db.customWords.toArray(),
+    db.journalEntries.toArray(),
+    db.journalReviews.toArray(),
+    db.errorItems.toArray(),
+    db.conversations.toArray(),
+    db.turns.toArray(),
+    db.rewardEvents.toArray(),
+  ]);
   return {
     schemaVersion: DB_SCHEMA_VERSION,
     lexiconVersion,
@@ -25,6 +39,9 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     journalEntries,
     journalReviews,
     errorItems,
+    conversations,
+    turns,
+    rewardEvents,
   };
 }
 
@@ -58,6 +75,9 @@ export async function importBackup(
     db.journalEntries,
     db.journalReviews,
     db.errorItems,
+    db.conversations,
+    db.turns,
+    db.rewardEvents,
   ];
   await db.transaction('rw', tables, async () => {
     await Promise.all([
@@ -69,6 +89,9 @@ export async function importBackup(
       db.journalEntries.clear(),
       db.journalReviews.clear(),
       db.errorItems.clear(),
+      db.conversations.clear(),
+      db.turns.clear(),
+      db.rewardEvents.clear(),
     ]);
     if (parsed.items.length > 0) {
       await db.items.bulkPut(parsed.items.map((c) => ({ ...c, pk: itemPk(c.item, c.skill) })));
@@ -84,6 +107,9 @@ export async function importBackup(
     if (parsed.journalEntries.length > 0) await db.journalEntries.bulkPut(parsed.journalEntries);
     if (parsed.journalReviews.length > 0) await db.journalReviews.bulkPut(parsed.journalReviews);
     if (parsed.errorItems.length > 0) await db.errorItems.bulkPut(parsed.errorItems);
+    if (parsed.conversations.length > 0) await db.conversations.bulkPut(parsed.conversations);
+    if (parsed.turns.length > 0) await db.turns.bulkPut(parsed.turns);
+    if (parsed.rewardEvents.length > 0) await db.rewardEvents.bulkPut(parsed.rewardEvents);
   });
 
   return { itemCount: parsed.items.length, evidenceCount: parsed.evidence.length };

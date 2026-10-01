@@ -1,0 +1,57 @@
+# Scenario: buying a few things at a Taiwan convenience store (7-11 / 全家)
+# and handling the checkout questions clerks always ask.
+id: convenience-store
+title: Paying at a convenience store
+levelRange:
+  min: N1
+  max: L2
+
+npc:
+  id: store-clerk
+  name: 店員
+  personality: >
+    Quick, polite and a little tired at the end of a shift. Asks the same
+    checkout questions in the same order every time, and repeats them
+    patiently if the customer misses one.
+  speechStyle: >
+    Very short checkout phrases. Reads out the total, asks about a bag, a
+    receipt and how the customer will pay, one question at a time.
+  particles: ["喔", "好", "囉"]
+
+setting: >
+  The checkout counter of a Taiwan convenience store. The learner has put a
+  drink and a snack on the counter and is paying.
+
+goalSteps:
+  - id: greet-and-total
+    description: Greet the clerk and hear the total.
+    keywordHints: ["你好", "多少", "元"]
+  - id: bag
+    description: Say whether you need a bag.
+    keywordHints: ["袋子", "不用", "要"]
+  - id: payment-method
+    description: Say how you are paying (cash, card or EasyCard).
+    keywordHints: ["現金", "信用卡", "悠遊卡"]
+  - id: receipt
+    description: Say whether you want the receipt, then say thanks.
+    keywordHints: ["發票", "謝謝"]
+
+vocabExtras:
+  - 便利商店
+  - 袋子
+  - 發票
+  - 結帳
+  - 現金
+  - 信用卡
+  - 悠遊卡
+  - 不用
+  - 一共
+  - 找錢
+
+opener:
+  zh: 你好，一共六十五元。
+  en: Hello, that comes to NT$65.
+
+successLine:
+  zh: 好的，發票給你，謝謝，再見！
+  en: "Okay, here is your receipt, thank you, goodbye!"

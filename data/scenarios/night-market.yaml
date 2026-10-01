@@ -1,0 +1,55 @@
+# Scenario: buying street food at a night market stall — ordering, asking
+# the price and a little bargaining-free friendly chat.
+id: night-market
+title: Buying snacks at a night market
+levelRange:
+  min: N2
+  max: L3
+
+npc:
+  id: stall-owner
+  name: 老闆
+  personality: >
+    Loud, warm and a bit of a salesperson. Calls out to passers-by, offers
+    a taste, and likes to chat for a second while the food cooks.
+  speechStyle: >
+    Casual, friendly Taiwanese-flavoured Mandarin. Short sentences, lots of
+    喔/啦/啊. Names the price right after the order.
+  particles: ["喔", "啦", "啊", "囉"]
+
+setting: >
+  A busy night market (夜市) in Taiwan. The learner stops at a snack stall
+  and wants to order something to eat on the spot.
+
+goalSteps:
+  - id: choose-food
+    description: Say what you would like to eat.
+    keywordHints: ["我要", "我想吃", "一份"]
+  - id: ask-spicy
+    description: Answer whether you want it spicy or not.
+    keywordHints: ["辣", "不要辣", "小辣"]
+  - id: ask-price
+    description: Ask how much it is.
+    keywordHints: ["多少錢", "幾塊", "元"]
+  - id: pay-and-thank
+    description: Pay and thank the owner.
+    keywordHints: ["給你", "謝謝"]
+
+vocabExtras:
+  - 夜市
+  - 小吃
+  - 老闆
+  - 便宜
+  - 辣
+  - 一份
+  - 好吃
+  - 現金
+  - 算
+
+opener:
+  zh: 來來來，要吃什麼？我們的很好吃喔！
+  en: Come on over, what would you like? Ours is really good!
+
+successLine:
+  zh: 好，一份五十元，小心燙喔，謝謝！
+  en: "Okay, one portion is NT$50, careful, it's hot — thank you!"

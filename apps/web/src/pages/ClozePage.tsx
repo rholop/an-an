@@ -23,7 +23,7 @@ import {
   type SessionEntry,
   type SessionItem,
 } from '@anan/core';
-import { db, learnerService } from '../db/instance.js';
+import { db, gameService, learnerService } from '../db/instance.js';
 import { allChatLines, allJournalSentences, recognitionCardsByWordId } from '../db/queries.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
@@ -160,7 +160,9 @@ export function ClozePage() {
    * card. It deliberately writes no learner Evidence — an error item is a
    * sentence-level drill, not a vocabulary-item review. */
   async function recordErrorOutcome(error: ErrorItem, outcome: 'correct' | 'wrong') {
-    await db.errorItems.put(reviewErrorItem(error, outcome, new Date()));
+    const at = new Date();
+    await db.errorItems.put(reviewErrorItem(error, outcome, at));
+    if (outcome === 'correct') await gameService.onErrorFixed(error.id, at);
     setTally((t) => ({
       ...t,
       correct: t.correct + (outcome === 'correct' ? 1 : 0),

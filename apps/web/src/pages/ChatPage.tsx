@@ -1,12 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { currentFrontierLevel, isScenarioUnlocked, type Level, type Scenario, type SkillCard } from '@anan/core';
+import {
+  currentFrontierLevel,
+  formatDuration,
+  type Level,
+  type Scenario,
+  type SkillCard,
+} from '@anan/core';
 import { AnnotatedText, type AnnotatedToken } from '../components/AnnotatedText.js';
-import { db, learnerService } from '../db/instance.js';
+import { db, gameService, learnerService } from '../db/instance.js';
 import { recognitionCardsByWordId } from '../db/queries.js';
 import type { ConversationRow, TurnRow } from '../db/schema.js';
 import { annotate, withReadingDisplay } from '../lib/annotate.js';
 import { ChatService, type ChatSummary } from '../lib/chat-service.js';
 import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
+import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
@@ -37,12 +44,40 @@ export function ChatPage() {
   // the proxy's DisabledAdapter will reject every real turn. Flip to the
   // fake tutor to exercise the rest of the chat UI without a live LLM.
   const [useFakeLLM, setUseFakeLLM] = useState(false);
-  const tutorLLM = useMemo(() => (useFakeLLM ? new FakeTutorLLM() : new FetchTutorLLM()), [useFakeLLM]);
+  const tutorLLM = useMemo(
+    () => (useFakeLLM ? new FakeTutorLLM() : new FetchTutorLLM()),
+    [useFakeLLM],
+  );
 
   const chatService = useMemo(() => {
     if (lexiconState.status !== 'ready') return null;
-    return new ChatService(db, lexiconState.lexicon, learnerService, tutorLLM);
+    return new ChatService(
+      db,
+      lexiconState.lexicon,
+      learnerService,
+      tutorLLM,
+      undefined,
+      undefined,
+      (c) => gameService.onScenarioCompleted(c),
+    );
   }, [lexiconState, tutorLLM]);
+
+  // Phase 6: the scenario map (stars, unlocks, real-world coverage), refreshed
+  // whenever we return to the picker.
+  const [snapshot, setSnapshot] = useState<GameSnapshot | null>(null);
+  const [mapKey, setMapKey] = useState(0);
+  useEffect(() => {
+    if (lexiconState.status !== 'ready' || scenariosState.status !== 'ready') return;
+    let cancelled = false;
+    loadGameSnapshot(db, lexiconState.lexicon, scenariosState.scenarios, new Date()).then(
+      (snap) => {
+        if (!cancelled) setSnapshot(snap);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [lexiconState, scenariosState, mapKey]);
 
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [conversationId, setConversationId] = useState<number | null>(null);
@@ -82,6 +117,7 @@ export function ChatPage() {
   }
 
   function backToScenarios() {
+    setMapKey((k) => k + 1);
     setScenario(null);
     setConversationId(null);
     setConversation(null);
@@ -136,7 +172,11 @@ export function ChatPage() {
       }
       setInput('');
       setStuckLevel(0);
-      await chatService.sendLearnerTurn(conversationId, scenario, text, { learnerLevel, scaffolding, englishFallback });
+      await chatService.sendLearnerTurn(conversationId, scenario, text, {
+        learnerLevel,
+        scaffolding,
+        englishFallback,
+      });
       await refresh(conversationId);
 
       const completed = await chatService.maybeCompleteConversation(conversationId, scenario);
@@ -161,7 +201,8 @@ export function ChatPage() {
     setSummary(await chatService.getSummary(conversationId));
   }
 
-  if (lexiconState.status === 'loading' || scenariosState.status === 'loading') return <p>Loading…</p>;
+  if (lexiconState.status === 'loading' || scenariosState.status === 'loading')
+    return <p>Loading…</p>;
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
   if (scenariosState.status === 'error') {
     return (
@@ -178,25 +219,64 @@ export function ChatPage() {
         <h1>An'an chat</h1>
         <p className="chat-level-note">Your level: {learnerLevel}</p>
         <div className="chat-scenario-list">
-          {scenariosState.scenarios.map((s) => {
-            const unlocked = isScenarioUnlocked(s, learnerLevel);
+          {(
+            snapshot?.nodes ??
+            scenariosState.scenarios.map((sc) => ({
+              scenario: sc,
+              unlocked: true,
+              stars: null,
+              attempts: 0,
+              bestUnassistedMs: undefined,
+            }))
+          ).map((node) => {
+            const s = node.scenario;
+            const coverage = snapshot?.coverage.get(s.id);
             return (
               <button
                 key={s.id}
                 className="chat-scenario-card"
-                disabled={!unlocked}
+                disabled={!node.unlocked}
                 onClick={() => startScenario(s)}
-                title={unlocked ? undefined : `Unlocks between ${s.levelRange.min} and ${s.levelRange.max}`}
+                title={node.unlocked ? undefined : `Unlocks when you reach ${s.levelRange.min}`}
               >
                 <div className="chat-scenario-title">{s.title}</div>
-                <div className="chat-scenario-range">{s.levelRange.min}–{s.levelRange.max}</div>
+                <div className="chat-scenario-range">
+                  {s.levelRange.min}–{s.levelRange.max}
+                  {!node.unlocked && ' · 🔒 locked'}
+                </div>
+                {node.stars && (
+                  <div className="chat-stars" aria-label={`${node.stars.count} of 3 stars`}>
+                    <span title="Completed">{node.stars.completed ? '★' : '☆'}</span>
+                    <span title="Completed without “I'm stuck”">
+                      {node.stars.noStuck ? '★' : '☆'}
+                    </span>
+                    <span title="Completed with no English fallback">
+                      {node.stars.noEnglish ? '★' : '☆'}
+                    </span>
+                    {node.bestUnassistedMs !== undefined && (
+                      <span className="chat-best-time">
+                        {' '}
+                        best unassisted {formatDuration(node.bestUnassistedMs)}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {coverage && node.unlocked && (
+                  <div className="chat-coverage">
+                    You know ~{Math.round(coverage.coverage * 100)}% of the words here
+                  </div>
+                )}
               </button>
             );
           })}
         </div>
         {import.meta.env.DEV && (
           <label className="chat-dev-toggle">
-            <input type="checkbox" checked={useFakeLLM} onChange={(e) => setUseFakeLLM(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={useFakeLLM}
+              onChange={(e) => setUseFakeLLM(e.target.checked)}
+            />
             Use fake tutor (dev, no API key needed)
           </label>
         )}
@@ -215,7 +295,10 @@ export function ChatPage() {
 
       <div className="chat-messages">
         {turns.map((turn) => {
-          const annotated = withReadingDisplay(annotate(turn.zh, lexiconState.lexicon), cardsByWordId);
+          const annotated = withReadingDisplay(
+            annotate(turn.zh, lexiconState.lexicon),
+            cardsByWordId,
+          );
           return (
             <div key={turn.id} className={`chat-bubble chat-bubble--${turn.role}`}>
               {turn.recastZh && <div className="chat-recast">You could say: {turn.recastZh}</div>}
@@ -228,8 +311,9 @@ export function ChatPage() {
               {englishFallback && turn.en && <div className="chat-en">{turn.en}</div>}
               {import.meta.env.DEV && turn.validatorReport && (
                 <div className="chat-debug">
-                  coverage {(turn.validatorReport.coverage * 100).toFixed(0)}% · max {turn.validatorReport.maxLevel ?? '—'} ·
-                  unknown {turn.validatorReport.unknownCount} · attempts {turn.validatorReport.attempts} ·{' '}
+                  coverage {(turn.validatorReport.coverage * 100).toFixed(0)}% · max{' '}
+                  {turn.validatorReport.maxLevel ?? '—'} · unknown{' '}
+                  {turn.validatorReport.unknownCount} · attempts {turn.validatorReport.attempts} ·{' '}
                   {turn.validatorReport.pass ? 'passed' : 'FAILED (shown anyway)'}
                 </div>
               )}
@@ -252,10 +336,15 @@ export function ChatPage() {
             </div>
           )}
 
-          {stuckLevel === 1 && suggestions[0] && <div className="chat-hint">Hint: {suggestions[0].en}</div>}
+          {stuckLevel === 1 && suggestions[0] && (
+            <div className="chat-hint">Hint: {suggestions[0].en}</div>
+          )}
           {stuckLevel >= 2 && suggestions[0] && (
             <div className="chat-hint">
-              Try: <button className="chat-chip" onClick={() => setInput(suggestions[0]!.zh)}>{suggestions[0].zh}</button>
+              Try:{' '}
+              <button className="chat-chip" onClick={() => setInput(suggestions[0]!.zh)}>
+                {suggestions[0].zh}
+              </button>
             </div>
           )}
 
@@ -271,7 +360,14 @@ export function ChatPage() {
             <button onClick={sendMessage} disabled={sending || !input.trim()}>
               {sending ? '…' : 'Send'}
             </button>
-            <button onClick={() => setStuckLevel((l) => Math.min(l + 1, 2))} disabled={suggestions.length === 0}>
+            <button
+              onClick={() => {
+                if (chatService && conversationId !== null)
+                  void chatService.recordStuck(conversationId);
+                setStuckLevel((l) => Math.min(l + 1, 2));
+              }}
+              disabled={suggestions.length === 0}
+            >
               I'm stuck
             </button>
           </div>
@@ -279,7 +375,10 @@ export function ChatPage() {
           <div className="chat-controls">
             <label>
               Scaffolding:{' '}
-              <select value={scaffolding} onChange={(e) => setScaffolding(e.target.value as Scaffolding)}>
+              <select
+                value={scaffolding}
+                onChange={(e) => setScaffolding(e.target.value as Scaffolding)}
+              >
                 {SCAFFOLDING_LEVELS.map((s) => (
                   <option key={s} value={s}>
                     {s}
@@ -289,7 +388,11 @@ export function ChatPage() {
             </label>
             {(learnerLevel === 'N1' || learnerLevel === 'N2') && (
               <label>
-                <input type="checkbox" checked={englishFallback} onChange={(e) => setEnglishFallback(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={englishFallback}
+                  onChange={(e) => setEnglishFallback(e.target.checked)}
+                />
                 English fallback
               </label>
             )}
@@ -303,7 +406,13 @@ export function ChatPage() {
   );
 }
 
-function GoalChecklist({ scenario, conversation }: { scenario: Scenario; conversation: ConversationRow | null }) {
+function GoalChecklist({
+  scenario,
+  conversation,
+}: {
+  scenario: Scenario;
+  conversation: ConversationRow | null;
+}) {
   const done = new Set(conversation?.goalStepsDone ?? []);
   return (
     <ul className="chat-goals">

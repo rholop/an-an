@@ -1,0 +1,25 @@
+.progress-page section {
+  margin-bottom: 1.5rem;
+}
+.progress-muted {
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+.progress-table {
+  border-collapse: collapse;
+}
+.progress-table td {
+  padding: 0.15rem 0.75rem 0.15rem 0;
+}
+.progress-coverage {
+  list-style: none;
+  padding-left: 0;
+}
+.progress-coverage li {
+  margin-bottom: 0.9rem;
+}
+.progress-coverage progress {
+  width: 100%;
+  max-width: 320px;
+  display: block;
+}

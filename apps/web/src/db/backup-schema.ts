@@ -172,6 +172,47 @@ export const ErrorItemSchema = z.object({
   createdAt: z.coerce.date(),
 });
 
+export const ConversationRowSchema = z.object({
+  id: z.number().optional(),
+  scenarioId: z.string(),
+  npcId: z.string(),
+  startedAt: z.coerce.date(),
+  endedAt: z.coerce.date().optional(),
+  goalStepsDone: z.array(z.string()),
+  completed: z.boolean().default(false),
+  stuckCount: z.number().default(0),
+  englishFallbackUsed: z.boolean().default(false),
+});
+
+export const TurnRowSchema = z.object({
+  id: z.number().optional(),
+  conversationId: z.number(),
+  role: z.enum(['npc', 'learner']),
+  zh: z.string(),
+  en: z.string().optional(),
+  tokens: z.array(z.object({ text: z.string(), lemma: z.string().optional() })).optional(),
+  suggestedReplies: z.array(z.object({ zh: z.string(), en: z.string() })).optional(),
+  recastZh: z.string().optional(),
+  validatorReport: z
+    .object({
+      coverage: z.number(),
+      maxLevel: LevelSchema.nullable(),
+      unknownCount: z.number(),
+      attempts: z.number(),
+      pass: z.boolean(),
+    })
+    .optional(),
+  at: z.coerce.date(),
+});
+
+export const RewardRowSchema = z.object({
+  id: z.string(),
+  kind: z.string(),
+  points: z.number(),
+  at: z.coerce.date(),
+  refId: z.string().optional(),
+});
+
 export const BackupSchema = z.object({
   schemaVersion: z.number().int(),
   lexiconVersion: z.string().optional(),
@@ -185,6 +226,11 @@ export const BackupSchema = z.object({
   journalEntries: z.array(JournalEntryRowSchema).default([]),
   journalReviews: z.array(JournalReviewRowSchema).default([]),
   errorItems: z.array(ErrorItemSchema).default([]),
+  // Phase 6 (schemaVersion 3). Conversations/turns were not backed up before,
+  // so scenario stars would have been lost on restore.
+  conversations: z.array(ConversationRowSchema).default([]),
+  turns: z.array(TurnRowSchema).default([]),
+  rewardEvents: z.array(RewardRowSchema).default([]),
 });
 
 export type Backup = z.infer<typeof BackupSchema>;

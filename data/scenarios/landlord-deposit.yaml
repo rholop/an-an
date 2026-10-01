@@ -1,0 +1,59 @@
+# Scenario: asking a landlord about the deposit and renting terms — an
+# intermediate, practical scenario with a lot of everyday housing vocabulary.
+id: landlord-deposit
+title: Asking a landlord about the deposit
+levelRange:
+  min: L3
+  max: L5
+
+npc:
+  id: landlord
+  name: 房東
+  personality: >
+    A middle-aged landlord who is fair but careful about money. Friendly in
+    tone, direct about rules, and happy to explain things twice.
+  speechStyle: >
+    Plain, slightly formal spoken Mandarin. Explains terms in short clear
+    sentences and checks that the tenant understood before moving on.
+  particles: ["喔", "啊", "囉"]
+
+setting: >
+  The landlord is showing the learner a small apartment in Taipei. The
+  learner likes it and wants to understand the rent and the deposit before
+  deciding.
+
+goalSteps:
+  - id: ask-rent
+    description: Ask how much the monthly rent is.
+    keywordHints: ["房租", "一個月", "多少"]
+  - id: ask-deposit
+    description: Ask how much the deposit is and what it covers.
+    keywordHints: ["押金", "幾個月"]
+  - id: ask-return
+    description: Ask when and how the deposit is returned when you move out.
+    keywordHints: ["退", "搬走", "搬出去"]
+  - id: ask-bills
+    description: Ask whether water and electricity are included in the rent.
+    keywordHints: ["水電", "包含", "電費"]
+
+vocabExtras:
+  - 房東
+  - 房租
+  - 押金
+  - 租
+  - 合約
+  - 簽
+  - 搬家
+  - 退
+  - 包含
+  - 水電
+  - 修理
+  - 公寓
+
+opener:
+  zh: 房子你都看過了，覺得怎麼樣？有什麼想問的嗎？
+  en: You've seen the whole place — what do you think? Anything you'd like to ask?
+
+successLine:
+  zh: 好，房租一個月一萬二，押金兩個月，退租的時候沒問題就會還你，水電另外算。
+  en: "Okay — rent is NT$12,000 a month, a two-month deposit returned if there's no damage when you leave; utilities are separate."

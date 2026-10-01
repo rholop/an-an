@@ -22,6 +22,13 @@ export class LearnerService {
   constructor(
     private readonly repo: LearnerRepo,
     private readonly config: LearnerConfig = DEFAULT_LEARNER_CONFIG,
+    /** Phase 6: told about every single recorded piece of evidence, with the
+     * card as it was *before* (e.g. to award points). Failures never block
+     * learning. */
+    private readonly onRecorded?: (
+      evidence: Evidence,
+      prior: SkillCard | undefined,
+    ) => Promise<void>,
   ) {
     this.fsrsInstance = buildFsrs(config);
   }
@@ -31,6 +38,7 @@ export class LearnerService {
     const result = applyEvidence(current, evidence, now, this.config, this.fsrsInstance);
     if (result.card) await this.repo.putCards([result.card]);
     await this.repo.appendEvidence([evidence]);
+    if (this.onRecorded) await this.onRecorded(evidence, current).catch(() => undefined);
     return result.card;
   }
 

@@ -23,7 +23,12 @@ const GRADES: { grade: Grade; label: string }[] = [
   { grade: 'easy', label: 'Easy' },
 ];
 
-export function ReviewPage() {
+/** `focusCards` (Phase 6 garden): review exactly these cards — e.g. a plot's
+ * wilting words, which may not be formally due yet — instead of the due queue. */
+export function ReviewPage({
+  focusCards,
+  onExit,
+}: { focusCards?: SkillCard[]; onExit?: () => void } = {}) {
   const lexiconState = useLexicon();
   const [queue, setQueue] = useState<SkillCard[] | null>(null);
   const [index, setIndex] = useState(0);
@@ -33,13 +38,13 @@ export function ReviewPage() {
 
   const loadQueue = useCallback(async () => {
     const now = new Date();
-    const due = await learnerService.dueCards(now, 200);
+    const due = focusCards ?? (await learnerService.dueCards(now, 200));
     setQueue(shuffle(due)); // interleaved across topics: due order has no topical structure, shuffling avoids any incidental clustering
     setIndex(0);
     setRevealed(false);
     setTotalDue(due.length);
     setForecast(await dueForecast(db, now, 7));
-  }, []);
+  }, [focusCards]);
 
   useEffect(() => {
     loadQueue();
@@ -66,15 +71,11 @@ export function ReviewPage() {
 
   return (
     <div className="review-page">
-      <h1>Review</h1>
+      {onExit && <button onClick={onExit}>← Back to garden</button>}
+      <h1>{focusCards ? 'Water these words' : 'Review'}</h1>
       <p className="review-meta">
         {Math.max(queue.length - index, 0)} due now (of {totalDue} this session)
-        {forecast && (
-          <span className="review-forecast">
-            {' '}
-            · next 7 days: {forecast.join(', ')}
-          </span>
-        )}
+        {forecast && <span className="review-forecast"> · next 7 days: {forecast.join(', ')}</span>}
       </p>
 
       {!current ? (
@@ -110,7 +111,10 @@ function ReviewCard({
   onReveal: () => void;
   onRate: (grade: Grade) => void;
 }) {
-  const front = card.skill === 'recognition' ? word?.headword ?? '(unknown item)' : word?.glossEn ?? '(unknown item)';
+  const front =
+    card.skill === 'recognition'
+      ? (word?.headword ?? '(unknown item)')
+      : (word?.glossEn ?? '(unknown item)');
   const back =
     card.skill === 'recognition'
       ? `${word?.pinyin ?? ''} · ${word?.zhuyin ?? ''} — ${word?.glossEn ?? ''}`
@@ -127,7 +131,11 @@ function ReviewCard({
           {card.leech && word && <LeechBreakdown card={card} word={word} lexicon={lexicon} />}
           <div className="review-buttons">
             {GRADES.map(({ grade, label }) => (
-              <button key={grade} className={`review-btn review-btn--${grade}`} onClick={() => onRate(grade)}>
+              <button
+                key={grade}
+                className={`review-btn review-btn--${grade}`}
+                onClick={() => onRate(grade)}
+              >
                 {label}
               </button>
             ))}
@@ -167,13 +175,17 @@ function LeechBreakdown({
             <div className="leech-char" key={i}>
               <div className="leech-char-glyph">{ch}</div>
               <div className="leech-char-reading">{entry?.pinyin ?? '?'}</div>
-              <div className="leech-char-gloss">{entry?.glossEn ?? '(not its own lexicon entry)'}</div>
+              <div className="leech-char-gloss">
+                {entry?.glossEn ?? '(not its own lexicon entry)'}
+              </div>
             </div>
           );
         })}
       </div>
       {treatment !== 'char_breakdown' && (
-        <div className="leech-stub-note">({treatment.replace('_', ' ')} — coming in a later phase)</div>
+        <div className="leech-stub-note">
+          ({treatment.replace('_', ' ')} — coming in a later phase)
+        </div>
       )}
     </div>
   );

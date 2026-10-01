@@ -1,0 +1,58 @@
+# Scenario: phoning a clinic to book an appointment and say what is wrong.
+id: clinic-call
+title: Calling a clinic to make an appointment
+levelRange:
+  min: L2
+  max: L4
+
+npc:
+  id: receptionist
+  name: 櫃台小姐
+  personality: >
+    Calm, efficient and reassuring. Used to nervous callers, so she
+    confirms each detail back before moving on.
+  speechStyle: >
+    Polite, fairly formal clinic Mandarin (請問/麻煩您/好的). Asks for one
+    piece of information at a time and repeats numbers back.
+  particles: ["喔", "好的"]
+
+setting: >
+  A phone call to a neighbourhood clinic in Taiwan. The learner does not feel
+  well and wants to see a doctor soon.
+
+goalSteps:
+  - id: say-reason
+    description: Say you are not feeling well and want to see a doctor.
+    keywordHints: ["不舒服", "看醫生", "發燒", "頭痛"]
+  - id: choose-time
+    description: Agree on a day and time for the appointment.
+    keywordHints: ["明天", "今天", "點", "下午"]
+  - id: give-name
+    description: Give your name and phone number.
+    keywordHints: ["名字", "電話", "號碼"]
+  - id: confirm-bring
+    description: Confirm the appointment and ask what to bring.
+    keywordHints: ["健保卡", "好的", "謝謝"]
+
+vocabExtras:
+  - 診所
+  - 醫生
+  - 看病
+  - 預約
+  - 掛號
+  - 發燒
+  - 頭痛
+  - 咳嗽
+  - 藥
+  - 健保卡
+  - 生病
+  - 電話
+  - 名字
+
+opener:
+  zh: 您好，這裡是診所，請問有什麼需要幫忙的嗎？
+  en: Hello, this is the clinic, how can I help you?
+
+successLine:
+  zh: 好的，明天下午三點，請帶健保卡，謝謝您。
+  en: "Okay, tomorrow at 3 pm — please bring your health insurance card. Thank you."

@@ -66,6 +66,13 @@ export class JournalService {
     private readonly tutorLLM: TutorLLM,
     private readonly config: JournalServiceConfig = DEFAULT_JOURNAL_CONFIG,
     private readonly newId: () => string = () => crypto.randomUUID(),
+    /** Phase 6: called once an entry is finished, with the issue indexes the
+     * learner fixed themselves. */
+    private readonly onFinished?: (
+      entryId: string,
+      selfFixedIssueIndexes: number[],
+      at: Date,
+    ) => Promise<void>,
   ) {}
 
   getEntry(id: string): Promise<JournalEntryRow | undefined> {
@@ -380,6 +387,12 @@ export class JournalService {
       },
     );
     if (evidence.length > 0) await this.learnerService.recordBulk(evidence, now);
+    if (this.onFinished) {
+      const selfFixed = kept
+        .filter(({ index }) => review.selfFix[index]?.fixed === true)
+        .map(({ index }) => index);
+      await this.onFinished(entryId, selfFixed, now);
+    }
     return { errorItemCount: errorItems.length, evidence };
   }
 }
