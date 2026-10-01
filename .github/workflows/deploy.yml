@@ -46,5 +46,5 @@ jobs:
 
             # Restart (or first-start) the proxy under PM2.
             pm2 restart an-an-proxy --update-env || \
-              pm2 start apps/proxy/ecosystem.config.js --env production
+              pm2 start apps/proxy/ecosystem.config.cjs --env production
             pm2 save

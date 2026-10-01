@@ -101,7 +101,7 @@ cd /home/an-an
 corepack enable
 pnpm install --frozen-lockfile
 cp apps/proxy/.env.example apps/proxy/.env.production   # fill in real keys
-pm2 start apps/proxy/ecosystem.config.js --env production
+pm2 start apps/proxy/ecosystem.config.cjs --env production
 pm2 save
 ```
 
