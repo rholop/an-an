@@ -26,7 +26,20 @@ implements.
   budget, both in-memory (see the caveat below).
 - Response caching keyed by a hash of the full prompt (scenario openers and
   repeated hints are the common case).
-- `POST /v1/journal-review` is **not implemented yet** — Phase 5 adds it.
+- `POST /v1/journal-review` (phase doc 05 §3) — reviews a journal entry
+  (`JournalReview`: at most 3 issues, a natural rewrite, `[English]` gap
+  translations, correct unprompted uses). The learner's text goes in the
+  *user* message, never the system prompt. The proxy only schema-checks the
+  JSON; spans, Taiwan-ness and `used_well` are validated in the web app
+  (`validateJournalReview` in `@anan/core`).
+- `POST /v1/journal-check` — is the learner's own alternative fix of a
+  flagged span acceptable? `POST /v1/journal-explain` — the "explain more"
+  follow-up. All three journal routes share one generic
+  `JsonTaskAdapter`/`createJsonOrchestrator` (Gemini first, OpenAI fallback,
+  cached by task + prompt + message). Prompts: `data/prompts/journal-*.md`;
+  models: `GEMINI_MODEL_JOURNAL` / `OPENAI_MODEL_JOURNAL`.
+- `pnpm --filter @anan/proxy journal-eval` runs the fixture entries in
+  `data/journal-eval/` through a live proxy and writes `docs/journal-eval.md`.
 
 ## Environment variables
 

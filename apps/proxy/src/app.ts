@@ -1,9 +1,40 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { SentenceGenRequestSchema, TurnRequestSchema } from '@anan/core';
+import type { Context } from 'hono';
+import {
+  JournalCheckRequestSchema,
+  JournalCheckResponseSchema,
+  JournalExplainRequestSchema,
+  JournalExplainResponseSchema,
+  JournalReviewRequestSchema,
+  JournalReviewSchema,
+  SentenceGenRequestSchema,
+  TurnRequestSchema,
+} from '@anan/core';
+import type { z } from 'zod';
 import type { Env } from './env.js';
-import { buildEffectiveSystemPrompt, type Orchestrator, type SentenceOrchestrator } from './orchestrator.js';
-import { buildSentenceGenPrompt, buildSystemPrompt } from './prompt.js';
+import {
+  JOURNAL_CHECK_JSON_SCHEMA,
+  JOURNAL_EXPLAIN_JSON_SCHEMA,
+  JOURNAL_REVIEW_JSON_SCHEMA,
+} from './json-schema.js';
+import {
+  buildEffectiveSystemPrompt,
+  type JsonOrchestrator,
+  type Orchestrator,
+  type SentenceOrchestrator,
+} from './orchestrator.js';
+import {
+  buildJournalCheckPrompt,
+  buildJournalExplainPrompt,
+  buildJournalReviewPrompt,
+  buildSentenceGenPrompt,
+  buildSystemPrompt,
+  journalCheckUserMessage,
+  journalExplainUserMessage,
+  journalReviewUserMessage,
+  type JournalPrompts,
+} from './prompt.js';
 import type { RateLimiter } from './rate-limit.js';
 import type { ScenarioStore } from './scenarios.js';
 
@@ -14,6 +45,8 @@ export interface AppDeps {
   orchestrator: Orchestrator;
   sentencePromptTemplate: string;
   sentenceOrchestrator: SentenceOrchestrator;
+  /** Phase 5 journal endpoints. */
+  journal: { prompts: JournalPrompts; orchestrator: JsonOrchestrator };
   rateLimiter: RateLimiter;
   log?: (entry: Record<string, unknown>) => void;
 }
@@ -63,13 +96,25 @@ export function createApp(deps: AppDeps): Hono {
     }
 
     const baseSystemPrompt = buildSystemPrompt(deps.promptTemplate, scenario, turnRequest);
-    const effectiveSystemPrompt = buildEffectiveSystemPrompt(baseSystemPrompt, turnRequest.feedback);
+    const effectiveSystemPrompt = buildEffectiveSystemPrompt(
+      baseSystemPrompt,
+      turnRequest.feedback,
+    );
 
     try {
-      const { result, log: runLog } = await deps.orchestrator.run(effectiveSystemPrompt, turnRequest.history);
+      const { result, log: runLog } = await deps.orchestrator.run(
+        effectiveSystemPrompt,
+        turnRequest.history,
+      );
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
-      log({ route: '/v1/turn', installId, scenarioId: turnRequest.scenarioId, totalTokens, ...runLog });
+      log({
+        route: '/v1/turn',
+        installId,
+        scenarioId: turnRequest.scenarioId,
+        totalTokens,
+        ...runLog,
+      });
       return c.json(result.response);
     } catch (err) {
       log({ route: '/v1/turn', installId, scenarioId: turnRequest.scenarioId, error: String(err) });
@@ -111,13 +156,120 @@ export function createApp(deps: AppDeps): Hono {
       const { result, log: runLog } = await deps.sentenceOrchestrator.run(prompt);
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
-      log({ route: '/v1/sentences', installId, headword: sentenceRequest.word.headword, totalTokens, ...runLog });
+      log({
+        route: '/v1/sentences',
+        installId,
+        headword: sentenceRequest.word.headword,
+        totalTokens,
+        ...runLog,
+      });
       return c.json(result.response);
     } catch (err) {
-      log({ route: '/v1/sentences', installId, headword: sentenceRequest.word.headword, error: String(err) });
+      log({
+        route: '/v1/sentences',
+        installId,
+        headword: sentenceRequest.word.headword,
+        error: String(err),
+      });
       return c.json({ error: 'sentence generation failed' }, 502);
     }
   });
+
+  /** Shared plumbing for the three journal routes: install-id + rate limit,
+   * JSON body, zod request validation, one orchestrated provider call. */
+  async function journalRoute<Req, Res>(
+    c: Context,
+    route: string,
+    requestSchema: z.ZodType<Req, z.ZodTypeDef, unknown>,
+    responseSchema: z.ZodType<Res, z.ZodTypeDef, unknown>,
+    jsonSchema: object,
+    build: (req: Req) => { systemPrompt: string; userMessage: string },
+  ) {
+    const installId = c.req.header('x-install-id');
+    if (!installId) return c.json({ error: 'missing X-Install-Id header' }, 400);
+
+    const rateCheck = deps.rateLimiter.check(installId);
+    if (!rateCheck.allowed) {
+      if (rateCheck.reason === 'daily_budget') {
+        return c.json({ error: 'daily token budget exhausted, try again tomorrow' }, 429);
+      }
+      return c.json(
+        { error: 'rate limited, please retry shortly', retryAfterMs: rateCheck.retryAfterMs },
+        429,
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = await c.req.json();
+    } catch {
+      return c.json({ error: 'invalid JSON body' }, 400);
+    }
+    const parsed = requestSchema.safeParse(body);
+    if (!parsed.success)
+      return c.json(
+        { error: `invalid request for ${route}`, details: parsed.error.flatten() },
+        400,
+      );
+
+    try {
+      const { result, log: runLog } = await deps.journal.orchestrator.run({
+        task: route,
+        jsonSchema,
+        parse: (raw) => responseSchema.parse(raw),
+        ...build(parsed.data),
+      });
+      const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
+      deps.rateLimiter.recordUsage(installId, totalTokens);
+      log({ route, installId, totalTokens, ...runLog });
+      return c.json(result.response);
+    } catch (err) {
+      log({ route, installId, error: String(err) });
+      return c.json({ error: `${route} failed` }, 502);
+    }
+  }
+
+  app.post('/v1/journal-review', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-review',
+      JournalReviewRequestSchema,
+      JournalReviewSchema,
+      JOURNAL_REVIEW_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildJournalReviewPrompt(deps.journal.prompts.review, req),
+        userMessage: journalReviewUserMessage(req),
+      }),
+    ),
+  );
+
+  app.post('/v1/journal-check', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-check',
+      JournalCheckRequestSchema,
+      JournalCheckResponseSchema,
+      JOURNAL_CHECK_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildJournalCheckPrompt(deps.journal.prompts.check),
+        userMessage: journalCheckUserMessage(req),
+      }),
+    ),
+  );
+
+  app.post('/v1/journal-explain', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-explain',
+      JournalExplainRequestSchema,
+      JournalExplainResponseSchema,
+      JOURNAL_EXPLAIN_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildJournalExplainPrompt(deps.journal.prompts.explain, req),
+        userMessage: journalExplainUserMessage(req),
+      }),
+    ),
+  );
 
   return app;
 }

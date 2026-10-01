@@ -4,6 +4,9 @@ import { SENTENCE_GEN_RESPONSE_JSON_SCHEMA, TURN_RESPONSE_JSON_SCHEMA } from '..
 import {
   ProviderRetryableError,
   type ProviderAdapter,
+  type JsonTaskAdapter,
+  type JsonTaskRequest,
+  type JsonTaskResult,
   type ProviderResult,
   type SentenceGenAdapter,
   type SentenceProviderResult,
@@ -11,15 +14,16 @@ import {
 
 const SENTENCE_GEN_KICKOFF = 'Generate the sentences now.';
 
-function toOpenAiMessages(systemPrompt: string, history: TurnHistoryEntry[]): OpenAI.ChatCompletionMessageParam[] {
+function toOpenAiMessages(
+  systemPrompt: string,
+  history: TurnHistoryEntry[],
+): OpenAI.ChatCompletionMessageParam[] {
   return [
     { role: 'system', content: systemPrompt },
-    ...history.map(
-      (h): OpenAI.ChatCompletionMessageParam => ({
-        role: h.role === 'npc' ? 'assistant' : 'user',
-        content: h.zh || h.en || '',
-      }),
-    ),
+    ...history.map((h): OpenAI.ChatCompletionMessageParam => ({
+      role: h.role === 'npc' ? 'assistant' : 'user',
+      content: h.zh || h.en || '',
+    })),
   ];
 }
 
@@ -31,7 +35,7 @@ function isRetryable(err: unknown): 'rate_limit' | 'quota' | undefined {
   return undefined;
 }
 
-export class OpenAiAdapter implements ProviderAdapter, SentenceGenAdapter {
+export class OpenAiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonTaskAdapter {
   readonly name = 'openai' as const;
   private readonly client: OpenAI;
 
@@ -92,7 +96,11 @@ export class OpenAiAdapter implements ProviderAdapter, SentenceGenAdapter {
         ],
         response_format: {
           type: 'json_schema',
-          json_schema: { name: 'sentence_gen_response', schema: SENTENCE_GEN_RESPONSE_JSON_SCHEMA, strict: false },
+          json_schema: {
+            name: 'sentence_gen_response',
+            schema: SENTENCE_GEN_RESPONSE_JSON_SCHEMA,
+            strict: false,
+          },
         },
       });
     } catch (err) {
@@ -108,6 +116,51 @@ export class OpenAiAdapter implements ProviderAdapter, SentenceGenAdapter {
     } catch (err) {
       throw new ProviderRetryableError(
         `OpenAI returned invalid JSON: ${err instanceof Error ? err.message : String(err)}`,
+        'invalid_json',
+      );
+    }
+
+    return {
+      response: parsed,
+      provider: 'openai',
+      model: this.model,
+      usage: {
+        inputTokens: completion.usage?.prompt_tokens ?? 0,
+        outputTokens: completion.usage?.completion_tokens ?? 0,
+      },
+    };
+  }
+
+  async generateJson<T>(req: JsonTaskRequest<T>): Promise<JsonTaskResult<T>> {
+    let completion;
+    try {
+      completion = await this.client.chat.completions.create({
+        model: this.model,
+        messages: [
+          { role: 'system', content: req.systemPrompt },
+          { role: 'user', content: req.userMessage },
+        ],
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: req.task,
+            schema: req.jsonSchema as Record<string, unknown>,
+            strict: false,
+          },
+        },
+      });
+    } catch (err) {
+      const retryable = isRetryable(err);
+      if (retryable) throw new ProviderRetryableError(`OpenAI ${retryable}`, retryable);
+      throw err;
+    }
+
+    let parsed: T;
+    try {
+      parsed = req.parse(JSON.parse(completion.choices[0]?.message?.content ?? ''));
+    } catch (err) {
+      throw new ProviderRetryableError(
+        `OpenAI returned invalid JSON for ${req.task}: ${err instanceof Error ? err.message : String(err)}`,
         'invalid_json',
       );
     }

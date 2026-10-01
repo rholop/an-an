@@ -1,23 +1,30 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   buildClozeExercise,
+  buildErrorCloze,
   buildLePlacementExercise,
   buildMainlandVsTaiwanExercise,
   buildMultipleChoiceOptions,
   buildReorderExercise,
-  buildSession,
+  buildMixedSession,
   buildWordBankOptions,
   currentFrontierLevel,
   gradeClozeAnswer,
+  gradeErrorAnswer,
+  reviewErrorItem,
+  selectDueErrorItems,
   type ChoiceOption,
   type ClozeInputMode,
+  type ErrorItem,
+  type JournalSentenceSource,
   type Lexicon,
   type Level,
   type NaturalPairExercise,
+  type SessionEntry,
   type SessionItem,
 } from '@anan/core';
 import { db, learnerService } from '../db/instance.js';
-import { allChatLines, recognitionCardsByWordId } from '../db/queries.js';
+import { allChatLines, allJournalSentences, recognitionCardsByWordId } from '../db/queries.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
@@ -25,7 +32,9 @@ import './ClozePage.css';
 
 type Outcome = 'correct' | 'correct_wrong_tone' | 'wrong';
 
-function evidenceKindFor(outcome: Outcome): 'cloze_correct_nohint' | 'cloze_correct_hint' | 'cloze_wrong' {
+function evidenceKindFor(
+  outcome: Outcome,
+): 'cloze_correct_nohint' | 'cloze_correct_hint' | 'cloze_wrong' {
   if (outcome === 'correct') return 'cloze_correct_nohint';
   if (outcome === 'correct_wrong_tone') return 'cloze_correct_hint';
   return 'cloze_wrong';
@@ -49,9 +58,13 @@ export function ClozePage() {
   const lexiconState = useLexicon();
   const scenariosState = useScenarios();
 
-  const [dueCards, setDueCards] = useState<Awaited<ReturnType<typeof learnerService.dueCards>> | null>(null);
+  const [dueCards, setDueCards] = useState<Awaited<
+    ReturnType<typeof learnerService.dueCards>
+  > | null>(null);
   const [knownIds, setKnownIds] = useState<Set<string> | null>(null);
   const [chatLines, setChatLines] = useState<Awaited<ReturnType<typeof allChatLines>> | null>(null);
+  const [journalSentences, setJournalSentences] = useState<JournalSentenceSource[] | null>(null);
+  const [errorItems, setErrorItems] = useState<ErrorItem[] | null>(null);
   const [learnerLevel, setLearnerLevel] = useState<Level>('N1');
 
   useEffect(() => {
@@ -59,17 +72,23 @@ export function ClozePage() {
     let cancelled = false;
     (async () => {
       const now = new Date();
-      const [due, known, lines, recognitionCards] = await Promise.all([
+      const [due, known, lines, recognitionCards, journal, errors] = await Promise.all([
         learnerService.dueCards(now, 200),
         learnerService.knownSet('review'),
         allChatLines(db, scenariosState.scenarios),
         recognitionCardsByWordId(db),
+        allJournalSentences(db),
+        db.errorItems.toArray(),
       ]);
       if (cancelled) return;
+      setJournalSentences(journal);
+      setErrorItems(errors);
       setDueCards(due);
       setKnownIds(known);
       setChatLines(lines);
-      setLearnerLevel(currentFrontierLevel(lexiconState.lexicon.allWords(), [...recognitionCards.values()]));
+      setLearnerLevel(
+        currentFrontierLevel(lexiconState.lexicon.allWords(), [...recognitionCards.values()]),
+      );
     })();
     return () => {
       cancelled = true;
@@ -88,7 +107,7 @@ export function ClozePage() {
   }, [dueCards, lexiconState]);
   const sentenceBankState = useSentenceBank(neededLevels);
 
-  const [session, setSession] = useState<SessionItem[] | null>(null);
+  const [session, setSession] = useState<SessionEntry[] | null>(null);
   const [index, setIndex] = useState(0);
   const [tally, setTally] = useState({ correct: 0, hinted: 0, wrong: 0 });
   const [showBonus, setShowBonus] = useState(false);
@@ -99,16 +118,24 @@ export function ClozePage() {
     sentenceBankState.status === 'ready' &&
     dueCards !== null &&
     knownIds !== null &&
-    chatLines !== null;
+    chatLines !== null &&
+    journalSentences !== null &&
+    errorItems !== null;
+  const dueErrorCount = errorItems
+    ? selectDueErrorItems(errorItems, new Date(), Infinity).length
+    : 0;
 
   function startSession() {
     if (!ready || lexiconState.status !== 'ready' || sentenceBankState.status !== 'ready') return;
-    const built = buildSession(dueCards!, {
+    const built = buildMixedSession(dueCards!, {
       lexicon: lexiconState.lexicon,
       knownIds: knownIds!,
       learnerLevel,
+      journalSentences: journalSentences!,
       chatLines: chatLines!,
       bankSentences: sentenceBankState.sentences,
+      errorItems: errorItems!,
+      now: new Date(),
     });
     setSession(built);
     setIndex(0);
@@ -118,10 +145,25 @@ export function ClozePage() {
 
   async function recordOutcome(item: SessionItem, outcome: Outcome) {
     const now = new Date();
-    await learnerService.record({ item: item.card.item, skill: item.card.skill, kind: evidenceKindFor(outcome), at: now }, now);
+    await learnerService.record(
+      { item: item.card.item, skill: item.card.skill, kind: evidenceKindFor(outcome), at: now },
+      now,
+    );
     setTally((t) => ({
       correct: t.correct + (outcome === 'correct' ? 1 : 0),
       hinted: t.hinted + (outcome === 'correct_wrong_tone' ? 1 : 0),
+      wrong: t.wrong + (outcome === 'wrong' ? 1 : 0),
+    }));
+  }
+
+  /** Phase 5 §7: an error-bank answer reschedules the error item's own FSRS
+   * card. It deliberately writes no learner Evidence — an error item is a
+   * sentence-level drill, not a vocabulary-item review. */
+  async function recordErrorOutcome(error: ErrorItem, outcome: 'correct' | 'wrong') {
+    await db.errorItems.put(reviewErrorItem(error, outcome, new Date()));
+    setTally((t) => ({
+      ...t,
+      correct: t.correct + (outcome === 'correct' ? 1 : 0),
       wrong: t.wrong + (outcome === 'wrong' ? 1 : 0),
     }));
   }
@@ -130,9 +172,11 @@ export function ClozePage() {
     setIndex((i) => i + 1);
   }
 
-  if (lexiconState.status === 'loading' || scenariosState.status === 'loading') return <p>Loading…</p>;
+  if (lexiconState.status === 'loading' || scenariosState.status === 'loading')
+    return <p>Loading…</p>;
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
-  if (scenariosState.status === 'error') return <p>Failed to load scenarios: {scenariosState.error}</p>;
+  if (scenariosState.status === 'error')
+    return <p>Failed to load scenarios: {scenariosState.error}</p>;
 
   if (!session) {
     return (
@@ -140,21 +184,29 @@ export function ClozePage() {
         <h1>Cloze review</h1>
         {!ready ? (
           <p>Loading your review queue…</p>
-        ) : dueCards!.length === 0 ? (
+        ) : dueCards!.length === 0 && dueErrorCount === 0 ? (
           <p>Nothing due right now — nice work.</p>
         ) : (
           <>
             <p className="cloze-level-note">Your level: {learnerLevel}</p>
-            <button onClick={startSession}>Start session ({Math.min(dueCards!.length, 20)} items)</button>
+            {dueErrorCount > 0 && (
+              <p className="cloze-level-note">
+                {dueErrorCount} sentence{dueErrorCount === 1 ? '' : 's'} from your journal
+                corrections {dueErrorCount === 1 ? 'is' : 'are'} due.
+              </p>
+            )}
+            <button onClick={startSession}>
+              Start session ({Math.min(dueCards!.length + dueErrorCount, 20)} items)
+            </button>
           </>
         )}
       </div>
     );
   }
 
-  const item = session[index];
+  const entry = session[index];
 
-  if (!item) {
+  if (!entry) {
     return (
       <div className="cloze-page">
         <h1>Session complete</h1>
@@ -164,11 +216,35 @@ export function ClozePage() {
           <li>{tally.wrong} wrong</li>
         </ul>
         <button onClick={() => setSession(null)}>Back</button>
-        <button onClick={() => setShowBonus((v) => !v)}>{showBonus ? 'Hide' : 'Show'} bonus practice</button>
+        <button onClick={() => setShowBonus((v) => !v)}>
+          {showBonus ? 'Hide' : 'Show'} bonus practice
+        </button>
         {showBonus && <BonusPractice />}
       </div>
     );
   }
+
+  if (entry.kind === 'error') {
+    return (
+      <div className="cloze-page">
+        <div className="cloze-header">
+          <span>
+            Item {index + 1} / {session.length}
+          </span>
+          <span className="cloze-badge">From your journal</span>
+          {entry.error.pattern && <span className="cloze-badge">{entry.error.pattern}</span>}
+        </div>
+        <ErrorClozeView
+          key={entry.error.id}
+          error={entry.error}
+          onAnswer={(outcome) => recordErrorOutcome(entry.error, outcome)}
+          onNext={next}
+        />
+      </div>
+    );
+  }
+
+  const item = entry.item;
 
   return (
     <div className="cloze-page">
@@ -213,17 +289,102 @@ function ExerciseView({
   const exercise = item.source ? buildClozeExercise(item.word, item.source, lexicon) : null;
 
   if (item.exerciseKind === 'typed' && useReorder && item.source) {
-    return <ReorderExerciseView item={item} lexicon={lexicon} answered={answered} onAnswer={handleAnswer} onNext={onNext} />;
+    return (
+      <ReorderExerciseView
+        item={item}
+        lexicon={lexicon}
+        answered={answered}
+        onAnswer={handleAnswer}
+        onNext={onNext}
+      />
+    );
   }
 
   if (item.exerciseKind === 'typed') {
-    return <TypedExerciseView item={item} exercise={exercise} answered={answered} onAnswer={handleAnswer} onNext={onNext} />;
+    return (
+      <TypedExerciseView
+        item={item}
+        exercise={exercise}
+        answered={answered}
+        onAnswer={handleAnswer}
+        onNext={onNext}
+      />
+    );
   }
 
-  return <ChoiceExerciseView item={item} lexicon={lexicon} exercise={exercise} answered={answered} onAnswer={handleAnswer} onNext={onNext} />;
+  return (
+    <ChoiceExerciseView
+      item={item}
+      lexicon={lexicon}
+      exercise={exercise}
+      answered={answered}
+      onAnswer={handleAnswer}
+      onNext={onNext}
+    />
+  );
 }
 
-function SentenceWithBlank({ sentence, start, end }: { sentence: string; start: number; end: number }) {
+function ErrorClozeView({
+  error,
+  onAnswer,
+  onNext,
+}: {
+  error: ErrorItem;
+  onAnswer: (o: 'correct' | 'wrong') => void;
+  onNext: () => void;
+}) {
+  const cloze = buildErrorCloze(error);
+  const [typed, setTyped] = useState('');
+  const [answered, setAnswered] = useState<'correct' | 'wrong' | null>(null);
+
+  function submit() {
+    if (answered || !typed.trim()) return;
+    const outcome = gradeErrorAnswer(typed, error);
+    setAnswered(outcome);
+    onAnswer(outcome);
+  }
+
+  return (
+    <div className="cloze-exercise">
+      <div className="cloze-source-label">from a sentence you corrected in your journal</div>
+      <SentenceWithBlank sentence={cloze.sentence} start={cloze.blankStart} end={cloze.blankEnd} />
+      <p className="cloze-prompt">Fill in the blank with the corrected wording.</p>
+      <div className="cloze-input-row">
+        <input
+          value={typed}
+          onChange={(e) => setTyped(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit()}
+          disabled={answered !== null}
+          placeholder="中文…"
+          aria-label="Corrected wording"
+        />
+        <button onClick={submit} disabled={answered !== null || !typed.trim()}>
+          Submit
+        </button>
+      </div>
+      {answered && (
+        <div className={`cloze-feedback cloze-feedback--${answered}`}>
+          <p>
+            {answered === 'correct'
+              ? '✓ Correct!'
+              : `✗ Not quite — the corrected sentence is ${cloze.sentence}`}
+          </p>
+          <button onClick={onNext}>Next</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SentenceWithBlank({
+  sentence,
+  start,
+  end,
+}: {
+  sentence: string;
+  start: number;
+  end: number;
+}) {
   return (
     <p className="cloze-sentence">
       {sentence.slice(0, start)}
@@ -249,7 +410,9 @@ function ChoiceExerciseView({
   onNext: () => void;
 }) {
   const [options] = useState<ChoiceOption[]>(() =>
-    item.exerciseKind === 'word_bank' ? buildWordBankOptions(item.word, lexicon) : buildMultipleChoiceOptions(item.word, lexicon),
+    item.exerciseKind === 'word_bank'
+      ? buildWordBankOptions(item.word, lexicon)
+      : buildMultipleChoiceOptions(item.word, lexicon),
   );
   const [picked, setPicked] = useState<string | null>(null);
 
@@ -262,9 +425,15 @@ function ChoiceExerciseView({
   return (
     <div className="cloze-exercise">
       {exercise ? (
-        <SentenceWithBlank sentence={exercise.sentence} start={exercise.blankStart} end={exercise.blankEnd} />
+        <SentenceWithBlank
+          sentence={exercise.sentence}
+          start={exercise.blankStart}
+          end={exercise.blankEnd}
+        />
       ) : (
-        <p className="cloze-prompt">Which word means: <strong>{item.word.glossEn || '(no gloss)'}</strong>?</p>
+        <p className="cloze-prompt">
+          Which word means: <strong>{item.word.glossEn || '(no gloss)'}</strong>?
+        </p>
       )}
       <div className="cloze-options">
         {options.map((o) => (
@@ -296,7 +465,9 @@ function TypedExerciseView({
   onAnswer: (o: Outcome) => void;
   onNext: () => void;
 }) {
-  const [mode, setMode] = useState<ClozeInputMode>(item.card.skill === 'production' ? 'hanzi' : 'pinyin');
+  const [mode, setMode] = useState<ClozeInputMode>(
+    item.card.skill === 'production' ? 'hanzi' : 'pinyin',
+  );
   const [typed, setTyped] = useState('');
 
   function submit() {
@@ -307,15 +478,32 @@ function TypedExerciseView({
   return (
     <div className="cloze-exercise">
       {exercise ? (
-        <SentenceWithBlank sentence={exercise.sentence} start={exercise.blankStart} end={exercise.blankEnd} />
+        <SentenceWithBlank
+          sentence={exercise.sentence}
+          start={exercise.blankStart}
+          end={exercise.blankEnd}
+        />
       ) : (
         <p className="cloze-prompt">
-          {mode === 'hanzi' ? <>Type the Chinese word for: <strong>{item.word.glossEn}</strong></> : <>Type the reading of: <strong>{item.word.headword}</strong></>}
+          {mode === 'hanzi' ? (
+            <>
+              Type the Chinese word for: <strong>{item.word.glossEn}</strong>
+            </>
+          ) : (
+            <>
+              Type the reading of: <strong>{item.word.headword}</strong>
+            </>
+          )}
         </p>
       )}
       <div className="cloze-mode-toggle">
         {(['hanzi', 'pinyin', 'zhuyin'] as const).map((m) => (
-          <button key={m} className={mode === m ? 'cloze-mode--active' : ''} onClick={() => setMode(m)} disabled={Boolean(answered)}>
+          <button
+            key={m}
+            className={mode === m ? 'cloze-mode--active' : ''}
+            onClick={() => setMode(m)}
+            disabled={Boolean(answered)}
+          >
             {m}
           </button>
         ))}
@@ -326,7 +514,9 @@ function TypedExerciseView({
           onChange={(e) => setTyped(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit()}
           disabled={Boolean(answered)}
-          placeholder={mode === 'hanzi' ? '中文…' : mode === 'pinyin' ? 'ni3 hao3 / nǐ hǎo' : 'ㄋㄧˇ ㄏㄠˇ'}
+          placeholder={
+            mode === 'hanzi' ? '中文…' : mode === 'pinyin' ? 'ni3 hao3 / nǐ hǎo' : 'ㄋㄧˇ ㄏㄠˇ'
+          }
         />
         <button onClick={submit} disabled={Boolean(answered) || !typed.trim()}>
           Submit
@@ -369,12 +559,15 @@ function ReorderExerciseView({
   return (
     <div className="cloze-exercise">
       <p className="cloze-prompt">Put the sentence back in order:</p>
-      <div className="cloze-reorder-answer">
-        {picked.map((i) => order[i]).join('') || ' '}
-      </div>
+      <div className="cloze-reorder-answer">{picked.map((i) => order[i]).join('') || ' '}</div>
       <div className="cloze-options">
         {order.map((token, i) => (
-          <button key={i} className="cloze-chip" disabled={Boolean(answered) || picked.includes(i)} onClick={() => pick(i)}>
+          <button
+            key={i}
+            className="cloze-chip"
+            disabled={Boolean(answered) || picked.includes(i)}
+            onClick={() => pick(i)}
+          >
             {token}
           </button>
         ))}
@@ -385,7 +578,12 @@ function ReorderExerciseView({
         </button>
       )}
       {answered && (
-        <Feedback outcome={answered} word={item.word} onNext={onNext} correctTextOverride={exercise.correctOrder.join('')} />
+        <Feedback
+          outcome={answered}
+          word={item.word}
+          onNext={onNext}
+          correctTextOverride={exercise.correctOrder.join('')}
+        />
       )}
     </div>
   );
@@ -407,7 +605,8 @@ function Feedback({
       <p>
         {outcome === 'correct' && '✓ Correct!'}
         {outcome === 'correct_wrong_tone' && `Right word, wrong tone — it's ${word.pinyin}`}
-        {outcome === 'wrong' && `✗ Wrong — it's ${correctTextOverride ?? `${word.headword} (${word.pinyin})`}`}
+        {outcome === 'wrong' &&
+          `✗ Wrong — it's ${correctTextOverride ?? `${word.headword} (${word.pinyin})`}`}
       </p>
       <button onClick={onNext}>Next</button>
     </div>
@@ -434,7 +633,9 @@ function BonusPractice() {
       </div>
       {kind && exercise && (
         <div className="cloze-exercise">
-          <p className="cloze-prompt">{kind === 'mainland' ? 'Which is used in Taiwan?' : 'Which sentence is correct?'}</p>
+          <p className="cloze-prompt">
+            {kind === 'mainland' ? 'Which is used in Taiwan?' : 'Which sentence is correct?'}
+          </p>
           <div className="cloze-options">
             <button onClick={() => setRevealed(true)}>{exercise.optionA}</button>
             <button onClick={() => setRevealed(true)}>{exercise.optionB}</button>

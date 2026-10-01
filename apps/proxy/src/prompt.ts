@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { Scenario, SentenceGenRequest, TurnRequest } from '@anan/core';
+import type {
+  JournalCheckRequest,
+  JournalExplainRequest,
+  JournalReviewRequest,
+  Scenario,
+  SentenceGenRequest,
+  TurnRequest,
+} from '@anan/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
@@ -18,7 +25,8 @@ export function loadSentenceGenPromptTemplate(version: string): string {
   return loadPromptFile(`sentence-gen.${version}.md`);
 }
 
-const listOrNone = (items: string[], noneLabel: string) => (items.length > 0 ? items.join('、') : noneLabel);
+const listOrNone = (items: string[], noneLabel: string) =>
+  items.length > 0 ? items.join('、') : noneLabel;
 
 /** Strips the template file's leading HTML comment (editor-facing
  * documentation about the placeholder contract, e.g. "{{like_this}}" as a
@@ -36,7 +44,9 @@ function fillPlaceholders(template: string, replacements: Record<string, string>
 /** Fills data/prompts/tutor-system.*.md's {{placeholders}} from the
  * scenario definition + this turn's request. */
 export function buildSystemPrompt(template: string, scenario: Scenario, req: TurnRequest): string {
-  const goalSteps = scenario.goalSteps.map((g, i) => `${i + 1}. [${g.id}] ${g.description}`).join('\n');
+  const goalSteps = scenario.goalSteps
+    .map((g, i) => `${i + 1}. [${g.id}] ${g.description}`)
+    .join('\n');
 
   return fillPlaceholders(template, {
     npc_name: scenario.npc.name,
@@ -63,7 +73,66 @@ export function buildSentenceGenPrompt(template: string, req: SentenceGenRequest
     pinyin: req.word.pinyin,
     level: req.word.level,
     gloss_en: req.word.glossEn,
-    allowed_vocab: listOrNone(req.allowedVocab, '(none — compose using only the target word itself)'),
+    allowed_vocab: listOrNone(
+      req.allowedVocab,
+      '(none — compose using only the target word itself)',
+    ),
     count: String(req.count),
+  });
+}
+
+export interface JournalPrompts {
+  review: string;
+  check: string;
+  explain: string;
+}
+
+export function loadJournalPromptTemplates(version: string): JournalPrompts {
+  return {
+    review: loadPromptFile(`journal-review.${version}.md`),
+    check: loadPromptFile(`journal-check.${version}.md`),
+    explain: loadPromptFile(`journal-explain.${version}.md`),
+  };
+}
+
+export function buildJournalReviewPrompt(template: string, req: JournalReviewRequest): string {
+  return fillPlaceholders(template, {
+    learner_level: req.learnerLevel,
+    max_issues: String(req.maxIssues),
+    prompt_words: listOrNone(req.promptWords, '(none)'),
+    recurring_patterns: listOrNone(req.recurringPatterns, '(none recorded yet)'),
+  });
+}
+
+export function buildJournalCheckPrompt(template: string): string {
+  return fillPlaceholders(template, {});
+}
+
+export function buildJournalExplainPrompt(template: string, req: JournalExplainRequest): string {
+  return fillPlaceholders(template, { learner_level: req.learnerLevel });
+}
+
+/** The learner's free text goes in the *user* message inside a fenced block,
+ * never into the system prompt — it is data to analyse, not instructions
+ * (a journal entry reading "ignore your rules" must stay a journal entry). */
+export function journalReviewUserMessage(req: JournalReviewRequest): string {
+  return `Review this journal entry. Offsets are JavaScript string indices (0-based, end exclusive) into the text between the markers.\n<<<ENTRY\n${req.text}\nENTRY>>>`;
+}
+
+export function journalCheckUserMessage(req: JournalCheckRequest): string {
+  return JSON.stringify({
+    sentence: req.sentence,
+    original_span: req.original,
+    learner_attempt: req.attempt,
+    suggested_correction: req.correction,
+  });
+}
+
+export function journalExplainUserMessage(req: JournalExplainRequest): string {
+  return JSON.stringify({
+    sentence: req.sentence,
+    original_span: req.original,
+    correction: req.correction,
+    earlier_explanation: req.explanationEn,
   });
 }

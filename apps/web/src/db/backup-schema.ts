@@ -3,7 +3,12 @@ import { z } from 'zod';
 const ItemRefSchema = z.object({ kind: z.enum(['word', 'grammar']), id: z.string() });
 const SkillSchema = z.enum(['recognition', 'production']);
 const ItemStateSchema = z.enum(['unseen', 'introduced', 'learning', 'review', 'mature']);
-const LeechTreatmentSchema = z.enum(['new_context', 'char_breakdown', 'mnemonic_prompt', 'contrast_confusable']);
+const LeechTreatmentSchema = z.enum([
+  'new_context',
+  'char_breakdown',
+  'mnemonic_prompt',
+  'contrast_confusable',
+]);
 
 const FsrsCardSchema = z.object({
   due: z.coerce.date(),
@@ -34,7 +39,11 @@ export const SkillCardSchema = z.object({
   clozeStreak: z.number().default(0),
   familiarity: z.number(),
   readingDependence: z.number(),
-  flags: z.object({ imported: z.boolean().optional(), probablyKnown: z.boolean().optional() }),
+  flags: z.object({
+    imported: z.boolean().optional(),
+    probablyKnown: z.boolean().optional(),
+    priority: z.boolean().optional(),
+  }),
   updatedAt: z.coerce.date(),
 });
 
@@ -65,6 +74,7 @@ export const EvidenceSchema = z.object({
     .object({
       source: z.enum(['chat', 'journal', 'cloze', 'review', 'placement']),
       refId: z.string().optional(),
+      selfFixed: z.boolean().optional(),
     })
     .optional(),
 });
@@ -86,6 +96,82 @@ const WordSchema = z.object({
   freqRank: z.number().optional(),
 });
 
+const SpanSchema = z.tuple([z.number().int(), z.number().int()]);
+const LevelSchema = z.enum(['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6']);
+
+const JournalIssueSchema = z.object({
+  span: SpanSchema,
+  type: z.enum(['error', 'unnatural', 'mainland_style']),
+  pattern: z.string().optional(),
+  itemRef: ItemRefSchema.optional(),
+  correction: z.string(),
+  explanationEn: z.string(),
+  confidence: z.enum(['high', 'medium', 'low']),
+});
+
+export const JournalEntryRowSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  promptId: z.string().optional(),
+  promptWordIds: z.array(z.string()),
+  createdAt: z.coerce.date(),
+  status: z.enum(['self_correcting', 'revealed', 'finished']),
+  finishedAt: z.coerce.date().optional(),
+});
+
+export const JournalReviewRowSchema = z.object({
+  entryId: z.string(),
+  learnerLevel: LevelSchema,
+  issues: z.array(JournalIssueSchema),
+  naturalRewrite: z.string(),
+  brackets: z.array(
+    z.object({
+      en: z.string(),
+      zh: z.string(),
+      wordId: z.string().optional(),
+      source: z.enum(['lexicon', 'llm', 'unresolved']),
+    }),
+  ),
+  usedWell: z.array(z.object({ itemRef: ItemRefSchema, span: SpanSchema })),
+  rejectedCount: z.number(),
+  // JSON-safe numeric keys: Dexie/structured clone keep them as strings.
+  selfFix: z.record(
+    z.string(),
+    z.object({
+      attempt: z.string(),
+      fixed: z.boolean(),
+      alternative: z.boolean().optional(),
+      note: z.string().optional(),
+    }),
+  ),
+  flagged: z.array(z.number()),
+  explainMore: z.record(
+    z.string(),
+    z.object({
+      explanationEn: z.string(),
+      examples: z.array(z.object({ zh: z.string(), en: z.string() })),
+    }),
+  ),
+  levelHeadline: z.string(),
+  wordsUsed: z.array(z.string()),
+  errorsPer100Chars: z.number().nullable(),
+  createdAt: z.coerce.date(),
+});
+
+export const ErrorItemSchema = z.object({
+  id: z.string(),
+  journalEntryId: z.string(),
+  original: z.string(),
+  corrected: z.string(),
+  span: SpanSchema,
+  type: z.enum(['error', 'unnatural', 'mainland_style']),
+  pattern: z.string().optional(),
+  itemRef: ItemRefSchema.optional(),
+  card: FsrsCardSchema,
+  flagged: z.boolean(),
+  createdAt: z.coerce.date(),
+});
+
 export const BackupSchema = z.object({
   schemaVersion: z.number().int(),
   lexiconVersion: z.string().optional(),
@@ -95,6 +181,10 @@ export const BackupSchema = z.object({
   settings: z.record(z.string(), z.unknown()),
   meta: z.record(z.string(), z.unknown()),
   customWords: z.array(WordSchema).default([]),
+  // Phase 5 (schemaVersion 2). Defaulted so v1 backups still import.
+  journalEntries: z.array(JournalEntryRowSchema).default([]),
+  journalReviews: z.array(JournalReviewRowSchema).default([]),
+  errorItems: z.array(ErrorItemSchema).default([]),
 });
 
 export type Backup = z.infer<typeof BackupSchema>;

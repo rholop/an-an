@@ -1,10 +1,22 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Evidence, ItemRef, Level, Skill, SkillCard, TurnToken, Word } from '@anan/core';
+import type {
+  ErrorItem,
+  Evidence,
+  ItemRef,
+  JournalIssue,
+  Level,
+  SelfFixRecord,
+  Skill,
+  SkillCard,
+  TurnToken,
+  UsedWell,
+  Word,
+} from '@anan/core';
 
 /** Schema version for export/import compatibility checks — bump whenever a
  * Dexie `.version()` changes the stored shape in a way old backups can't
  * satisfy. Independent of the lexicon version (data/build/lexicon.v*.json). */
-export const DB_SCHEMA_VERSION = 1;
+export const DB_SCHEMA_VERSION = 2;
 
 export function itemPk(item: ItemRef, skill: Skill): string {
   return `${item.kind}:${item.id}:${skill}`;
@@ -68,6 +80,55 @@ export interface TurnRow {
   at: Date;
 }
 
+/** Phase 5. Ids are random uuid strings (CLAUDE.md: ids are stable strings,
+ * never row numbers). */
+export interface JournalEntryRow {
+  id: string;
+  text: string;
+  /** The daily prompt this entry answered (WritingPrompt.id), if any. */
+  promptId?: string;
+  /** Lexicon ids of the "try to use these" words shown with the prompt. */
+  promptWordIds: string[];
+  createdAt: Date;
+  /** self_correcting: highlights shown, answers hidden. revealed: corrections
+   * visible, flags/explain-more available. finished: evidence + error bank
+   * written; the entry is closed. */
+  status: 'self_correcting' | 'revealed' | 'finished';
+  finishedAt?: Date;
+}
+
+export interface ResolvedBracket {
+  en: string;
+  zh: string;
+  wordId?: string;
+  /** 'lexicon' wins over 'llm' (phase doc §2); 'unresolved' means neither knew. */
+  source: 'lexicon' | 'llm' | 'unresolved';
+}
+
+export interface JournalReviewRow {
+  /** Same as the entry's id — one review per entry. */
+  entryId: string;
+  learnerLevel: Level;
+  /** Validated and capped (never more than 3). Index = issue number used by
+   * selfFix / flagged / explainMore. */
+  issues: JournalIssue[];
+  naturalRewrite: string;
+  brackets: ResolvedBracket[];
+  usedWell: UsedWell[];
+  /** How many raw model items validation threw away (dev metric). */
+  rejectedCount: number;
+  selfFix: Record<number, SelfFixRecord>;
+  /** Issue indices the learner flagged as wrong (dev metric + excluded from
+   * the error bank). */
+  flagged: number[];
+  explainMore: Record<number, { explanationEn: string; examples: { zh: string; en: string }[] }>;
+  levelHeadline: string;
+  wordsUsed: string[];
+  /** Updated when the entry is finished (flagged issues don't count). */
+  errorsPer100Chars: number | null;
+  createdAt: Date;
+}
+
 export class AnanDB extends Dexie {
   items!: EntityTable<ItemRow, 'pk'>;
   evidence!: EntityTable<EvidenceRow, 'id'>;
@@ -80,6 +141,10 @@ export class AnanDB extends Dexie {
   /** Phase 3: chat history. Phase 4 builds cloze from `turns`. */
   conversations!: EntityTable<ConversationRow, 'id'>;
   turns!: EntityTable<TurnRow, 'id'>;
+  /** Phase 5: journal. */
+  journalEntries!: EntityTable<JournalEntryRow, 'id'>;
+  journalReviews!: EntityTable<JournalReviewRow, 'entryId'>;
+  errorItems!: EntityTable<ErrorItem, 'id'>;
 
   constructor(name = 'anan') {
     super(name);
@@ -92,5 +157,16 @@ export class AnanDB extends Dexie {
       conversations: '++id, scenarioId, startedAt',
       turns: '++id, conversationId, at',
     });
+    // v2 (Phase 5): journal tables. Purely additive, so the upgrade has no
+    // rows to rewrite — it just records when journal mode was first enabled.
+    this.version(2)
+      .stores({
+        journalEntries: 'id, createdAt, status',
+        journalReviews: 'entryId, createdAt',
+        errorItems: 'id, journalEntryId, card.due, pattern',
+      })
+      .upgrade(async (tx) => {
+        await tx.table('meta').put({ key: 'journalEnabledAt', value: new Date() });
+      });
   }
 }

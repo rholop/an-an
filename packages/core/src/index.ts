@@ -21,3 +21,4 @@ export * from './cloze/source.js';
 export * from './cloze/grading.js';
 export * from './cloze/exercise.js';
 export * from './cloze/session.js';
+export * from './journal/index.js';

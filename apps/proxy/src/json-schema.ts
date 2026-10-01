@@ -52,7 +52,14 @@ export const TURN_RESPONSE_JSON_SCHEMA = {
     },
     recast_zh: { type: 'string' },
   },
-  required: ['reply_zh', 'reply_en', 'tokens', 'targets_used', 'suggested_replies', 'goal_progress'],
+  required: [
+    'reply_zh',
+    'reply_en',
+    'tokens',
+    'targets_used',
+    'suggested_replies',
+    'goal_progress',
+  ],
 } as const;
 
 /** Same approach as TURN_RESPONSE_JSON_SCHEMA above, for SentenceGenResponse
@@ -84,4 +91,82 @@ export const SENTENCE_GEN_RESPONSE_JSON_SCHEMA = {
     },
   },
   required: ['sentences'],
+} as const;
+
+const ITEM_REF_SCHEMA = {
+  type: 'object',
+  properties: { kind: { type: 'string', enum: ['word', 'grammar'] }, id: { type: 'string' } },
+  required: ['kind', 'id'],
+} as const;
+
+const SPAN_SCHEMA = {
+  type: 'array',
+  items: { type: 'integer' },
+  minItems: 2,
+  maxItems: 2,
+} as const;
+
+/** JournalReview (POST /v1/journal-review — phase doc 05 §3). */
+export const JOURNAL_REVIEW_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    issues: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          span: SPAN_SCHEMA,
+          type: { type: 'string', enum: ['error', 'unnatural', 'mainland_style'] },
+          pattern: { type: 'string' },
+          itemRef: ITEM_REF_SCHEMA,
+          correction: { type: 'string' },
+          explanationEn: { type: 'string' },
+          confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+        },
+        required: ['span', 'type', 'correction', 'explanationEn', 'confidence'],
+      },
+    },
+    natural_rewrite: { type: 'string' },
+    brackets: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { en: { type: 'string' }, zh: { type: 'string' }, wordId: { type: 'string' } },
+        required: ['en', 'zh'],
+      },
+    },
+    used_well: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { itemRef: ITEM_REF_SCHEMA, span: SPAN_SCHEMA },
+        required: ['itemRef', 'span'],
+      },
+    },
+  },
+  required: ['issues', 'natural_rewrite', 'brackets', 'used_well'],
+} as const;
+
+/** JournalCheckResponse (POST /v1/journal-check). */
+export const JOURNAL_CHECK_JSON_SCHEMA = {
+  type: 'object',
+  properties: { acceptable: { type: 'boolean' }, noteEn: { type: 'string' } },
+  required: ['acceptable', 'noteEn'],
+} as const;
+
+/** JournalExplainResponse (POST /v1/journal-explain). */
+export const JOURNAL_EXPLAIN_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    explanationEn: { type: 'string' },
+    examples: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { zh: { type: 'string' }, en: { type: 'string' } },
+        required: ['zh', 'en'],
+      },
+    },
+  },
+  required: ['explanationEn', 'examples'],
 } as const;

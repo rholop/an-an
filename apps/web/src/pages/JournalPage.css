@@ -1,0 +1,124 @@
+.journal-page h2 {
+  margin-top: 1.25rem;
+}
+.journal-disclaimer {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+.journal-dev-toggle {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+.journal-muted {
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+.journal-ok {
+  color: #2e7d32;
+}
+.journal-error {
+  color: #c62828;
+}
+
+.journal-prompt {
+  font-size: 1.15rem;
+}
+.journal-prompt-words ul {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+.journal-word--used {
+  color: #2e7d32;
+}
+
+.journal-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  line-height: 1.7;
+}
+
+.journal-text {
+  font-size: 1.3rem;
+  line-height: 2;
+  white-space: pre-wrap;
+}
+.journal-hl {
+  padding: 0.05rem 0.35rem;
+  border-radius: 4px;
+  color: inherit;
+}
+.journal-hl--error {
+  background: rgba(198, 40, 40, 0.28);
+  box-shadow: inset 0 -2px 0 #c62828;
+}
+.journal-hl--unnatural {
+  background: rgba(239, 160, 0, 0.3);
+  box-shadow: inset 0 -2px 0 #ef9a00;
+}
+.journal-hl--mainland_style {
+  background: rgba(21, 101, 192, 0.28);
+  box-shadow: inset 0 -2px 0 #1565c0;
+}
+.journal-legend {
+  font-size: 0.8rem;
+}
+
+.journal-fixes {
+  padding-left: 1.2rem;
+}
+.journal-fixes li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+.journal-fixes input {
+  font-size: 1.1rem;
+  padding: 0.3rem 0.5rem;
+  min-width: 8rem;
+}
+
+.journal-issue {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.08);
+}
+.journal-issue--flagged {
+  opacity: 0.6;
+}
+.journal-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.journal-more {
+  padding-left: 0.75rem;
+  border-left: 3px solid rgba(127, 127, 127, 0.4);
+}
+
+.journal-brackets,
+.journal-rewrite,
+.journal-summary {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.08);
+}
+
+.journal-progress {
+  margin-top: 2rem;
+}
+.journal-chart {
+  width: 100%;
+  max-width: 420px;
+  color: #1565c0;
+}

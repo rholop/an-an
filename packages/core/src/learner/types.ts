@@ -1,7 +1,8 @@
 import type { Card } from 'ts-fsrs';
 import type { Evidence, ItemRef, ItemState, Skill } from '../types.js';
 
-export type LeechTreatment = 'new_context' | 'char_breakdown' | 'mnemonic_prompt' | 'contrast_confusable';
+export type LeechTreatment =
+  'new_context' | 'char_breakdown' | 'mnemonic_prompt' | 'contrast_confusable';
 
 /** Phase 4 cloze difficulty ladder: 1 word bank, 2 multiple choice, 3 typed
  * from memory. See cloze/ladder.ts. */
@@ -35,7 +36,14 @@ export interface SkillCard {
   familiarity: number;
   /** 0 (reads characters, no pinyin dependence) .. 1 (always needs pinyin). */
   readingDependence: number;
-  flags: { imported?: boolean; probablyKnown?: boolean };
+  flags: {
+    imported?: boolean;
+    probablyKnown?: boolean;
+    /** Phase 5 gap capture: a word the learner needed mid-sentence
+     * (`[gym]`). Not-yet-reviewed cards with this flag jump the queue in
+     * buildSession. */
+    priority?: boolean;
+  };
   updatedAt: Date;
 }
 
@@ -54,6 +62,10 @@ export interface LearnerConfig {
   readingDependenceStep: number;
   /** Conservative initial stability (days) for anki_import_seen. */
   importedInitialStability: number;
+  /** Phase 5 §6: a journal_misuse the learner fixed themselves gets a milder
+   * effect than a plain misuse — 'none' (just introduce/touch the card, no
+   * FSRS rating) or 'hard' (same as an unaided misuse). */
+  selfFixedMisuseEffect: 'none' | 'hard';
 }
 
 export const DEFAULT_LEARNER_CONFIG: LearnerConfig = {
@@ -64,6 +76,7 @@ export const DEFAULT_LEARNER_CONFIG: LearnerConfig = {
   familiarityStep: 0.25,
   readingDependenceStep: 0.15,
   importedInitialStability: 3,
+  selfFixedMisuseEffect: 'none',
 };
 
 /** Result of applying one piece of evidence to one (possibly nonexistent)

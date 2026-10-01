@@ -4,6 +4,9 @@ import { SENTENCE_GEN_RESPONSE_JSON_SCHEMA, TURN_RESPONSE_JSON_SCHEMA } from '..
 import {
   ProviderRetryableError,
   type ProviderAdapter,
+  type JsonTaskAdapter,
+  type JsonTaskRequest,
+  type JsonTaskResult,
   type ProviderResult,
   type SentenceGenAdapter,
   type SentenceProviderResult,
@@ -27,7 +30,7 @@ function isRetryable(err: unknown): 'rate_limit' | 'quota' | undefined {
   return undefined;
 }
 
-export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter {
+export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonTaskAdapter {
   readonly name = 'gemini' as const;
   private readonly client: GoogleGenerativeAI;
 
@@ -114,6 +117,48 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter {
     } catch (err) {
       throw new ProviderRetryableError(
         `Gemini returned invalid JSON: ${err instanceof Error ? err.message : String(err)}`,
+        'invalid_json',
+      );
+    }
+
+    const usage = result.response.usageMetadata;
+    return {
+      response: parsed,
+      provider: 'gemini',
+      model: this.model,
+      usage: {
+        inputTokens: usage?.promptTokenCount ?? 0,
+        outputTokens: usage?.candidatesTokenCount ?? 0,
+      },
+    };
+  }
+
+  async generateJson<T>(req: JsonTaskRequest<T>): Promise<JsonTaskResult<T>> {
+    const model = this.client.getGenerativeModel({
+      model: this.model,
+      systemInstruction: req.systemPrompt,
+      generationConfig: {
+        responseMimeType: 'application/json',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        responseSchema: req.jsonSchema as any,
+      },
+    });
+
+    let result;
+    try {
+      result = await model.generateContent(req.userMessage);
+    } catch (err) {
+      const retryable = isRetryable(err);
+      if (retryable) throw new ProviderRetryableError(`Gemini ${retryable}`, retryable);
+      throw err;
+    }
+
+    let parsed: T;
+    try {
+      parsed = req.parse(JSON.parse(result.response.text()));
+    } catch (err) {
+      throw new ProviderRetryableError(
+        `Gemini returned invalid JSON for ${req.task}: ${err instanceof Error ? err.message : String(err)}`,
         'invalid_json',
       );
     }

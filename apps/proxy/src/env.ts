@@ -6,6 +6,9 @@ const EnvSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   GEMINI_MODEL_TURN: z.string().default('gemini-1.5-flash'),
   OPENAI_MODEL_TURN: z.string().default('gpt-4o-mini'),
+  // Journal review/check/explain (Phase 5) can use a stronger model than chat.
+  GEMINI_MODEL_JOURNAL: z.string().default('gemini-1.5-flash'),
+  OPENAI_MODEL_JOURNAL: z.string().default('gpt-4o-mini'),
   CORS_ORIGIN: z.string().default('http://localhost:5183'),
   /** Requests per client (install-id header) per minute. */
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(20),

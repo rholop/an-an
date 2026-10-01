@@ -48,6 +48,12 @@ export default [
     languageOptions: { globals: globals.browser },
   },
   {
+    // CommonJS config files (e.g. PM2's ecosystem.config.cjs) run under Node
+    // and legitimately use `__dirname`/`module`.
+    files: ['**/*.cjs'],
+    languageOptions: { sourceType: 'commonjs', globals: globals.node },
+  },
+  {
     files: ['apps/web/scripts/**/*.mjs', 'apps/web/playwright.config.ts'],
     languageOptions: { globals: globals.node },
   },

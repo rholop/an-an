@@ -1,4 +1,18 @@
-import { TurnResponseSchema, type TurnRequest, type TurnResponse, type TutorLLM } from '@anan/core';
+import {
+  JournalCheckResponseSchema,
+  JournalExplainResponseSchema,
+  JournalReviewSchema,
+  TurnResponseSchema,
+  type JournalCheckRequest,
+  type JournalCheckResponse,
+  type JournalExplainRequest,
+  type JournalExplainResponse,
+  type JournalReview,
+  type JournalReviewRequest,
+  type TurnRequest,
+  type TurnResponse,
+  type TutorLLM,
+} from '@anan/core';
 
 function defaultProxyBase(): string {
   const override = import.meta.env.VITE_PROXY_URL;
@@ -36,21 +50,42 @@ export class ProxyTurnError extends Error {
 export class FetchTutorLLM implements TutorLLM {
   constructor(private readonly proxyBase: string = defaultProxyBase()) {}
 
-  async generateTurn(req: TurnRequest): Promise<TurnResponse> {
-    const res = await fetch(`${this.proxyBase}/v1/turn`, {
+  private async post(route: string, body: unknown): Promise<unknown> {
+    const res = await fetch(`${this.proxyBase}${route}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-install-id': getInstallId() },
-      body: JSON.stringify(req),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new ProxyTurnError((body as { error?: string }).error ?? `HTTP ${res.status}`, res.status);
+      const errBody = await res.json().catch(() => ({}));
+      throw new ProxyTurnError(
+        (errBody as { error?: string }).error ?? `HTTP ${res.status}`,
+        res.status,
+      );
     }
+    return res.json();
+  }
 
-    // Validated again client-side even though the proxy already validated
-    // it server-side — never trust a network response shape blindly
-    // (CLAUDE.md: "LLM output is data to validate, never trusted").
-    return TurnResponseSchema.parse(await res.json());
+  // Every response is validated again client-side even though the proxy
+  // already validated it server-side — never trust a network response shape
+  // blindly (CLAUDE.md: "LLM output is data to validate, never trusted").
+  // Journal results additionally go through validateJournalReview() in
+  // JournalService before anything is shown or stored.
+
+  async generateTurn(req: TurnRequest): Promise<TurnResponse> {
+    return TurnResponseSchema.parse(await this.post('/v1/turn', req));
+  }
+
+  async reviewJournal(req: JournalReviewRequest): Promise<JournalReview> {
+    return JournalReviewSchema.parse(await this.post('/v1/journal-review', req));
+  }
+
+  async checkJournalFix(req: JournalCheckRequest): Promise<JournalCheckResponse> {
+    return JournalCheckResponseSchema.parse(await this.post('/v1/journal-check', req));
+  }
+
+  async explainJournalIssue(req: JournalExplainRequest): Promise<JournalExplainResponse> {
+    return JournalExplainResponseSchema.parse(await this.post('/v1/journal-explain', req));
   }
 }

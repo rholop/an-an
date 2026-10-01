@@ -2,7 +2,12 @@ import { Rating, State, type Card, type FSRS, type Grade } from 'ts-fsrs';
 import { nextLadderState, type ClozeOutcome } from '../cloze/ladder.js';
 import type { Evidence } from '../types.js';
 import { buildFsrs, computeItemState, emptyCard } from './fsrs-instance.js';
-import { DEFAULT_LEARNER_CONFIG, type LearnerConfig, type ModelUpdate, type SkillCard } from './types.js';
+import {
+  DEFAULT_LEARNER_CONFIG,
+  type LearnerConfig,
+  type ModelUpdate,
+  type SkillCard,
+} from './types.js';
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
@@ -47,7 +52,10 @@ function applyFsrsRating(
 ): ModelUpdate {
   const base = current ?? blankSkillCard(evidence, emptyCard(now), now);
   const { card } = fsrsInstance.next(base.card, now, grade);
-  return { card: withCard(base, card, now, config), appliedEffect: `fsrs:${Rating[grade].toLowerCase()}` };
+  return {
+    card: withCard(base, card, now, config),
+    appliedEffect: `fsrs:${Rating[grade].toLowerCase()}`,
+  };
 }
 
 /** cloze_correct_nohint/cloze_correct_hint/cloze_wrong: an FSRS rating (same
@@ -68,11 +76,33 @@ function applyClozeAnswer(
 ): ModelUpdate {
   const rated = applyFsrsRating(current, evidence, now, grade, config, fsrsInstance);
   if (!rated.card) return rated;
-  const ladder = nextLadderState({ rung: current?.clozeRung ?? 1, streak: current?.clozeStreak ?? 0 }, outcome);
+  const ladder = nextLadderState(
+    { rung: current?.clozeRung ?? 1, streak: current?.clozeStreak ?? 0 },
+    outcome,
+  );
   return {
     card: { ...rated.card, clozeRung: ladder.rung, clozeStreak: ladder.streak },
     appliedEffect: `${rated.appliedEffect} + ladder:rung${ladder.rung}(streak ${ladder.streak})`,
   };
+}
+
+/** journal_misuse: Hard on the production card — unless the learner fixed it
+ * themselves and config says that earns a milder effect, in which case the
+ * card is only introduced/touched (no FSRS rating consumed). */
+function applyJournalMisuse(
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+  config: LearnerConfig,
+  fsrsInstance: FSRS,
+): ModelUpdate {
+  if (!evidence.context?.selfFixed || config.selfFixedMisuseEffect === 'hard') {
+    return applyFsrsRating(current, evidence, now, Rating.Hard, config, fsrsInstance);
+  }
+  if (current)
+    return { card: { ...current, updatedAt: now }, appliedEffect: 'ignored:self-fixed-misuse' };
+  const base = blankSkillCard(evidence, emptyCard(now), now);
+  return { card: { ...base, state: 'introduced' }, appliedEffect: 'introduce (self-fixed misuse)' };
 }
 
 /** chat_read_no_lookup: weak positive. Never schedules a full FSRS review on
@@ -119,9 +149,13 @@ function applyLookupGloss(
 ): ModelUpdate {
   if (current && (current.state === 'review' || current.state === 'mature')) {
     const { card } = fsrsInstance.next(current.card, now, Rating.Again);
-    return { card: withCard(current, card, now, config), appliedEffect: 'fsrs:again (lookup after review)' };
+    return {
+      card: withCard(current, card, now, config),
+      appliedEffect: 'fsrs:again (lookup after review)',
+    };
   }
-  if (current) return { card: { ...current, updatedAt: now }, appliedEffect: 'ignored:already-introduced' };
+  if (current)
+    return { card: { ...current, updatedAt: now }, appliedEffect: 'ignored:already-introduced' };
   const base = blankSkillCard(evidence, emptyCard(now), now);
   return { card: { ...base, state: 'introduced' }, appliedEffect: 'introduce' };
 }
@@ -129,10 +163,17 @@ function applyLookupGloss(
 /** chat_hover_reading: never touches meaning/FSRS; only nudges
  * readingDependence, used by readingDisplay() for pinyin fading. No-ops on
  * an item that hasn't been introduced yet. */
-function applyHoverReading(current: SkillCard | undefined, now: Date, config: LearnerConfig): ModelUpdate {
+function applyHoverReading(
+  current: SkillCard | undefined,
+  now: Date,
+  config: LearnerConfig,
+): ModelUpdate {
   if (!current) return { card: undefined, appliedEffect: 'ignored:unseen-weak-signal' };
   const readingDependence = clamp01(current.readingDependence + config.readingDependenceStep);
-  return { card: { ...current, readingDependence, updatedAt: now }, appliedEffect: `readingDependence:+${config.readingDependenceStep}` };
+  return {
+    card: { ...current, readingDependence, updatedAt: now },
+    appliedEffect: `readingDependence:+${config.readingDependenceStep}`,
+  };
 }
 
 function applyAnkiImportSeen(evidence: Evidence, now: Date, config: LearnerConfig): ModelUpdate {
@@ -153,7 +194,12 @@ function applyAnkiImportSeen(evidence: Evidence, now: Date, config: LearnerConfi
   };
 }
 
-function applyPlacement(evidence: Evidence, now: Date, config: LearnerConfig, known: boolean): ModelUpdate {
+function applyPlacement(
+  evidence: Evidence,
+  now: Date,
+  config: LearnerConfig,
+  known: boolean,
+): ModelUpdate {
   if (!known) {
     const base = blankSkillCard(evidence, emptyCard(now), now);
     return { card: { ...base, state: 'unseen' }, appliedEffect: 'init:placement-unknown' };
@@ -194,12 +240,14 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   review_good: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
   review_easy: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Easy, cfg, f),
 
-  cloze_correct_nohint: (c, e, n, cfg, f) => applyClozeAnswer(c, e, n, cfg, f, 'correct', Rating.Good),
-  cloze_correct_hint: (c, e, n, cfg, f) => applyClozeAnswer(c, e, n, cfg, f, 'correct_wrong_tone', Rating.Hard),
+  cloze_correct_nohint: (c, e, n, cfg, f) =>
+    applyClozeAnswer(c, e, n, cfg, f, 'correct', Rating.Good),
+  cloze_correct_hint: (c, e, n, cfg, f) =>
+    applyClozeAnswer(c, e, n, cfg, f, 'correct_wrong_tone', Rating.Hard),
   cloze_wrong: (c, e, n, cfg, f) => applyClozeAnswer(c, e, n, cfg, f, 'wrong', Rating.Again),
 
   journal_correct_use: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
-  journal_misuse: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
+  journal_misuse: applyJournalMisuse,
 
   chat_read_no_lookup: (c, e, n, cfg, f) => applyReadNoLookup(c, e, n, cfg, f),
   chat_lookup_gloss: (c, e, n, cfg, f) => applyLookupGloss(c, e, n, cfg, f),

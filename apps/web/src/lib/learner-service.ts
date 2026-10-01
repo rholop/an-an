@@ -39,11 +39,19 @@ export class LearnerService {
    * thousand sequential round-trips. */
   async recordBulk(events: Evidence[], now: Date = new Date()): Promise<SkillCard[]> {
     const currents = await Promise.all(events.map((e) => this.repo.getCard(e.item, e.skill)));
-    const results = events.map((e, i) => applyEvidence(currents[i], e, now, this.config, this.fsrsInstance));
+    const results = events.map((e, i) =>
+      applyEvidence(currents[i], e, now, this.config, this.fsrsInstance),
+    );
     const cards = results.map((r) => r.card).filter((c): c is SkillCard => c !== undefined);
     await this.repo.putCards(cards);
     await this.repo.appendEvidence(events);
     return cards;
+  }
+
+  /** Writes a card as-is (no evidence) — for flags like Phase 5's `priority`
+   * that sit on the card but aren't learner evidence. */
+  putCard(card: SkillCard): Promise<void> {
+    return this.repo.putCards([card]);
   }
 
   dueCards(now: Date = new Date(), limit = 50): Promise<SkillCard[]> {
