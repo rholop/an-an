@@ -108,8 +108,8 @@ git clone <this-repo-url> /home/an-an
 cd /home/an-an
 corepack enable
 pnpm install --frozen-lockfile
-cp apps/proxy/.env.example apps/proxy/.env.production   # fill in real keys
-pm2 start apps/proxy/ecosystem.config.js --env production
+cp apps/proxy/.env.example apps/proxy/.env   # fill in real keys (loaded at startup; gitignored)
+pm2 start apps/proxy/ecosystem.config.cjs --env production
 pm2 save
 ```
 

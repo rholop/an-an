@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { serve } from '@hono/node-server';
 import { createApp } from './app.js';
 import { PromptCache } from './cache.js';
@@ -9,6 +11,11 @@ import type { ProviderAdapter, SentenceGenAdapter, SentenceProviderResult } from
 import { loadPromptTemplate, loadSentenceGenPromptTemplate } from './prompt.js';
 import { RateLimiter } from './rate-limit.js';
 import { loadScenarioStore } from './scenarios.js';
+
+// Load apps/proxy/.env if present (src/ and dist/ are both one level below it).
+// Real environment variables win; loadEnvFile never overrides existing ones.
+const envFile = fileURLToPath(new URL('../.env', import.meta.url));
+if (existsSync(envFile)) process.loadEnvFile(envFile);
 
 const env = loadEnv();
 

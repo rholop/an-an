@@ -1,6 +1,6 @@
 // PM2 process config — mirrors the shoyu-chat deploy pattern on the same
 // droplet (see ../../docs/related-repos.md). Deployed at /home/an-an on
-// the server; `pm2 start ecosystem.config.js --env production`.
+// the server; `pm2 start ecosystem.config.cjs --env production`.
 module.exports = {
   apps: [
     {
