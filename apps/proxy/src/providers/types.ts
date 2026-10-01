@@ -45,3 +45,30 @@ export interface SentenceGenAdapter {
   readonly name: 'gemini' | 'openai';
   generateSentences(systemPrompt: string): Promise<SentenceProviderResult>;
 }
+
+/** Phase 5's journal endpoints (review, alternative-fix check, explain-more)
+ * all share one shape — system prompt + user message in, schema-checked JSON
+ * out — so they go through one generic method instead of one adapter method
+ * per endpoint. */
+export interface JsonTaskRequest<T> {
+  /** Cache/log label, e.g. 'journal_review'. */
+  task: string;
+  systemPrompt: string;
+  userMessage: string;
+  /** Provider structured-output schema (see json-schema.ts). */
+  jsonSchema: object;
+  /** Zod-parses the raw JSON; a throw becomes ProviderRetryableError('invalid_json'). */
+  parse: (raw: unknown) => T;
+}
+
+export interface JsonTaskResult<T> {
+  response: T;
+  provider: 'gemini' | 'openai';
+  model: string;
+  usage: { inputTokens: number; outputTokens: number };
+}
+
+export interface JsonTaskAdapter {
+  readonly name: 'gemini' | 'openai';
+  generateJson<T>(req: JsonTaskRequest<T>): Promise<JsonTaskResult<T>>;
+}

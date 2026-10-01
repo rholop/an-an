@@ -52,5 +52,10 @@ export interface Evidence {
     | 'placement_known'
     | 'placement_unknown';
   at: Date;
-  context?: { source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement'; refId?: string };
+  context?: {
+    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement';
+    refId?: string;
+    /** Phase 5: a journal_misuse the learner corrected themselves. */
+    selfFixed?: boolean;
+  };
 }

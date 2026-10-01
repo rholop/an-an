@@ -2,6 +2,9 @@ import type { SentenceGenResponse, TurnResponse } from '@anan/core';
 import {
   ProviderRetryableError,
   type ProviderAdapter,
+  type JsonTaskAdapter,
+  type JsonTaskRequest,
+  type JsonTaskResult,
   type ProviderResult,
   type SentenceGenAdapter,
   type SentenceProviderResult,
@@ -24,7 +27,10 @@ export class FakeProviderAdapter implements ProviderAdapter {
     this.calls++;
     if (this.behavior.kind === 'throw') throw this.behavior.error;
     if (this.behavior.kind === 'error') {
-      throw new ProviderRetryableError(this.behavior.message ?? this.behavior.reason, this.behavior.reason);
+      throw new ProviderRetryableError(
+        this.behavior.message ?? this.behavior.reason,
+        this.behavior.reason,
+      );
     }
     return {
       response: this.behavior.response,
@@ -65,7 +71,10 @@ export class FakeSentenceGenAdapter implements SentenceGenAdapter {
     this.calls++;
     if (this.behavior.kind === 'throw') throw this.behavior.error;
     if (this.behavior.kind === 'error') {
-      throw new ProviderRetryableError(this.behavior.message ?? this.behavior.reason, this.behavior.reason);
+      throw new ProviderRetryableError(
+        this.behavior.message ?? this.behavior.reason,
+        this.behavior.reason,
+      );
     }
     return {
       response: this.behavior.response,
@@ -76,9 +85,51 @@ export class FakeSentenceGenAdapter implements SentenceGenAdapter {
   }
 }
 
-export function fakeSentenceGenResponse(overrides: Partial<SentenceGenResponse> = {}): SentenceGenResponse {
+export function fakeSentenceGenResponse(
+  overrides: Partial<SentenceGenResponse> = {},
+): SentenceGenResponse {
   return {
-    sentences: [{ zh: '我喜歡喝珍珠奶茶。', en: 'I like to drink bubble tea.', tokens: [{ text: '我' }, { text: '喜歡' }] }],
+    sentences: [
+      {
+        zh: '我喜歡喝珍珠奶茶。',
+        en: 'I like to drink bubble tea.',
+        tokens: [{ text: '我' }, { text: '喜歡' }],
+      },
+    ],
     ...overrides,
   };
+}
+
+/** Scripted JsonTaskAdapter: returns `respond(req)` (already-parsed data),
+ * after running the request's own `parse` so schema drift in a test fixture
+ * fails the same way a bad provider response would. */
+export class FakeJsonAdapter implements JsonTaskAdapter {
+  calls = 0;
+
+  constructor(
+    public readonly name: 'gemini' | 'openai',
+    private readonly behavior:
+      | { kind: 'success'; respond: (req: JsonTaskRequest<unknown>) => unknown }
+      | { kind: 'error'; reason: 'rate_limit' | 'quota' | 'invalid_json' }
+      | { kind: 'throw'; error: Error },
+  ) {}
+
+  async generateJson<T>(req: JsonTaskRequest<T>): Promise<JsonTaskResult<T>> {
+    this.calls++;
+    if (this.behavior.kind === 'throw') throw this.behavior.error;
+    if (this.behavior.kind === 'error')
+      throw new ProviderRetryableError(this.behavior.reason, this.behavior.reason);
+    let response: T;
+    try {
+      response = req.parse(this.behavior.respond(req as JsonTaskRequest<unknown>));
+    } catch (err) {
+      throw new ProviderRetryableError(String(err), 'invalid_json');
+    }
+    return {
+      response,
+      provider: this.name,
+      model: `fake-${this.name}`,
+      usage: { inputTokens: 10, outputTokens: 10 },
+    };
+  }
 }

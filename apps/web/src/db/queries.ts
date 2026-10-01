@@ -1,4 +1,10 @@
-import type { ChatLineSource, Scenario, SkillCard } from '@anan/core';
+import {
+  journalSentencesFromEntry,
+  type ChatLineSource,
+  type JournalSentenceSource,
+  type Scenario,
+  type SkillCard,
+} from '@anan/core';
 import type { AnanDB } from './schema.js';
 
 /** Count of cards due on each of the next `days` calendar days (today
@@ -50,7 +56,10 @@ export async function recognitionCardsByWordId(db: AnanDB): Promise<Map<string, 
  * static fetched asset, not learner-owned state (see useScenarios.ts). */
 export async function allChatLines(db: AnanDB, scenarios: Scenario[]): Promise<ChatLineSource[]> {
   const scenarioById = new Map(scenarios.map((s) => [s.id, s]));
-  const [turns, conversations] = await Promise.all([db.turns.toArray(), db.conversations.toArray()]);
+  const [turns, conversations] = await Promise.all([
+    db.turns.toArray(),
+    db.conversations.toArray(),
+  ]);
   const conversationById = new Map(conversations.map((c) => [c.id!, c]));
 
   const lines: ChatLineSource[] = [];
@@ -66,4 +75,26 @@ export async function allChatLines(db: AnanDB, scenarios: Scenario[]): Promise<C
     });
   }
   return lines;
+}
+
+/** Phase 5 §9: the learner's own correctly-written journal sentences, shaped
+ * for core's selectClozeSource(). Entries without a review (or whose review
+ * hasn't been finished) contribute nothing, and any sentence a review raised
+ * an issue about is left out. */
+export async function allJournalSentences(db: AnanDB): Promise<JournalSentenceSource[]> {
+  const [entries, reviews] = await Promise.all([
+    db.journalEntries.toArray(),
+    db.journalReviews.toArray(),
+  ]);
+  const reviewByEntry = new Map(reviews.map((r) => [r.entryId, r]));
+  return entries
+    .filter((e) => e.status === 'finished')
+    .flatMap((e) => {
+      const review = reviewByEntry.get(e.id);
+      return journalSentencesFromEntry(
+        e.text,
+        review ? review.issues.map((i) => i.span) : null,
+        e.finishedAt ?? e.createdAt,
+      );
+    });
 }

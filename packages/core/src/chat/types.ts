@@ -1,5 +1,13 @@
 import { z } from 'zod';
 import { LevelSchema } from './level-schema.js';
+import type {
+  JournalCheckRequest,
+  JournalCheckResponse,
+  JournalExplainRequest,
+  JournalExplainResponse,
+  JournalReview,
+  JournalReviewRequest,
+} from '../journal/types.js';
 
 // Shared between apps/proxy (request handling) and apps/web (fetch calls) —
 // phase doc §3 "Request/response validated with zod schemas that live in
@@ -67,9 +75,15 @@ export type TurnResponse = z.infer<typeof TurnResponseSchema>;
 
 /**
  * core's own LLM-agnostic contract — apps/web implements this via fetch to
- * apps/proxy; tests use a fake. Phase 5 adds reviewJournal(); Phase 4 may
- * add generateSentences().
+ * apps/proxy; tests use a fake. Phase 5 adds the journal methods. Their
+ * results are raw model output: callers must run validateJournalReview()
+ * (journal/validate.ts) before trusting any of it.
  */
 export interface TutorLLM {
   generateTurn(req: TurnRequest): Promise<TurnResponse>;
+  reviewJournal(req: JournalReviewRequest): Promise<JournalReview>;
+  /** Is the learner's own fix of a flagged span acceptable? */
+  checkJournalFix(req: JournalCheckRequest): Promise<JournalCheckResponse>;
+  /** The "explain more" follow-up on one correction. */
+  explainJournalIssue(req: JournalExplainRequest): Promise<JournalExplainResponse>;
 }

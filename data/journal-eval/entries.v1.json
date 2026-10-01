@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "learnerLevel": "L2",
+  "entries": [
+    { "id": "clean-night-market", "text": "今天我跟朋友去夜市吃東西。我們吃了臭豆腐，很好吃。", "expect": "No issues. A correct entry must not be nitpicked." },
+    { "id": "le-placement", "text": "我昨天吃飯了三碗。", "expect": "One error, pattern了-placement: 吃了三碗飯." },
+    { "id": "mainland-vocab", "text": "我每天坐地鐵去上班，用手機看視頻。", "expect": "Two mainland_style issues: 地鐵→捷運, 視頻→影片." },
+    { "id": "measure-word", "text": "我有三個貓，牠們很可愛。", "expect": "One error, measure-word: 個→隻." },
+    { "id": "bi-construction", "text": "我比他很高。", "expect": "One error, 比 + degree adverb: 我比他高 / 我比他高很多." },
+    { "id": "gaps", "text": "週末我想去 [gym]，然後喝一杯 [bubble tea]。", "expect": "No issues inside the brackets. brackets: 健身房 and 珍珠奶茶 (or 波霸奶茶)." },
+    { "id": "neng-hui", "text": "我的朋友可以說很好的中文。", "expect": "At most one issue: 可以說→會說 (ability), medium confidence is fine." },
+    { "id": "mainland-online", "text": "我在網上買了一個軟件。", "expect": "mainland_style: 網上→網路, 軟件→軟體." },
+    { "id": "short-correct", "text": "我今天很累，所以早點睡覺。", "expect": "No issues." },
+    { "id": "many-errors-cap", "text": "我昨天去了夜市吃飯了三碗，買東西了很多，我比朋友很高興，我有三個貓，我坐地鐵回家。", "expect": "Capped at 3 issues, errors before mainland/style wording." }
+  ]
+}
