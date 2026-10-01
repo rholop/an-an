@@ -62,8 +62,8 @@ prior art for apps/proxy, specifically:
   the An'an-specific deploy steps and the secrets that still need
   configuring in this repo's GitHub settings before `deploy.yml` does
   anything.
-- **Process manager**: PM2, `ecosystem.config.js` per app, one port per app
+- **Process manager**: PM2, `ecosystem.config.cjs` per app, one port per app
   (shoyu-chat uses 3001; An'an's proxy uses 3002 — see
-  `apps/proxy/ecosystem.config.js`).
+  `apps/proxy/ecosystem.config.cjs`).
 - Both apps are single-user/no-accounts and keep API keys server-side only
   — the same constraint CLAUDE.md sets for An'an's proxy.
