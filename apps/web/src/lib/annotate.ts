@@ -1,4 +1,4 @@
-import { Lexicon, resolveReading, segment, type Level, type Token } from '@anan/core';
+import { Lexicon, readingDisplay, resolveReading, segment, type Level, type SkillCard, type Token } from '@anan/core';
 import type { AnnotatedToken } from '../components/AnnotatedText.js';
 
 /** Segments `text` and resolves a reading/level/gloss for every token,
@@ -25,4 +25,21 @@ export function annotate(text: string, lexicon: Lexicon): AnnotatedToken[] {
 
 export function tokensOnly(annotated: AnnotatedToken[]): Token[] {
   return annotated.map((a) => a.token);
+}
+
+/** Attaches Phase 2's pinyin-fading decision (readingDisplay()) to each
+ * token, keyed by the recognition-skill card for its wordId. Words with no
+ * card yet (never seen) are left without a readingMode, which AnnotatedText
+ * treats as 'shown' — the safe default for something the learner hasn't
+ * met. */
+export function withReadingDisplay(
+  annotated: AnnotatedToken[],
+  recognitionCardsByWordId: ReadonlyMap<string, SkillCard>,
+): AnnotatedToken[] {
+  return annotated.map((at) => {
+    if (!at.wordId) return at;
+    const card = recognitionCardsByWordId.get(at.wordId);
+    if (!card) return at;
+    return { ...at, readingMode: readingDisplay(card) };
+  });
 }

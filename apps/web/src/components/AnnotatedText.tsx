@@ -10,9 +10,14 @@ export interface AnnotatedToken {
   /** The lexicon Word id this token resolved to, if any — needed to turn a
    * lookup into learner-model evidence (Phase 2 §7). */
   wordId?: string;
+  /** Phase 2 §1 pinyin fading (readingDisplay()), set by the caller per-token
+   * from the learner's own card. Only consulted when the page mode is
+   * 'auto'; undefined (no card yet, e.g. a never-seen word) behaves like
+   * 'shown'. */
+  readingMode?: 'shown' | 'hover';
 }
 
-export type AnnotationMode = 'always' | 'hover' | 'off' | 'tone-only';
+export type AnnotationMode = 'always' | 'hover' | 'off' | 'tone-only' | 'auto';
 export type AnnotationScript = 'pinyin' | 'zhuyin' | 'both';
 
 export interface AnnotatedTextProps {
@@ -123,7 +128,9 @@ export function AnnotatedText({ tokens, mode, script, onLookup }: AnnotatedTextP
         }
 
         const levelClass = at.level ? LEVEL_CLASS[at.level] : 'level-unleveled';
-        const showAnnotation = mode === 'always' || mode === 'tone-only';
+        const autoHover = mode === 'auto' && at.readingMode === 'hover';
+        const hoverLike = mode === 'hover' || autoHover;
+        const showAnnotation = mode === 'always' || mode === 'tone-only' || (mode === 'auto' && !autoHover);
         const isOpen = openId === id;
 
         const inner =
@@ -140,8 +147,8 @@ export function AnnotatedText({ tokens, mode, script, onLookup }: AnnotatedTextP
         return (
           <span
             key={id}
-            className={`an-token ${levelClass} ${mode === 'hover' ? 'an-token--hover-mode' : ''}`}
-            data-visible={mode === 'hover' ? isOpen : showAnnotation}
+            className={`an-token ${levelClass} ${hoverLike ? 'an-token--hover-mode' : ''}`}
+            data-visible={hoverLike ? isOpen : showAnnotation}
             onClick={(e) => {
               e.stopPropagation();
               if (!isOpen) onLookup?.(at, 'gloss');

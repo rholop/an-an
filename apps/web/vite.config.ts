@@ -2,7 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // Deployed at holop.dev/an-an (see docs/related-repos.md) — the dev
+  // server still serves from root so local dev/e2e URLs are unaffected.
+  base: command === 'build' ? '/an-an/' : '/',
   plugins: [
     react(),
     VitePWA({
@@ -23,7 +26,7 @@ export default defineConfig({
         // true after the first visit, not just the app shell.
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith('/lexicon/'),
+            urlPattern: ({ url }) => url.pathname.includes('/lexicon/'),
             handler: 'CacheFirst',
             options: {
               cacheName: 'lexicon-cache',
@@ -34,4 +37,4 @@ export default defineConfig({
       },
     }),
   ],
-});
+}));

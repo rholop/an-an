@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm sync:lexicon && vite",
-    "build": "pnpm sync:lexicon && tsc --noEmit && vite build",
+    "dev": "pnpm sync:lexicon && pnpm sync:scenarios && vite",
+    "build": "pnpm sync:lexicon && pnpm sync:scenarios && tsc --noEmit && vite build",
     "preview": "vite preview",
     "sync:lexicon": "node scripts/sync-lexicon.mjs",
+    "sync:scenarios": "node scripts/sync-scenarios.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },

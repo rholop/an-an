@@ -119,6 +119,13 @@ Ship each phase small and working before starting the next. Scope creep is the m
 
 Log enough locally to compute: review retention vs. target, journal errors per 100 characters over time, % of chat turns completed without "I'm stuck", and time-to-complete a scenario unassisted. Phase 2 adds the event log these rely on.
 
+## Related repos & deployment
+
+See `docs/related-repos.md`: An'an deploys to `holop.dev/an-an` alongside
+Rowan's other projects (`holop-dev`, `shoyu-chat`), same droplet, nginx
+path-routed. `shoyu-chat` is useful prior art for the Phase 3 LLM proxy
+(Gemini SDK usage, provider-fallback pattern, CI/CD deploy shape).
+
 ## Open items to verify, not assume
 
 - SC-TOP list terms of use before bundling it into a hosted app. Level 6 coverage in whatever file we download.

@@ -10,3 +10,7 @@ export * from './learner/index.js';
 export * from './curriculum.js';
 export * from './placement.js';
 export * from './anki-import.js';
+export * from './chat/types.js';
+export * from './chat/level-schema.js';
+export * from './chat/scenario.js';
+export * from './validate/turn.js';

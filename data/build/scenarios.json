@@ -1,0 +1,177 @@
+{
+  "meta": {
+    "version": "v1",
+    "buildDate": "2026-10-01",
+    "contentHash": "e28ff0532e3e736b0dc6fc51a75ac666a14674dc133f943f8aaf505455895431"
+  },
+  "scenarios": [
+    {
+      "id": "easycard-topup",
+      "title": "Buying or topping up an EasyCard at an MRT station",
+      "levelRange": {
+        "min": "N1",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "station-staff",
+        "name": "站務員",
+        "personality": "Helpful and efficient, used to tourists who don't have a card yet. Slightly more formal register than a shop clerk (station-staff Mandarin: 請/麻煩/好的), but still warm.\n",
+        "speechStyle": "Confirms the transaction type (new card vs. top-up) before amounts. States amounts and balances clearly and numerically.\n",
+        "particles": [
+          "喔",
+          "好",
+          "囉"
+        ]
+      },
+      "setting": "A Taipei MRT station service counter near the gates. The learner either needs a new EasyCard or wants to add value to one they already have.\n",
+      "goalSteps": [
+        {
+          "id": "state-need",
+          "description": "Say whether you want a new card or a top-up.",
+          "keywordHints": [
+            "辦卡",
+            "加值",
+            "悠遊卡"
+          ]
+        },
+        {
+          "id": "specify-amount",
+          "description": "Specify how much to top up (or the new-card amount).",
+          "keywordHints": [
+            "元",
+            "一百",
+            "五百"
+          ]
+        },
+        {
+          "id": "payment-method",
+          "description": "Specify how you're paying (cash or card).",
+          "keywordHints": [
+            "現金",
+            "信用卡"
+          ]
+        },
+        {
+          "id": "confirm-done",
+          "description": "Confirm the transaction is complete and check the balance.",
+          "keywordHints": [
+            "餘額",
+            "謝謝",
+            "好了"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "悠遊卡",
+        "加值",
+        "辦卡",
+        "現金",
+        "信用卡",
+        "餘額",
+        "車站",
+        "出口",
+        "月台",
+        "感應"
+      ],
+      "opener": {
+        "zh": "你好，請問需要辦卡還是加值？",
+        "en": "Hello, do you need a new card or a top-up?"
+      },
+      "successLine": {
+        "zh": "好了，加值五百元完成，餘額是五百二十元，謝謝！",
+        "en": "All done — topped up NT$500, your balance is NT$520, thank you!"
+      }
+    },
+    {
+      "id": "tea-shop",
+      "title": "Ordering a drink at a tea shop",
+      "levelRange": {
+        "min": "N1",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "clerk",
+        "name": "店員",
+        "personality": "Friendly, upbeat, used to serving a long line quickly. Patient with hesitant customers but keeps the conversation moving — confirms each part of the order (drink, ice, sugar, size, takeaway) one at a time rather than waiting for the learner to say everything at once.\n",
+        "speechStyle": "Short, practical sentences. Confirms what the learner just said before asking the next question. Friendly but not chatty — this is a real order, not small talk.\n",
+        "particles": [
+          "喔",
+          "啊",
+          "好",
+          "囉"
+        ]
+      },
+      "setting": "A 手搖飲料店 (hand-shaken drinks shop) counter in Taipei, menu board behind the counter. The learner is a customer ordering one drink to take away.\n",
+      "goalSteps": [
+        {
+          "id": "order-drink",
+          "description": "Greet the shop and say which drink you want.",
+          "keywordHints": [
+            "我要",
+            "我想要",
+            "一杯"
+          ]
+        },
+        {
+          "id": "specify-ice",
+          "description": "Specify the ice level (少冰/微冰/正常冰/去冰).",
+          "keywordHints": [
+            "冰",
+            "去冰"
+          ]
+        },
+        {
+          "id": "specify-sugar",
+          "description": "Specify the sugar level (少糖/半糖/微糖/無糖/全糖).",
+          "keywordHints": [
+            "糖"
+          ]
+        },
+        {
+          "id": "size-and-takeaway",
+          "description": "Specify the size (大杯/中杯) and takeaway vs. dine-in.",
+          "keywordHints": [
+            "大杯",
+            "中杯",
+            "外帶",
+            "內用"
+          ]
+        },
+        {
+          "id": "pay",
+          "description": "Confirm the total and pay.",
+          "keywordHints": [
+            "多少錢",
+            "元",
+            "謝謝"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "珍珠奶茶",
+        "少冰",
+        "微冰",
+        "正常冰",
+        "去冰",
+        "少糖",
+        "半糖",
+        "微糖",
+        "無糖",
+        "全糖",
+        "大杯",
+        "中杯",
+        "外帶",
+        "內用",
+        "多少錢"
+      ],
+      "opener": {
+        "zh": "歡迎光臨！請問要喝什麼？",
+        "en": "Welcome! What would you like to drink?"
+      },
+      "successLine": {
+        "zh": "好了，珍珠奶茶一杯，少冰微糖，大杯外帶，35元，謝謝！",
+        "en": "Here you go — one bubble tea, less ice less sugar, large to-go, NT$35, thank you!"
+      }
+    }
+  ]
+}

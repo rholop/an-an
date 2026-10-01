@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable corepack (pnpm)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck (core)
+        run: pnpm --filter @anan/core exec tsc --noEmit -p tsconfig.json
+
+      - name: Typecheck (data-pipeline)
+        run: pnpm --filter @anan/data-pipeline exec tsc --noEmit -p tsconfig.json
+
+      - name: Typecheck (web)
+        run: pnpm --filter @anan/web exec tsc --noEmit -p tsconfig.json
+
+      - name: Typecheck (proxy)
+        run: pnpm --filter @anan/proxy exec tsc --noEmit -p tsconfig.json
+
+      - name: Build lexicon + scenarios (data-pipeline, from committed data/raw)
+        run: pnpm pipeline:build
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Build web + proxy
+        run: |
+          pnpm --filter @anan/web build
+          pnpm --filter @anan/proxy build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable corepack (pnpm)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build lexicon + scenarios
+        run: pnpm pipeline:build
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @anan/web exec playwright install --with-deps chromium
+
+      - name: Sync lexicon into apps/web/public
+        run: pnpm --filter @anan/web sync:lexicon
+
+      - name: E2E tests
+        run: pnpm --filter @anan/web exec playwright test

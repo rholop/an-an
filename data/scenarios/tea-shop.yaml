@@ -1,0 +1,69 @@
+# Scenario: ordering a drink at a Taiwan 手搖飲 (hand-shaken tea) shop,
+# specifying ice and sugar level — the canonical "survival Mandarin" task
+# CLAUDE.md names as the first scenario to ship end to end.
+id: tea-shop
+title: Ordering a drink at a tea shop
+levelRange:
+  min: N1
+  max: L2
+
+npc:
+  id: clerk
+  name: 店員
+  personality: >
+    Friendly, upbeat, used to serving a long line quickly. Patient with
+    hesitant customers but keeps the conversation moving — confirms each
+    part of the order (drink, ice, sugar, size, takeaway) one at a time
+    rather than waiting for the learner to say everything at once.
+  speechStyle: >
+    Short, practical sentences. Confirms what the learner just said before
+    asking the next question. Friendly but not chatty — this is a real
+    order, not small talk.
+  particles: ["喔", "啊", "好", "囉"]
+
+setting: >
+  A 手搖飲料店 (hand-shaken drinks shop) counter in Taipei, menu board
+  behind the counter. The learner is a customer ordering one drink to
+  take away.
+
+goalSteps:
+  - id: order-drink
+    description: Greet the shop and say which drink you want.
+    keywordHints: ["我要", "我想要", "一杯"]
+  - id: specify-ice
+    description: Specify the ice level (少冰/微冰/正常冰/去冰).
+    keywordHints: ["冰", "去冰"]
+  - id: specify-sugar
+    description: Specify the sugar level (少糖/半糖/微糖/無糖/全糖).
+    keywordHints: ["糖"]
+  - id: size-and-takeaway
+    description: Specify the size (大杯/中杯) and takeaway vs. dine-in.
+    keywordHints: ["大杯", "中杯", "外帶", "內用"]
+  - id: pay
+    description: Confirm the total and pay.
+    keywordHints: ["多少錢", "元", "謝謝"]
+
+vocabExtras:
+  - 珍珠奶茶
+  - 少冰
+  - 微冰
+  - 正常冰
+  - 去冰
+  - 少糖
+  - 半糖
+  - 微糖
+  - 無糖
+  - 全糖
+  - 大杯
+  - 中杯
+  - 外帶
+  - 內用
+  - 多少錢
+
+opener:
+  zh: 歡迎光臨！請問要喝什麼？
+  en: Welcome! What would you like to drink?
+
+successLine:
+  zh: 好了，珍珠奶茶一杯，少冰微糖，大杯外帶，35元，謝謝！
+  en: "Here you go — one bubble tea, less ice less sugar, large to-go, NT$35, thank you!"

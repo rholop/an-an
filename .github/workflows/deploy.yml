@@ -1,0 +1,50 @@
+name: Deploy
+
+# Mirrors ~/Documents/Code/shoyu-chat's deploy.yml shape (see
+# docs/related-repos.md) — SSH into the droplet, pull, rebuild, restart.
+# Requires HOST/USERNAME/SSH_KEY secrets configured on this repo (Settings →
+# Secrets and variables → Actions) before the deploy step does anything;
+# until then this fails safely at the SSH connection step.
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to droplet
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /home/an-an
+
+            # Discard local lockfile changes to prevent pull conflicts
+            # (mirrors shoyu-chat's deploy.yml).
+            git checkout pnpm-lock.yaml || true
+            git pull origin main
+
+            corepack enable
+            pnpm install --frozen-lockfile
+
+            # Rebuild the lexicon/scenarios from committed data/raw + data/scenarios.
+            pnpm pipeline:build
+
+            # Build the web PWA and the proxy server.
+            pnpm --filter @anan/web build
+            pnpm --filter @anan/proxy build
+
+            # Publish the web build where nginx's /an-an location expects it.
+            mkdir -p /var/www/an-an
+            rm -rf /var/www/an-an/dist
+            cp -r apps/web/dist /var/www/an-an/dist
+
+            # Restart (or first-start) the proxy under PM2.
+            pm2 restart an-an-proxy --update-env || \
+              pm2 start apps/proxy/ecosystem.config.js --env production
+            pm2 save

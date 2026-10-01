@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { AnkiImportPage } from './pages/AnkiImportPage.js';
+import { ChatPage } from './pages/ChatPage.js';
 import { PlacementPage } from './pages/PlacementPage.js';
 import { ReaderPage } from './pages/ReaderPage.js';
 import { ReviewPage } from './pages/ReviewPage.js';
 import { ZhuyinTestPage } from './pages/ZhuyinTestPage.js';
 import './App.css';
 
-type Route = 'reader' | 'review' | 'placement' | 'anki-import' | 'zhuyin-test';
+type Route = 'reader' | 'chat' | 'review' | 'placement' | 'anki-import' | 'zhuyin-test';
 
 export function App() {
   const [route, setRoute] = useState<Route>(
@@ -18,6 +19,9 @@ export function App() {
       <nav className="app-nav">
         <button onClick={() => setRoute('reader')} disabled={route === 'reader'}>
           Reader
+        </button>
+        <button onClick={() => setRoute('chat')} disabled={route === 'chat'}>
+          Chat
         </button>
         <button onClick={() => setRoute('review')} disabled={route === 'review'}>
           Review
@@ -33,6 +37,7 @@ export function App() {
         </button>
       </nav>
       {route === 'reader' && <ReaderPage />}
+      {route === 'chat' && <ChatPage />}
       {route === 'review' && <ReviewPage />}
       {route === 'placement' && <PlacementPage />}
       {route === 'anki-import' && <AnkiImportPage />}

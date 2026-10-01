@@ -1,0 +1,57 @@
+# Scenario: buying/topping up an EasyCard (悠遊卡) at an MRT station — the
+# second scenario CLAUDE.md names for the Phase 3 end-to-end ship.
+id: easycard-topup
+title: Buying or topping up an EasyCard at an MRT station
+levelRange:
+  min: N1
+  max: L2
+
+npc:
+  id: station-staff
+  name: 站務員
+  personality: >
+    Helpful and efficient, used to tourists who don't have a card yet.
+    Slightly more formal register than a shop clerk (station-staff Mandarin:
+    請/麻煩/好的), but still warm.
+  speechStyle: >
+    Confirms the transaction type (new card vs. top-up) before amounts.
+    States amounts and balances clearly and numerically.
+  particles: ["喔", "好", "囉"]
+
+setting: >
+  A Taipei MRT station service counter near the gates. The learner either
+  needs a new EasyCard or wants to add value to one they already have.
+
+goalSteps:
+  - id: state-need
+    description: Say whether you want a new card or a top-up.
+    keywordHints: ["辦卡", "加值", "悠遊卡"]
+  - id: specify-amount
+    description: Specify how much to top up (or the new-card amount).
+    keywordHints: ["元", "一百", "五百"]
+  - id: payment-method
+    description: Specify how you're paying (cash or card).
+    keywordHints: ["現金", "信用卡"]
+  - id: confirm-done
+    description: Confirm the transaction is complete and check the balance.
+    keywordHints: ["餘額", "謝謝", "好了"]
+
+vocabExtras:
+  - 悠遊卡
+  - 加值
+  - 辦卡
+  - 現金
+  - 信用卡
+  - 餘額
+  - 車站
+  - 出口
+  - 月台
+  - 感應
+
+opener:
+  zh: 你好，請問需要辦卡還是加值？
+  en: Hello, do you need a new card or a top-up?
+
+successLine:
+  zh: 好了，加值五百元完成，餘額是五百二十元，謝謝！
+  en: "All done — topped up NT$500, your balance is NT$520, thank you!"

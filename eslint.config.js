@@ -26,11 +26,16 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      // tsc already catches genuinely undefined identifiers in value
+      // position, far more accurately than ESLint can — plain `no-undef`
+      // only produces false positives on ambient type-only globals like
+      // `NodeJS` (used in e.g. `NodeJS.ProcessEnv`).
+      'no-undef': 'off',
     },
   },
   {
-    // packages/data-pipeline and config scripts run under Node.
-    files: ['packages/data-pipeline/**/*.ts', '**/*.config.ts'],
+    // packages/data-pipeline, apps/proxy, and config scripts run under Node.
+    files: ['packages/data-pipeline/**/*.ts', 'apps/proxy/**/*.ts', '**/*.config.ts'],
     languageOptions: { globals: globals.node },
   },
   {
