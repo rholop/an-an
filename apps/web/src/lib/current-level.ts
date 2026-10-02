@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { currentFrontierLevel, isLevel, LEVEL_IDS, type Level, type Lexicon } from '@anan/core';
 import { allTouchedCards } from '../db/queries.js';
-import { db } from '../db/instance.js';
+import { currentSession, db, onSessionChange } from '../db/instance.js';
 
 /**
  * Phase 7: "My level" — ONE global setting (`settings.currentLevel`) that every
@@ -20,16 +20,32 @@ const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
 
 async function load(): Promise<void> {
-  if (loaded) return;
+  if (loaded || !currentSession()) return;
   loaded = true;
-  const row = await db.settings.get(KEY);
+  const forProfile = currentSession()!.profileId;
+  let row;
+  try {
+    row = await db.settings.get(KEY);
+  } catch {
+    return; // the profile's database was closed while we were reading (switched/closed)
+  }
+  if (currentSession()?.profileId !== forProfile) return; // switched while loading
   if (isLevel(row?.value)) {
     current = row.value;
     explicit = true;
   }
   notify();
 }
-void load();
+
+// Phase 8: "My level" is per profile. Switching profile forgets the previous
+// person's choice and reads the new profile's own (or starts from their progress).
+onSessionChange((session) => {
+  current = DEFAULT_LEVEL;
+  explicit = false;
+  loaded = false;
+  notify();
+  if (session) void load();
+});
 
 /** Persist + broadcast. */
 export async function setCurrentLevel(level: Level): Promise<void> {
@@ -77,4 +93,16 @@ export function useCurrentLevel(): CurrentLevel {
   const level = useSyncExternalStore(subscribe, () => current);
   const isExplicit = useSyncExternalStore(subscribe, () => explicit);
   return { level, isExplicit, setLevel: setCurrentLevel };
+}
+
+/** After a sync merge replaced the database contents: re-read the setting. */
+export function reloadCurrentLevel(): void {
+  loaded = false;
+  explicit = false;
+  void load();
+}
+
+/** For tests/diagnostics: the store's current value without React. */
+export function peekCurrentLevel(): { level: Level; isExplicit: boolean } {
+  return { level: current, isExplicit: explicit };
 }

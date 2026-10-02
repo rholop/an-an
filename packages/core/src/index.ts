@@ -26,3 +26,4 @@ export * from './journal/index.js';
 export * from './game/index.js';
 export * from './gloss/schema.js';
 export * from './gloss/context.js';
+export * from './profiles.js';

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Scenario, SentenceGenRequest, TurnRequest } from '@anan/core';
 import { createApp } from './app.js';
+import { MemorySyncStore, type SyncStore } from './sync-store.js';
 import {
   loadGlossPromptTemplates,
   loadJournalPromptTemplates,
@@ -125,10 +126,13 @@ function buildApp(
     sentenceOrchestrator?: SentenceOrchestrator;
     journalOrchestrator?: JsonOrchestrator;
     glossOrchestrator?: JsonOrchestrator;
+    sync?: SyncStore;
+    /** Send `x-site-code: tofu` automatically (default). Pass false to test 401s. */
+    autoCode?: boolean;
     scenarioStore?: ScenarioStore;
   } = {},
 ) {
-  return createApp({
+  const app = createApp({
     env: { CORS_ORIGIN: 'https://example.com' },
     scenarioStore: overrides.scenarioStore ?? fakeScenarioStore(),
     promptTemplate: loadPromptTemplate('v1'),
@@ -145,11 +149,21 @@ function buildApp(
         overrides.glossOrchestrator ??
         fakeJournalOrchestrator((task) => (task === '/v1/define' ? fakeDefine : fakeGloss)),
     },
+    siteCode: 'tofu',
+    sync: overrides.sync ?? new MemorySyncStore(),
     rateLimiter:
       overrides.rateLimiter ??
       new RateLimiter({ requestsPerMinute: 100, dailyTokenBudget: 1_000_000 }),
     log: () => {}, // silence logs in tests
   });
+  if (overrides.autoCode === false) return app;
+  const request = app.request.bind(app);
+  app.request = ((input: RequestInfo | URL, init?: RequestInit) =>
+    request(input, {
+      ...init,
+      headers: { 'x-site-code': 'tofu', ...(init?.headers as Record<string, string> | undefined) },
+    })) as typeof app.request;
+  return app;
 }
 
 const validTurnRequest: TurnRequest = {
@@ -557,5 +571,139 @@ describe('gloss routes (phase 7)', () => {
     const res = await post(buildApp(), '/v1/define', { word: '機車', context: '他很機車' });
     expect(await res.json()).toEqual(fakeDefine);
     expect((await post(buildApp(), '/v1/define', { word: '' })).status).toBe(400);
+  });
+});
+
+describe('household code (phase 8)', () => {
+  const post = (
+    app: ReturnType<typeof buildApp>,
+    route: string,
+    body: unknown,
+    headers: Record<string, string> = {},
+  ) =>
+    app.request(route, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-install-id': 'c1:ron', ...headers },
+      body: JSON.stringify(body),
+    });
+
+  it('401s every AI route and every sync route without the right code', async () => {
+    const app = buildApp({ autoCode: false });
+    const bodies: [string, unknown][] = [
+      ['/v1/turn', validTurnRequest],
+      [
+        '/v1/sentences',
+        { word: { headword: '茶', pinyin: 'chá', level: 'N1', glossEn: 'tea' }, allowedVocab: [] },
+      ],
+      ['/v1/journal-review', { text: '我去', learnerLevel: 'N1' }],
+      ['/v1/journal-check', { sentence: 'x', original: 'x', attempt: 'x', correction: 'x' }],
+      [
+        '/v1/journal-explain',
+        { sentence: 'x', original: 'x', correction: 'x', explanationEn: 'x', learnerLevel: 'N1' },
+      ],
+      [
+        '/v1/gloss',
+        {
+          word: { id: 'w', headword: 'x', pinyin: 'x', pos: [], level: null },
+          candidates: [{ id: 'c1', source: 'cedict', tags: [] }],
+        },
+      ],
+      ['/v1/define', { word: '茶' }],
+    ];
+    for (const [route, body] of bodies) {
+      expect((await post(app, route, body)).status, route).toBe(401);
+      expect(
+        (await post(app, route, body, { 'x-site-code': 'nope' })).status,
+        `${route} wrong code`,
+      ).toBe(401);
+    }
+    expect((await app.request('/v1/sync/ron')).status).toBe(401);
+    expect((await app.request('/v1/sync/ron', { method: 'PUT', body: '{}' })).status).toBe(401);
+    expect((await app.request('/v1/auth/check')).status).toBe(401);
+    expect(
+      (await app.request('/v1/auth/check', { headers: { 'x-site-code': 'TOFU' } })).status,
+    ).toBe(401); // case matters
+  });
+
+  it('lets the right code through, and leaves /v1/health open', async () => {
+    const app = buildApp({ autoCode: false });
+    expect((await app.request('/v1/health')).status).toBe(200);
+    expect(
+      (await app.request('/v1/auth/check', { headers: { 'x-site-code': 'tofu' } })).status,
+    ).toBe(200);
+    expect((await post(app, '/v1/turn', validTurnRequest, { 'x-site-code': 'tofu' })).status).toBe(
+      200,
+    );
+  });
+
+  it('answers CORS preflight without a code (the browser cannot send one on OPTIONS)', async () => {
+    const app = buildApp({ autoCode: false });
+    const res = await app.request('/v1/sync/ron', {
+      method: 'OPTIONS',
+      headers: {
+        origin: 'https://example.com',
+        'access-control-request-method': 'PUT',
+        'access-control-request-headers': 'x-site-code,content-type',
+      },
+    });
+    expect(res.status).toBe(204);
+    expect(res.headers.get('access-control-allow-headers')?.toLowerCase()).toContain('x-site-code');
+  });
+});
+
+describe('sync endpoints (phase 8)', () => {
+  const put = (app: ReturnType<typeof buildApp>, id: string, body: unknown) =>
+    app.request(`/v1/sync/${id}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  const data = (n: number) => ({ schemaVersion: 5, items: [], marker: n });
+
+  it('GET on an empty profile returns rev 0; PUT then GET round-trips the data', async () => {
+    const app = buildApp();
+    expect(await (await app.request('/v1/sync/ron')).json()).toEqual({
+      rev: 0,
+      updatedAt: null,
+      data: null,
+    });
+    const res = await put(app, 'ron', { baseRev: 0, data: data(1) });
+    expect(res.status).toBe(200);
+    const saved = (await res.json()) as { rev: number; updatedAt: string };
+    expect(saved.rev).toBe(1);
+    expect(await (await app.request('/v1/sync/ron')).json()).toEqual({
+      rev: 1,
+      updatedAt: saved.updatedAt,
+      data: data(1),
+    });
+  });
+
+  it('keeps profiles apart and rejects ids that are not in PROFILES', async () => {
+    const app = buildApp();
+    await put(app, 'ron', { baseRev: 0, data: data(1) });
+    expect(((await (await app.request('/v1/sync/guanyu')).json()) as { rev: number }).rev).toBe(0);
+    for (const bad of ['mallory', 'ron2', '..', '%2e%2e', 'RON']) {
+      expect((await app.request(`/v1/sync/${bad}`)).status, bad).toBe(404);
+      expect((await put(app, bad, { baseRev: 0, data: data(1) })).status, bad).toBe(404);
+    }
+  });
+
+  it('a stale push gets 409 with the server copy; retrying on the new rev succeeds', async () => {
+    const app = buildApp();
+    await put(app, 'ron', { baseRev: 0, data: data(1) });
+    await put(app, 'ron', { baseRev: 1, data: data(2) });
+    const stale = await put(app, 'ron', { baseRev: 1, data: data(3) });
+    expect(stale.status).toBe(409);
+    expect(await stale.json()).toMatchObject({ rev: 2, data: data(2) });
+    expect((await put(app, 'ron', { baseRev: 2, data: data(3) })).status).toBe(200);
+    expect(((await (await app.request('/v1/sync/ron')).json()) as { rev: number }).rev).toBe(3);
+  });
+
+  it('validates the body', async () => {
+    const app = buildApp();
+    expect((await put(app, 'ron', { data: data(1) })).status).toBe(400);
+    expect((await put(app, 'ron', { baseRev: -1, data: data(1) })).status).toBe(400);
+    expect((await put(app, 'ron', { baseRev: 0, data: 'str' })).status).toBe(400);
+    expect((await app.request('/v1/sync/ron', { method: 'PUT', body: '{nope' })).status).toBe(400);
   });
 });

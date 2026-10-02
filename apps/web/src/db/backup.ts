@@ -1,6 +1,12 @@
 import { type Backup, BackupSchema } from './backup-schema.js';
 import { type AnanDB, DB_SCHEMA_VERSION, itemPk } from './schema.js';
 
+/** `anan-ron-2026-10-02.json` — the profile id is in the file name so two
+ * people's exports can never be mixed up (phase 8). */
+export function backupFileName(profileId: string, now: Date = new Date()): string {
+  return `anan-${profileId}-${now.toISOString().slice(0, 10)}.json`;
+}
+
 export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise<Backup> {
   const [
     items,
@@ -31,6 +37,8 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     db.glossReports.toArray(),
     db.aiGlosses.toArray(),
   ]);
+  const stamps = (rows: { key: string; updatedAt?: Date }[]) =>
+    Object.fromEntries(rows.flatMap((r) => (r.updatedAt ? [[r.key, r.updatedAt] as const] : [])));
   return {
     schemaVersion: DB_SCHEMA_VERSION,
     lexiconVersion,
@@ -48,6 +56,8 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     rewardEvents,
     glossReports,
     aiGlosses,
+    settingsUpdatedAt: stamps(settings),
+    metaUpdatedAt: stamps(meta),
   };
 }
 
@@ -60,18 +70,9 @@ export class BackupSchemaTooNewError extends Error {
   }
 }
 
-/** Validates `raw` (zod — refuses anything malformed), refuses a newer
- * schema version than this app understands, then wipes and replaces every
- * table inside one transaction (so a failed import can't half-apply). */
-export async function importBackup(
-  db: AnanDB,
-  raw: unknown,
-): Promise<{ itemCount: number; evidenceCount: number }> {
-  const parsed = BackupSchema.parse(raw);
-  if (parsed.schemaVersion > DB_SCHEMA_VERSION) {
-    throw new BackupSchemaTooNewError(parsed.schemaVersion, DB_SCHEMA_VERSION);
-  }
-
+/** Wipes every table and writes `parsed` inside ONE transaction, so a failure
+ * can't leave a half-applied copy. Rows are stored exactly as given. */
+async function replaceAll(db: AnanDB, parsed: Backup): Promise<void> {
   const tables = [
     db.items,
     db.evidence,
@@ -88,30 +89,20 @@ export async function importBackup(
     db.aiGlosses,
   ];
   await db.transaction('rw', tables, async () => {
-    await Promise.all([
-      db.items.clear(),
-      db.evidence.clear(),
-      db.settings.clear(),
-      db.meta.clear(),
-      db.customWords.clear(),
-      db.journalEntries.clear(),
-      db.journalReviews.clear(),
-      db.errorItems.clear(),
-      db.conversations.clear(),
-      db.turns.clear(),
-      db.rewardEvents.clear(),
-      db.glossReports.clear(),
-      db.aiGlosses.clear(),
-    ]);
+    await Promise.all(tables.map((t) => t.clear()));
     if (parsed.items.length > 0) {
       await db.items.bulkPut(parsed.items.map((c) => ({ ...c, pk: itemPk(c.item, c.skill) })));
     }
-    if (parsed.evidence.length > 0) {
-      await db.evidence.bulkAdd(parsed.evidence);
-    }
-    const settingsRows = Object.entries(parsed.settings).map(([key, value]) => ({ key, value }));
+    if (parsed.evidence.length > 0) await db.evidence.bulkAdd(parsed.evidence);
+    const keyed = (rec: Record<string, unknown>, stamps: Record<string, Date>) =>
+      Object.entries(rec).map(([key, value]) => ({
+        key,
+        value,
+        ...(stamps[key] ? { updatedAt: stamps[key] } : {}),
+      }));
+    const settingsRows = keyed(parsed.settings, parsed.settingsUpdatedAt);
     if (settingsRows.length > 0) await db.settings.bulkPut(settingsRows);
-    const metaRows = Object.entries(parsed.meta).map(([key, value]) => ({ key, value }));
+    const metaRows = keyed(parsed.meta, parsed.metaUpdatedAt);
     if (metaRows.length > 0) await db.meta.bulkPut(metaRows);
     if (parsed.customWords.length > 0) await db.customWords.bulkPut(parsed.customWords);
     if (parsed.journalEntries.length > 0) await db.journalEntries.bulkPut(parsed.journalEntries);
@@ -123,6 +114,26 @@ export async function importBackup(
     if (parsed.glossReports.length > 0) await db.glossReports.bulkPut(parsed.glossReports);
     if (parsed.aiGlosses.length > 0) await db.aiGlosses.bulkPut(parsed.aiGlosses);
   });
+}
 
+/** A user restore from a file: validates (zod — refuses anything malformed),
+ * refuses a newer schema version, then replaces everything. Rows that lack a
+ * uid/updatedAt (older backups) get them stamped as a normal local write, and
+ * the restore counts as a local change (so it syncs). */
+export async function importBackup(
+  db: AnanDB,
+  raw: unknown,
+): Promise<{ itemCount: number; evidenceCount: number }> {
+  const parsed = BackupSchema.parse(raw);
+  if (parsed.schemaVersion > DB_SCHEMA_VERSION) {
+    throw new BackupSchemaTooNewError(parsed.schemaVersion, DB_SCHEMA_VERSION);
+  }
+  await replaceAll(db, parsed);
   return { itemCount: parsed.items.length, evidenceCount: parsed.evidence.length };
+}
+
+/** Writes a sync-merged copy: hooks are off so every row keeps its own uid and
+ * updatedAt, and the write isn't mistaken for a new local edit. */
+export async function applyMergedBackup(db: AnanDB, merged: Backup): Promise<void> {
+  await db.withoutHooks(() => replaceAll(db, merged));
 }

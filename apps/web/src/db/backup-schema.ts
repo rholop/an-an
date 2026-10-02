@@ -67,6 +67,7 @@ const EvidenceKindSchema = z.enum([
 ]);
 
 export const EvidenceSchema = z.object({
+  uid: z.string().optional(),
   item: ItemRefSchema,
   skill: SkillSchema,
   kind: EvidenceKindSchema,
@@ -95,6 +96,7 @@ const WordSchema = z.object({
   chars: z.array(z.string()),
   tags: z.array(z.string()),
   freqRank: z.number().optional(),
+  updatedAt: z.coerce.date().optional(),
 });
 
 const SpanSchema = z.tuple([z.number().int(), z.number().int()]);
@@ -110,6 +112,7 @@ const JournalIssueSchema = z.object({
 });
 
 export const JournalEntryRowSchema = z.object({
+  updatedAt: z.coerce.date().optional(),
   id: z.string(),
   text: z.string(),
   promptId: z.string().optional(),
@@ -120,6 +123,7 @@ export const JournalEntryRowSchema = z.object({
 });
 
 export const JournalReviewRowSchema = z.object({
+  updatedAt: z.coerce.date().optional(),
   entryId: z.string(),
   learnerLevel: LevelSchema,
   issues: z.array(JournalIssueSchema),
@@ -159,6 +163,7 @@ export const JournalReviewRowSchema = z.object({
 });
 
 export const ErrorItemSchema = z.object({
+  updatedAt: z.coerce.date().optional(),
   id: z.string(),
   journalEntryId: z.string(),
   original: z.string(),
@@ -173,6 +178,8 @@ export const ErrorItemSchema = z.object({
 });
 
 export const ConversationRowSchema = z.object({
+  uid: z.string().optional(),
+  updatedAt: z.coerce.date().optional(),
   id: z.number().optional(),
   scenarioId: z.string(),
   npcId: z.string(),
@@ -185,6 +192,7 @@ export const ConversationRowSchema = z.object({
 });
 
 export const TurnRowSchema = z.object({
+  uid: z.string().optional(),
   id: z.number().optional(),
   conversationId: z.number(),
   role: z.enum(['npc', 'learner']),
@@ -214,6 +222,7 @@ export const RewardRowSchema = z.object({
 });
 
 export const GlossReportRowSchema = z.object({
+  uid: z.string().optional(),
   id: z.number().optional(),
   wordId: z.string(),
   headword: z.string(),
@@ -256,6 +265,10 @@ export const BackupSchema = z.object({
   // Phase 7 (schemaVersion 4).
   glossReports: z.array(GlossReportRowSchema).default([]),
   aiGlosses: z.array(AiGlossRowSchema).default([]),
+  // Phase 8 (schemaVersion 5): when each settings/meta key last changed, so
+  // two devices can keep the later edit. Absent in older backups.
+  settingsUpdatedAt: z.record(z.string(), z.coerce.date()).default({}),
+  metaUpdatedAt: z.record(z.string(), z.coerce.date()).default({}),
 });
 
 export type Backup = z.infer<typeof BackupSchema>;

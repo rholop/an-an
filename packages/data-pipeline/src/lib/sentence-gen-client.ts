@@ -1,4 +1,8 @@
-import { SentenceGenResponseSchema, type SentenceGenRequest, type SentenceGenResponse } from '@anan/core';
+import {
+  SentenceGenResponseSchema,
+  type SentenceGenRequest,
+  type SentenceGenResponse,
+} from '@anan/core';
 
 export interface SentenceGenClient {
   generate(req: SentenceGenRequest): Promise<SentenceGenResponse>;
@@ -12,11 +16,18 @@ export interface SentenceGenClient {
  * learner uses is exactly the case the proxy's "busy, retrying" framing
  * (phase doc 03 §1) is for.
  */
-export function createHttpSentenceGenClient(proxyUrl: string, installId = 'data-pipeline'): SentenceGenClient {
+export function createHttpSentenceGenClient(
+  proxyUrl: string,
+  installId = 'data-pipeline',
+): SentenceGenClient {
   async function post(req: SentenceGenRequest): Promise<Response> {
     return fetch(`${proxyUrl}/v1/sentences`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-install-id': installId },
+      headers: {
+        'content-type': 'application/json',
+        'x-install-id': installId,
+        'x-site-code': process.env.SITE_CODE ?? '',
+      },
       body: JSON.stringify(req),
     });
   }

@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "scripted-run": "tsx scripts/scripted-run.ts",
-    "journal-eval": "tsx scripts/journal-eval.ts"
+    "journal-eval": "tsx scripts/journal-eval.ts",
+    "sync-rollback": "tsx scripts/sync-rollback.ts"
   },
   "dependencies": {
     "@anan/core": "workspace:*",

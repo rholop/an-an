@@ -483,7 +483,7 @@ describe('persistence', () => {
     v1.close();
 
     const upgraded = new AnanDB(name);
-    expect(await upgraded.settings.get('targetRetention')).toEqual({
+    expect(await upgraded.settings.get('targetRetention')).toMatchObject({
       key: 'targetRetention',
       value: 0.9,
     });

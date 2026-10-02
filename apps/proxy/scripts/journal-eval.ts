@@ -55,7 +55,11 @@ for (const f of fixtures.entries) {
   const gaps = extractBrackets(f.text);
   const res = await fetch(`${proxyUrl}/v1/journal-review`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-install-id': 'journal-eval' },
+    headers: {
+      'content-type': 'application/json',
+      'x-install-id': 'journal-eval',
+      'x-site-code': process.env.SITE_CODE ?? '',
+    },
     body: JSON.stringify({
       text: f.text,
       learnerLevel: fixtures.learnerLevel,

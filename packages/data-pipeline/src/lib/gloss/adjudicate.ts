@@ -243,7 +243,12 @@ export function proxyCall(baseUrl: string, fetchImpl: typeof fetch = fetch): Adj
   return async (req) => {
     const res = await fetchImpl(`${baseUrl}/v1/gloss`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-install-id': 'data-pipeline' },
+      // SITE_CODE: the household code the proxy now requires on every AI request
+      headers: {
+        'content-type': 'application/json',
+        'x-install-id': 'data-pipeline',
+        'x-site-code': process.env.SITE_CODE ?? '',
+      },
       body: JSON.stringify(req),
     });
     if (!res.ok) {

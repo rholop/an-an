@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures.js';
 
 test.describe('Reader page', () => {
   test('loads the lexicon and renders all four modes / three scripts', async ({ page }) => {

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures.js';
 
 declare global {
   interface Window {
@@ -36,14 +36,16 @@ test.describe('Chat page', () => {
     await page.locator('.chat-bubble--npc .an-token').first().click();
     await expect(page.locator('.an-popover')).toBeVisible();
     await page.waitForFunction(
-      async () => (await window.__anan.db.evidence.toArray()).some((e) => e.kind === 'chat_lookup_gloss'),
+      async () =>
+        (await window.__anan.db.evidence.toArray()).some((e) => e.kind === 'chat_lookup_gloss'),
       { timeout: 5000 },
     );
 
     // Hover a different token → chat_hover_reading evidence.
     await page.locator('.chat-bubble--npc .an-token').nth(2).hover();
     await page.waitForFunction(
-      async () => (await window.__anan.db.evidence.toArray()).some((e) => e.kind === 'chat_hover_reading'),
+      async () =>
+        (await window.__anan.db.evidence.toArray()).some((e) => e.kind === 'chat_hover_reading'),
       { timeout: 5000 },
     );
 
@@ -51,7 +53,9 @@ test.describe('Chat page', () => {
     await page.locator('.chat-input').fill('我要一杯珍珠奶茶');
     await page.getByRole('button', { name: 'Send' }).click();
     await expect(page.locator('.chat-bubble--learner').first()).toContainText('珍珠');
-    await expect(page.locator('.chat-bubble--npc').nth(1)).toContainText('需要', { timeout: 10000 });
+    await expect(page.locator('.chat-bubble--npc').nth(1)).toContainText('需要', {
+      timeout: 10000,
+    });
     await page.screenshot({ path: 'screenshots/chat-after-reply.png' });
 
     // Dev debug drawer: validator report on the npc reply.
@@ -82,7 +86,9 @@ test.describe('Chat page', () => {
       await input.fill('我要一杯珍珠奶茶');
       await page.getByRole('button', { name: 'Send' }).click();
       await page.waitForFunction(
-        () => document.querySelector('.chat-input:not(:disabled)') !== null || document.querySelector('.chat-summary') !== null,
+        () =>
+          document.querySelector('.chat-input:not(:disabled)') !== null ||
+          document.querySelector('.chat-summary') !== null,
         { timeout: 10000 },
       );
     }

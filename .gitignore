@@ -35,3 +35,6 @@ data/raw/kaikki*
 data/raw/Unihan*
 data/raw/cedict_*
 data/raw/*.zip
+
+# Phase 8: per-profile saved copies written by the proxy at runtime.
+apps/proxy/sync-data/
