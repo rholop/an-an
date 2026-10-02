@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures.js';
 
 test.describe('Placement test', () => {
   test('adaptive test: a learner who knows everything converges to "beyond L5" in well under 60 taps', async ({

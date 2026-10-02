@@ -1,3 +1,4 @@
+import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
 import {
   DefineResponseSchema,
   JournalCheckResponseSchema,
@@ -17,26 +18,7 @@ import {
   type TutorLLM,
 } from '@anan/core';
 
-function defaultProxyBase(): string {
-  const override = import.meta.env.VITE_PROXY_URL;
-  if (override) return override;
-  // Dev: the proxy runs separately on :3002 (see apps/proxy). Prod: same
-  // origin, nginx-routed at <base>/api (see docs/related-repos.md).
-  return import.meta.env.DEV ? 'http://localhost:3002' : `${import.meta.env.BASE_URL}api`;
-}
-
-const INSTALL_ID_KEY = 'anan-install-id';
-
-/** No user accounts (CLAUDE.md) — a random id persisted in localStorage is
- * enough for the proxy's per-client rate limiting. */
-export function getInstallId(): string {
-  let id = localStorage.getItem(INSTALL_ID_KEY);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(INSTALL_ID_KEY, id);
-  }
-  return id;
-}
+export { getInstallId } from './api.js';
 
 export class ProxyTurnError extends Error {
   constructor(
@@ -51,14 +33,15 @@ export class ProxyTurnError extends Error {
 /** apps/web's implementation of core's TutorLLM — fetch to apps/proxy. Never
  * holds an API key (CLAUDE.md §"No LLM API keys in the browser, ever"). */
 export class FetchTutorLLM implements TutorLLM {
-  constructor(private readonly proxyBase: string = defaultProxyBase()) {}
+  constructor(private readonly base: string = proxyBase()) {}
 
   private async post(route: string, body: unknown): Promise<unknown> {
-    const res = await fetch(`${this.proxyBase}${route}`, {
+    const res = await fetch(`${this.base}${route}`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-install-id': getInstallId() },
+      headers: { 'content-type': 'application/json', ...authHeaders() },
       body: JSON.stringify(body),
     });
+    if (res.status === 401) handleUnauthorized();
 
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({}));

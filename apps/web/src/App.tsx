@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { levelLabel, levelUpSuggestion, type Level } from '@anan/core';
 import { LevelPicker } from './components/LevelPicker.js';
+import { useProfile } from './components/ProfileGate.js';
+import { PROFILES } from './profiles.js';
 import { db } from './db/instance.js';
 import { allTouchedCards } from './db/queries.js';
 import { initCurrentLevelIfUnset, useCurrentLevel } from './lib/current-level.js';
@@ -18,6 +20,7 @@ import { ReviewPage } from './pages/ReviewPage.js';
 import { ZhuyinTestPage } from './pages/ZhuyinTestPage.js';
 import './App.css';
 import './components/LevelPicker.css';
+import './components/ProfileGate.css';
 
 type Route =
   | 'reader'
@@ -66,6 +69,7 @@ function LevelHeader({ route }: { route: Route }) {
 
   return (
     <header className="app-header">
+      <ProfileChip />
       <LevelPicker value={level} onChange={(l) => void setLevel(l)} />
       {suggestion && dismissed !== suggestion && (
         <div className="level-up-prompt" role="status">
@@ -75,6 +79,62 @@ function LevelHeader({ route }: { route: Route }) {
         </div>
       )}
     </header>
+  );
+}
+
+/** The current name in the header; tap to switch (phase 8 §5). A small dot
+ * shows when the latest changes are not on the server yet (offline). */
+function ProfileChip() {
+  const { profile, syncStatus, switchProfile } = useProfile();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="profile-chip-wrap">
+      <button
+        className="profile-chip"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        disabled={busy}
+        onClick={() => setOpen((o) => !o)}
+        data-testid="profile-chip"
+      >
+        <span lang="zh-Hant">{profile.name}</span>
+        {syncStatus === 'offline' && (
+          <span
+            className="sync-dot"
+            role="img"
+            aria-label="not synced"
+            title="not synced"
+            data-testid="sync-dot"
+          />
+        )}
+        <span aria-hidden="true">▾</span>
+      </button>
+      {open && (
+        <div className="profile-menu" role="menu">
+          {PROFILES.map((p) => (
+            <button
+              key={p.id}
+              role="menuitem"
+              lang="zh-Hant"
+              aria-current={p.id === profile.id}
+              onClick={async () => {
+                setOpen(false);
+                if (p.id === profile.id) return;
+                setBusy(true);
+                try {
+                  await switchProfile(p.id);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              {p.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

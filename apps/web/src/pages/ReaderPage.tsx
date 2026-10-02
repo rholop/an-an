@@ -13,6 +13,7 @@ import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { annotate } from '../lib/annotate.js';
 import { useLexicon } from '../lib/useLexicon.js';
+import { useSetting } from '../lib/useSetting.js';
 
 const SAMPLE = '我們搭捷運去便利商店，路上還遇到陳雅婷。他還沒還我錢，這件事情我做不了。';
 
@@ -25,8 +26,9 @@ export function ReaderPage() {
   const lexiconState = useLexicon();
   const { level: currentLevel } = useCurrentLevel();
   const [text, setText] = useState(SAMPLE);
-  const [mode, setMode] = useState<AnnotationMode>('always');
-  const [script, setScript] = useState<AnnotationScript>('pinyin');
+  // Phase 8: display settings are per profile (stored in the profile's database).
+  const [mode, setMode] = useSetting<AnnotationMode>('readerMode', 'always');
+  const [script, setScript] = useSetting<AnnotationScript>('readerScript', 'pinyin');
   const [lookupLog, setLookupLog] = useState<string[]>([]);
   const [knownSet, setKnownSet] = useState<Set<string>>(new Set());
 

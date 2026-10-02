@@ -1,6 +1,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { Context } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
+import { gunzipSync, gzipSync } from 'node:zlib';
+import { isProfileId } from '@anan/core';
 import {
   DefineRequestSchema,
   DefineResponseSchema,
@@ -17,6 +20,8 @@ import {
 } from '@anan/core';
 import type { z } from 'zod';
 import type { Env } from './env.js';
+import { requireSiteCode } from './site-code.js';
+import type { SyncStore } from './sync-store.js';
 import {
   DEFINE_JSON_SCHEMA,
   GLOSS_JSON_SCHEMA,
@@ -58,6 +63,10 @@ export interface AppDeps {
   journal: { prompts: JournalPrompts; orchestrator: JsonOrchestrator };
   /** Phase 7: gloss adjudication + out-of-lexicon definitions (same JSON orchestrator). */
   gloss: { prompts: GlossPrompts; orchestrator: JsonOrchestrator };
+  /** The household code (env SITE_CODE). Required on every route but /v1/health. */
+  siteCode: string;
+  /** Phase 8: per-profile saved copies. */
+  sync: SyncStore;
   rateLimiter: RateLimiter;
   log?: (entry: Record<string, unknown>) => void;
 }
@@ -72,6 +81,80 @@ export function createApp(deps: AppDeps): Hono {
   app.use('*', cors({ origin: deps.env.CORS_ORIGIN }));
 
   app.get('/v1/health', (c) => c.json({ ok: true }));
+
+  // Everything else — sync AND every AI route — needs the household code.
+  app.use('/v1/*', async (c, next) =>
+    c.req.path === '/v1/health' ? next() : requireSiteCode(deps.siteCode)(c, next),
+  );
+
+  /** The web app's once-per-browser "is this code right?" check. */
+  app.get('/v1/auth/check', (c) => c.json({ ok: true }));
+
+  // ---- Phase 8 sync: GET/PUT one profile's saved copy --------------------
+  const SYNC_MAX_BYTES = 40 * 1024 * 1024;
+
+  app.get('/v1/sync/:profileId', async (c) => {
+    const profileId = c.req.param('profileId');
+    if (!isProfileId(profileId)) return c.json({ error: 'unknown profile' }, 404);
+    const rec = await deps.sync.get(profileId);
+    if (!rec) return c.json({ rev: 0, updatedAt: null, data: null });
+    return c.json({
+      rev: rec.rev,
+      updatedAt: rec.updatedAt,
+      data: JSON.parse(gunzipSync(rec.blob).toString('utf8')),
+    });
+  });
+
+  app.put(
+    '/v1/sync/:profileId',
+    bodyLimit({ maxSize: SYNC_MAX_BYTES, onError: (c) => c.json({ error: 'too large' }, 413) }),
+    async (c) => {
+      const profileId = c.req.param('profileId');
+      if (!isProfileId(profileId)) return c.json({ error: 'unknown profile' }, 404);
+      let body: { baseRev?: unknown; data?: unknown };
+      try {
+        body = await c.req.json();
+      } catch {
+        return c.json({ error: 'invalid JSON body' }, 400);
+      }
+      if (
+        typeof body.baseRev !== 'number' ||
+        !Number.isInteger(body.baseRev) ||
+        body.baseRev < 0 ||
+        typeof body.data !== 'object' ||
+        body.data === null
+      ) {
+        return c.json({ error: 'expected { baseRev: number, data: object }' }, 400);
+      }
+      const result = await deps.sync.put(
+        profileId,
+        gzipSync(JSON.stringify(body.data)),
+        body.baseRev,
+      );
+      if (!result.ok) {
+        const cur = result.current;
+        log({
+          route: 'PUT /v1/sync',
+          profileId,
+          conflict: true,
+          baseRev: body.baseRev,
+          serverRev: cur?.rev ?? 0,
+        });
+        // 409 carries the server copy so the client can merge and retry in one round trip.
+        return c.json(
+          {
+            error: 'stale baseRev',
+            rev: cur?.rev ?? 0,
+            updatedAt: cur?.updatedAt ?? null,
+            data: cur ? JSON.parse(gunzipSync(cur.blob).toString('utf8')) : null,
+          },
+          409,
+        );
+      }
+      log({ route: 'PUT /v1/sync', profileId, rev: result.rev });
+      return c.json({ rev: result.rev, updatedAt: result.updatedAt });
+    },
+  );
 
   app.post('/v1/turn', async (c) => {
     const installId = c.req.header('x-install-id');

@@ -49,6 +49,58 @@ implements.
 - `pnpm --filter @anan/proxy journal-eval` runs the fixture entries in
   `data/journal-eval/` through a live proxy and writes `docs/journal-eval.md`.
 
+## Household code (`SITE_CODE`)
+
+Every route except `GET /v1/health` — **sync and every AI request** — needs the
+header `X-Site-Code` to equal the server's `SITE_CODE` (e.g. `tofu`); otherwise
+the answer is `401`. The code lives only in the server's environment (`.env` /
+PM2); the web app asks for it once per browser, checks it with
+`GET /v1/auth/check`, and just sends what was typed. **The server refuses to
+start without `SITE_CODE`**, so the AI keys can never be left open by accident.
+Changing it makes every browser ask once more (a 401 clears the remembered
+code). This is deliberately light: no accounts, hashing or lockouts.
+
+## Sync (phase 8)
+
+Two fixed profiles (`ron`, `guanyu` — see `packages/core/src/profiles.ts`; the
+server accepts exactly those ids) each have one saved copy: the web app's
+per-profile export JSON, gzipped, plus `{ rev, updatedAt }`.
+
+- `GET /v1/sync/:profileId` → `{ rev, updatedAt, data }` (`rev: 0, data: null`
+  when nothing is saved yet).
+- `PUT /v1/sync/:profileId` with `{ baseRev, data }` → `{ rev, updatedAt }`, or
+  **`409`** with the server copy (`{ rev, updatedAt, data }`) when `baseRev` is
+  stale; the client merges it in and retries. Unknown profile ids → `404`.
+
+**Storage choice:** a directory of files on the proxy's own disk
+(`FileSyncStore`, `SYNC_DIR`, default `apps/proxy/sync-data/`, git-ignored),
+because this proxy already runs as a long-lived PM2 process on the droplet — no
+extra service, no free-tier quota. Layout: `<dir>/<profileId>/<rev>.<epochMs>.json.gz`,
+written to a temp file and renamed, with a per-profile lock so two simultaneous
+pushes can't both win. It sits behind the tiny `SyncStore` interface
+(`get`, `put(profileId, blob, baseRev)`), so moving to a KV/blob store later
+means writing one class.
+
+**Versions:** the last **10** revisions per profile are kept. To list them or
+roll a profile back (the old version becomes the newest revision; devices merge
+it in like any update):
+
+```sh
+pnpm --filter @anan/proxy sync-rollback ron        # list
+pnpm --filter @anan/proxy sync-rollback ron 7      # make rev 7 current
+```
+
+Set-up on the server: add `SITE_CODE=…` (and optionally `SYNC_DIR=/home/an-an/sync-data`
+outside the deploy directory so deploys can't touch it) to `apps/proxy/.env`,
+and raise nginx's body limit for the API location — a profile with a long
+history is several MB and nginx's default is 1 MB:
+
+```nginx
+location /an-an/api/ { client_max_body_size 40m; … }
+```
+
+Back up `SYNC_DIR` like any other data directory.
+
 ## Environment variables
 
 See `.env.example` for the full list with defaults. The two that matter
@@ -58,6 +110,8 @@ most:
 |---|---|---|
 | `GEMINI_API_KEY` | one of these two | Free tier. Get one at [aistudio.google.com](https://aistudio.google.com/apikey). |
 | `OPENAI_API_KEY` | one of these two | Fallback provider. |
+| `SITE_CODE` | **yes** (server won't start without it) | The household code; see below. |
+| `SYNC_DIR` | no | Where per-profile saved copies go (default `apps/proxy/sync-data`). |
 
 With only one of the two set, the proxy runs single-provider (no
 fallback) rather than refusing to start — a loud warning is logged instead.

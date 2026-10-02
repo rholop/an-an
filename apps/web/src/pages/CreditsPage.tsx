@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useProfile } from '../components/ProfileGate.js';
+import { backupFileName, exportBackup, importBackup } from '../db/backup.js';
 import { db } from '../db/instance.js';
 import type { AiGlossRow, GlossReportRow } from '../db/schema.js';
 import { exportReportsAsOverridesYaml } from '../lib/gloss-reports.js';
@@ -51,6 +53,66 @@ export const CREDITS: {
   },
 ];
 
+/** Phase 8 §6: backup export/import for the CURRENT profile only; the file
+ * name carries the profile id so two people's files can't be mixed up. */
+function BackupPanel() {
+  const { profile } = useProfile();
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function exportNow() {
+    const backup = await exportBackup(db);
+    const blob = new Blob([JSON.stringify({ ...backup, profileId: profile.id }, null, 2)], {
+      type: 'application/json',
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = backupFileName(profile.id);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setMessage(`Saved ${a.download}`);
+  }
+
+  async function importFile(file: File) {
+    try {
+      const raw = JSON.parse(await file.text()) as { profileId?: string };
+      if (raw.profileId && raw.profileId !== profile.id) {
+        setMessage(
+          `That file belongs to "${raw.profileId}", not ${profile.name}. Switch profile first.`,
+        );
+        return;
+      }
+      if (
+        !window.confirm(
+          `Replace ${profile.name}'s progress on this device with the contents of ${file.name}?`,
+        )
+      )
+        return;
+      const result = await importBackup(db, raw);
+      setMessage(`Restored ${result.itemCount} items. Reload the page to see everything.`);
+    } catch (err) {
+      setMessage(`Couldn't import: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  return (
+    <section>
+      <h2>
+        Your data (<span lang="zh-Hant">{profile.name}</span>)
+      </h2>
+      <button onClick={() => void exportNow()}>Export backup</button>{' '}
+      <label>
+        Import backup{' '}
+        <input
+          type="file"
+          accept="application/json"
+          onChange={(e) => e.target.files?.[0] && void importFile(e.target.files[0])}
+        />
+      </label>
+      {message && <p role="status">{message}</p>}
+    </section>
+  );
+}
+
 export function CreditsPage() {
   const [reports, setReports] = useState<GlossReportRow[]>([]);
   const [ai, setAi] = useState<AiGlossRow[]>([]);
@@ -88,6 +150,8 @@ export function CreditsPage() {
           </li>
         ))}
       </ul>
+
+      <BackupPanel />
 
       <h2>Reported definitions ({reports.length})</h2>
       {reports.length === 0 && ai.length === 0 ? (

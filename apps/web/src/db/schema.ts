@@ -16,7 +16,7 @@ import type {
 /** Schema version for export/import compatibility checks — bump whenever a
  * Dexie `.version()` changes the stored shape in a way old backups can't
  * satisfy. Independent of the lexicon version (data/build/lexicon.v*.json). */
-export const DB_SCHEMA_VERSION = 4;
+export const DB_SCHEMA_VERSION = 5;
 
 export function itemPk(item: ItemRef, skill: Skill): string {
   return `${item.kind}:${item.id}:${skill}`;
@@ -29,18 +29,25 @@ export interface ItemRow extends SkillCard {
   pk: string;
 }
 
+/** Phase 8: every record that can be merged between devices has a globally
+ * unique `uid` (rows keyed by an auto-increment number are only unique per
+ * browser) and, if it can change in place, an `updatedAt` (set automatically by
+ * the table hooks in AnanDB — callers never stamp it by hand). */
 export interface EvidenceRow extends Evidence {
   id?: number;
+  uid?: string;
 }
 
 export interface SettingsRow {
   key: string;
   value: unknown;
+  updatedAt?: Date;
 }
 
 export interface MetaRow {
   key: string;
   value: unknown;
+  updatedAt?: Date;
 }
 
 export interface ValidatorReportRow {
@@ -53,6 +60,8 @@ export interface ValidatorReportRow {
 
 export interface ConversationRow {
   id?: number;
+  uid?: string;
+  updatedAt?: Date;
   scenarioId: string;
   npcId: string;
   startedAt: Date;
@@ -79,6 +88,7 @@ export interface RewardRow {
 
 export interface TurnRow {
   id?: number;
+  uid?: string;
   conversationId: number;
   role: 'npc' | 'learner';
   zh: string;
@@ -100,6 +110,7 @@ export interface TurnRow {
  * never row numbers). */
 export interface JournalEntryRow {
   id: string;
+  updatedAt?: Date;
   text: string;
   /** The daily prompt this entry answered (WritingPrompt.id), if any. */
   promptId?: string;
@@ -122,6 +133,7 @@ export interface ResolvedBracket {
 }
 
 export interface JournalReviewRow {
+  updatedAt?: Date;
   /** Same as the entry's id — one review per entry. */
   entryId: string;
   learnerLevel: Level;
@@ -149,6 +161,7 @@ export interface JournalReviewRow {
  * exported as a list the owner can paste into data/supplement/gloss-overrides.yaml. */
 export interface GlossReportRow {
   id?: number;
+  uid?: string;
   wordId: string;
   headword: string;
   pinyin: string;
@@ -171,6 +184,40 @@ export interface AiGlossRow {
   at: Date;
 }
 
+export type CustomWordRow = Word & { updatedAt?: Date };
+export type ErrorItemRow = ErrorItem & { updatedAt?: Date };
+
+/** Tables whose rows change in place (so need `updatedAt` for last-writer-wins). */
+const STAMPED_TABLES = [
+  'settings',
+  'meta',
+  'customWords',
+  'journalEntries',
+  'journalReviews',
+  'errorItems',
+  'conversations',
+] as const;
+/** Tables keyed by a per-browser number that need a global `uid`. */
+const UID_TABLES = ['evidence', 'conversations', 'turns', 'glossReports'] as const;
+/** Every table, for local-change notifications. */
+const ALL_TABLES = [
+  'items',
+  'evidence',
+  'settings',
+  'meta',
+  'customWords',
+  'conversations',
+  'turns',
+  'journalEntries',
+  'journalReviews',
+  'errorItems',
+  'rewardEvents',
+  'glossReports',
+  'aiGlosses',
+] as const;
+
+const newUid = (): string => globalThis.crypto.randomUUID();
+
 export class AnanDB extends Dexie {
   items!: EntityTable<ItemRow, 'pk'>;
   evidence!: EntityTable<EvidenceRow, 'id'>;
@@ -179,14 +226,14 @@ export class AnanDB extends Dexie {
   /** User-added words (source: 'custom'), e.g. from Anki rows that didn't
    * match the built lexicon — merged into the Lexicon at load time
    * (apps/web/src/lib/useLexicon.ts), not part of data/build/lexicon*.json. */
-  customWords!: EntityTable<Word, 'id'>;
+  customWords!: EntityTable<CustomWordRow, 'id'>;
   /** Phase 3: chat history. Phase 4 builds cloze from `turns`. */
   conversations!: EntityTable<ConversationRow, 'id'>;
   turns!: EntityTable<TurnRow, 'id'>;
   /** Phase 5: journal. */
   journalEntries!: EntityTable<JournalEntryRow, 'id'>;
   journalReviews!: EntityTable<JournalReviewRow, 'entryId'>;
-  errorItems!: EntityTable<ErrorItem, 'id'>;
+  errorItems!: EntityTable<ErrorItemRow, 'id'>;
   /** Phase 6: points ledger. */
   rewardEvents!: EntityTable<RewardRow, 'id'>;
   glossReports!: EntityTable<GlossReportRow, 'id'>;
@@ -236,5 +283,85 @@ export class AnanDB extends Dexie {
       .upgrade(async (tx) => {
         await tx.table('meta').put({ key: 'glossReportsEnabledAt', value: new Date() });
       });
+    // v5 (Phase 8): every merge-able record gets a global `uid` and, if it
+    // changes in place, an `updatedAt`. Existing rows are backfilled.
+    this.version(5)
+      .stores({
+        evidence: '++id, at, [item.id], kind, uid',
+        conversations: '++id, scenarioId, startedAt, uid',
+        turns: '++id, conversationId, at, uid',
+        glossReports: '++id, wordId, at, uid',
+      })
+      .upgrade(async (tx) => {
+        const epoch = new Date(0);
+        for (const name of UID_TABLES) {
+          await tx
+            .table(name)
+            .toCollection()
+            .modify((row: { uid?: string }) => {
+              row.uid ??= newUid();
+            });
+        }
+        const stampFrom = (row: Record<string, unknown>): Date =>
+          (row.finishedAt ??
+            row.endedAt ??
+            row.createdAt ??
+            row.startedAt ??
+            row.at ??
+            epoch) as Date;
+        for (const name of STAMPED_TABLES) {
+          await tx
+            .table(name)
+            .toCollection()
+            .modify((row: Record<string, unknown>) => {
+              row.updatedAt ??= stampFrom(row);
+            });
+        }
+      });
+
+    this.installHooks();
+  }
+
+  /** Called after a LOCAL write (never while a sync merge is writing). */
+  onLocalChange?: () => void;
+  private suppressed = 0;
+
+  /**
+   * Run `fn` while the table hooks are off — used when a sync merge or an
+   * import writes records that already carry their own uid/updatedAt, which
+   * must be stored exactly as given (and must not count as a local edit).
+   */
+  async withoutHooks<T>(fn: () => Promise<T>): Promise<T> {
+    this.suppressed++;
+    try {
+      return await fn();
+    } finally {
+      this.suppressed--;
+    }
+  }
+
+  private installHooks(): void {
+    const notify = () => {
+      if (this.suppressed === 0) this.onLocalChange?.();
+    };
+    for (const name of ALL_TABLES) {
+      const table = this.table(name);
+      const stamped = (STAMPED_TABLES as readonly string[]).includes(name);
+      const hasUid = (UID_TABLES as readonly string[]).includes(name);
+      table.hook('creating', (_key, obj: Record<string, unknown>) => {
+        if (this.suppressed === 0) {
+          if (hasUid) obj.uid ??= newUid();
+          if (stamped) obj.updatedAt ??= new Date();
+        }
+        notify();
+      });
+      table.hook('updating', () => {
+        notify();
+        return this.suppressed === 0 && stamped ? { updatedAt: new Date() } : undefined;
+      });
+      table.hook('deleting', () => {
+        notify();
+      });
+    }
   }
 }

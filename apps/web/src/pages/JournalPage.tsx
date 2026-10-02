@@ -19,6 +19,7 @@ import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
 import { JournalService } from '../lib/journal-service.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
+import { useSetting } from '../lib/useSetting.js';
 import './JournalPage.css';
 
 const TYPE_LABEL: Record<JournalIssue['type'], string> = {
@@ -188,7 +189,9 @@ function WriteStage({
   promptWords: Word[];
   onSubmitted: (e: JournalEntryRow, r: JournalReviewRow) => void;
 }) {
-  const [text, setText] = useState('');
+  // Phase 8: the draft is kept in the profile's database, so it survives a
+  // reload and is saved before switching to the other profile.
+  const [text, setText] = useSetting('journalDraft', '', 400);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const used = useMemo(
@@ -206,6 +209,7 @@ function WriteStage({
         promptId: prompt.id,
         promptWordIds: promptWords.map((w) => w.id),
       });
+      setText(''); // submitted: the draft is done
       onSubmitted(entry, review);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));

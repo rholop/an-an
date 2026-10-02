@@ -45,7 +45,14 @@ const evidence: Evidence = {
 
 describe('export -> wipe -> import round-trip', () => {
   it('reproduces identical DB content', async () => {
-    await repo.putCards([card('w1'), card('w2', { skill: 'production', state: 'mature', card: { ...emptyCard(new Date()), stability: 40 } })]);
+    await repo.putCards([
+      card('w1'),
+      card('w2', {
+        skill: 'production',
+        state: 'mature',
+        card: { ...emptyCard(new Date()), stability: 40 },
+      }),
+    ]);
     await repo.appendEvidence([evidence]);
     await db.settings.put({ key: 'targetRetention', value: 0.9 });
     await db.meta.put({ key: 'lexiconVersion', value: 'v1' });
@@ -53,7 +60,12 @@ describe('export -> wipe -> import round-trip', () => {
     const backup = await exportBackup(db, 'v1');
 
     // wipe
-    await Promise.all([db.items.clear(), db.evidence.clear(), db.settings.clear(), db.meta.clear()]);
+    await Promise.all([
+      db.items.clear(),
+      db.evidence.clear(),
+      db.settings.clear(),
+      db.meta.clear(),
+    ]);
     expect(await db.items.count()).toBe(0);
 
     const result = await importBackup(db, JSON.parse(JSON.stringify(backup)));
@@ -69,7 +81,8 @@ describe('export -> wipe -> import round-trip', () => {
     expect(w2?.card.due).toBeInstanceOf(Date); // revived from the JSON round-trip, not left a string
 
     const settingsAfter = await db.settings.toArray();
-    expect(settingsAfter).toEqual([{ key: 'targetRetention', value: 0.9 }]);
+    expect(settingsAfter).toMatchObject([{ key: 'targetRetention', value: 0.9 }]);
+    expect(settingsAfter[0]!.updatedAt).toBeInstanceOf(Date); // phase 8: stamped, and kept through the round trip
 
     const evidenceAfter = await db.evidence.toArray();
     expect(evidenceAfter).toHaveLength(1);
@@ -86,7 +99,9 @@ describe('importBackup validation', () => {
   it('refuses a backup from a newer schema version than this app supports', async () => {
     const future = await exportBackup(db);
     future.schemaVersion = DB_SCHEMA_VERSION + 1;
-    await expect(importBackup(db, JSON.parse(JSON.stringify(future)))).rejects.toThrow(BackupSchemaTooNewError);
+    await expect(importBackup(db, JSON.parse(JSON.stringify(future)))).rejects.toThrow(
+      BackupSchemaTooNewError,
+    );
   });
 
   it('accepts a backup at exactly the current schema version', async () => {

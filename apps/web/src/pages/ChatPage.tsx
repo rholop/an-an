@@ -20,6 +20,7 @@ import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
+import { useSetting } from '../lib/useSetting.js';
 import './ChatPage.css';
 
 type Scaffolding = 'high' | 'medium' | 'low';
@@ -93,8 +94,9 @@ export function ChatPage() {
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [conversation, setConversation] = useState<ConversationRow | null>(null);
   const [turns, setTurns] = useState<TurnRow[]>([]);
-  const [scaffolding, setScaffolding] = useState<Scaffolding>('high');
-  const [englishFallback, setEnglishFallback] = useState(false);
+  // Phase 8: per profile (stored in the profile's database).
+  const [scaffolding, setScaffolding] = useSetting<Scaffolding>('chatScaffolding', 'high');
+  const [englishFallback, setEnglishFallback] = useSetting('chatEnglishFallback', false);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);

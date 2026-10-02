@@ -15,6 +15,10 @@ const EnvSchema = z.object({
   /** Tokens per client per UTC calendar day. */
   DAILY_TOKEN_BUDGET: z.coerce.number().int().positive().default(200_000),
   PORT: z.coerce.number().int().positive().default(3002),
+  /** The household code (phase 8) — server-side only, never in the web bundle. */
+  SITE_CODE: z.string().min(1).optional(),
+  /** Where per-profile saved copies are written (see README "Sync"). */
+  SYNC_DIR: z.string().optional(),
   PROMPT_VERSION: z.string().default('v1'),
 });
 

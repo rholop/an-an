@@ -25,6 +25,7 @@ import {
   loadSentenceGenPromptTemplate,
 } from './prompt.js';
 import { RateLimiter } from './rate-limit.js';
+import { FileSyncStore } from './sync-store.js';
 import { loadScenarioStore } from './scenarios.js';
 
 // Load apps/proxy/.env if present (src/ and dist/ are both one level below it).
@@ -33,6 +34,14 @@ const envFile = fileURLToPath(new URL('../.env', import.meta.url));
 if (existsSync(envFile)) process.loadEnvFile(envFile);
 
 const env = loadEnv();
+
+if (!env.SITE_CODE) {
+  console.error(
+    '[an-an-proxy] SITE_CODE is not set. Refusing to start: without it anyone could spend the AI keys and read/overwrite saved progress. ' +
+      'Set SITE_CODE (e.g. in apps/proxy/.env) — see apps/proxy/README.md.',
+  );
+  process.exit(1);
+}
 
 if (!env.GEMINI_API_KEY && !env.OPENAI_API_KEY) {
   console.warn(
@@ -107,6 +116,8 @@ const app = createApp({
       new PromptCache<JsonTaskResult<unknown>>(),
     ),
   },
+  siteCode: env.SITE_CODE,
+  sync: new FileSyncStore(env.SYNC_DIR ?? fileURLToPath(new URL('../sync-data', import.meta.url))),
   rateLimiter: new RateLimiter({
     requestsPerMinute: env.RATE_LIMIT_PER_MINUTE,
     dailyTokenBudget: env.DAILY_TOKEN_BUDGET,
