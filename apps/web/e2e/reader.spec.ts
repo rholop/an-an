@@ -10,19 +10,19 @@ test.describe('Reader page', () => {
 
     await page.goto('/');
     await expect(page.getByText("An'an reader")).toBeVisible();
-    await expect(page.getByText(/Lexicon v1 · \d+ words/)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Lexicon v2 · \d+ words/)).toBeVisible({ timeout: 15000 });
 
     await page.screenshot({ path: 'screenshots/reader-always-pinyin.png' });
 
-    await page.locator('select').nth(1).selectOption('zhuyin');
+    await page.locator('.reader-controls select').nth(1).selectOption('zhuyin');
     await page.waitForTimeout(150);
     await page.screenshot({ path: 'screenshots/reader-always-zhuyin.png' });
 
-    await page.locator('select').nth(1).selectOption('both');
+    await page.locator('.reader-controls select').nth(1).selectOption('both');
     await page.waitForTimeout(150);
     await page.screenshot({ path: 'screenshots/reader-always-both.png' });
 
-    await page.locator('select').nth(0).selectOption('hover');
+    await page.locator('.reader-controls select').nth(0).selectOption('hover');
     await page.waitForTimeout(150);
     // Not hovering/open: the reading must actually be hidden, not just
     // present-but-styled — a screenshot alone wouldn't catch a race where
@@ -35,16 +35,16 @@ test.describe('Reader page', () => {
     await expect(page.locator('.an-token rt').first()).toHaveCSS('opacity', '1');
     await page.screenshot({ path: 'screenshots/reader-hover-mode-hovering.png' });
 
-    await page.locator('select').nth(0).selectOption('tone-only');
-    await page.locator('select').nth(1).selectOption('pinyin');
+    await page.locator('.reader-controls select').nth(0).selectOption('tone-only');
+    await page.locator('.reader-controls select').nth(1).selectOption('pinyin');
     await page.waitForTimeout(150);
     await page.screenshot({ path: 'screenshots/reader-tone-only.png' });
 
-    await page.locator('select').nth(0).selectOption('off');
+    await page.locator('.reader-controls select').nth(0).selectOption('off');
     await page.waitForTimeout(150);
     await page.screenshot({ path: 'screenshots/reader-mode-off.png' });
 
-    await page.locator('select').nth(0).selectOption('always');
+    await page.locator('.reader-controls select').nth(0).selectOption('always');
     await page.waitForTimeout(150);
     await page.locator('.an-token').first().click();
     await expect(page.locator('.an-popover')).toBeVisible();

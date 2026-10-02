@@ -1,7 +1,8 @@
 // Shared contract between phases. See CLAUDE.md §"Shared core types" — phases may add
 // fields but must not rename or remove these.
 
-export type Level = 'N1' | 'N2' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6';
+export type { Level } from './levels.config.js';
+import type { Level } from './levels.config.js';
 export type Skill = 'recognition' | 'production';
 export type ItemState = 'unseen' | 'introduced' | 'learning' | 'review' | 'mature';
 
@@ -20,6 +21,29 @@ export interface Word {
   chars: string[];
   tags: string[];
   freqRank?: number;
+  /** Phase 7: every sense worth showing, primary first. `glossEn` stays the
+   * primary sense's gloss for back-compat. Absent on custom/legacy words. */
+  senses?: Sense[];
+  primarySenseId?: string;
+  /** Source ids behind the primary gloss, e.g. ['cedict', 'top2011']. */
+  glossSources?: string[];
+  /** MOE 重編國語辭典 definition(s) for this reading, VERBATIM (CC BY-ND:
+   * never edit this text; show it with credit). */
+  moeDefZh?: string[];
+}
+
+/** One sense of a word. Chosen and condensed from source candidates, never
+ * free-form invented (phase 7 §B2). */
+export interface Sense {
+  /** `${wordId}#${n}` — stable within a build; refs from chat tokens use it. */
+  id: string;
+  glossEn: string;
+  noteEn?: string;
+  register?: string;
+  taiwanOnly?: boolean;
+  pos?: string;
+  /** Which sources support it: 'cedict' | 'moe-cedict' | 'wiktionary' | 'top2011' | 'moe-zh' | 'override' | 'ai'. */
+  basedOn: string[];
 }
 
 export interface GrammarItem {

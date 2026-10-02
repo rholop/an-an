@@ -1,4 +1,5 @@
 export * from './types.js';
+export * from './levels.config.js';
 export * from './lexicon.js';
 export * from './segment.js';
 export * from './reading.js';
@@ -23,3 +24,5 @@ export * from './cloze/exercise.js';
 export * from './cloze/session.js';
 export * from './journal/index.js';
 export * from './game/index.js';
+export * from './gloss/schema.js';
+export * from './gloss/context.js';

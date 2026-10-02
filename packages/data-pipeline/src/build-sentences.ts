@@ -10,9 +10,25 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyzeClozeCoverage, Lexicon, SentenceBankFileSchema, type Level, type SentenceBankEntry, type SentenceGenRequest } from '@anan/core';
-import { buildAnalyzeContext, isDoubtful, sampleAllowedVocab, shuffle } from './lib/sentence-bank.js';
-import { createFakeSentenceGenClient, createHttpSentenceGenClient, type SentenceGenClient } from './lib/sentence-gen-client.js';
+import {
+  analyzeClozeCoverage,
+  Lexicon,
+  SentenceBankFileSchema,
+  type Level,
+  type SentenceBankEntry,
+  type SentenceGenRequest,
+} from '@anan/core';
+import {
+  buildAnalyzeContext,
+  isDoubtful,
+  sampleAllowedVocab,
+  shuffle,
+} from './lib/sentence-bank.js';
+import {
+  createFakeSentenceGenClient,
+  createHttpSentenceGenClient,
+  type SentenceGenClient,
+} from './lib/sentence-gen-client.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
@@ -24,18 +40,38 @@ const ALLOWED_VOCAB_SAMPLE_SIZE = 40;
 // Always included in a word's allowedVocab when present at/below its level
 // — matches lib/sentence-gen-client.ts's fake templates, so --fake runs
 // validate for real rather than trivially.
-const CORE_FILLERS = ['我', '你', '他', '很', '好', '去', '了', '喜歡', '的', '是', '不', '在', '有', '也', '要'];
+const CORE_FILLERS = [
+  '我',
+  '你',
+  '他',
+  '很',
+  '好',
+  '去',
+  '了',
+  '喜歡',
+  '的',
+  '是',
+  '不',
+  '在',
+  '有',
+  '也',
+  '要',
+];
 
 const FAKE = process.argv.includes('--fake');
 const limitArg = process.argv.find((a) => a.startsWith('--limit='));
 const LIMIT_PER_LEVEL = limitArg ? Number(limitArg.split('=')[1]) : undefined;
 const proxyUrlArg = process.argv.find((a) => a.startsWith('--proxy-url='));
-const PROXY_URL = proxyUrlArg ? proxyUrlArg.slice('--proxy-url='.length) : (process.env.ANAN_PROXY_URL ?? 'http://localhost:3002');
+const PROXY_URL = proxyUrlArg
+  ? proxyUrlArg.slice('--proxy-url='.length)
+  : (process.env.ANAN_PROXY_URL ?? 'http://localhost:3002');
 
 function loadLexicon(): Lexicon {
-  const srcPath = path.join(REPO_ROOT, 'data/build/lexicon.v1.json');
+  const srcPath = path.join(REPO_ROOT, 'data/build/lexicon.v2.json');
   if (!existsSync(srcPath)) {
-    console.error(`build-sentences: ${srcPath} doesn't exist yet — run "pnpm pipeline:build" first.`);
+    console.error(
+      `build-sentences: ${srcPath} doesn't exist yet — run "pnpm pipeline:build" first.`,
+    );
     process.exit(1);
   }
   const raw = JSON.parse(readFileSync(srcPath, 'utf8'));
@@ -63,8 +99,16 @@ async function generateForLevel(
   let wordsWithEnough = 0;
 
   for (const word of words) {
-    const allowedVocab = sampleAllowedVocab(word, pool, CORE_FILLERS, ALLOWED_VOCAB_SAMPLE_SIZE, rng);
-    const allowedVocabIds = new Set(allowedVocab.flatMap((hw) => lexicon.lookup(hw).map((w) => w.id)));
+    const allowedVocab = sampleAllowedVocab(
+      word,
+      pool,
+      CORE_FILLERS,
+      ALLOWED_VOCAB_SAMPLE_SIZE,
+      rng,
+    );
+    const allowedVocabIds = new Set(
+      allowedVocab.flatMap((hw) => lexicon.lookup(hw).map((w) => w.id)),
+    );
 
     const req: SentenceGenRequest = {
       word: { headword: word.headword, pinyin: word.pinyin, level, glossEn: word.glossEn },
@@ -76,7 +120,9 @@ async function generateForLevel(
     try {
       response = await client.generate(req);
     } catch (err) {
-      console.error(`  [${word.headword}] generation failed: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(
+        `  [${word.headword}] generation failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
       continue;
     }
 
@@ -107,13 +153,19 @@ async function generateForLevel(
 
 function writeBankFile(level: Level, entries: SentenceBankEntry[]): void {
   const outPath = path.join(REPO_ROOT, 'data/build', `sentences.v1.${level}.json`);
-  const file = { meta: { version: 'v1', buildDate: new Date().toISOString().slice(0, 10), level }, sentences: entries };
+  const file = {
+    meta: { version: 'v1', buildDate: new Date().toISOString().slice(0, 10), level },
+    sentences: entries,
+  };
   SentenceBankFileSchema.parse(file); // self-check the shape before writing
   writeFileSync(outPath, JSON.stringify(file, null, 2), 'utf8');
   console.log(`Wrote ${entries.length} sentences to ${outPath}`);
 }
 
-function writeSpotCheckSample(all: { level: Level; entry: SentenceBankEntry }[], rng: () => number): void {
+function writeSpotCheckSample(
+  all: { level: Level; entry: SentenceBankEntry }[],
+  rng: () => number,
+): void {
   const sample = shuffle(all, rng).slice(0, 100);
   const lines = [
     '# Sentence bank spot-check sample',
@@ -132,10 +184,14 @@ function writeSpotCheckSample(all: { level: Level; entry: SentenceBankEntry }[],
 
 async function main(): Promise<void> {
   if (FAKE) {
-    console.log("(--fake: using canned filler-word templates, not a real model — see lib/sentence-gen-client.ts's header comment)");
+    console.log(
+      "(--fake: using canned filler-word templates, not a real model — see lib/sentence-gen-client.ts's header comment)",
+    );
   }
   const lexicon = loadLexicon();
-  const client: SentenceGenClient = FAKE ? createFakeSentenceGenClient() : createHttpSentenceGenClient(PROXY_URL);
+  const client: SentenceGenClient = FAKE
+    ? createFakeSentenceGenClient()
+    : createHttpSentenceGenClient(PROXY_URL);
   const rng = Math.random;
 
   const allEntries: { level: Level; entry: SentenceBankEntry }[] = [];
@@ -144,7 +200,12 @@ async function main(): Promise<void> {
 
   for (const level of LEVELS) {
     console.log(`\n=== ${level} ===`);
-    const { entries, wordsAttempted, wordsWithEnough } = await generateForLevel(level, lexicon, client, rng);
+    const { entries, wordsAttempted, wordsWithEnough } = await generateForLevel(
+      level,
+      lexicon,
+      client,
+      rng,
+    );
     writeBankFile(level, entries);
     allEntries.push(...entries.map((entry) => ({ level, entry })));
     totalWords += wordsAttempted;
@@ -154,7 +215,9 @@ async function main(): Promise<void> {
   writeSpotCheckSample(allEntries, rng);
 
   const pct = totalWords > 0 ? ((totalWithEnough / totalWords) * 100).toFixed(1) : '0.0';
-  console.log(`\n${totalWithEnough}/${totalWords} words (${pct}%) have >= 3 validated sentences (acceptance target: >= 95%).`);
+  console.log(
+    `\n${totalWithEnough}/${totalWords} words (${pct}%) have >= 3 validated sentences (acceptance target: >= 95%).`,
+  );
 }
 
 main().catch((err) => {

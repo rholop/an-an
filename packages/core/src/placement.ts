@@ -1,7 +1,8 @@
 import type { Lexicon } from './lexicon.js';
+import { LEVEL_IDS } from './levels.config.js';
 import type { Level, Word } from './types.js';
 
-export const LEVEL_ORDER: Level[] = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+export const LEVEL_ORDER: Level[] = [...LEVEL_IDS];
 
 export interface PlacementConfig {
   /** Words sampled per round. */
@@ -100,7 +101,8 @@ export function nextPlacementRound(
     // confirming: alternate the level just below and the boundary level
     // itself, since that's where individual judgements matter most.
     const below = Math.max(0, state.lo - 1);
-    levelIdx = state.confirmRoundsDone % 2 === 0 ? below : Math.min(LEVEL_ORDER.length - 1, state.lo);
+    levelIdx =
+      state.confirmRoundsDone % 2 === 0 ? below : Math.min(LEVEL_ORDER.length - 1, state.lo);
   }
 
   const level = LEVEL_ORDER[Math.min(levelIdx, LEVEL_ORDER.length - 1)]!;
@@ -120,7 +122,11 @@ export function applyPlacementRound(
 ): PlacementState {
   const judgements = [
     ...state.judgements,
-    ...round.words.map((w, i) => ({ wordId: w.id, level: round.level, known: answers[i] ?? false })),
+    ...round.words.map((w, i) => ({
+      wordId: w.id,
+      level: round.level,
+      known: answers[i] ?? false,
+    })),
   ];
   const askedWordIds = new Set(state.askedWordIds);
   for (const w of round.words) askedWordIds.add(w.id);
@@ -130,7 +136,9 @@ export function applyPlacementRound(
 
   if (state.phase === 'searching') {
     const { lo, hi } =
-      knownFraction >= config.knownThreshold ? { lo: levelIdx + 1, hi: state.hi } : { lo: state.lo, hi: levelIdx };
+      knownFraction >= config.knownThreshold
+        ? { lo: levelIdx + 1, hi: state.hi }
+        : { lo: state.lo, hi: levelIdx };
     if (lo < hi) {
       return { ...state, lo, hi, judgements, askedWordIds };
     }

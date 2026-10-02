@@ -75,7 +75,7 @@ no markdown code fence:
 {
   "reply_zh": "your in-character reply, Traditional Chinese only",
   "reply_en": "English translation of reply_zh, for a hidden toggle",
-  "tokens": [{ "text": "...", "lemma": "..." }],
+  "tokens": [{ "text": "...", "lemma": "...", "sense_id": "only for words listed under Word senses" }],
   "targets_used": ["any target words from your budget that you actually used"],
   "suggested_replies": [{ "zh": "...", "en": "..." }],
   "goal_progress": [{ "step": "<goal step id>", "done": true }],
@@ -86,6 +86,13 @@ no markdown code fence:
 - `tokens`: your best-effort word segmentation of `reply_zh` — this is a
   hint for the app's own segmenter, not the final word boundaries, so it's
   fine if it's approximate.
+- `sense_id`: some words have several meanings. For the words listed here,
+  pick the ONE sense id that fits how you used the word in `reply_zh`
+  (choose only from these ids, and only on that word's token; never write
+  a definition yourself):
+
+{{sense_options}}
+
 - `goal_progress`: report EVERY goal step id from this scene's step list
   every turn, with `done` reflecting the conversation so far (not just this
   turn) — once a step is done, keep reporting it as done.

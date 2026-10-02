@@ -1,4 +1,4 @@
-import type { AnalyzeContext, Level, Word } from '@anan/core';
+import { LAST_LEVEL, type AnalyzeContext, type Word } from '@anan/core';
 
 export function shuffle<T>(arr: T[], rng: () => number): T[] {
   const copy = [...arr];
@@ -19,7 +19,9 @@ export function sampleAllowedVocab(
   sampleSize: number,
   rng: () => number,
 ): string[] {
-  const fillers = atOrBelowLevelPool.filter((w) => w.id !== word.id && coreFillers.includes(w.headword)).map((w) => w.headword);
+  const fillers = atOrBelowLevelPool
+    .filter((w) => w.id !== word.id && coreFillers.includes(w.headword))
+    .map((w) => w.headword);
   const rest = atOrBelowLevelPool.filter((w) => w.id !== word.id && !fillers.includes(w.headword));
   const sampledRest = shuffle(rest, rng)
     .slice(0, Math.max(0, sampleSize - fillers.length))
@@ -27,10 +29,14 @@ export function sampleAllowedVocab(
   return [...new Set([...fillers, ...sampledRest])];
 }
 
-export function buildAnalyzeContext(word: Word, lexicon: AnalyzeContext['lexicon'], allowedVocabIds: ReadonlySet<string>): AnalyzeContext {
+export function buildAnalyzeContext(
+  word: Word,
+  lexicon: AnalyzeContext['lexicon'],
+  allowedVocabIds: ReadonlySet<string>,
+): AnalyzeContext {
   return {
     lexicon,
-    learnerLevel: word.level ?? ('L6' as Level),
+    learnerLevel: word.level ?? LAST_LEVEL,
     knownIds: allowedVocabIds,
     dueIds: new Set(),
     targetIds: new Set([word.id]),

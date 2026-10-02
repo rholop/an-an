@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  LEVEL_IDS,
   analyzeText,
   Lexicon,
   resolveScenarioVocabExtraIds,
@@ -27,7 +28,11 @@ import {
   type TurnResponse,
 } from '@anan/core';
 import { loadEnv } from '../src/env.js';
-import { buildEffectiveSystemPrompt, createOrchestrator, type Orchestrator } from '../src/orchestrator.js';
+import {
+  buildEffectiveSystemPrompt,
+  createOrchestrator,
+  type Orchestrator,
+} from '../src/orchestrator.js';
 import { buildSystemPrompt, loadPromptTemplate } from '../src/prompt.js';
 import { PromptCache } from '../src/cache.js';
 import { GeminiAdapter } from '../src/providers/gemini.js';
@@ -91,18 +96,23 @@ class ScriptedFakeAdapter implements ProviderAdapter {
 }
 
 function loadLexicon(): Lexicon {
-  const raw = JSON.parse(readFileSync(path.join(REPO_ROOT, 'data/build/lexicon.v1.json'), 'utf8'));
+  const raw = JSON.parse(readFileSync(path.join(REPO_ROOT, 'data/build/lexicon.v2.json'), 'utf8'));
   return new Lexicon(raw.words, raw.grammar);
 }
 
 function buildAnalyzeContext(lexicon: Lexicon, scenario: Scenario): AnalyzeContext {
-  const LEVEL_ORDER: Level[] = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+  const LEVEL_ORDER: readonly Level[] = LEVEL_IDS;
   const atOrBelowLevel = LEVEL_ORDER.slice(0, LEVEL_ORDER.indexOf(LEVEL) + 1);
   // Stand-in "L1 learner": everything at/below L1 counts as known. A real
   // run would pull this from an actual learner's knownSet()/dueCards(), but
   // this script's job is to QA the proxy+validator pipeline, not simulate a
   // specific learner.
-  const knownIds = new Set(lexicon.allWords().filter((w) => w.level && atOrBelowLevel.includes(w.level)).map((w) => w.id));
+  const knownIds = new Set(
+    lexicon
+      .allWords()
+      .filter((w) => w.level && atOrBelowLevel.includes(w.level))
+      .map((w) => w.id),
+  );
   const { ids: allowedExtraIds } = resolveScenarioVocabExtraIds(scenario, lexicon);
   return {
     lexicon,
@@ -132,7 +142,9 @@ async function runScenario(
   promptTemplate: string,
 ): Promise<TurnReport[]> {
   const ctx = buildAnalyzeContext(lexicon, scenario);
-  const history: TurnHistoryEntry[] = [{ role: 'npc', zh: scenario.opener.zh, en: scenario.opener.en }];
+  const history: TurnHistoryEntry[] = [
+    { role: 'npc', zh: scenario.opener.zh, en: scenario.opener.en },
+  ];
   const reports: TurnReport[] = [];
 
   for (let turn = 1; turn <= TURNS_PER_SCENARIO; turn++) {
@@ -150,7 +162,8 @@ async function runScenario(
 
     let attempts = 0;
     let feedback: string | undefined;
-    let lastResult: { result: ProviderResult; log: Awaited<ReturnType<Orchestrator['run']>>['log'] } | undefined;
+    let lastResult:
+      { result: ProviderResult; log: Awaited<ReturnType<Orchestrator['run']>>['log'] } | undefined;
     let pass = false;
     let coverage = 0;
 
@@ -191,7 +204,9 @@ function printReport(scenarioId: string, reports: TurnReport[]): void {
   const passCount = reports.filter((r) => r.pass).length;
   const passRate = (passCount / reports.length) * 100;
   const totalTokens = reports.reduce((s, r) => s + r.tokens, 0);
-  console.log(`-- ${scenarioId}: ${passCount}/${reports.length} passed (${passRate.toFixed(1)}%), ${totalTokens} tokens total --`);
+  console.log(
+    `-- ${scenarioId}: ${passCount}/${reports.length} passed (${passRate.toFixed(1)}%), ${totalTokens} tokens total --`,
+  );
 }
 
 async function main(): Promise<void> {
@@ -204,13 +219,19 @@ async function main(): Promise<void> {
   let fallback: ProviderAdapter;
 
   if (FAKE) {
-    console.log('(--fake: using canned scenario replies, not a real model — see this script\'s header comment)');
+    console.log(
+      "(--fake: using canned scenario replies, not a real model — see this script's header comment)",
+    );
     primary = new ScriptedFakeAdapter('gemini', []); // overridden per-scenario below
     fallback = new ScriptedFakeAdapter('openai', []);
   } else {
     if (!env.GEMINI_API_KEY && !env.OPENAI_API_KEY) {
-      console.error('No GEMINI_API_KEY or OPENAI_API_KEY set, and --fake not passed. Nothing to run against.');
-      console.error('Set a key in apps/proxy/.env, or run with --fake for a dry run of the harness itself.');
+      console.error(
+        'No GEMINI_API_KEY or OPENAI_API_KEY set, and --fake not passed. Nothing to run against.',
+      );
+      console.error(
+        'Set a key in apps/proxy/.env, or run with --fake for a dry run of the harness itself.',
+      );
       process.exit(1);
     }
     primary = env.GEMINI_API_KEY
@@ -223,8 +244,14 @@ async function main(): Promise<void> {
 
   for (const scenario of scenarioStore.all()) {
     if (FAKE) {
-      primary = new ScriptedFakeAdapter('gemini', FAKE_REPLIES[scenario.id] ?? [{ zh: scenario.opener.zh }]);
-      fallback = new ScriptedFakeAdapter('openai', FAKE_REPLIES[scenario.id] ?? [{ zh: scenario.opener.zh }]);
+      primary = new ScriptedFakeAdapter(
+        'gemini',
+        FAKE_REPLIES[scenario.id] ?? [{ zh: scenario.opener.zh }],
+      );
+      fallback = new ScriptedFakeAdapter(
+        'openai',
+        FAKE_REPLIES[scenario.id] ?? [{ zh: scenario.opener.zh }],
+      );
     }
     const orchestrator = createOrchestrator(primary, fallback, new PromptCache());
     const reports = await runScenario(scenario, lexicon, orchestrator, promptTemplate);

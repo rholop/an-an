@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LevelSchema } from './level-schema.js';
+import type { DefineRequest, DefineResponse } from '../gloss/schema.js';
 import type {
   JournalCheckRequest,
   JournalCheckResponse,
@@ -38,6 +39,17 @@ export const TurnRequestSchema = z.object({
     due: z.array(z.string()),
     targets: z.array(z.string()),
     allowedExtras: z.array(z.string()),
+    /** Phase 7: candidate senses for target/extra words that have more than
+     * one, so the model can PICK a sense id per token (never write a
+     * definition). Kept small: only these words, max ~8. */
+    senseOptions: z
+      .array(
+        z.object({
+          word: z.string(),
+          senses: z.array(z.object({ id: z.string(), gloss: z.string() })),
+        }),
+      )
+      .optional(),
   }),
   scaffolding: z.enum(['high', 'medium', 'low']),
   englishFallback: z.boolean(),
@@ -47,6 +59,9 @@ export type TurnRequest = z.infer<typeof TurnRequestSchema>;
 export const TurnTokenSchema = z.object({
   text: z.string(),
   lemma: z.string().optional(),
+  /** Phase 7: the sense the model meant, chosen from `vocab.senseOptions`.
+   * Validated in code; an unknown id is dropped (the primary sense shows). */
+  sense_id: z.string().optional(),
 });
 export type TurnToken = z.infer<typeof TurnTokenSchema>;
 
@@ -86,4 +101,7 @@ export interface TutorLLM {
   checkJournalFix(req: JournalCheckRequest): Promise<JournalCheckResponse>;
   /** The "explain more" follow-up on one correction. */
   explainJournalIssue(req: JournalExplainRequest): Promise<JournalExplainResponse>;
+  /** Phase 7: runtime definition for a word that is NOT in the lexicon only.
+   * The result is shown labelled "AI-generated" and queued for review. */
+  defineWord(req: DefineRequest): Promise<DefineResponse>;
 }

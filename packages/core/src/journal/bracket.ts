@@ -1,7 +1,8 @@
 import type { Lexicon } from '../lexicon.js';
-import type { Level, Word } from '../types.js';
+import type { Word } from '../types.js';
+import { LEVEL_IDS } from '../levels.config.js';
 
-const LEVEL_ORDER: Level[] = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+const LEVEL_ORDER = LEVEL_IDS;
 
 export interface BracketGap {
   /** The English inside the brackets, trimmed. */

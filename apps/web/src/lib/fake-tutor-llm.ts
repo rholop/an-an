@@ -1,4 +1,6 @@
 import type {
+  DefineRequest,
+  DefineResponse,
   JournalCheckRequest,
   JournalCheckResponse,
   JournalExplainRequest,
@@ -36,6 +38,10 @@ export class FakeTutorLLM implements TutorLLM {
   async reviewJournal(req: JournalReviewRequest): Promise<JournalReview> {
     this.journalCalls.review++;
     return (this.journal.review ?? FakeTutorLLM.defaultJournalReview)(req);
+  }
+
+  async defineWord(req: DefineRequest): Promise<DefineResponse> {
+    return { pinyin: 'xīn cí', glossEn: `fake definition of ${req.word}` };
   }
 
   async checkJournalFix(req: JournalCheckRequest): Promise<JournalCheckResponse> {

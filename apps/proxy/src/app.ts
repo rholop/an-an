@@ -2,6 +2,10 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { Context } from 'hono';
 import {
+  DefineRequestSchema,
+  DefineResponseSchema,
+  GlossAdjudicationRequestSchema,
+  GlossAdjudicationResponseSchema,
   JournalCheckRequestSchema,
   JournalCheckResponseSchema,
   JournalExplainRequestSchema,
@@ -14,6 +18,8 @@ import {
 import type { z } from 'zod';
 import type { Env } from './env.js';
 import {
+  DEFINE_JSON_SCHEMA,
+  GLOSS_JSON_SCHEMA,
   JOURNAL_CHECK_JSON_SCHEMA,
   JOURNAL_EXPLAIN_JSON_SCHEMA,
   JOURNAL_REVIEW_JSON_SCHEMA,
@@ -28,6 +34,9 @@ import {
   buildJournalCheckPrompt,
   buildJournalExplainPrompt,
   buildJournalReviewPrompt,
+  defineUserMessage,
+  glossAdjudicateUserMessage,
+  type GlossPrompts,
   buildSentenceGenPrompt,
   buildSystemPrompt,
   journalCheckUserMessage,
@@ -47,6 +56,8 @@ export interface AppDeps {
   sentenceOrchestrator: SentenceOrchestrator;
   /** Phase 5 journal endpoints. */
   journal: { prompts: JournalPrompts; orchestrator: JsonOrchestrator };
+  /** Phase 7: gloss adjudication + out-of-lexicon definitions (same JSON orchestrator). */
+  gloss: { prompts: GlossPrompts; orchestrator: JsonOrchestrator };
   rateLimiter: RateLimiter;
   log?: (entry: Record<string, unknown>) => void;
 }
@@ -184,6 +195,7 @@ export function createApp(deps: AppDeps): Hono {
     responseSchema: z.ZodType<Res, z.ZodTypeDef, unknown>,
     jsonSchema: object,
     build: (req: Req) => { systemPrompt: string; userMessage: string },
+    orchestrator: JsonOrchestrator = deps.journal.orchestrator,
   ) {
     const installId = c.req.header('x-install-id');
     if (!installId) return c.json({ error: 'missing X-Install-Id header' }, 400);
@@ -213,7 +225,7 @@ export function createApp(deps: AppDeps): Hono {
       );
 
     try {
-      const { result, log: runLog } = await deps.journal.orchestrator.run({
+      const { result, log: runLog } = await orchestrator.run({
         task: route,
         jsonSchema,
         parse: (raw) => responseSchema.parse(raw),
@@ -222,6 +234,7 @@ export function createApp(deps: AppDeps): Hono {
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
       log({ route, installId, totalTokens, ...runLog });
+      c.header('x-total-tokens', String(totalTokens));
       return c.json(result.response);
     } catch (err) {
       log({ route, installId, error: String(err) });
@@ -268,6 +281,33 @@ export function createApp(deps: AppDeps): Hono {
         systemPrompt: buildJournalExplainPrompt(deps.journal.prompts.explain, req),
         userMessage: journalExplainUserMessage(req),
       }),
+    ),
+  );
+
+  app.post('/v1/gloss', (c) =>
+    journalRoute(
+      c,
+      '/v1/gloss',
+      GlossAdjudicationRequestSchema,
+      GlossAdjudicationResponseSchema,
+      GLOSS_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: deps.gloss.prompts.adjudicate,
+        userMessage: glossAdjudicateUserMessage(req),
+      }),
+      deps.gloss.orchestrator,
+    ),
+  );
+
+  app.post('/v1/define', (c) =>
+    journalRoute(
+      c,
+      '/v1/define',
+      DefineRequestSchema,
+      DefineResponseSchema,
+      DEFINE_JSON_SCHEMA,
+      (req) => ({ systemPrompt: deps.gloss.prompts.define, userMessage: defineUserMessage(req) }),
+      deps.gloss.orchestrator,
     ),
   );
 

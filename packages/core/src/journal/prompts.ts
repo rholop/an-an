@@ -1,7 +1,8 @@
 import type { SkillCard } from '../learner/types.js';
 import type { Lexicon } from '../lexicon.js';
 import { segment } from '../segment.js';
-import type { Word } from '../types.js';
+import { levelIndex } from '../levels.config.js';
+import type { Level, Word } from '../types.js';
 
 export interface WritingPrompt {
   id: string;
@@ -54,11 +55,19 @@ export function pickPromptWords(
   lexicon: Lexicon,
   now: Date,
   count = 3,
+  /** Phase 7: the learner's chosen level. Words at or below it come first (a
+   * prompt word should be writable); above-level due words only fill gaps. */
+  currentLevel?: Level,
 ): Word[] {
+  const aboveLevel = (id: string) => {
+    const lvl = lexicon.byId(id)?.level;
+    return currentLevel && lvl && levelIndex(lvl) > levelIndex(currentLevel) ? 1 : 0;
+  };
   const eligible = dueCards
     .filter((c) => c.item.kind === 'word' && c.card.due <= now && lexicon.byId(c.item.id))
     .sort(
       (a, b) =>
+        aboveLevel(a.item.id) - aboveLevel(b.item.id) ||
         Number(b.skill === 'production') - Number(a.skill === 'production') ||
         a.card.due.getTime() - b.card.due.getTime(),
     );

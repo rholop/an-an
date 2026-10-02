@@ -16,7 +16,7 @@ import type {
 /** Schema version for export/import compatibility checks — bump whenever a
  * Dexie `.version()` changes the stored shape in a way old backups can't
  * satisfy. Independent of the lexicon version (data/build/lexicon.v*.json). */
-export const DB_SCHEMA_VERSION = 3;
+export const DB_SCHEMA_VERSION = 4;
 
 export function itemPk(item: ItemRef, skill: Skill): string {
   return `${item.kind}:${item.id}:${skill}`;
@@ -145,6 +145,32 @@ export interface JournalReviewRow {
   createdAt: Date;
 }
 
+/** Phase 7 §B6: a learner's "Report this definition", kept locally and
+ * exported as a list the owner can paste into data/supplement/gloss-overrides.yaml. */
+export interface GlossReportRow {
+  id?: number;
+  wordId: string;
+  headword: string;
+  pinyin: string;
+  senseId?: string;
+  shownGloss: string;
+  contextSentence: string;
+  note?: string;
+  at: Date;
+}
+
+/** Phase 7 §B5: cached AI definitions for words NOT in the lexicon, labelled
+ * "AI-generated" in the UI and queued for human review. */
+export interface AiGlossRow {
+  key: string;
+  word: string;
+  pinyin: string;
+  glossEn: string;
+  noteEn?: string;
+  contextSentence?: string;
+  at: Date;
+}
+
 export class AnanDB extends Dexie {
   items!: EntityTable<ItemRow, 'pk'>;
   evidence!: EntityTable<EvidenceRow, 'id'>;
@@ -163,6 +189,8 @@ export class AnanDB extends Dexie {
   errorItems!: EntityTable<ErrorItem, 'id'>;
   /** Phase 6: points ledger. */
   rewardEvents!: EntityTable<RewardRow, 'id'>;
+  glossReports!: EntityTable<GlossReportRow, 'id'>;
+  aiGlosses!: EntityTable<AiGlossRow, 'key'>;
 
   constructor(name = 'anan') {
     super(name);
@@ -201,6 +229,12 @@ export class AnanDB extends Dexie {
             c.stuckCount ??= 0;
             c.englishFallbackUsed ??= false;
           });
+      });
+    // v4 (Phase 7): gloss reports + cached AI definitions. Purely additive.
+    this.version(4)
+      .stores({ glossReports: '++id, wordId, at', aiGlosses: 'key, at' })
+      .upgrade(async (tx) => {
+        await tx.table('meta').put({ key: 'glossReportsEnabledAt', value: new Date() });
       });
   }
 }

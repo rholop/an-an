@@ -13,6 +13,7 @@ import {
 } from '@anan/core';
 import { JournalProgress } from '../components/JournalProgress.js';
 import { db, gameService } from '../db/instance.js';
+import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
@@ -23,6 +24,7 @@ const pct = (n: number) => `${Math.round(n * 100)}%`;
 /** Phase 6 §1, §4, §5, §6: points, real-world coverage, the (optional) streak
  * and weekly summary, and the evaluation metrics from the project overview. */
 export function ProgressPage() {
+  const { level } = useCurrentLevel();
   const lexiconState = useLexicon();
   const scenariosState = useScenarios();
   const [snapshot, setSnapshot] = useState<GameSnapshot | null>(null);
@@ -36,7 +38,14 @@ export function ProgressPage() {
     (async () => {
       const target = await gameService.getTargetRetention();
       const [snap, evidence, streak] = await Promise.all([
-        loadGameSnapshot(db, lexiconState.lexicon, scenariosState.scenarios, new Date(), target),
+        loadGameSnapshot(
+          db,
+          lexiconState.lexicon,
+          scenariosState.scenarios,
+          new Date(),
+          target,
+          level,
+        ),
         db.evidence.toArray(),
         gameService.getStreakConfig(),
       ]);
@@ -48,7 +57,7 @@ export function ProgressPage() {
     return () => {
       cancelled = true;
     };
-  }, [lexiconState, scenariosState]);
+  }, [lexiconState, scenariosState, level]);
 
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
   if (scenariosState.status === 'error')

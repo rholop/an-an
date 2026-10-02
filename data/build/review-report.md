@@ -1,8 +1,6 @@
-# Lexicon build review report — v1
+# Lexicon build review report — v2
 
-Built 2026-09-30. 7918 words.
-
-> **Open item**: no source sheet for level(s) L6 in data/raw/tocfl-words.xlsx — see CLAUDE.md "Open items to verify, not assume".
+Built 2026-10-02. 7918 words.
 
 ## Row normalization
 

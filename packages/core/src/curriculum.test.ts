@@ -1,3 +1,4 @@
+import { LAST_LEVEL, LEVEL_IDS } from './levels.config.js';
 import { describe, expect, it } from 'vitest';
 import {
   currentFrontierLevel,
@@ -8,7 +9,7 @@ import {
 import { emptyCard } from './learner/fsrs-instance.js';
 import type { SkillCard } from './learner/types.js';
 import { Lexicon } from './lexicon.js';
-import type { Level, Word } from './types.js';
+import type { Word } from './types.js';
 
 function word(partial: Partial<Word> & Pick<Word, 'id' | 'headword'>): Word {
   return {
@@ -85,7 +86,7 @@ describe('currentFrontierLevel', () => {
 
   it('stays on the last level once everything is covered', () => {
     const cards = [strongCard('n1-a'), strongCard('n2-a')];
-    expect(currentFrontierLevel(words, cards)).toBe('L6');
+    expect(currentFrontierLevel(words, cards)).toBe(LAST_LEVEL);
   });
 });
 
@@ -122,7 +123,13 @@ describe('nextNewItems', () => {
 
   it('prefers words tagged with a scenario context tag', () => {
     const taggedWords: Word[] = [
-      word({ id: 'low-freq-tagged', headword: '甲', level: 'N1', freqRank: 99, tags: ['restaurant'] }),
+      word({
+        id: 'low-freq-tagged',
+        headword: '甲',
+        level: 'N1',
+        freqRank: 99,
+        tags: ['restaurant'],
+      }),
       word({ id: 'high-freq-untagged', headword: '乙', level: 'N1', freqRank: 1 }),
     ];
     const taggedLexicon = new Lexicon(taggedWords);
@@ -160,8 +167,7 @@ describe('nextNewItems', () => {
 });
 
 describe('Level type sanity', () => {
-  it('N1 and N2 sort before L1..L6 in currentFrontierLevel', () => {
-    const order: Level[] = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
-    expect(order[0]).toBe('N1');
+  it('N1 and N2 sort before L1..L5 in currentFrontierLevel', () => {
+    expect(LEVEL_IDS.slice(0, 3)).toEqual(['N1', 'N2', 'L1']);
   });
 });

@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  currentFrontierLevel,
   dailyPrompt,
   findWordsUsed,
   pickPromptWords,
   renderBracketsInline,
   type JournalIssue,
   type Level,
+  type SkillCard,
   type Lexicon,
   type SelfFixRecord,
   type Word,
 } from '@anan/core';
 import { JournalProgress } from '../components/JournalProgress.js';
 import { db, gameService, learnerService } from '../db/instance.js';
-import { recognitionCardsByWordId } from '../db/queries.js';
+import { useCurrentLevel } from '../lib/current-level.js';
 import type { JournalEntryRow, JournalReviewRow } from '../db/schema.js';
 import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
 import { JournalService } from '../lib/journal-service.js';
@@ -50,14 +50,22 @@ export function JournalPage() {
     [lexiconState, tutorLLM],
   );
 
-  const [learnerLevel, setLearnerLevel] = useState<Level>('N1');
-  const [promptWords, setPromptWords] = useState<Word[]>([]);
+  const { level: learnerLevel } = useCurrentLevel();
+  const [dueCards, setDueCards] = useState<SkillCard[]>([]);
   const [entry, setEntry] = useState<JournalEntryRow | null>(null);
   const [review, setReview] = useState<JournalReviewRow | null>(null);
   const [progressKey, setProgressKey] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
   const prompt = useMemo(() => dailyPrompt(new Date()), []);
+  // Phase 7: recomputed when "My level" changes — no reload needed.
+  const promptWords = useMemo(
+    () =>
+      lexiconState.status === 'ready'
+        ? pickPromptWords(dueCards, lexiconState.lexicon, new Date(), 3, learnerLevel)
+        : [],
+    [lexiconState, dueCards, learnerLevel],
+  );
 
   const reload = useCallback(
     async (id: string) => {
@@ -75,16 +83,12 @@ export function JournalPage() {
     let cancelled = false;
     (async () => {
       const now = new Date();
-      const [due, recognition, entries] = await Promise.all([
+      const [due, entries] = await Promise.all([
         learnerService.dueCards(now, 200),
-        recognitionCardsByWordId(db),
         db.journalEntries.where('status').notEqual('finished').sortBy('createdAt'),
       ]);
       if (cancelled) return;
-      setLearnerLevel(
-        currentFrontierLevel(lexiconState.lexicon.allWords(), [...recognition.values()]),
-      );
-      setPromptWords(pickPromptWords(due, lexiconState.lexicon, now, 3));
+      setDueCards(due);
       const open = entries.at(-1);
       if (open) await reload(open.id);
       setLoaded(true);

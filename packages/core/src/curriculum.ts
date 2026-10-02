@@ -1,8 +1,9 @@
 import { computeCharStats, transparency, type SkillCard } from './learner/index.js';
 import type { Lexicon } from './lexicon.js';
 import type { Level, Word } from './types.js';
+import { LEVEL_IDS } from './levels.config.js';
 
-const LEVEL_ORDER: Level[] = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+const LEVEL_ORDER = LEVEL_IDS;
 
 export interface CurriculumConfig {
   /** Share of the current level that must be in review+ before the next
@@ -22,6 +23,11 @@ export interface CurriculumContext {
   /** Scenario/topic tags to prefer (e.g. the current chat scenario) — words
    * tagged with one of these sort first within their level. */
   scenarioTags?: string[];
+  /** Phase 7: the learner's chosen level ("My level"). When set it IS the
+   * frontier for new-item picks; the 70% rule below only *suggests* moving
+   * up (see levelUpSuggestion) and never switches by itself. When unset the
+   * frontier is derived from progress as before. */
+  currentLevel?: Level;
 }
 
 /** Share of `level`'s words that are at least "in review" (recognition
@@ -60,7 +66,12 @@ function touchedItemIds(cards: SkillCard[]): Set<string> {
   return new Set(cards.filter((c) => c.state !== 'unseen').map((c) => c.item.id));
 }
 
-function sortCandidates(candidates: Word[], charStatsSource: SkillCard[], lexicon: Lexicon, context: CurriculumContext): Word[] {
+function sortCandidates(
+  candidates: Word[],
+  charStatsSource: SkillCard[],
+  lexicon: Lexicon,
+  context: CurriculumContext,
+): Word[] {
   const charStats = computeCharStats(charStatsSource, lexicon);
   const scenarioTags = new Set(context.scenarioTags ?? []);
   return [...candidates].sort((a, b) => {
@@ -95,13 +106,18 @@ export function nextNewItems(
   const touched = touchedItemIds(cards);
   const notIntroduced = (w: Word) => !touched.has(w.id);
 
-  const frontier = currentFrontierLevel(words, cards, config);
+  const frontier = context.currentLevel ?? currentFrontierLevel(words, cards, config);
   const frontierIdx = LEVEL_ORDER.indexOf(frontier);
   const nextLevel = LEVEL_ORDER[frontierIdx + 1];
 
-  const mainPool = words.filter((w) => (w.level === frontier || w.level === null) && notIntroduced(w));
-  const trickleEligible = levelCoverage(frontier, words, cards) >= config.levelAdvanceThreshold && nextLevel;
-  const tricklePool = trickleEligible ? words.filter((w) => w.level === nextLevel && notIntroduced(w)) : [];
+  const mainPool = words.filter(
+    (w) => (w.level === frontier || w.level === null) && notIntroduced(w),
+  );
+  const trickleEligible =
+    levelCoverage(frontier, words, cards) >= config.levelAdvanceThreshold && nextLevel;
+  const tricklePool = trickleEligible
+    ? words.filter((w) => w.level === nextLevel && notIntroduced(w))
+    : [];
 
   const trickleCount = trickleEligible ? Math.round(n * config.nextLevelTrickleShare) : 0;
   const mainCount = n - trickleCount;
@@ -118,4 +134,21 @@ export function nextNewItems(
     }
   }
   return picked.slice(0, n);
+}
+
+/**
+ * Phase 7 §4: "Ready to try L3?". The next level, once `level` is covered at
+ * least `levelAdvanceThreshold` (the same 70% rule that used to move the
+ * frontier automatically). A suggestion only — callers show a prompt and the
+ * learner decides. Null if not ready or already on the last level.
+ */
+export function levelUpSuggestion(
+  level: Level,
+  words: Word[],
+  cards: SkillCard[],
+  config: CurriculumConfig = DEFAULT_CURRICULUM_CONFIG,
+): Level | null {
+  const next = LEVEL_ORDER[LEVEL_ORDER.indexOf(level) + 1];
+  if (!next) return null;
+  return levelCoverage(level, words, cards) >= config.levelAdvanceThreshold ? next : null;
 }
