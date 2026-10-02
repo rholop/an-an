@@ -16,14 +16,13 @@ export interface SentenceProviderResult {
 }
 
 /** Thrown for a condition the orchestrator should retry-on-the-other-provider
- * for: rate limit / quota exhaustion, or a response that wasn't valid JSON
- * matching TurnResponseSchema. Anything else (network error, auth error)
- * propagates as a plain Error and is NOT retried on the fallback provider —
- * only the specific failure modes CLAUDE.md names get the fallback. */
+ * for: rate limit / quota exhaustion, any request error from the Gemini
+ * adapter, or a response that wasn't valid JSON matching the schema. A plain
+ * Error propagates and is NOT retried on the fallback provider. */
 export class ProviderRetryableError extends Error {
   constructor(
     message: string,
-    public readonly reason: 'rate_limit' | 'quota' | 'invalid_json',
+    public readonly reason: 'rate_limit' | 'quota' | 'invalid_json' | 'request_error',
   ) {
     super(message);
     this.name = 'ProviderRetryableError';
@@ -32,6 +31,8 @@ export class ProviderRetryableError extends Error {
 
 export interface ProviderAdapter {
   readonly name: 'gemini' | 'openai';
+  /** False for a placeholder with no API key; the orchestrator won't fall back to it. */
+  readonly configured?: boolean;
   /** `systemPrompt` already has any regeneration feedback folded in (see
    * orchestrator.ts's buildEffectiveSystemPrompt) — adapters don't need to
    * know about the regeneration loop at all. */
@@ -43,6 +44,8 @@ export interface ProviderAdapter {
  * implement both, reusing the same client/API key setup. */
 export interface SentenceGenAdapter {
   readonly name: 'gemini' | 'openai';
+  /** False for a placeholder with no API key; the orchestrator won't fall back to it. */
+  readonly configured?: boolean;
   generateSentences(systemPrompt: string): Promise<SentenceProviderResult>;
 }
 
@@ -70,5 +73,7 @@ export interface JsonTaskResult<T> {
 
 export interface JsonTaskAdapter {
   readonly name: 'gemini' | 'openai';
+  /** False for a placeholder with no API key; the orchestrator won't fall back to it. */
+  readonly configured?: boolean;
   generateJson<T>(req: JsonTaskRequest<T>): Promise<JsonTaskResult<T>>;
 }

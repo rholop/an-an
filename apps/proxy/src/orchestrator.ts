@@ -19,6 +19,80 @@ export interface OrchestratorLogEntry {
   fallbackReason?: string;
 }
 
+export type AttemptLogger = (entry: Record<string, unknown>) => void;
+
+const defaultAttemptLogger: AttemptLogger = (entry) => console.log(JSON.stringify(entry));
+
+interface Served {
+  provider: 'gemini' | 'openai';
+  model: string;
+}
+
+/**
+ * Tries `primary`, then `fallback` on a ProviderRetryableError — unless the
+ * fallback has no API key, in which case the primary's error is rethrown
+ * rather than masked by "openai is not configured". Logs every provider tried.
+ */
+async function withFallback<
+  A extends { name: 'gemini' | 'openai'; configured?: boolean },
+  R extends Served,
+>(
+  primary: A,
+  fallback: A,
+  call: (adapter: A) => Promise<R>,
+  logAttempt: AttemptLogger,
+): Promise<{ result: R; fallbackReason?: string }> {
+  try {
+    const result = await call(primary);
+    logAttempt({ event: 'provider_attempt', provider: primary.name, ok: true });
+    return { result };
+  } catch (err) {
+    logAttempt({
+      event: 'provider_attempt',
+      provider: primary.name,
+      ok: false,
+      error: String(err),
+    });
+    if (!(err instanceof ProviderRetryableError)) throw err;
+    if (fallback.configured === false) {
+      logAttempt({ event: 'provider_skipped', provider: fallback.name, reason: 'not configured' });
+      throw err;
+    }
+    try {
+      const result = await call(fallback);
+      logAttempt({
+        event: 'provider_attempt',
+        provider: fallback.name,
+        ok: true,
+        fallbackFor: primary.name,
+      });
+      return { result, fallbackReason: err.reason };
+    } catch (fallbackErr) {
+      logAttempt({
+        event: 'provider_attempt',
+        provider: fallback.name,
+        ok: false,
+        fallbackFor: primary.name,
+        error: String(fallbackErr),
+      });
+      throw fallbackErr;
+    }
+  }
+}
+
+function servedLog(
+  r: Served & { usage: OrchestratorLogEntry['usage'] },
+  fallbackReason?: string,
+): OrchestratorLogEntry {
+  return {
+    provider: r.provider,
+    model: r.model,
+    cached: false,
+    usage: r.usage,
+    ...(fallbackReason ? { fallbackReason } : {}),
+  };
+}
+
 export interface Orchestrator {
   run(
     systemPrompt: string,
@@ -34,14 +108,15 @@ export function buildEffectiveSystemPrompt(systemPrompt: string, feedback?: stri
 }
 
 /**
- * Gemini first; on rate limit, quota exhaustion, or invalid JSON, retry
- * once on OpenAI (CLAUDE.md §1). Logs which provider actually served each
+ * Gemini first; on rate limit, quota exhaustion, any Gemini request error,
+ * or invalid JSON, retry once on OpenAI (CLAUDE.md §1). Logs which provider actually served each
  * request. Caches successful results keyed by the full prompt hash.
  */
 export function createOrchestrator(
   primary: ProviderAdapter,
   fallback: ProviderAdapter,
   cache: PromptCache,
+  logAttempt: AttemptLogger = defaultAttemptLogger,
 ): Orchestrator {
   return {
     async run(systemPrompt, history) {
@@ -60,34 +135,14 @@ export function createOrchestrator(
         };
       }
 
-      try {
-        const result = await primary.generateTurn(systemPrompt, history);
-        cache.set(cacheKey, result);
-        return {
-          result,
-          log: {
-            provider: result.provider,
-            model: result.model,
-            cached: false,
-            usage: result.usage,
-          },
-        };
-      } catch (err) {
-        if (!(err instanceof ProviderRetryableError)) throw err;
-
-        const result = await fallback.generateTurn(systemPrompt, history);
-        cache.set(cacheKey, result);
-        return {
-          result,
-          log: {
-            provider: result.provider,
-            model: result.model,
-            cached: false,
-            usage: result.usage,
-            fallbackReason: err.reason,
-          },
-        };
-      }
+      const { result, fallbackReason } = await withFallback(
+        primary,
+        fallback,
+        (adapter) => adapter.generateTurn(systemPrompt, history),
+        logAttempt,
+      );
+      cache.set(cacheKey, result);
+      return { result, log: servedLog(result, fallbackReason) };
     },
   };
 }
@@ -108,6 +163,7 @@ export function createSentenceOrchestrator(
   primary: SentenceGenAdapter,
   fallback: SentenceGenAdapter,
   cache: PromptCache<SentenceProviderResult>,
+  logAttempt: AttemptLogger = defaultAttemptLogger,
 ): SentenceOrchestrator {
   return {
     async run(systemPrompt) {
@@ -125,34 +181,14 @@ export function createSentenceOrchestrator(
         };
       }
 
-      try {
-        const result = await primary.generateSentences(systemPrompt);
-        cache.set(cacheKey, result);
-        return {
-          result,
-          log: {
-            provider: result.provider,
-            model: result.model,
-            cached: false,
-            usage: result.usage,
-          },
-        };
-      } catch (err) {
-        if (!(err instanceof ProviderRetryableError)) throw err;
-
-        const result = await fallback.generateSentences(systemPrompt);
-        cache.set(cacheKey, result);
-        return {
-          result,
-          log: {
-            provider: result.provider,
-            model: result.model,
-            cached: false,
-            usage: result.usage,
-            fallbackReason: err.reason,
-          },
-        };
-      }
+      const { result, fallbackReason } = await withFallback(
+        primary,
+        fallback,
+        (adapter) => adapter.generateSentences(systemPrompt),
+        logAttempt,
+      );
+      cache.set(cacheKey, result);
+      return { result, log: servedLog(result, fallbackReason) };
     },
   };
 }
@@ -173,6 +209,7 @@ export function createJsonOrchestrator(
   primary: JsonTaskAdapter,
   fallback: JsonTaskAdapter,
   cache: PromptCache<JsonTaskResult<unknown>>,
+  logAttempt: AttemptLogger = defaultAttemptLogger,
 ): JsonOrchestrator {
   return {
     async run<T>(req: JsonTaskRequest<T>) {
@@ -190,33 +227,14 @@ export function createJsonOrchestrator(
         };
       }
 
-      try {
-        const result = await primary.generateJson(req);
-        cache.set(cacheKey, result);
-        return {
-          result,
-          log: {
-            provider: result.provider,
-            model: result.model,
-            cached: false,
-            usage: result.usage,
-          },
-        };
-      } catch (err) {
-        if (!(err instanceof ProviderRetryableError)) throw err;
-        const result = await fallback.generateJson(req);
-        cache.set(cacheKey, result);
-        return {
-          result,
-          log: {
-            provider: result.provider,
-            model: result.model,
-            cached: false,
-            usage: result.usage,
-            fallbackReason: err.reason,
-          },
-        };
-      }
+      const { result, fallbackReason } = await withFallback(
+        primary,
+        fallback,
+        (adapter) => adapter.generateJson(req),
+        logAttempt,
+      );
+      cache.set(cacheKey, result);
+      return { result, log: servedLog(result, fallbackReason) };
     },
   };
 }

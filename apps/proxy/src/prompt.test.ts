@@ -1,12 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import type { Scenario, SentenceGenRequest, TurnRequest } from '@anan/core';
-import { buildSentenceGenPrompt, buildSystemPrompt, loadPromptTemplate, loadSentenceGenPromptTemplate } from './prompt.js';
+import {
+  buildSentenceGenPrompt,
+  buildSystemPrompt,
+  loadPromptTemplate,
+  loadSentenceGenPromptTemplate,
+} from './prompt.js';
 
 const scenario: Scenario = {
   id: 'tea-shop',
   title: 'Ordering a drink',
   levelRange: { min: 'N1', max: 'L2' },
-  npc: { id: 'clerk', name: '店員', personality: 'friendly', speechStyle: 'short', particles: ['喔', '啦'] },
+  npc: {
+    id: 'clerk',
+    name: '店員',
+    personality: 'friendly',
+    speechStyle: 'short',
+    particles: ['喔', '啦'],
+  },
   setting: 'A bubble tea counter.',
   goalSteps: [
     { id: 'order-drink', description: 'Order a drink', keywordHints: [] },
@@ -22,7 +33,12 @@ const request: TurnRequest = {
   npcId: 'clerk',
   history: [],
   learnerLevel: 'N2',
-  vocab: { knownSample: ['我', '要'], due: ['少冰'], targets: ['珍珠奶茶'], allowedExtras: ['珍珠奶茶'] },
+  vocab: {
+    knownSample: ['我', '要'],
+    due: ['少冰'],
+    targets: ['珍珠奶茶'],
+    allowedExtras: ['珍珠奶茶'],
+  },
   scaffolding: 'high',
   englishFallback: false,
 };
