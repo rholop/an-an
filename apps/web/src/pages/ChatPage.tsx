@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  currentFrontierLevel,
   formatDuration,
+  scenarioMatchesLevels,
   type Level,
   type Scenario,
   type SkillCard,
@@ -13,6 +13,9 @@ import type { ConversationRow, TurnRow } from '../db/schema.js';
 import { annotate, withReadingDisplay } from '../lib/annotate.js';
 import { ChatService, type ChatSummary } from '../lib/chat-service.js';
 import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
+import { reportGloss } from '../lib/gloss-reports.js';
+import { LevelChips } from '../components/LevelPicker.js';
+import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -35,10 +38,12 @@ export function ChatPage() {
     refreshCards();
   }, [refreshCards]);
 
-  const learnerLevel: Level = useMemo(() => {
-    if (lexiconState.status !== 'ready') return 'N1';
-    return currentFrontierLevel(lexiconState.lexicon.allWords(), [...cardsByWordId.values()]);
-  }, [lexiconState, cardsByWordId]);
+  // Phase 7: the one global "My level" (header picker), not a local copy.
+  const { level: learnerLevel } = useCurrentLevel();
+  // Per-screen scenario filter; follows the global level until the learner
+  // picks chips themselves, and never writes back to it.
+  const [levelFilter, setLevelFilter] = useState<Level[]>([learnerLevel]);
+  useEffect(() => setLevelFilter([learnerLevel]), [learnerLevel]);
 
   // Dev-only escape hatch: this sandbox has no real Gemini/OpenAI keys, so
   // the proxy's DisabledAdapter will reject every real turn. Flip to the
@@ -69,15 +74,20 @@ export function ChatPage() {
   useEffect(() => {
     if (lexiconState.status !== 'ready' || scenariosState.status !== 'ready') return;
     let cancelled = false;
-    loadGameSnapshot(db, lexiconState.lexicon, scenariosState.scenarios, new Date()).then(
-      (snap) => {
-        if (!cancelled) setSnapshot(snap);
-      },
-    );
+    loadGameSnapshot(
+      db,
+      lexiconState.lexicon,
+      scenariosState.scenarios,
+      new Date(),
+      undefined,
+      learnerLevel,
+    ).then((snap) => {
+      if (!cancelled) setSnapshot(snap);
+    });
     return () => {
       cancelled = true;
     };
-  }, [lexiconState, scenariosState, mapKey]);
+  }, [lexiconState, scenariosState, mapKey, learnerLevel]);
 
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [conversationId, setConversationId] = useState<number | null>(null);
@@ -158,6 +168,19 @@ export function ChatPage() {
   const suggestions = lastNpcTurn?.suggestedReplies ?? [];
   const visibleSuggestions = suggestions.slice(0, SUGGESTED_REPLY_CAP[scaffolding]);
 
+  async function reportFromPopover(at: AnnotatedToken, sentence: string) {
+    if (!at.word) return;
+    await reportGloss(db, {
+      word: at.word,
+      sense: at.sense,
+      shownGloss: at.gloss,
+      contextSentence: sentence,
+    });
+    setError(
+      `Thanks — "${at.token.text}" is saved for review (Credits page → reported definitions).`,
+    );
+  }
+
   async function sendMessage() {
     if (!chatService || !scenario || conversationId === null || sending) return;
     const text = input.trim();
@@ -218,6 +241,7 @@ export function ChatPage() {
       <div className="chat-page">
         <h1>An'an chat</h1>
         <p className="chat-level-note">Your level: {learnerLevel}</p>
+        <LevelChips selected={levelFilter} onChange={setLevelFilter} current={learnerLevel} />
         <div className="chat-scenario-list">
           {(
             snapshot?.nodes ??
@@ -228,47 +252,49 @@ export function ChatPage() {
               attempts: 0,
               bestUnassistedMs: undefined,
             }))
-          ).map((node) => {
-            const s = node.scenario;
-            const coverage = snapshot?.coverage.get(s.id);
-            return (
-              <button
-                key={s.id}
-                className="chat-scenario-card"
-                disabled={!node.unlocked}
-                onClick={() => startScenario(s)}
-                title={node.unlocked ? undefined : `Unlocks when you reach ${s.levelRange.min}`}
-              >
-                <div className="chat-scenario-title">{s.title}</div>
-                <div className="chat-scenario-range">
-                  {s.levelRange.min}–{s.levelRange.max}
-                  {!node.unlocked && ' · 🔒 locked'}
-                </div>
-                {node.stars && (
-                  <div className="chat-stars" aria-label={`${node.stars.count} of 3 stars`}>
-                    <span title="Completed">{node.stars.completed ? '★' : '☆'}</span>
-                    <span title="Completed without “I'm stuck”">
-                      {node.stars.noStuck ? '★' : '☆'}
-                    </span>
-                    <span title="Completed with no English fallback">
-                      {node.stars.noEnglish ? '★' : '☆'}
-                    </span>
-                    {node.bestUnassistedMs !== undefined && (
-                      <span className="chat-best-time">
-                        {' '}
-                        best unassisted {formatDuration(node.bestUnassistedMs)}
+          )
+            .filter((node) => scenarioMatchesLevels(node.scenario, levelFilter))
+            .map((node) => {
+              const s = node.scenario;
+              const coverage = snapshot?.coverage.get(s.id);
+              return (
+                <button
+                  key={s.id}
+                  className="chat-scenario-card"
+                  disabled={!node.unlocked}
+                  onClick={() => startScenario(s)}
+                  title={node.unlocked ? undefined : `Unlocks when you reach ${s.levelRange.min}`}
+                >
+                  <div className="chat-scenario-title">{s.title}</div>
+                  <div className="chat-scenario-range">
+                    {s.levelRange.min}–{s.levelRange.max}
+                    {!node.unlocked && ' · 🔒 locked'}
+                  </div>
+                  {node.stars && (
+                    <div className="chat-stars" aria-label={`${node.stars.count} of 3 stars`}>
+                      <span title="Completed">{node.stars.completed ? '★' : '☆'}</span>
+                      <span title="Completed without “I'm stuck”">
+                        {node.stars.noStuck ? '★' : '☆'}
                       </span>
-                    )}
-                  </div>
-                )}
-                {coverage && node.unlocked && (
-                  <div className="chat-coverage">
-                    You know ~{Math.round(coverage.coverage * 100)}% of the words here
-                  </div>
-                )}
-              </button>
-            );
-          })}
+                      <span title="Completed with no English fallback">
+                        {node.stars.noEnglish ? '★' : '☆'}
+                      </span>
+                      {node.bestUnassistedMs !== undefined && (
+                        <span className="chat-best-time">
+                          {' '}
+                          best unassisted {formatDuration(node.bestUnassistedMs)}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {coverage && node.unlocked && (
+                    <div className="chat-coverage">
+                      You know ~{Math.round(coverage.coverage * 100)}% of the words here
+                    </div>
+                  )}
+                </button>
+              );
+            })}
         </div>
         {import.meta.env.DEV && (
           <label className="chat-dev-toggle">
@@ -296,7 +322,16 @@ export function ChatPage() {
       <div className="chat-messages">
         {turns.map((turn) => {
           const annotated = withReadingDisplay(
-            annotate(turn.zh, lexiconState.lexicon),
+            annotate(
+              turn.zh,
+              lexiconState.lexicon,
+              // Phase 7: the model's per-token sense picks (validated when stored).
+              new Map(
+                (turn.tokens ?? []).flatMap((t) =>
+                  t.sense_id ? [[t.text, t.sense_id] as const] : [],
+                ),
+              ),
+            ),
             cardsByWordId,
           );
           return (
@@ -307,6 +342,8 @@ export function ChatPage() {
                 mode="auto"
                 script="pinyin"
                 onLookup={turn.role === 'npc' ? makeOnLookup(turn.id) : undefined}
+                currentLevel={learnerLevel}
+                onReportGloss={(at) => void reportFromPopover(at, turn.zh)}
               />
               {englishFallback && turn.en && <div className="chat-en">{turn.en}</div>}
               {import.meta.env.DEV && turn.validatorReport && (

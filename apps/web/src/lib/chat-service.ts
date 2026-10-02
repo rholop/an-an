@@ -159,6 +159,37 @@ export class ChatService {
     };
   }
 
+  /** Phase 7 §B4: candidate sense ids for the target/extra words that have
+   * more than one sense — only those, capped, to keep the prompt small. The
+   * model picks an id per token; it never writes a definition. */
+  private senseOptionsFor(ids: string[]): NonNullable<TurnRequest['vocab']['senseOptions']> {
+    const out: NonNullable<TurnRequest['vocab']['senseOptions']> = [];
+    for (const id of new Set(ids)) {
+      const word = this.lexicon.byId(id);
+      if (!word?.senses || word.senses.length < 2) continue;
+      out.push({
+        word: word.headword,
+        senses: word.senses.map((s) => ({ id: s.id, gloss: s.glossEn })),
+      });
+      if (out.length >= 8) break;
+    }
+    return out;
+  }
+
+  /** The model may only name a sense id it was offered; anything else is
+   * dropped, and the UI then falls back to context rules / the primary sense. */
+  private sanitizeSenseIds(
+    tokens: TurnResponse['tokens'],
+    offered: NonNullable<TurnRequest['vocab']['senseOptions']>,
+  ): TurnResponse['tokens'] {
+    const valid = new Set(offered.flatMap((o) => o.senses.map((s) => s.id)));
+    return tokens.map((t) => {
+      if (t.sense_id === undefined) return t;
+      const { sense_id, ...rest } = t;
+      return valid.has(sense_id) ? t : rest;
+    });
+  }
+
   private headwordsOf(ids: string[]): string[] {
     return ids.map((id) => this.lexicon.byId(id)?.headword).filter((w): w is string => Boolean(w));
   }
@@ -194,6 +225,7 @@ export class ChatService {
     const allCards: SkillCard[] = dueCards; // best-effort pool for nextNewItems' "touched" check
     const targets = nextNewItems(allCards, this.lexicon, this.config.newTargetsPerTurn, {
       scenarioTags: [scenario.id],
+      currentLevel: options.learnerLevel,
     });
     const targetIds = targets.map((w) => w.id);
 
@@ -209,6 +241,7 @@ export class ChatService {
         due: this.headwordsOf(sample(dueWordIds, this.config.dueSampleSize, this.rng)),
         targets: this.headwordsOf(targetIds),
         allowedExtras: this.headwordsOf(allowedExtraIds),
+        senseOptions: this.senseOptionsFor([...targetIds, ...allowedExtraIds]),
       },
       scaffolding: options.scaffolding,
       englishFallback: options.englishFallback,
@@ -261,7 +294,7 @@ export class ChatService {
       role: 'npc',
       zh: finalResponse.reply_zh,
       en: finalResponse.reply_en,
-      tokens: finalResponse.tokens,
+      tokens: this.sanitizeSenseIds(finalResponse.tokens, req.vocab.senseOptions ?? []),
       suggestedReplies: finalResponse.suggested_replies,
       recastZh: finalResponse.recast_zh,
       validatorReport: {

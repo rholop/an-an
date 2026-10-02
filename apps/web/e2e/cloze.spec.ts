@@ -18,14 +18,16 @@ test.describe('Cloze page', () => {
     // Seed a few due items the same way reader-evidence.spec.ts proves tap
     // evidence works: clicking a token introduces its word (due = now).
     await page.goto('/');
-    await expect(page.getByText(/Lexicon v1 · \d+ words/)).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Lexicon v2 · \d+ words/)).toBeVisible({ timeout: 15000 });
     await page.waitForFunction(() => Boolean(window.__anan));
     for (let i = 0; i < 3; i++) {
       await page.locator('.an-token').nth(i).click();
       await page.locator('.an-popover-close').click();
     }
     await page.waitForFunction(
-      async () => (await window.__anan.db.evidence.toArray()).filter((e) => e.kind === 'chat_lookup_gloss').length >= 3,
+      async () =>
+        (await window.__anan.db.evidence.toArray()).filter((e) => e.kind === 'chat_lookup_gloss')
+          .length >= 3,
       { timeout: 5000 },
     );
 
@@ -45,7 +47,9 @@ test.describe('Cloze page', () => {
 
     await page.waitForFunction(
       async () =>
-        (await window.__anan.db.evidence.toArray()).some((e) => e.kind === 'cloze_correct_nohint' || e.kind === 'cloze_wrong'),
+        (await window.__anan.db.evidence.toArray()).some(
+          (e) => e.kind === 'cloze_correct_nohint' || e.kind === 'cloze_wrong',
+        ),
       { timeout: 5000 },
     );
 

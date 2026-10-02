@@ -23,6 +23,7 @@ export const TURN_RESPONSE_JSON_SCHEMA = {
         properties: {
           text: { type: 'string' },
           lemma: { type: 'string' },
+          sense_id: { type: 'string' },
         },
         required: ['text'],
       },
@@ -169,4 +170,40 @@ export const JOURNAL_EXPLAIN_JSON_SCHEMA = {
     },
   },
   required: ['explanationEn', 'examples'],
+} as const;
+
+/** GlossAdjudicationResponse (POST /v1/gloss — phase doc 07 §B2). */
+export const GLOSS_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    senses: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          glossEn: { type: 'string' },
+          noteEn: { type: 'string' },
+          register: { type: 'string' },
+          taiwanOnly: { type: 'boolean' },
+          basedOn: { type: 'array', items: { type: 'string' } },
+        },
+        required: ['id', 'glossEn', 'basedOn'],
+      },
+    },
+    primarySenseId: { type: 'string' },
+    confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+  },
+  required: ['senses', 'primarySenseId', 'confidence'],
+} as const;
+
+/** DefineResponse (POST /v1/define). */
+export const DEFINE_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    pinyin: { type: 'string' },
+    glossEn: { type: 'string' },
+    noteEn: { type: 'string' },
+  },
+  required: ['pinyin', 'glossEn'],
 } as const;

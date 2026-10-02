@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Scenario, SentenceGenRequest, TurnRequest } from '@anan/core';
 import { createApp } from './app.js';
 import {
+  loadGlossPromptTemplates,
   loadJournalPromptTemplates,
   loadPromptTemplate,
   loadSentenceGenPromptTemplate,
@@ -79,6 +80,16 @@ function fakeSentenceOrchestrator(behavior: 'success' | 'throw' = 'success'): Se
   };
 }
 
+const fakeGloss = {
+  senses: [
+    { id: 's1', glossEn: 'scooter', basedOn: ['c2'], taiwanOnly: true },
+    { id: 's2', glossEn: 'annoying', basedOn: ['c3'], register: 'slang' },
+  ],
+  primarySenseId: 's1',
+  confidence: 'high',
+};
+const fakeDefine = { pinyin: 'jī chē', glossEn: 'scooter' };
+
 const fakeJournalReview = {
   issues: [
     {
@@ -113,6 +124,7 @@ function buildApp(
     orchestrator?: Orchestrator;
     sentenceOrchestrator?: SentenceOrchestrator;
     journalOrchestrator?: JsonOrchestrator;
+    glossOrchestrator?: JsonOrchestrator;
     scenarioStore?: ScenarioStore;
   } = {},
 ) {
@@ -126,6 +138,12 @@ function buildApp(
     journal: {
       prompts: loadJournalPromptTemplates('v1'),
       orchestrator: overrides.journalOrchestrator ?? fakeJournalOrchestrator(),
+    },
+    gloss: {
+      prompts: loadGlossPromptTemplates('v1'),
+      orchestrator:
+        overrides.glossOrchestrator ??
+        fakeJournalOrchestrator((task) => (task === '/v1/define' ? fakeDefine : fakeGloss)),
     },
     rateLimiter:
       overrides.rateLimiter ??
@@ -473,5 +491,71 @@ describe('journal routes', () => {
     });
     expect((await post(app, '/v1/journal-review', reviewReq)).status).toBe(200);
     expect((await post(app, '/v1/journal-review', reviewReq)).status).toBe(429);
+  });
+});
+
+describe('gloss routes (phase 7)', () => {
+  const post = (
+    app: ReturnType<typeof buildApp>,
+    route: string,
+    body: unknown,
+    headers: Record<string, string> = { 'x-install-id': 'c1' },
+  ) =>
+    app.request(route, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...headers },
+      body: JSON.stringify(body),
+    });
+  const glossReq = {
+    word: { id: 'w1', headword: '機車', pinyin: 'jī chē', pos: ['N'], level: 'L2' },
+    moeDefsZh: ['機器腳踏車的簡稱。'],
+    candidates: [
+      { id: 'c2', source: 'cedict', glossEn: 'scooter; motorcycle', tags: ['taiwan'] },
+      { id: 'c3', source: 'cedict', glossEn: 'annoying', tags: ['taiwan', 'informal'] },
+    ],
+    examples: [{ zh: '我騎機車。', en: 'I ride a scooter.' }],
+  };
+
+  it('POST /v1/gloss validates the request, returns the schema-checked answer and reports tokens', async () => {
+    const res = await post(buildApp(), '/v1/gloss', glossReq);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('x-total-tokens')).toBe('20');
+    expect(((await res.json()) as typeof fakeGloss).primarySenseId).toBe('s1');
+    expect((await post(buildApp(), '/v1/gloss', { ...glossReq, candidates: [] })).status).toBe(400);
+    expect((await post(buildApp(), '/v1/gloss', glossReq, {})).status).toBe(400);
+  });
+
+  it('puts the candidates in the user message and keeps the system prompt rule-only', async () => {
+    const seen: { system: string; user: string }[] = [];
+    const adapter = new FakeJsonAdapter('gemini', { kind: 'success', respond: () => fakeGloss });
+    const spy = {
+      name: 'gemini' as const,
+      generateJson: <T>(req: Parameters<typeof adapter.generateJson<T>>[0]) => {
+        seen.push({ system: req.systemPrompt, user: req.userMessage });
+        return adapter.generateJson(req);
+      },
+    };
+    const app = buildApp({
+      glossOrchestrator: createJsonOrchestrator(
+        spy,
+        adapter,
+        new PromptCache<JsonTaskResult<unknown>>(),
+      ),
+    });
+    await post(app, '/v1/gloss', glossReq);
+    expect(seen[0]!.user).toContain('scooter; motorcycle');
+    expect(seen[0]!.system).not.toContain('scooter; motorcycle');
+    expect(seen[0]!.system).toMatch(/never invent/i);
+  });
+
+  it('502s on a response that is not a GlossAdjudicationResponse', async () => {
+    const app = buildApp({ glossOrchestrator: fakeJournalOrchestrator(() => ({ senses: [] })) });
+    expect((await post(app, '/v1/gloss', glossReq)).status).toBe(502);
+  });
+
+  it('POST /v1/define answers for an out-of-lexicon word', async () => {
+    const res = await post(buildApp(), '/v1/define', { word: '機車', context: '他很機車' });
+    expect(await res.json()).toEqual(fakeDefine);
+    expect((await post(buildApp(), '/v1/define', { word: '' })).status).toBe(400);
   });
 });

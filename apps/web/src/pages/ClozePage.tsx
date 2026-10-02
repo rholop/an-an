@@ -8,7 +8,6 @@ import {
   buildReorderExercise,
   buildMixedSession,
   buildWordBankOptions,
-  currentFrontierLevel,
   gradeClozeAnswer,
   gradeErrorAnswer,
   reviewErrorItem,
@@ -24,7 +23,8 @@ import {
   type SessionItem,
 } from '@anan/core';
 import { db, gameService, learnerService } from '../db/instance.js';
-import { allChatLines, allJournalSentences, recognitionCardsByWordId } from '../db/queries.js';
+import { useCurrentLevel } from '../lib/current-level.js';
+import { allChatLines, allJournalSentences } from '../db/queries.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
@@ -65,18 +65,19 @@ export function ClozePage() {
   const [chatLines, setChatLines] = useState<Awaited<ReturnType<typeof allChatLines>> | null>(null);
   const [journalSentences, setJournalSentences] = useState<JournalSentenceSource[] | null>(null);
   const [errorItems, setErrorItems] = useState<ErrorItem[] | null>(null);
-  const [learnerLevel, setLearnerLevel] = useState<Level>('N1');
+  // Phase 7: the global "My level" — never hides due reviews, only steers
+  // sentence-level preference and the new-item pool.
+  const { level: learnerLevel } = useCurrentLevel();
 
   useEffect(() => {
     if (lexiconState.status !== 'ready' || scenariosState.status !== 'ready') return;
     let cancelled = false;
     (async () => {
       const now = new Date();
-      const [due, known, lines, recognitionCards, journal, errors] = await Promise.all([
+      const [due, known, lines, journal, errors] = await Promise.all([
         learnerService.dueCards(now, 200),
         learnerService.knownSet('review'),
         allChatLines(db, scenariosState.scenarios),
-        recognitionCardsByWordId(db),
         allJournalSentences(db),
         db.errorItems.toArray(),
       ]);
@@ -86,9 +87,6 @@ export function ClozePage() {
       setDueCards(due);
       setKnownIds(known);
       setChatLines(lines);
-      setLearnerLevel(
-        currentFrontierLevel(lexiconState.lexicon.allWords(), [...recognitionCards.values()]),
-      );
     })();
     return () => {
       cancelled = true;

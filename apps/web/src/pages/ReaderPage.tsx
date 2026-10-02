@@ -1,7 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { checkTaiwanness, coverage, type Level } from '@anan/core';
-import { AnnotatedText, type AnnotatedToken, type AnnotationMode, type AnnotationScript } from '../components/AnnotatedText.js';
-import { learnerService } from '../db/instance.js';
+import { checkTaiwanness, coverage, LEVEL_IDS, type Level } from '@anan/core';
+import {
+  AnnotatedText,
+  type AnnotatedToken,
+  type AnnotationMode,
+  type AnnotationScript,
+} from '../components/AnnotatedText.js';
+import { db, learnerService } from '../db/instance.js';
+import { defineUnlisted, reportGloss, type AiDefinition } from '../lib/gloss-reports.js';
+import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
+import { FetchTutorLLM } from '../lib/tutor-llm.js';
+import { useCurrentLevel } from '../lib/current-level.js';
 import { annotate } from '../lib/annotate.js';
 import { useLexicon } from '../lib/useLexicon.js';
 
@@ -10,10 +19,11 @@ const SAMPLE = '我們搭捷運去便利商店，路上還遇到陳雅婷。他�
 const MODES: AnnotationMode[] = ['always', 'hover', 'off', 'tone-only'];
 const SCRIPTS: AnnotationScript[] = ['pinyin', 'zhuyin', 'both'];
 
-const LEVEL_ORDER: Level[] = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+const LEVEL_ORDER: readonly Level[] = LEVEL_IDS;
 
 export function ReaderPage() {
   const lexiconState = useLexicon();
+  const { level: currentLevel } = useCurrentLevel();
   const [text, setText] = useState(SAMPLE);
   const [mode, setMode] = useState<AnnotationMode>('always');
   const [script, setScript] = useState<AnnotationScript>('pinyin');
@@ -50,6 +60,17 @@ export function ReaderPage() {
     );
   }
 
+  async function reportFromPopover(at: AnnotatedToken) {
+    if (!at.word) return;
+    await reportGloss(db, {
+      word: at.word,
+      sense: at.sense,
+      shownGloss: at.gloss,
+      contextSentence: text,
+    });
+    setLookupLog((log) => [`reported definition of ${at.token.text}`, ...log].slice(0, 20));
+  }
+
   async function handleLookup(at: AnnotatedToken, kind: 'gloss' | 'reading') {
     const line = `${new Date().toISOString()} lookup ${kind} ${at.token.text}`;
     console.log(line);
@@ -72,7 +93,8 @@ export function ReaderPage() {
     <div className="reader-page">
       <h1>An'an reader</h1>
       <p className="reader-meta">
-        Lexicon {lexiconState.meta.version} · {lexiconState.meta.wordCount} words · built {lexiconState.meta.buildDate}
+        Lexicon {lexiconState.meta.version} · {lexiconState.meta.wordCount} words · built{' '}
+        {lexiconState.meta.buildDate}
       </p>
 
       <textarea
@@ -106,14 +128,27 @@ export function ReaderPage() {
         </label>
       </div>
 
-      <AnnotatedText tokens={annotated} mode={mode} script={script} onLookup={handleLookup} />
+      <AnnotatedText
+        tokens={annotated}
+        onReportGloss={(at) => void reportFromPopover(at)}
+        mode={mode}
+        script={script}
+        onLookup={handleLookup}
+        currentLevel={currentLevel}
+      />
+
+      <UnlistedWords
+        spans={annotated.filter((a) => a.token.kind === 'unknown').map((a) => a.token.text)}
+        context={text}
+      />
 
       {!taiwanness.isClean && (
         <div className="taiwanness-warnings">
           <h2>Taiwan-ness warnings</h2>
           {taiwanness.simplifiedChars.map((h, i) => (
             <div key={`s${i}`} className="warning warning--simplified">
-              Simplified character <strong>{h.char}</strong> — traditional is <strong>{h.traditional}</strong>.
+              Simplified character <strong>{h.char}</strong> — traditional is{' '}
+              <strong>{h.traditional}</strong>.
             </div>
           ))}
           {taiwanness.mainlandTerms.map((h, i) => (
@@ -137,8 +172,8 @@ export function ReaderPage() {
             {cov.byLevel.unleveled && <li>unleveled: {cov.byLevel.unleveled}</li>}
           </ul>
           <p className="coverage-known-note">
-            {cov.knownCount} known / {cov.unknownCount} unknown word tokens (known = recognition card in review or
-            mature)
+            {cov.knownCount} known / {cov.unknownCount} unknown word tokens (known = recognition
+            card in review or mature)
           </p>
         </div>
       )}
@@ -148,6 +183,57 @@ export function ReaderPage() {
           <h2>Lookup events (console + last 20, now feeding the learner model)</h2>
           <pre>{lookupLog.join('\n')}</pre>
         </div>
+      )}
+    </div>
+  );
+}
+
+/** Phase 7 §B5: words the lexicon doesn't know get an on-demand AI definition —
+ * clearly labelled, cached, and queued for human review (never for listed words). */
+function UnlistedWords({ spans, context }: { spans: string[]; context: string }) {
+  const unique = [...new Set(spans)];
+  const [useFake, setUseFake] = useState(false);
+  const llm = useMemo(() => (useFake ? new FakeTutorLLM() : new FetchTutorLLM()), [useFake]);
+  const [results, setResults] = useState<Record<string, AiDefinition | string>>({});
+  if (unique.length === 0) return null;
+
+  async function define(word: string) {
+    try {
+      const def = await defineUnlisted(db, llm, word, context.slice(0, 200));
+      setResults((r) => ({ ...r, [word]: def }));
+    } catch (err) {
+      setResults((r) => ({ ...r, [word]: err instanceof Error ? err.message : String(err) }));
+    }
+  }
+
+  return (
+    <div className="coverage" data-testid="unlisted-words">
+      <h2>Not in the dictionary</h2>
+      <ul>
+        {unique.map((w) => {
+          const r = results[w];
+          return (
+            <li key={w}>
+              <span lang="zh-Hant">{w}</span>{' '}
+              {r === undefined ? (
+                <button onClick={() => define(w)}>Define (AI)</button>
+              ) : typeof r === 'string' ? (
+                <span className="warning">{r}</span>
+              ) : (
+                <span>
+                  {r.pinyin} — {r.glossEn}{' '}
+                  <em className="warning-note">AI-generated, queued for review</em>
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {import.meta.env.DEV && (
+        <label>
+          <input type="checkbox" checked={useFake} onChange={(e) => setUseFake(e.target.checked)} />{' '}
+          Use fake tutor (dev)
+        </label>
       )}
     </div>
   );

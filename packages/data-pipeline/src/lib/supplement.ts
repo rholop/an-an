@@ -4,8 +4,13 @@ import { z } from 'zod';
 import type { Level } from '@anan/core';
 
 const LevelSchema = z.union([
-  z.literal('N1'), z.literal('N2'), z.literal('L1'), z.literal('L2'),
-  z.literal('L3'), z.literal('L4'), z.literal('L5'), z.literal('L6'),
+  z.literal('N1'),
+  z.literal('N2'),
+  z.literal('L1'),
+  z.literal('L2'),
+  z.literal('L3'),
+  z.literal('L4'),
+  z.literal('L5'),
   z.null(),
 ]);
 

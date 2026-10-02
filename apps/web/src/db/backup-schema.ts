@@ -1,3 +1,4 @@
+import { LevelSchema } from '@anan/core';
 import { z } from 'zod';
 
 const ItemRefSchema = z.object({ kind: z.enum(['word', 'grammar']), id: z.string() });
@@ -84,7 +85,7 @@ const WordSchema = z.object({
   headword: z.string(),
   variants: z.array(z.string()),
   pos: z.array(z.string()),
-  level: z.enum(['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6']).nullable(),
+  level: LevelSchema.nullable(),
   source: z.enum(['tocfl', 'supplement', 'custom']),
   pinyin: z.string(),
   pinyinNumeric: z.string(),
@@ -97,7 +98,6 @@ const WordSchema = z.object({
 });
 
 const SpanSchema = z.tuple([z.number().int(), z.number().int()]);
-const LevelSchema = z.enum(['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6']);
 
 const JournalIssueSchema = z.object({
   span: SpanSchema,
@@ -213,6 +213,28 @@ export const RewardRowSchema = z.object({
   refId: z.string().optional(),
 });
 
+export const GlossReportRowSchema = z.object({
+  id: z.number().optional(),
+  wordId: z.string(),
+  headword: z.string(),
+  pinyin: z.string(),
+  senseId: z.string().optional(),
+  shownGloss: z.string(),
+  contextSentence: z.string(),
+  note: z.string().optional(),
+  at: z.coerce.date(),
+});
+
+export const AiGlossRowSchema = z.object({
+  key: z.string(),
+  word: z.string(),
+  pinyin: z.string(),
+  glossEn: z.string(),
+  noteEn: z.string().optional(),
+  contextSentence: z.string().optional(),
+  at: z.coerce.date(),
+});
+
 export const BackupSchema = z.object({
   schemaVersion: z.number().int(),
   lexiconVersion: z.string().optional(),
@@ -231,6 +253,9 @@ export const BackupSchema = z.object({
   conversations: z.array(ConversationRowSchema).default([]),
   turns: z.array(TurnRowSchema).default([]),
   rewardEvents: z.array(RewardRowSchema).default([]),
+  // Phase 7 (schemaVersion 4).
+  glossReports: z.array(GlossReportRowSchema).default([]),
+  aiGlosses: z.array(AiGlossRowSchema).default([]),
 });
 
 export type Backup = z.infer<typeof BackupSchema>;

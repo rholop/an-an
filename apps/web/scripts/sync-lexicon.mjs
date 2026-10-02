@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
-const SRC = path.join(REPO_ROOT, 'data/build/lexicon.v1.json');
+const SRC = path.join(REPO_ROOT, 'data/build/lexicon.v2.json');
 const DEST_DIR = path.join(__dirname, '../public/lexicon');
-const DEST = path.join(DEST_DIR, 'lexicon.v1.json');
+const DEST = path.join(DEST_DIR, 'lexicon.v2.json');
 
 if (!existsSync(SRC)) {
   console.error(`sync-lexicon: ${SRC} doesn't exist yet — run "pnpm pipeline:build" first.`);

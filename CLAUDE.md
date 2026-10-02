@@ -55,7 +55,9 @@ The game is **purely text-based: no audio, TTS, listening or speech features.** 
 ## Shared core types (the contract between phases)
 
 ```ts
-type Level = 'N1' | 'N2' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6';
+// Seven levels, from packages/core/src/levels.config.ts (the single source of truth):
+// N1 準備級一級, N2 準備級二級, L1 入門級 (A1), L2 基礎級 (A2), L3 進階級 (B1), L4 高階級 (B2), L5 流利級 (C1–C2).
+type Level = 'N1' | 'N2' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
 type Skill = 'recognition' | 'production';
 type ItemState = 'unseen' | 'introduced' | 'learning' | 'review' | 'mature';
 

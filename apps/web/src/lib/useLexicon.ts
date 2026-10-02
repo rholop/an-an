@@ -24,7 +24,7 @@ export function useLexicon(): LexiconLoadState {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      fetch(`${import.meta.env.BASE_URL}lexicon/lexicon.v1.json`).then((res) => {
+      fetch(`${import.meta.env.BASE_URL}lexicon/lexicon.v2.json`).then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json() as Promise<LexiconFile>;
       }),

@@ -129,7 +129,7 @@ export class JournalService {
       review,
       now,
     );
-    const levels = summarizeLevels(text, this.lexicon);
+    const levels = summarizeLevels(text, this.lexicon, input.learnerLevel);
 
     const entry: JournalEntryRow = {
       id: this.newId(),

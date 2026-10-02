@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Lexicon, type Word } from '@anan/core';
+import { LAST_LEVEL, Lexicon, type Word } from '@anan/core';
 import { buildAnalyzeContext, isDoubtful, sampleAllowedVocab, shuffle } from './sentence-bank.js';
 
 function word(partial: Partial<Word> & Pick<Word, 'id' | 'headword'>): Word {
@@ -87,10 +87,10 @@ describe('buildAnalyzeContext', () => {
     expect(ctx.knownIds.has('f1')).toBe(true);
   });
 
-  it('falls back to L6 when the word has no level', () => {
+  it('falls back to the last level when the word has no level', () => {
     const target = word({ id: 'target1', headword: '某詞', level: null });
     const lexicon = new Lexicon([target]);
     const ctx = buildAnalyzeContext(target, lexicon, new Set());
-    expect(ctx.learnerLevel).toBe('L6');
+    expect(ctx.learnerLevel).toBe(LAST_LEVEL);
   });
 });

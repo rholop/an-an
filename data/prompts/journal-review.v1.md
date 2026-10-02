@@ -18,7 +18,7 @@ so through the `confidence` field rather than guessing.
 
 ## The learner
 
-- Current level: {{learner_level}} (TOCFL scale: N1, N2, L1 … L6)
+- Current level: {{learner_level}} (TOCFL scale: N1, N2, L1 … L5)
 - Words the daily prompt asked them to try: {{prompt_words}}
 - Their recurring recent error patterns (look out for these first): {{recurring_patterns}}
 

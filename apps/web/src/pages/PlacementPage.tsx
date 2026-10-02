@@ -13,6 +13,7 @@ import {
   type PlacementState,
 } from '@anan/core';
 import { learnerService } from '../db/instance.js';
+import { setCurrentLevel } from '../lib/current-level.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import './PlacementPage.css';
 
@@ -42,10 +43,20 @@ async function applyPlacementResult(state: PlacementState, lexicon: Lexicon, now
   // are left untouched (genuinely unseen, no row written).
   const bulkKnownEvents: Evidence[] = lexicon
     .allWords()
-    .filter((w) => w.level !== null && LEVEL_ORDER.indexOf(w.level) < boundaryIdx && !judgedIds.has(w.id))
-    .map((w) => ({ item: { kind: 'word', id: w.id }, skill: 'recognition', kind: 'placement_known', at: now }));
+    .filter(
+      (w) => w.level !== null && LEVEL_ORDER.indexOf(w.level) < boundaryIdx && !judgedIds.has(w.id),
+    )
+    .map((w) => ({
+      item: { kind: 'word', id: w.id },
+      skill: 'recognition',
+      kind: 'placement_known',
+      at: now,
+    }));
 
   await learnerService.recordBulk([...overrideEvents, ...bulkKnownEvents], now);
+  // Phase 7: placement sets "My level" to the first level not yet known (still
+  // overridable from the header picker).
+  await setCurrentLevel(LEVEL_ORDER[Math.min(boundaryIdx, LEVEL_ORDER.length - 1)]!);
   return { result, bulkCount: bulkKnownEvents.length };
 }
 
@@ -76,9 +87,20 @@ export function PlacementPage() {
     const events: Evidence[] = lexicon
       .allWords()
       .filter((w) => w.level !== null && LEVEL_ORDER.indexOf(w.level) < boundaryIdx)
-      .map((w) => ({ item: { kind: 'word', id: w.id }, skill: 'recognition', kind: 'placement_known', at: now }));
+      .map((w) => ({
+        item: { kind: 'word', id: w.id },
+        skill: 'recognition',
+        kind: 'placement_known',
+        at: now,
+      }));
     await learnerService.recordBulk(events, now);
-    const state: PlacementState = { ...initPlacementState(), lo: boundaryIdx, hi: boundaryIdx, phase: 'done' };
+    await setCurrentLevel(LEVEL_ORDER[Math.min(boundaryIdx, LEVEL_ORDER.length - 1)]!);
+    const state: PlacementState = {
+      ...initPlacementState(),
+      lo: boundaryIdx,
+      hi: boundaryIdx,
+      phase: 'done',
+    };
     setApplySummary({ bulkCount: events.length });
     setStage({ kind: 'done', state });
   }
@@ -91,7 +113,12 @@ export function PlacementPage() {
       return;
     }
     // round complete
-    const nextState = applyPlacementRound(stage.state, stage.round, answers, DEFAULT_PLACEMENT_CONFIG);
+    const nextState = applyPlacementRound(
+      stage.state,
+      stage.round,
+      answers,
+      DEFAULT_PLACEMENT_CONFIG,
+    );
     const nextRound = nextPlacementRound(nextState, lexicon, DEFAULT_PLACEMENT_CONFIG, rng);
     if (nextState.phase === 'done' || !nextRound) {
       setStage({ kind: 'applying' });
@@ -104,7 +131,8 @@ export function PlacementPage() {
     setStage({ kind: 'running', state: nextState, round: nextRound, answers: [] });
   }
 
-  const totalTaps = stage.kind === 'running' ? stage.state.judgements.length + stage.answers.length : 0;
+  const totalTaps =
+    stage.kind === 'running' ? stage.state.judgements.length + stage.answers.length : 0;
 
   return (
     <div className="placement-page">
@@ -159,7 +187,7 @@ function PlacementSummary({ state, bulkCount }: { state: PlacementState; bulkCou
   return (
     <div className="placement-summary">
       <p>
-        Placed at <strong>{result.boundaryLevel ?? 'beyond L6'}</strong>
+        Placed at <strong>{result.boundaryLevel ?? 'beyond L5'}</strong>
         {result.boundaryLevel && ` (levels before ${result.boundaryLevel} marked known)`}.
       </p>
       <p className="placement-bulk-note">{bulkCount} words marked known for light first review.</p>

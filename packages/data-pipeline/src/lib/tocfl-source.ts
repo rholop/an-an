@@ -2,7 +2,7 @@
 // (readFile in particular is assigned dynamically) — default-import the
 // whole module instead.
 import XLSX from 'xlsx';
-import type { Level } from '@anan/core';
+import { LEVEL_IDS, type Level } from '@anan/core';
 
 export interface TocflRawRow {
   level: Level;
@@ -23,9 +23,10 @@ const SHEETS: { name: string; level: Level; hasContext: boolean }[] = [
   { name: '流利級(Level 5)', level: 'L5', hasContext: false },
 ];
 
-/** No Level 6 sheet exists in the current SC-TOP download — see CLAUDE.md
- * "Open items to verify, not assume". Exposed so the build can note it. */
-export const MISSING_LEVELS: Level[] = ['L6'];
+/** Levels with no sheet in the workbook. Empty: the 2023 list has exactly the
+ * seven levels in core's levels.config (N1, N2, L1–L5); the old "L6" was a
+ * mistaken assumption (phase 7). Kept so the build can still flag a gap. */
+export const MISSING_LEVELS: Level[] = LEVEL_IDS.filter((l) => !SHEETS.some((s) => s.level === l));
 
 export function readTocflWorkbook(path: string): TocflRawRow[] {
   const wb = XLSX.readFile(path, { cellDates: false });
@@ -34,7 +35,10 @@ export function readTocflWorkbook(path: string): TocflRawRow[] {
   for (const { name, level, hasContext } of SHEETS) {
     const ws = wb.Sheets[name];
     if (!ws) throw new Error(`readTocflWorkbook: expected sheet "${name}" not found in ${path}`);
-    const raw = XLSX.utils.sheet_to_json<(string | number | null)[]>(ws, { header: 1, defval: null });
+    const raw = XLSX.utils.sheet_to_json<(string | number | null)[]>(ws, {
+      header: 1,
+      defval: null,
+    });
 
     for (let i = 1; i < raw.length; i++) {
       // skip header row

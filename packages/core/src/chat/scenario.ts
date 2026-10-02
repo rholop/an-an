@@ -1,6 +1,8 @@
 import { z } from 'zod';
+import { LEVEL_IDS } from '../levels.config.js';
 import { LevelSchema } from './level-schema.js';
 import type { Lexicon } from '../lexicon.js';
+import type { Level } from '../levels.config.js';
 
 export const ScenarioGoalStepSchema = z.object({
   id: z.string(),
@@ -40,13 +42,25 @@ export const ScenarioFileSchema = z.object({
 });
 export type ScenarioFile = z.infer<typeof ScenarioFileSchema>;
 
-const LEVEL_ORDER = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'] as const;
+const LEVEL_ORDER = LEVEL_IDS;
 
 /** Scenario unlock by level lives in data (CLAUDE.md §5): a scenario is
  * available once the learner's level falls within [min, max]. */
-export function isScenarioUnlocked(scenario: Scenario, learnerLevel: (typeof LEVEL_ORDER)[number]): boolean {
+export function isScenarioUnlocked(scenario: Scenario, learnerLevel: Level): boolean {
   const idx = LEVEL_ORDER.indexOf(learnerLevel);
-  return idx >= LEVEL_ORDER.indexOf(scenario.levelRange.min) && idx <= LEVEL_ORDER.indexOf(scenario.levelRange.max);
+  return (
+    idx >= LEVEL_ORDER.indexOf(scenario.levelRange.min) &&
+    idx <= LEVEL_ORDER.indexOf(scenario.levelRange.max)
+  );
+}
+
+/** Phase 7 level filter: does the scenario's [min, max] range include any of
+ * the selected levels? An empty selection means "no filter". */
+export function scenarioMatchesLevels(scenario: Scenario, levels: readonly Level[]): boolean {
+  if (levels.length === 0) return true;
+  const lo = LEVEL_ORDER.indexOf(scenario.levelRange.min);
+  const hi = LEVEL_ORDER.indexOf(scenario.levelRange.max);
+  return levels.some((l) => LEVEL_ORDER.indexOf(l) >= lo && LEVEL_ORDER.indexOf(l) <= hi);
 }
 
 /** Resolves a scenario's vocabExtras (headwords) to lexicon Word ids, for

@@ -66,6 +66,8 @@ export async function loadGameSnapshot(
   scenarios: Scenario[],
   now: Date,
   targetRetention = DEFAULT_LEARNER_CONFIG.requestRetention,
+  /** Phase 7: the learner's chosen level; falls back to the derived frontier. */
+  chosenLevel?: Level,
 ): Promise<GameSnapshot> {
   const [cards, conversations, rewards, convRows, turns] = await Promise.all([
     allTouchedCards(db),
@@ -76,7 +78,7 @@ export async function loadGameSnapshot(
   ]);
 
   const recognition = cards.filter((c) => c.skill === 'recognition');
-  const frontier = currentFrontierLevel(lexicon.allWords(), recognition);
+  const frontier = chosenLevel ?? currentFrontierLevel(lexicon.allWords(), recognition);
   const knownIds = new Set(
     cards.filter((c) => c.state === 'review' || c.state === 'mature').map((c) => c.item.id),
   );

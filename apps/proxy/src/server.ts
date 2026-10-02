@@ -19,6 +19,7 @@ import type {
   SentenceProviderResult,
 } from './providers/types.js';
 import {
+  loadGlossPromptTemplates,
   loadJournalPromptTemplates,
   loadPromptTemplate,
   loadSentenceGenPromptTemplate,
@@ -89,6 +90,14 @@ const app = createApp({
     openai,
     new PromptCache<SentenceProviderResult>(),
   ),
+  gloss: {
+    prompts: loadGlossPromptTemplates(env.PROMPT_VERSION),
+    orchestrator: createJsonOrchestrator(
+      geminiJournal,
+      openaiJournal,
+      new PromptCache<JsonTaskResult<unknown>>(),
+    ),
+  },
   journal: {
     prompts: loadJournalPromptTemplates(env.PROMPT_VERSION),
     orchestrator: createJsonOrchestrator(

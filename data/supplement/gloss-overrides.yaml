@@ -1,0 +1,16 @@
+# Hand corrections to English glosses (phase 7). An entry here ALWAYS wins over
+# the generated gloss (heuristic or LLM) and survives every rebuild.
+#
+# Match by lexicon `id`, or by `word` (+ optional `pinyin`, which separates
+# homographs like 還 hái / huán). `senses` lists the senses to show, primary
+# first; each gloss should be ≤ 6 words. Paste the output of the app's
+# Credits page ("Reported definitions") here after correcting each gloss.
+#
+# - word: 機車
+#   pinyin: jī chē
+#   senses:
+#     - glossEn: scooter; motorbike
+#       taiwanOnly: true
+#     - glossEn: annoying; hard to get along with
+#       register: slang
+#       taiwanOnly: true

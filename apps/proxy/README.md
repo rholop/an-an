@@ -38,6 +38,14 @@ implements.
   `JsonTaskAdapter`/`createJsonOrchestrator` (Gemini first, OpenAI fallback,
   cached by task + prompt + message). Prompts: `data/prompts/journal-*.md`;
   models: `GEMINI_MODEL_JOURNAL` / `OPENAI_MODEL_JOURNAL`.
+- `POST /v1/gloss` (phase doc 07 §B2) — offline gloss adjudication, called by
+  `packages/data-pipeline`'s `build:glosses` (never at runtime): given a word,
+  its TOCFL POS, MOE definitions and candidate senses, the model CHOOSES and
+  CONDENSES (≤ 6 words, citing candidate ids); the pipeline validates every
+  answer. Returns an `x-total-tokens` header so the batch can log its cost.
+  `POST /v1/define` — runtime fallback for a word that is not in the lexicon
+  (the web app labels it "AI-generated" and queues it for review). Both reuse
+  the journal JSON orchestrator (Gemini first, OpenAI fallback, cached).
 - `pnpm --filter @anan/proxy journal-eval` runs the fixture entries in
   `data/journal-eval/` through a live proxy and writes `docs/journal-eval.md`.
 

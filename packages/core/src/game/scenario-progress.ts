@@ -2,8 +2,9 @@ import type { Scenario } from '../chat/scenario.js';
 import type { Lexicon } from '../lexicon.js';
 import type { Level } from '../types.js';
 import { analyzeText, type AnalyzeContext } from '../validate/turn.js';
+import { LEVEL_IDS } from '../levels.config.js';
 
-const LEVEL_ORDER: Level[] = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+const LEVEL_ORDER = LEVEL_IDS;
 
 /** The slice of a stored conversation the game cares about. */
 export interface ConversationRecord {

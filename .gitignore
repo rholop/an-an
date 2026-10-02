@@ -29,3 +29,9 @@ apps/web/test-results/
 apps/web/playwright-report/
 apps/web/screenshots/
 
+
+# Phase 7: large dictionary dumps live in data/raw/ but are not committed (see data/raw/SOURCES.md).
+data/raw/kaikki*
+data/raw/Unihan*
+data/raw/cedict_*
+data/raw/*.zip

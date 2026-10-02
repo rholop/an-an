@@ -3,10 +3,12 @@ import type { Lexicon } from '../lexicon.js';
 import { segment, type HintToken, type Token } from '../segment.js';
 import type { Level } from '../types.js';
 import type { TurnResponse } from '../chat/types.js';
+import { LEVEL_IDS } from '../levels.config.js';
 
-const LEVEL_ORDER: Level[] = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+const LEVEL_ORDER = LEVEL_IDS;
 
-export type TokenClass = 'known' | 'due' | 'target' | 'learning' | 'allowed' | 'out_of_level' | 'unlisted';
+export type TokenClass =
+  'known' | 'due' | 'target' | 'learning' | 'allowed' | 'out_of_level' | 'unlisted';
 
 export interface ClassifiedToken {
   token: Token;
@@ -65,7 +67,9 @@ function classifyWordToken(token: Token, ctx: AnalyzeContext): ClassifiedToken {
 
   // Names, NPC names, particles and fillers are always conversationally
   // fine regardless of the learner's level/progress (CLAUDE.md §4 "allowed").
-  if (prioritized.tags.some((t) => t === 'name' || t === 'npc' || t === 'particle' || t === 'filler')) {
+  if (
+    prioritized.tags.some((t) => t === 'name' || t === 'npc' || t === 'particle' || t === 'filler')
+  ) {
     return { token, wordId, class: 'allowed' };
   }
   if (ctx.knownIds.has(wordId)) return { token, wordId, class: 'known' };
@@ -74,7 +78,10 @@ function classifyWordToken(token: Token, ctx: AnalyzeContext): ClassifiedToken {
   if (ctx.learningIds.has(wordId)) return { token, wordId, class: 'learning' };
   if (ctx.allowedExtraIds.has(wordId)) return { token, wordId, class: 'allowed' };
 
-  if (prioritized.level !== null && LEVEL_ORDER.indexOf(prioritized.level) > LEVEL_ORDER.indexOf(ctx.learnerLevel)) {
+  if (
+    prioritized.level !== null &&
+    LEVEL_ORDER.indexOf(prioritized.level) > LEVEL_ORDER.indexOf(ctx.learnerLevel)
+  ) {
     return { token, wordId, class: 'out_of_level' };
   }
   // A real lexicon word, at/below the learner's level, but not part of
@@ -134,11 +141,15 @@ export function analyzeText(
     if (!c.wordId) continue;
     const word = ctx.lexicon.byId(c.wordId);
     if (!word?.level) continue;
-    if (!maxLevel || LEVEL_ORDER.indexOf(word.level) > LEVEL_ORDER.indexOf(maxLevel)) maxLevel = word.level;
+    if (!maxLevel || LEVEL_ORDER.indexOf(word.level) > LEVEL_ORDER.indexOf(maxLevel))
+      maxLevel = word.level;
   }
 
   const taiwanness = checkTaiwanness(text);
-  const pass = coverage >= config.coverageThreshold && unknown.length <= config.maxUnknownTokens && taiwanness.isClean;
+  const pass =
+    coverage >= config.coverageThreshold &&
+    unknown.length <= config.maxUnknownTokens &&
+    taiwanness.isClean;
 
   return { pass, coverage, maxLevel, unknown, classifications, taiwanness };
 }

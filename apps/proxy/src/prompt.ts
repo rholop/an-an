@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
+  DefineRequest,
+  GlossAdjudicationRequest,
   JournalCheckRequest,
   JournalExplainRequest,
   JournalReviewRequest,
@@ -60,6 +62,12 @@ export function buildSystemPrompt(template: string, scenario: Scenario, req: Tur
     due_words: listOrNone(req.vocab.due, '(none due)'),
     target_words: listOrNone(req.vocab.targets, '(none this turn)'),
     allowed_extras: listOrNone(req.vocab.allowedExtras, '(none)'),
+    sense_options:
+      (req.vocab.senseOptions ?? []).length > 0
+        ? (req.vocab.senseOptions ?? [])
+            .map((o) => `- ${o.word}: ${o.senses.map((s) => `${s.id} = ${s.gloss}`).join(' | ')}`)
+            .join('\n')
+        : '(none this turn)',
     scaffolding: req.scaffolding,
     english_fallback: req.englishFallback ? 'true' : 'false',
   });
@@ -102,6 +110,26 @@ export function buildJournalReviewPrompt(template: string, req: JournalReviewReq
     prompt_words: listOrNone(req.promptWords, '(none)'),
     recurring_patterns: listOrNone(req.recurringPatterns, '(none recorded yet)'),
   });
+}
+
+export interface GlossPrompts {
+  adjudicate: string;
+  define: string;
+}
+
+export function loadGlossPromptTemplates(version: string): GlossPrompts {
+  return {
+    adjudicate: loadPromptFile(`gloss-adjudicate.${version}.md`),
+    define: loadPromptFile(`define.${version}.md`),
+  };
+}
+
+export function glossAdjudicateUserMessage(req: GlossAdjudicationRequest): string {
+  return JSON.stringify(req);
+}
+
+export function defineUserMessage(req: DefineRequest): string {
+  return JSON.stringify({ word: req.word, sentence: req.context });
 }
 
 export function buildJournalCheckPrompt(template: string): string {

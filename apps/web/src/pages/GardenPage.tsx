@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
 import {
+  groupPlots,
   wiltingCards,
   type GrowthStage,
+  type Level,
   type Plant,
   type Plot,
   type SkillCard,
   type Wilt,
 } from '@anan/core';
+import { LevelChips } from '../components/LevelPicker.js';
 import { db, gameService } from '../db/instance.js';
+import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
@@ -39,6 +43,10 @@ export function GardenPage() {
   const lexiconState = useLexicon();
   const scenariosState = useScenarios();
   const [snapshot, setSnapshot] = useState<GameSnapshot | null>(null);
+  const { level } = useCurrentLevel();
+  // Phase 7 per-screen filter: defaults to My level, changes here never touch it.
+  const [levelFilter, setLevelFilter] = useState<Level[]>([level]);
+  useEffect(() => setLevelFilter([level]), [level]);
   const [focus, setFocus] = useState<SkillCard[] | null>(null);
   const [refresh, setRefresh] = useState(0);
 
@@ -53,13 +61,14 @@ export function GardenPage() {
         scenariosState.scenarios,
         new Date(),
         target,
+        level,
       );
       if (!cancelled) setSnapshot(snap);
     })();
     return () => {
       cancelled = true;
     };
-  }, [lexiconState, scenariosState, refresh]);
+  }, [lexiconState, scenariosState, refresh, level]);
 
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
   if (scenariosState.status === 'error')
@@ -78,15 +87,29 @@ export function GardenPage() {
     );
   }
 
-  const wilting = snapshot.plants.filter((p) => p.wilt !== 'healthy').length;
+  const lexicon = lexiconState.status === 'ready' ? lexiconState.lexicon : null;
+  const inFilter = (p: Plant) => {
+    if (levelFilter.length === 0 || !lexicon) return true;
+    const lvl = lexicon.byId(p.wordId)?.level;
+    return lvl ? levelFilter.includes(lvl) : false;
+  };
+  const shownPlants = snapshot.plants.filter(inFilter);
+  const plots =
+    lexicon && scenariosState.status === 'ready'
+      ? groupPlots(shownPlants, scenariosState.scenarios, lexicon)
+      : snapshot.plots;
+  const wilting = shownPlants.filter((p) => p.wilt !== 'healthy').length;
+  const hiddenWilting = snapshot.plants.filter((p) => !inFilter(p) && p.wilt !== 'healthy').length;
 
   return (
     <div className="garden-page">
       <h1>Word garden</h1>
       <p className="garden-meta">
-        {snapshot.plants.length === 0
-          ? 'Nothing planted yet — meet some words in Chat or Review and they will appear here.'
-          : `${snapshot.plants.length} words planted · ${wilting === 0 ? 'all healthy' : `${wilting} need water`}`}
+        {shownPlants.length === 0
+          ? snapshot.plants.length === 0
+            ? 'Nothing planted yet — meet some words in Chat or Review and they will appear here.'
+            : 'No words at the selected levels yet.'
+          : `${shownPlants.length} words planted · ${wilting === 0 ? 'all healthy' : `${wilting} need water`}`}
       </p>
       <p className="garden-legend">
         {(Object.keys(STAGE_ICON) as GrowthStage[]).map((s) => (
@@ -96,8 +119,15 @@ export function GardenPage() {
         ))}
         · faded and drooping = memory fading below your target
       </p>
+      <LevelChips selected={levelFilter} onChange={setLevelFilter} current={level} />
+      {hiddenWilting > 0 && (
+        <p className="garden-meta">
+          {hiddenWilting} wilting {hiddenWilting === 1 ? 'word' : 'words'} at other levels — pick
+          “All” to see them. Your due reviews are never hidden.
+        </p>
+      )}
       <div className="garden-plots">
-        {snapshot.plots.map((plot) => (
+        {plots.map((plot) => (
           <PlotView key={plot.id} plot={plot} onWater={() => setFocus(wiltingCards(plot))} />
         ))}
       </div>

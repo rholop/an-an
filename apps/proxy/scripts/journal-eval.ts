@@ -35,7 +35,7 @@ const fixtures = JSON.parse(
   learnerLevel: 'L2';
   entries: Fixture[];
 };
-const lexFile = JSON.parse(readFileSync(path.join(root, 'data/build/lexicon.v1.json'), 'utf8')) as {
+const lexFile = JSON.parse(readFileSync(path.join(root, 'data/build/lexicon.v2.json'), 'utf8')) as {
   words: Word[];
   grammar: GrammarItem[];
 };

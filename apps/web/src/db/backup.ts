@@ -14,6 +14,8 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     conversations,
     turns,
     rewardEvents,
+    glossReports,
+    aiGlosses,
   ] = await Promise.all([
     db.items.toArray(),
     db.evidence.toArray(),
@@ -26,6 +28,8 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     db.conversations.toArray(),
     db.turns.toArray(),
     db.rewardEvents.toArray(),
+    db.glossReports.toArray(),
+    db.aiGlosses.toArray(),
   ]);
   return {
     schemaVersion: DB_SCHEMA_VERSION,
@@ -42,6 +46,8 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     conversations,
     turns,
     rewardEvents,
+    glossReports,
+    aiGlosses,
   };
 }
 
@@ -78,6 +84,8 @@ export async function importBackup(
     db.conversations,
     db.turns,
     db.rewardEvents,
+    db.glossReports,
+    db.aiGlosses,
   ];
   await db.transaction('rw', tables, async () => {
     await Promise.all([
@@ -92,6 +100,8 @@ export async function importBackup(
       db.conversations.clear(),
       db.turns.clear(),
       db.rewardEvents.clear(),
+      db.glossReports.clear(),
+      db.aiGlosses.clear(),
     ]);
     if (parsed.items.length > 0) {
       await db.items.bulkPut(parsed.items.map((c) => ({ ...c, pk: itemPk(c.item, c.skill) })));
@@ -110,6 +120,8 @@ export async function importBackup(
     if (parsed.conversations.length > 0) await db.conversations.bulkPut(parsed.conversations);
     if (parsed.turns.length > 0) await db.turns.bulkPut(parsed.turns);
     if (parsed.rewardEvents.length > 0) await db.rewardEvents.bulkPut(parsed.rewardEvents);
+    if (parsed.glossReports.length > 0) await db.glossReports.bulkPut(parsed.glossReports);
+    if (parsed.aiGlosses.length > 0) await db.aiGlosses.bulkPut(parsed.aiGlosses);
   });
 
   return { itemCount: parsed.items.length, evidenceCount: parsed.evidence.length };

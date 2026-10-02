@@ -5,7 +5,7 @@
 -->
 
 A learner of Taiwan Mandarin (level {{learner_level}} on the TOCFL scale: N1,
-N2, L1 … L6) asked for a deeper explanation of one correction to their
+N2, L1 … L5) asked for a deeper explanation of one correction to their
 writing. Explain more than the earlier explanation did, in plain English a
 beginner can follow: the underlying rule or usage difference, and the most
 common way learners go wrong with it.

@@ -14,7 +14,7 @@ async function seedStaleWords(page: import('@playwright/test').Page) {
   await page.goto('/');
   await page.waitForFunction(() => Boolean(window.__anan));
   await page.evaluate(async () => {
-    const data = (await (await fetch('/lexicon/lexicon.v1.json')).json()) as {
+    const data = (await (await fetch('/lexicon/lexicon.v2.json')).json()) as {
       words: { id: string; level: string | null }[];
     };
     const long = new Date(Date.now() - 365 * 86_400_000);
@@ -81,6 +81,11 @@ test.describe('Game layer', () => {
   test('the scenario map shows stars, locks and coverage', async ({ page }) => {
     await page.goto('/?page=chat');
     await expect(page.getByText(/Your level:/)).toBeVisible({ timeout: 15000 });
+    // phase 7: the list defaults to scenarios at "My level"; the All chip shows every scenario
+    await page
+      .getByRole('group', { name: 'Filter by level' })
+      .getByRole('button', { name: 'All' })
+      .click();
     await expect(page.locator('.chat-scenario-card')).toHaveCount(7);
     await expect(page.locator('.chat-scenario-card:disabled').first()).toContainText('locked');
     await expect(

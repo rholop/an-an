@@ -15,18 +15,41 @@
 }
 
 /* Per-token level colour coding (reader page §9) */
-.level-n1, .level-n2 { color: #2e7d32; }
-.level-l1 { color: #1565c0; }
-.level-l2 { color: #6a1b9a; }
-.level-l3 { color: #ef6c00; }
-.level-l4 { color: #c62828; }
-.level-l5, .level-l6 { color: #4e342e; }
-.level-unleveled { color: inherit; opacity: 0.85; }
+.level-n1,
+.level-n2 {
+  color: #2e7d32;
+}
+.level-l1 {
+  color: #1565c0;
+}
+.level-l2 {
+  color: #6a1b9a;
+}
+.level-l3 {
+  color: #ef6c00;
+}
+.level-l4 {
+  color: #c62828;
+}
+.level-l5 {
+  color: #4e342e;
+}
+.level-unleveled {
+  color: inherit;
+  opacity: 0.85;
+}
 
 .an-passthrough--number,
-.an-passthrough--latin { font-family: ui-monospace, monospace; }
-.an-passthrough--punct { opacity: 0.7; }
-.an-passthrough--unknown { text-decoration: underline wavy #c62828; text-decoration-skip-ink: none; }
+.an-passthrough--latin {
+  font-family: ui-monospace, monospace;
+}
+.an-passthrough--punct {
+  opacity: 0.7;
+}
+.an-passthrough--unknown {
+  text-decoration: underline wavy #c62828;
+  text-decoration-skip-ink: none;
+}
 
 /* --- mode: off / always / tone-only use native <ruby><rt> --- */
 .an-word--pinyin rt,
@@ -104,7 +127,9 @@
   cursor: pointer;
   opacity: 0.6;
 }
-.an-popover-close:hover { opacity: 1; }
+.an-popover-close:hover {
+  opacity: 1;
+}
 .an-popover-level {
   display: inline-block;
   margin-top: 4px;
@@ -117,4 +142,43 @@
     --an-popover-bg: #2a2a2a;
     --an-popover-fg: #fff;
   }
+}
+
+/* Phase 7: above the learner's chosen level — shown with a background AND a dotted underline, so it never depends on colour alone. */
+.an-token--above {
+  background: rgba(239, 160, 0, 0.22);
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+}
+
+/* Phase 7 popover additions */
+.an-popover-source {
+  font-size: 0.7rem;
+  opacity: 0.65;
+}
+.an-popover-others {
+  font-size: 0.85rem;
+  margin: 0.25rem 0;
+}
+.an-popover-others ul {
+  margin: 0.2rem 0;
+  padding-left: 1.1rem;
+}
+.an-popover-moe {
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  border-top: 1px solid rgba(127, 127, 127, 0.3);
+  padding-top: 0.25rem;
+}
+.an-popover-moe p {
+  margin: 0.15rem 0;
+}
+.an-popover-report {
+  font-size: 0.7rem;
+  margin-top: 0.3rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  opacity: 0.7;
 }

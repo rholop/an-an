@@ -1,4 +1,5 @@
 import type { Lexicon } from '../lexicon.js';
+import { levelIndex } from '../levels.config.js';
 import type { Level, Word } from '../types.js';
 import { analyzeText, DEFAULT_VALIDATE_CONFIG, type AnalyzeContext } from '../validate/turn.js';
 import type { SentenceBankEntry } from './sentence.js';
@@ -78,7 +79,10 @@ export function analyzeClozeCoverage(
 ): ClozeCoverageResult {
   const result = analyzeText(zh, ctx);
   const rest = result.classifications.filter((c) => c.wordId !== excludeWordId);
-  const coverage = rest.length === 0 ? 1 : rest.filter((c) => COMPREHENSIBLE_CLASSES.has(c.class)).length / rest.length;
+  const coverage =
+    rest.length === 0
+      ? 1
+      : rest.filter((c) => COMPREHENSIBLE_CLASSES.has(c.class)).length / rest.length;
   return { pass: coverage >= coverageThreshold && result.taiwanness.isClean, coverage };
 }
 
@@ -96,7 +100,8 @@ function passesCoverage(zh: string, word: Word, opts: SelectClozeSourceOptions):
 }
 
 function chatSourceLabel(line: ChatLineSource): string {
-  if (line.role === 'npc' && line.npcName) return `from your chat with ${line.npcName} (${line.scenarioTitle})`;
+  if (line.role === 'npc' && line.npcName)
+    return `from your chat with ${line.npcName} (${line.scenarioTitle})`;
   return `from your own reply in ${line.scenarioTitle}`;
 }
 
@@ -108,12 +113,21 @@ function chatSourceLabel(line: ChatLineSource): string {
  * most memorable (phase doc §6), and it's also the most likely to still
  * reflect words the learner currently knows.
  */
-export function selectClozeSource(word: Word, opts: SelectClozeSourceOptions): ClozeSourceCandidate | null {
+export function selectClozeSource(
+  word: Word,
+  opts: SelectClozeSourceOptions,
+): ClozeSourceCandidate | null {
   const excluded = (zh: string) => opts.excludeZh?.has(zh) ?? false;
 
   for (const j of opts.journalSentences ?? []) {
     if (!excluded(j.zh) && containsWord(j.zh, word) && passesCoverage(j.zh, word, opts)) {
-      return { zh: j.zh, en: j.en, sourceKind: 'journal', sourceLabel: 'from your journal', at: j.at };
+      return {
+        zh: j.zh,
+        en: j.en,
+        sourceKind: 'journal',
+        sourceLabel: 'from your journal',
+        at: j.at,
+      };
     }
   }
 
@@ -124,7 +138,15 @@ export function selectClozeSource(word: Word, opts: SelectClozeSourceOptions): C
     }
   }
 
-  const bankCandidates = (opts.bankSentences ?? []).filter((s) => s.targetWordId === word.id);
+  // Phase 7: prefer sentences written at or below the learner's chosen level;
+  // above-level ones are still a last resort within the bank (stable order).
+  const levelRank = (s: SentenceBankEntry) =>
+    levelIndex(s.level) <= levelIndex(opts.learnerLevel) ? 0 : 1;
+  const bankCandidates = (opts.bankSentences ?? [])
+    .filter((s) => s.targetWordId === word.id)
+    .map((s, i) => ({ s, i }))
+    .sort((a, b) => levelRank(a.s) - levelRank(b.s) || a.i - b.i)
+    .map(({ s }) => s);
   for (const s of bankCandidates) {
     if (!excluded(s.zh) && passesCoverage(s.zh, word, opts)) {
       return { zh: s.zh, en: s.en, sourceKind: 'bank', sourceLabel: 'example sentence' };

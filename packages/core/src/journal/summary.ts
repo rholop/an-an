@@ -3,12 +3,9 @@ import type { Level } from '../types.js';
 import { analyzeText } from '../validate/turn.js';
 import type { ErrorItem } from './types.js';
 import { normalisePattern } from './error-bank.js';
+import { LAST_LEVEL, LEVEL_IDS, levelName } from '../levels.config.js';
 
-const LEVEL_ORDER: Level[] = ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
-
-export function levelLabel(level: Level): string {
-  return level.startsWith('N') ? `Novice ${level.slice(1)}` : `Level ${level.slice(1)}`;
-}
+const LEVEL_ORDER = LEVEL_IDS;
 
 export interface LevelSummary {
   byLevel: Partial<Record<Level, number>>;
@@ -22,12 +19,16 @@ export interface LevelSummary {
 /** Phase 5 §8's "mostly Level 2 words, 3 L3 words", built on analyzeText's
  * token classification (the same segmentation the chat validator uses).
  * `[English gaps]` are removed first — they aren't the learner's Chinese. */
-export function summarizeLevels(text: string, lexicon: Lexicon): LevelSummary {
+export function summarizeLevels(
+  text: string,
+  lexicon: Lexicon,
+  currentLevel?: Level,
+): LevelSummary {
   const plain = text.replace(/[[［][^[\]［］]*[\]］]/g, ' ');
   const none = new Set<string>();
   const result = analyzeText(plain, {
     lexicon,
-    learnerLevel: 'L6',
+    learnerLevel: LAST_LEVEL,
     knownIds: none,
     dueIds: none,
     targetIds: none,
@@ -57,9 +58,19 @@ export function summarizeLevels(text: string, lexicon: Lexicon): LevelSummary {
       (l) => LEVEL_ORDER.indexOf(l) > LEVEL_ORDER.indexOf(dominant!) && byLevel[l],
     );
     headline = [
-      `Mostly ${levelLabel(dominant)} words`,
-      ...above.map((l) => `${byLevel[l]} ${levelLabel(l)} word${byLevel[l] === 1 ? '' : 's'}`),
+      `Mostly ${levelName(dominant)} words`,
+      ...above.map((l) => `${byLevel[l]} ${levelName(l)} word${byLevel[l] === 1 ? '' : 's'}`),
     ].join(', ');
+  }
+  // Phase 7: relative to the learner's chosen level.
+  if (dominant && currentLevel) {
+    const above = LEVEL_ORDER.filter(
+      (l) => LEVEL_ORDER.indexOf(l) > LEVEL_ORDER.indexOf(currentLevel),
+    ).reduce((n, l) => n + (byLevel[l] ?? 0), 0);
+    headline +=
+      above === 0
+        ? ` — all within your level (${currentLevel})`
+        : ` — ${above} above your level (${currentLevel})`;
   }
   return { byLevel, dominant, wordsUsed, headline };
 }
