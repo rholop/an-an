@@ -19,7 +19,11 @@ export class FakeProviderAdapter implements ProviderAdapter {
     public readonly name: 'gemini' | 'openai',
     private readonly behavior:
       | { kind: 'success'; response: TurnResponse }
-      | { kind: 'error'; reason: 'rate_limit' | 'quota' | 'invalid_json'; message?: string }
+      | {
+          kind: 'error';
+          reason: 'rate_limit' | 'quota' | 'invalid_json' | 'request_error';
+          message?: string;
+        }
       | { kind: 'throw'; error: Error },
   ) {}
 
@@ -63,7 +67,11 @@ export class FakeSentenceGenAdapter implements SentenceGenAdapter {
     public readonly name: 'gemini' | 'openai',
     private readonly behavior:
       | { kind: 'success'; response: SentenceGenResponse }
-      | { kind: 'error'; reason: 'rate_limit' | 'quota' | 'invalid_json'; message?: string }
+      | {
+          kind: 'error';
+          reason: 'rate_limit' | 'quota' | 'invalid_json' | 'request_error';
+          message?: string;
+        }
       | { kind: 'throw'; error: Error },
   ) {}
 
@@ -110,7 +118,7 @@ export class FakeJsonAdapter implements JsonTaskAdapter {
     public readonly name: 'gemini' | 'openai',
     private readonly behavior:
       | { kind: 'success'; respond: (req: JsonTaskRequest<unknown>) => unknown }
-      | { kind: 'error'; reason: 'rate_limit' | 'quota' | 'invalid_json' }
+      | { kind: 'error'; reason: 'rate_limit' | 'quota' | 'invalid_json' | 'request_error' }
       | { kind: 'throw'; error: Error },
   ) {}
 

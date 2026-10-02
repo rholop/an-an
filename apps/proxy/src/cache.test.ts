@@ -4,7 +4,12 @@ import type { ProviderResult } from './providers/types.js';
 import { fakeTurnResponse } from './providers/fake.js';
 
 function result(): ProviderResult {
-  return { response: fakeTurnResponse(), provider: 'gemini', model: 'fake', usage: { inputTokens: 1, outputTokens: 1 } };
+  return {
+    response: fakeTurnResponse(),
+    provider: 'gemini',
+    model: 'fake',
+    usage: { inputTokens: 1, outputTokens: 1 },
+  };
 }
 
 describe('PromptCache', () => {

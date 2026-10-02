@@ -49,6 +49,7 @@ if (!env.GEMINI_API_KEY && !env.OPENAI_API_KEY) {
 }
 
 class DisabledAdapter implements ProviderAdapter, SentenceGenAdapter, JsonTaskAdapter {
+  readonly configured = false;
   constructor(public readonly name: 'gemini' | 'openai') {}
   async generateTurn(): Promise<never> {
     throw new Error(`${this.name} is not configured (missing API key)`);

@@ -15,11 +15,29 @@ import {
 const KICKOFF_MESSAGE = '（場景開始 — 請用你的角色說出開場白，並問第一個問題。）';
 const SENTENCE_GEN_KICKOFF = '請開始生成例句。';
 
+/** Gemini rejects a chat whose first content isn't role 'user'. A history that
+ * opens with the NPC's scenario opener gets a short user turn in front of it. */
+export const LEARNER_ARRIVES_MESSAGE = '(The learner arrives.)';
+
 function toGeminiHistory(history: TurnHistoryEntry[]) {
-  return history.map((h) => ({
+  const contents = history.map((h) => ({
     role: h.role === 'npc' ? ('model' as const) : ('user' as const),
     parts: [{ text: h.zh || h.en || '' }],
   }));
+  if (contents[0]?.role === 'model') {
+    contents.unshift({ role: 'user', parts: [{ text: LEARNER_ARRIVES_MESSAGE }] });
+  }
+  return contents;
+}
+
+/** Splits the history into the `startChat` history and the message to send. */
+export function buildGeminiChat(history: TurnHistoryEntry[]) {
+  const contents = toGeminiHistory(history);
+  const last = contents.at(-1);
+  return {
+    chatHistory: contents.slice(0, -1),
+    message: last?.parts[0]?.text || KICKOFF_MESSAGE,
+  };
 }
 
 function isRetryable(err: unknown): 'rate_limit' | 'quota' | undefined {
@@ -28,6 +46,15 @@ function isRetryable(err: unknown): 'rate_limit' | 'quota' | undefined {
   if (status === 429 || /429|rate.?limit/i.test(message)) return 'rate_limit';
   if (/RESOURCE_EXHAUSTED|quota/i.test(message)) return 'quota';
   return undefined;
+}
+
+/** Any Gemini request failure is fallback-worthy; rate limit / quota keep
+ * their specific reason, everything else is a 'request_error'. */
+function toProviderError(err: unknown): ProviderRetryableError {
+  const retryable = isRetryable(err);
+  if (retryable) return new ProviderRetryableError(`Gemini ${retryable}`, retryable);
+  const message = err instanceof Error ? err.message : String(err);
+  return new ProviderRetryableError(`Gemini request error: ${message}`, 'request_error');
 }
 
 export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonTaskAdapter {
@@ -52,19 +79,14 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
       },
     });
 
-    const geminiHistory = toGeminiHistory(history);
-    const last = geminiHistory.at(-1);
-    const chatHistory = geminiHistory.slice(0, -1);
-    const messageToSend = last?.parts[0]?.text || KICKOFF_MESSAGE;
+    const { chatHistory, message: messageToSend } = buildGeminiChat(history);
 
     let result;
     try {
       const chat = model.startChat({ history: chatHistory });
       result = await chat.sendMessage(messageToSend);
     } catch (err) {
-      const retryable = isRetryable(err);
-      if (retryable) throw new ProviderRetryableError(`Gemini ${retryable}`, retryable);
-      throw err;
+      throw toProviderError(err);
     }
 
     const text = result.response.text();
@@ -105,9 +127,7 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
     try {
       result = await model.generateContent(SENTENCE_GEN_KICKOFF);
     } catch (err) {
-      const retryable = isRetryable(err);
-      if (retryable) throw new ProviderRetryableError(`Gemini ${retryable}`, retryable);
-      throw err;
+      throw toProviderError(err);
     }
 
     const text = result.response.text();
@@ -148,9 +168,7 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
     try {
       result = await model.generateContent(req.userMessage);
     } catch (err) {
-      const retryable = isRetryable(err);
-      if (retryable) throw new ProviderRetryableError(`Gemini ${retryable}`, retryable);
-      throw err;
+      throw toProviderError(err);
     }
 
     let parsed: T;

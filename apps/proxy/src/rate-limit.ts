@@ -50,7 +50,11 @@ export class RateLimiter {
     state.requestTimestamps = state.requestTimestamps.filter((t) => t > windowStart);
     if (state.requestTimestamps.length >= this.config.requestsPerMinute) {
       const oldestInWindow = state.requestTimestamps[0]!;
-      return { allowed: false, reason: 'rate_limit', retryAfterMs: oldestInWindow + 60_000 - now.getTime() };
+      return {
+        allowed: false,
+        reason: 'rate_limit',
+        retryAfterMs: oldestInWindow + 60_000 - now.getTime(),
+      };
     }
 
     state.requestTimestamps.push(now.getTime());

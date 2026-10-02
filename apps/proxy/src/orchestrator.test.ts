@@ -76,6 +76,45 @@ describe('createOrchestrator', () => {
     expect(log.fallbackReason).toBe('invalid_json');
   });
 
+  it('falls back to OpenAI on a Gemini request error and logs each provider tried', async () => {
+    const gemini = new FakeProviderAdapter('gemini', { kind: 'error', reason: 'request_error' });
+    const openai = new FakeProviderAdapter('openai', {
+      kind: 'success',
+      response: fakeTurnResponse(),
+    });
+    const attempts: Record<string, unknown>[] = [];
+    const { log } = await createOrchestrator(gemini, openai, new PromptCache(), (e) =>
+      attempts.push(e),
+    ).run('p', history);
+    expect(log.provider).toBe('openai');
+    expect(log.fallbackReason).toBe('request_error');
+    expect(attempts.map((a) => [a.provider, a.ok])).toEqual([
+      ['gemini', false],
+      ['openai', true],
+    ]);
+  });
+
+  it('rethrows the Gemini error when OpenAI is not configured', async () => {
+    const gemini = new FakeProviderAdapter('gemini', {
+      kind: 'error',
+      reason: 'request_error',
+      message: 'Gemini request error: 400',
+    });
+    const openai = Object.assign(
+      new FakeProviderAdapter('openai', { kind: 'success', response: fakeTurnResponse() }),
+      { configured: false },
+    );
+    const attempts: Record<string, unknown>[] = [];
+    await expect(
+      createOrchestrator(gemini, openai, new PromptCache(), (e) => attempts.push(e)).run(
+        'p',
+        history,
+      ),
+    ).rejects.toThrow('Gemini request error: 400');
+    expect(openai.calls).toBe(0);
+    expect(attempts.some((a) => a.event === 'provider_skipped')).toBe(true);
+  });
+
   it('does NOT fall back on a non-retryable error (propagates instead)', async () => {
     const gemini = new FakeProviderAdapter('gemini', {
       kind: 'throw',
