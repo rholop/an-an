@@ -24,16 +24,21 @@ jobs:
             set -euo pipefail
             cd /home/an-an
 
-            # Discard local lockfile changes to prevent pull conflicts
-            # (mirrors shoyu-chat's deploy.yml).
-            git checkout pnpm-lock.yaml || true
+            # Discard local lockfile and generated-data changes to prevent pull
+            # conflicts (lockfile mirrors shoyu-chat's deploy.yml). data/build is
+            # versioned; anything modified there on the droplet is stale output.
+            git checkout -- pnpm-lock.yaml data/build || true
             git pull origin main
 
             corepack enable
             pnpm install --frozen-lockfile
 
-            # Rebuild the lexicon/scenarios from committed data/raw + data/scenarios.
-            pnpm pipeline:build
+            # Rebuild scenarios only. The lexicon is NOT rebuilt here: it needs
+            # the git-ignored Wiktionary/Unihan dumps (see data/raw/SOURCES.md),
+            # which the droplet doesn't have, so a rebuild would deploy a
+            # lexicon with worse glosses and dirty the checkout. The committed
+            # data/build/lexicon.v2.json is the source of truth.
+            pnpm --filter @anan/data-pipeline build:scenarios
 
             # Build the web PWA and the proxy server.
             pnpm --filter @anan/web build
