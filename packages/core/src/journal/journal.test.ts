@@ -17,7 +17,7 @@ import {
   topErrorPatterns,
 } from './error-bank.js';
 import { planJournalEvidence } from './evidence.js';
-import { dailyPrompt, findWordsUsed, pickPromptWords } from './prompts.js';
+import { dailyPrompt, findWordsUsed, isPromptWorthyWord, pickPromptWords } from './prompts.js';
 import { compareSelfFix } from './self-correction.js';
 import { sentenceAround, splitSentences } from './sentences.js';
 import { journalSentencesFromEntry } from './sources.js';
@@ -511,6 +511,42 @@ describe('prompts, summary and sources', () => {
       now,
     );
     expect(picked.map((w) => w.headword)).toEqual(['買', '手機', '貓']);
+  });
+
+  it('never suggests numerals, measure words, particles or names as "try to use" words', () => {
+    const mkWord = (id: string, headword: string, pos: string[], tags: string[] = []): Word => ({
+      id, headword, variants: [], pos, level: 'N1', source: 'tocfl', pinyin: 'x', pinyinNumeric: 'x1',
+      zhuyin: '', glossEn: 'g', chars: [...headword], tags,
+    });
+    const words = {
+      kuai: mkWord('kuai', '塊', ['M']), // "dollar"
+      liang: mkWord('liang', '兩', ['N']), // "two" (numerals are tagged N in TOCFL)
+      shi: mkWord('shi', '二十', ['N']),
+      ma: mkWord('ma', '嗎', ['Ptc']),
+      he: mkWord('he', '和', ['Conj', 'Prep']),
+      name: mkWord('name', '陳雅婷', ['N'], ['name']),
+      dian: mkWord('dian', '點', ['M', 'N']), // keeps its noun sense
+      cafe: mkWord('cafe', '咖啡', ['N']),
+      eat: mkWord('eat', '吃', ['V']),
+      compound: mkWord('cmp', '路上', []), // level-less compound, no POS
+    };
+    const lex = new Lexicon(Object.values(words));
+    expect(Object.entries(words).filter(([, w]) => !isPromptWorthyWord(w)).map(([k]) => k)).toEqual([
+      'kuai', 'liang', 'shi', 'ma', 'he', 'name',
+    ]);
+    const mk = (id: string, due: string): SkillCard => ({
+      item: { kind: 'word', id }, skill: 'production', card: { ...emptyCard(now), due: new Date(due) },
+      state: 'review', lapses: 0, leech: false, leechTreatmentsTried: [], clozeRung: 1, clozeStreak: 0,
+      familiarity: 0, readingDependence: 0, flags: {}, updatedAt: now,
+    });
+    // the unsuitable words are the most overdue, yet are skipped; fewer than 3 is fine
+    const picked = pickPromptWords(
+      [mk('kuai', '2025-01-01'), mk('liang', '2025-01-02'), mk('ma', '2025-01-03'), mk('cafe', '2026-02-01'), mk('eat', '2026-02-02')],
+      lex,
+      now,
+    );
+    expect(picked.map((w) => w.headword)).toEqual(['咖啡', '吃']);
+    expect(pickPromptWords([mk('kuai', '2025-01-01')], lex, now)).toEqual([]);
   });
 
   it('detects prompt words by re-segmenting (還 inside 還是 is not 還)', () => {

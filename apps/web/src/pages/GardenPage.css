@@ -95,3 +95,18 @@
     transition: none;
   }
 }
+
+/* The word in a tile is annotated text (reading always shown, definition on
+   hover, popover on click). A faded/withered tile creates its own stacking
+   context and dims everything inside, so lift the tile that has a popover open
+   above its neighbours and restore full strength — the definition must be readable. */
+.garden-tile:has(.an-popover) {
+  z-index: 30;
+  opacity: 1;
+  filter: none;
+}
+.garden-tile .an-text--inline {
+  font-size: 0.95rem;
+  line-height: 2.2;
+  white-space: nowrap;
+}

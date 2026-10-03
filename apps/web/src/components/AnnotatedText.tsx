@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   levelIndex,
   parseSyllableTone,
@@ -34,6 +34,9 @@ export type AnnotationMode = 'always' | 'hover' | 'off' | 'tone-only' | 'auto';
 export type AnnotationScript = 'pinyin' | 'zhuyin' | 'both';
 
 export interface AnnotatedTextProps {
+  /** A `<span>` root with the surrounding font size, for annotating a word or
+   * phrase inside a sentence, list item or tile instead of a whole block. */
+  inline?: boolean;
   tokens: AnnotatedToken[];
   mode: AnnotationMode;
   script: AnnotationScript;
@@ -128,16 +131,44 @@ function Popover({
   onClose,
   showMoeZh,
   onReport,
+  anchor,
+  onOverflow,
 }: {
   at: AnnotatedToken;
   onClose: () => void;
   showMoeZh: boolean;
   onReport?: () => void;
+  /** The text block, and a callback for how far the popover sticks out below
+   * its content. The block then pads its bottom by that much, so a
+   * definition opened on the last line pushes the content below it down
+   * instead of covering it. */
+  anchor: React.RefObject<HTMLElement | null>;
+  onOverflow: (px: number) => void;
 }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const pop = ref.current;
+      const root = anchor.current;
+      if (!pop || !root) return;
+      // Content bottom = the root's bottom minus the padding we added for the
+      // popover, so growing the padding doesn't change what we measure against.
+      const reserved = parseFloat(getComputedStyle(root).paddingBottom) || 0;
+      const overflow =
+        pop.getBoundingClientRect().bottom - (root.getBoundingClientRect().bottom - reserved);
+      onOverflow(Math.max(0, Math.ceil(overflow) + 8));
+    };
+    measure();
+    // a definition grows when "other senses" / the MOE text is expanded
+    const observer =
+      typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
+    if (ref.current) observer?.observe(ref.current);
+    return () => observer?.disconnect();
+  }, [anchor, onOverflow, at]);
   const others = (at.word?.senses ?? []).filter((s) => s.id !== at.sense?.id);
   const moe = at.word?.moeDefZh ?? [];
   return (
-    <span className="an-popover" onClick={(e) => e.stopPropagation()}>
+    <span ref={ref} className="an-popover" onClick={(e) => e.stopPropagation()}>
       <button className="an-popover-close" onClick={onClose} aria-label="Close">
         ×
       </button>
@@ -184,6 +215,7 @@ function Popover({
 }
 
 export function AnnotatedText({
+  inline = false,
   tokens,
   mode,
   script,
@@ -195,9 +227,21 @@ export function AnnotatedText({
   const showMoeZh = Boolean(currentLevel && levelIndex(currentLevel) >= levelIndex('L3'));
   const [openId, setOpenId] = useState<string | null>(null);
   const hoveredIds = useRef(new Set<string>());
+  const rootRef = useRef<HTMLElement>(null);
+  // Room reserved under the text while a definition is open (see Popover).
+  const Root = inline ? 'span' : 'div';
+  const [reserve, setReserve] = useState(0);
+  useEffect(() => {
+    if (openId === null) setReserve(0);
+  }, [openId]);
 
   return (
-    <div className="an-text" onClick={() => setOpenId(null)}>
+    <Root
+      ref={rootRef as never}
+      className={`an-text ${inline ? 'an-text--inline' : ''}`}
+      style={reserve > 0 ? { paddingBottom: reserve } : undefined}
+      onClick={() => setOpenId(null)}
+    >
       {tokens.map((at) => {
         const id = tokenId(at.token);
         if (at.token.kind !== 'word') {
@@ -235,7 +279,15 @@ export function AnnotatedText({
           <span
             key={id}
             className={`an-token ${levelClass} ${hoverLike ? 'an-token--hover-mode' : ''} ${above ? 'an-token--above' : ''}`}
-            title={above ? `${at.level} — above your level (${currentLevel})` : undefined}
+            // Hovering any character shows its definition (a plain tooltip: it never
+            // counts as a lookup — only a click does).
+            title={
+              isOpen
+                ? undefined
+                : [at.gloss, above ? `${at.level} — above your level (${currentLevel})` : undefined]
+                    .filter(Boolean)
+                    .join(' · ') || undefined
+            }
             data-visible={hoverLike ? isOpen : showAnnotation}
             onClick={(e) => {
               e.stopPropagation();
@@ -260,11 +312,13 @@ export function AnnotatedText({
                 onClose={() => setOpenId(null)}
                 showMoeZh={showMoeZh}
                 onReport={onReportGloss ? () => onReportGloss(at) : undefined}
+                anchor={rootRef}
+                onOverflow={setReserve}
               />
             )}
           </span>
         );
       })}
-    </div>
+    </Root>
   );
 }

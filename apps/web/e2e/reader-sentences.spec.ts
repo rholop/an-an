@@ -279,4 +279,42 @@ test.describe('Reader: New sentence (phase 9)', () => {
     await expect(page.locator('.reader-source')).toContainText('made for you');
     expect(await page.evaluate(() => window.__anan.db.liveSentences.count())).toBeGreaterThan(0);
   });
+
+  test('a definition opened on the last line never covers the text or buttons below it', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 900, height: 700 });
+    await open(page);
+    const tokens = page.locator('.an-token');
+    const below = [
+      page.getByTestId('reader-reason'),
+      page.getByRole('button', { name: 'Previous sentence' }),
+      newButton(page),
+    ];
+    const tops = async () => Promise.all(below.map(async (l) => (await l.boundingBox())!.y));
+    const before = await tops();
+
+    // the very last word of the sample is on the bottom row
+    await tokens.nth((await tokens.count()) - 3).click();
+    const popover = page.locator('.an-popover');
+    await expect(popover).toBeVisible();
+    const pop = (await popover.boundingBox())!;
+    const after = await tops();
+    for (const top of after) expect(pop.y + pop.height).toBeLessThanOrEqual(top + 1);
+    // the content moved down to make room, rather than being overlapped
+    expect(after[0]).toBeGreaterThan(before[0]!);
+
+    // expanding more of the definition keeps it clear too
+    const others = page.locator('.an-popover-others summary');
+    if (await others.count()) {
+      await others.first().click();
+      const grown = (await popover.boundingBox())!;
+      for (const l of below) expect(grown.y + grown.height).toBeLessThanOrEqual((await l.boundingBox())!.y + 1);
+    }
+
+    // closing it gives the space back
+    await page.locator('.an-popover-close').click();
+    await expect(popover).toHaveCount(0);
+    await expect.poll(tops).toEqual(before);
+  });
 });

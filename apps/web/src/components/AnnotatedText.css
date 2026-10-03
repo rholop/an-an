@@ -182,3 +182,12 @@
   text-decoration: underline;
   opacity: 0.7;
 }
+
+
+/* A word or phrase inside a sentence, list item or tile: keep the surrounding
+   font size, but leave room above the line for the reading. */
+.an-text--inline {
+  display: inline-block;
+  font-size: inherit;
+  line-height: 2.4;
+}

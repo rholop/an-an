@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   dailyPrompt,
   findWordsUsed,
@@ -11,6 +11,8 @@ import {
   type SelfFixRecord,
   type Word,
 } from '@anan/core';
+import { AnnotatedInline, AnnotatedWord, useReadingScript } from '../components/AnnotatedInline.js';
+import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { JournalProgress } from '../components/JournalProgress.js';
 import { db, gameService, learnerService } from '../db/instance.js';
 import { useCurrentLevel } from '../lib/current-level.js';
@@ -28,8 +30,34 @@ const TYPE_LABEL: Record<JournalIssue['type'], string> = {
   mainland_style: 'Mainland wording',
 };
 
+/** Chinese shown by the journal (prompts, corrections, suggested words) is
+ * annotated text: reading always on screen, definition on hover and click.
+ * The lexicon and the reading script are provided once at the top. */
+const AnnotationContext = createContext<{ lexicon: Lexicon; script: AnnotationScript } | null>(
+  null,
+);
+
+function Zh({ text }: { text: string }) {
+  const ctx = useContext(AnnotationContext);
+  return ctx ? (
+    <AnnotatedInline text={text} lexicon={ctx.lexicon} script={ctx.script} />
+  ) : (
+    <span lang="zh-Hant">{text}</span>
+  );
+}
+
+function ZhWord({ word }: { word: Word }) {
+  const ctx = useContext(AnnotationContext);
+  return ctx ? (
+    <AnnotatedWord word={word} script={ctx.script} />
+  ) : (
+    <span lang="zh-Hant">{word.headword}</span>
+  );
+}
+
 export function JournalPage() {
   const lexiconState = useLexicon();
+  const script = useReadingScript();
   const [useFakeLLM, setUseFakeLLM] = useState(false);
   const tutorLLM = useMemo(
     () => (useFakeLLM ? new FakeTutorLLM() : new FetchTutorLLM()),
@@ -110,67 +138,70 @@ export function JournalPage() {
   }
 
   return (
-    <div className="journal-page">
-      <h1>Journal</h1>
-      <p className="journal-disclaimer">
-        An AI tutor suggests the corrections here. It is often right, but not always — if something
-        looks wrong or unnatural to you, flag it and it won&apos;t be added to your practice.
-      </p>
-      <label className="journal-dev-toggle">
-        <input
-          type="checkbox"
-          checked={useFakeLLM}
-          onChange={(e) => setUseFakeLLM(e.target.checked)}
-        />{' '}
-        Use fake tutor (dev, no API key)
-      </label>
+    <AnnotationContext.Provider value={{ lexicon: lexiconState.lexicon, script }}>
+      <div className="journal-page">
+        <h1>Journal</h1>
+        <p className="journal-disclaimer">
+          An AI tutor suggests the corrections here. It is often right, but not always — if
+          something looks wrong or unnatural to you, flag it and it won&apos;t be added to your
+          practice.
+        </p>
+        <label className="journal-dev-toggle">
+          <input
+            type="checkbox"
+            checked={useFakeLLM}
+            onChange={(e) => setUseFakeLLM(e.target.checked)}
+          />{' '}
+          Use fake tutor (dev, no API key)
+        </label>
 
-      {!entry && (
-        <WriteStage
-          service={service}
-          lexicon={lexiconState.lexicon}
-          learnerLevel={learnerLevel}
-          prompt={prompt}
-          promptWords={promptWords}
-          onSubmitted={(e, r) => {
-            setEntry(e);
-            setReview(r);
-          }}
-        />
-      )}
+        {!entry && (
+          <WriteStage
+            service={service}
+            lexicon={lexiconState.lexicon}
+            learnerLevel={learnerLevel}
+            prompt={prompt}
+            promptWords={promptWords}
+            onSubmitted={(e, r) => {
+              setEntry(e);
+              setReview(r);
+            }}
+          />
+        )}
 
-      {entry && review && entry.status === 'self_correcting' && (
-        <SelfCorrectStage
-          service={service}
-          entry={entry}
-          review={review}
-          onChange={() => reload(entry.id)}
-        />
-      )}
+        {entry && review && entry.status === 'self_correcting' && (
+          <SelfCorrectStage
+            service={service}
+            entry={entry}
+            review={review}
+            onChange={() => reload(entry.id)}
+          />
+        )}
 
-      {entry && review && entry.status === 'revealed' && (
-        <RevealStage
-          service={service}
-          entry={entry}
-          review={review}
-          promptWords={entry.promptWordIds.flatMap((id) => lexiconState.lexicon.byId(id) ?? [])}
-          lexicon={lexiconState.lexicon}
-          onChange={() => reload(entry.id)}
-          onFinished={() => reload(entry.id).then(() => setProgressKey((k) => k + 1))}
-        />
-      )}
+        {entry && review && entry.status === 'revealed' && (
+          <RevealStage
+            service={service}
+            entry={entry}
+            review={review}
+            promptWords={entry.promptWordIds.flatMap((id) => lexiconState.lexicon.byId(id) ?? [])}
+            lexicon={lexiconState.lexicon}
+            onChange={() => reload(entry.id)}
+            onFinished={() => reload(entry.id).then(() => setProgressKey((k) => k + 1))}
+          />
+        )}
 
-      {entry && entry.status === 'finished' && (
-        <section>
-          <p role="status">
-            Entry saved. Your corrections will come back as practice sentences in Cloze review.
-          </p>
-          <button onClick={startOver}>Write another entry</button>
-        </section>
-      )}
+        {entry && entry.status === 'finished' && (
+          <section>
+            <p role="status">
+              Entry saved. Your corrections will come back as practice sentences in Cloze review.
+            </p>
+            <button onClick={startOver}>Write another entry</button>
+          </section>
+        )}
 
-      <JournalProgress refreshKey={progressKey} />
-    </div>
+        <JournalProgress refreshKey={progressKey} />
+      </div>
+    </AnnotationContext.Provider>
   );
 }
 
@@ -222,7 +253,12 @@ function WriteStage({
     <section className="journal-write">
       <h2>Today&apos;s prompt</h2>
       <p className="journal-prompt">
-        {prompt.en} {prompt.starterZh && <span lang="zh-Hant">{prompt.starterZh}</span>}
+        {prompt.en}{' '}
+        {prompt.starterZh && (
+          <span lang="zh-Hant">
+            <Zh text={prompt.starterZh} />
+          </span>
+        )}
       </p>
       {promptWords.length > 0 && (
         <div className="journal-prompt-words">
@@ -236,7 +272,9 @@ function WriteStage({
                   readOnly
                   aria-label={`${w.headword} used`}
                 />{' '}
-                <span lang="zh-Hant">{w.headword}</span>{' '}
+                <span lang="zh-Hant">
+                  <ZhWord word={w} />
+                </span>{' '}
                 <span className="journal-muted">{w.glossEn}</span>
               </li>
             ))}
@@ -315,7 +353,9 @@ function BracketList({ review }: { review: JournalReviewRow }) {
             [{b.en}] →{' '}
             {b.zh ? (
               <>
-                <strong lang="zh-Hant">{b.zh}</strong>{' '}
+                <strong lang="zh-Hant">
+                  <Zh text={b.zh} />
+                </strong>{' '}
                 <span className="journal-muted">
                   ({b.source === 'lexicon' ? 'dictionary' : 'tutor suggestion'}; added to your next
                   review)
@@ -493,7 +533,10 @@ function RevealStage({
                 <span className="journal-muted">confidence: {issue.confidence}</span>
               </div>
               <p lang="zh-Hant">
-                <del>{entry.text.slice(...issue.span)}</del> → <strong>{issue.correction}</strong>
+                <del>{entry.text.slice(...issue.span)}</del> →{' '}
+                <strong>
+                  <Zh text={issue.correction} />
+                </strong>
               </p>
               <p>{issue.explanationEn}</p>
               {review.selfFix[i]?.alternative && review.selfFix[i]?.note && (
@@ -505,7 +548,9 @@ function RevealStage({
                   <ul>
                     {more.examples.map((e) => (
                       <li key={e.zh}>
-                        <span lang="zh-Hant">{e.zh}</span>{' '}
+                        <span lang="zh-Hant">
+                          <Zh text={e.zh} />
+                        </span>{' '}
                         <span className="journal-muted">{e.en}</span>
                       </li>
                     ))}
@@ -535,7 +580,9 @@ function RevealStage({
       {review.naturalRewrite && (
         <div className="journal-rewrite">
           <h3>A natural way to say it</h3>
-          <p lang="zh-Hant">{review.naturalRewrite}</p>
+          <p lang="zh-Hant">
+            <Zh text={review.naturalRewrite} />
+          </p>
           <p className="journal-muted">
             One way a Taiwanese speaker might write it — not the only way.
           </p>
@@ -552,7 +599,15 @@ function RevealStage({
         )}
         {review.wordsUsed.length > 0 && (
           <p>
-            Words you used: <span lang="zh-Hant">{review.wordsUsed.join('、')}</span>
+            Words you used:{' '}
+            <span lang="zh-Hant">
+              {review.wordsUsed.map((w, i) => (
+                <span key={`${w}-${i}`}>
+                  {i > 0 && '、'}
+                  <Zh text={w} />
+                </span>
+              ))}
+            </span>
           </p>
         )}
         {promptWords.length > 0 && (
@@ -565,7 +620,7 @@ function RevealStage({
                 className={used.has(w.id) ? 'journal-ok' : 'journal-muted'}
               >
                 {used.has(w.id) ? '✓' : '·'}
-                {w.headword}{' '}
+                <ZhWord word={w} />{' '}
               </span>
             ))}
           </p>

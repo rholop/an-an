@@ -45,10 +45,30 @@ export function dailyPrompt(now: Date): WritingPrompt {
   ]!;
 }
 
+/* Words you can't write a sentence around on their own: numerals, measure
+ * words, particles, connectives. 塊 ("dollar", a measure word) and 兩 ("two")
+ * were being suggested as "try to use these" words. They still get reviewed;
+ * they're just not useful writing prompts. */
+const NUMERAL_CHARS = new Set([...'零〇一二兩三四五六七八九十百千萬億']);
+const FUNCTION_POS = new Set(['M', 'Msr', 'Ptc', 'Conj', 'conj', 'Prep', 'Det']);
+const NON_PROMPT_TAGS = new Set(['particle', 'filler', 'name', 'npc', 'measure-word']);
+
+/** Can a learner sensibly be asked to work this word into a journal entry? */
+export function isPromptWorthyWord(word: Word): boolean {
+  if (word.tags.some((t) => NON_PROMPT_TAGS.has(t))) return false;
+  if ([...word.headword].every((ch) => NUMERAL_CHARS.has(ch))) return false;
+  // every TOCFL part of speech is a function word (a word that is a noun OR a
+  // measure word, like 點, stays eligible through its noun sense)
+  if (word.pos.length > 0 && word.pos.every((p) => FUNCTION_POS.has(p))) return false;
+  return true;
+}
+
 /**
  * "Try to use these 3 due words" (phase doc §1): from the due queue,
  * production-skill cards first, then recognition, soonest-due first; one
- * entry per word.
+ * entry per word. Only words worth writing (isPromptWorthyWord): if too few
+ * qualify, fewer than `count` are returned rather than padding with numerals
+ * or particles.
  */
 export function pickPromptWords(
   dueCards: readonly SkillCard[],
@@ -64,7 +84,11 @@ export function pickPromptWords(
     return currentLevel && lvl && levelIndex(lvl) > levelIndex(currentLevel) ? 1 : 0;
   };
   const eligible = dueCards
-    .filter((c) => c.item.kind === 'word' && c.card.due <= now && lexicon.byId(c.item.id))
+    .filter((c) => {
+      if (c.item.kind !== 'word' || c.card.due > now) return false;
+      const word = lexicon.byId(c.item.id);
+      return word !== undefined && isPromptWorthyWord(word);
+    })
     .sort(
       (a, b) =>
         aboveLevel(a.item.id) - aboveLevel(b.item.id) ||

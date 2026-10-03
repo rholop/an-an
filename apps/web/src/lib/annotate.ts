@@ -72,3 +72,21 @@ export function withReadingDisplay(
     return { ...at, readingMode: readingDisplay(card) };
   });
 }
+
+/** One already-known lexicon entry as an annotated token (reading, level and
+ * gloss taken from THAT entry, not re-derived from its spelling). For places
+ * that show a specific word — a garden plant, a "try to use" word — where the
+ * sense matters: 去 as the N1 verb must not turn into the L3 particle. */
+export function annotateWord(word: Word): AnnotatedToken {
+  const length = [...word.headword].length;
+  const sense = resolveSense(word, word.primarySenseId, {});
+  return {
+    token: { text: word.headword, start: 0, end: length, kind: 'word' },
+    reading: { pinyin: word.pinyin, zhuyin: word.zhuyin, confidence: 'high' },
+    level: word.level,
+    gloss: sense?.glossEn ?? word.glossEn,
+    wordId: word.id,
+    word,
+    sense,
+  };
+}

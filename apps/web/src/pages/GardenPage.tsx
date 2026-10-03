@@ -4,11 +4,15 @@ import {
   wiltingCards,
   type GrowthStage,
   type Level,
+  type Lexicon,
   type Plant,
   type Plot,
   type SkillCard,
   type Wilt,
+  type Word,
 } from '@anan/core';
+import { AnnotatedWord, useReadingScript } from '../components/AnnotatedInline.js';
+import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { LevelChips } from '../components/LevelPicker.js';
 import { db, gameService } from '../db/instance.js';
 import { useCurrentLevel } from '../lib/current-level.js';
@@ -42,6 +46,7 @@ const WILT_LABEL: Record<Wilt, string> = {
 export function GardenPage() {
   const lexiconState = useLexicon();
   const scenariosState = useScenarios();
+  const script = useReadingScript();
   const [snapshot, setSnapshot] = useState<GameSnapshot | null>(null);
   const { level } = useCurrentLevel();
   // Phase 7 per-screen filter: defaults to My level, changes here never touch it.
@@ -128,14 +133,30 @@ export function GardenPage() {
       )}
       <div className="garden-plots">
         {plots.map((plot) => (
-          <PlotView key={plot.id} plot={plot} onWater={() => setFocus(wiltingCards(plot))} />
+          <PlotView
+            key={plot.id}
+            plot={plot}
+            lexicon={lexicon}
+            script={script}
+            onWater={() => setFocus(wiltingCards(plot))}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function PlotView({ plot, onWater }: { plot: Plot; onWater: () => void }) {
+function PlotView({
+  plot,
+  lexicon,
+  script,
+  onWater,
+}: {
+  plot: Plot;
+  lexicon: Lexicon | null;
+  script: AnnotationScript;
+  onWater: () => void;
+}) {
   return (
     <section className={`garden-plot garden-plot--${plot.wiltingCount > 0 ? 'thirsty' : 'ok'}`}>
       <header>
@@ -144,7 +165,7 @@ function PlotView({ plot, onWater }: { plot: Plot; onWater: () => void }) {
       </header>
       <div className="garden-tiles">
         {plot.plants.map((p) => (
-          <Tile key={p.wordId} plant={p} />
+          <Tile key={p.wordId} plant={p} word={lexicon?.byId(p.wordId)} script={script} />
         ))}
       </div>
       {plot.wiltingCount > 0 ? (
@@ -158,12 +179,20 @@ function PlotView({ plot, onWater }: { plot: Plot; onWater: () => void }) {
   );
 }
 
-function Tile({ plant }: { plant: Plant }) {
+function Tile({
+  plant,
+  word,
+  script,
+}: {
+  plant: Plant;
+  word: Word | undefined;
+  script: AnnotationScript;
+}) {
   const pct = plant.retrievability === null ? null : Math.round(plant.retrievability * 100);
   return (
     <div
       className={`garden-tile garden-tile--${plant.wilt}`}
-      role="img"
+      role="group"
       aria-label={`${plant.headword}: ${STAGE_LABEL[plant.stage]}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : `, ${pct}% remembered`}`}
       title={`${plant.headword} — ${STAGE_LABEL[plant.stage]}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : ` (${pct}%)`}`}
     >
@@ -171,7 +200,7 @@ function Tile({ plant }: { plant: Plant }) {
         {STAGE_ICON[plant.stage]}
       </span>
       <span className="garden-word" lang="zh-Hant">
-        {plant.headword}
+        {word ? <AnnotatedWord word={word} script={script} /> : plant.headword}
       </span>
       {plant.wilt !== 'healthy' && (
         <span className="garden-wilt-mark">{plant.wilt === 'withered' ? '!!' : '!'}</span>
