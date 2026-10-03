@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { LevelSchema } from './level-schema.js';
 import type { DefineRequest, DefineResponse } from '../gloss/schema.js';
+import type { SentenceGenRequest, SentenceGenResponse } from '../cloze/sentence.js';
 import type {
   JournalCheckRequest,
   JournalCheckResponse,
@@ -104,4 +105,7 @@ export interface TutorLLM {
   /** Phase 7: runtime definition for a word that is NOT in the lexicon only.
    * The result is shown labelled "AI-generated" and queued for review. */
   defineWord(req: DefineRequest): Promise<DefineResponse>;
+  /** Phase 9: on-demand example sentences for the reader (POST /v1/sentences).
+   * Optional so implementations that never generate (tests) needn't stub it. */
+  generateSentences?(req: SentenceGenRequest): Promise<SentenceGenResponse>;
 }

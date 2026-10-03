@@ -109,3 +109,48 @@ describe('importBackup validation', () => {
     await expect(importBackup(db, JSON.parse(JSON.stringify(current)))).resolves.toBeDefined();
   });
 });
+
+describe('reader tables (phase 9)', () => {
+  const live = {
+    id: 'live-1',
+    zh: '我去便利商店',
+    en: 'I go to the shop',
+    targetWordId: 'w1',
+    level: 'N2' as const,
+    tokens: [],
+    source: 'generated-live' as const,
+    doubtful: false,
+    createdAt: new Date('2026-03-01T10:00:00Z'),
+  };
+
+  it('live sentences and shown history survive an export/import round trip', async () => {
+    await db.liveSentences.put(live);
+    await db.readerShown.put({ sentenceId: 'live-1', at: new Date('2026-03-02T10:00:00Z') });
+    const backup = JSON.parse(JSON.stringify(await exportBackup(db)));
+    expect(backup.schemaVersion).toBe(DB_SCHEMA_VERSION);
+
+    await db.liveSentences.clear();
+    await db.readerShown.clear();
+    await importBackup(db, backup);
+
+    expect(await db.liveSentences.toArray()).toEqual([live]);
+    const shown = await db.readerShown.toArray();
+    expect(shown).toHaveLength(1);
+    expect(shown[0]!.at).toEqual(new Date('2026-03-02T10:00:00Z'));
+  });
+
+  it('a backup from before phase 9 (no reader fields) still imports', async () => {
+    const old = JSON.parse(JSON.stringify(await exportBackup(db)));
+    delete old.liveSentences;
+    delete old.readerShown;
+    old.schemaVersion = 5;
+    await expect(importBackup(db, old)).resolves.toBeDefined();
+    expect(await db.liveSentences.count()).toBe(0);
+  });
+
+  it('rejects a live sentence whose source is not generated-live', async () => {
+    const backup = JSON.parse(JSON.stringify(await exportBackup(db)));
+    backup.liveSentences = [{ ...live, source: 'generated', createdAt: live.createdAt.toISOString() }];
+    await expect(importBackup(db, backup)).rejects.toThrow();
+  });
+});

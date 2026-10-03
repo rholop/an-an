@@ -68,6 +68,7 @@ export async function allChatLines(db: AnanDB, scenarios: Scenario[]): Promise<C
     const scenario = conv ? scenarioById.get(conv.scenarioId) : undefined;
     lines.push({
       zh: turn.zh,
+      en: turn.en,
       role: turn.role,
       scenarioTitle: scenario?.title ?? conv?.scenarioId ?? 'a past conversation',
       npcName: scenario?.npc.name,

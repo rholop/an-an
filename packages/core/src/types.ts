@@ -77,7 +77,7 @@ export interface Evidence {
     | 'placement_unknown';
   at: Date;
   context?: {
-    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement';
+    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader';
     refId?: string;
     /** Phase 5: a journal_misuse the learner corrected themselves. */
     selfFixed?: boolean;

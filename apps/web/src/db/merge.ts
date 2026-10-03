@@ -5,7 +5,7 @@ import type { Backup } from './backup-schema.js';
  * Pure — two Backups in, one Backup out — so every rule is unit-tested.
  *
  *  - APPEND-ONLY tables (evidence, turns, reward events, gloss reports, AI
- *    glosses) are unioned by their unique id and nothing is ever deleted.
+ *    glosses, live reader sentences) are unioned by their unique id and nothing is ever deleted.
  *  - IN-PLACE tables (cards, settings, journal entries/reviews, error items,
  *    conversations, custom words) keep whichever copy has the later
  *    `updatedAt`; a tie keeps the local copy.
@@ -193,6 +193,14 @@ export function mergeBackups(local: Backup, remote: Backup): Backup {
       (g) => g.uid,
     ),
     aiGlosses: unionByKey(local.aiGlosses, remote.aiGlosses, (a) => a.key),
+    liveSentences: unionByKey(local.liveSentences, remote.liveSentences, (s) => s.id),
+    // the later "last shown" wins, so a sentence shown on either device stays out for 7 days
+    readerShown: mergeByKey(
+      local.readerShown,
+      remote.readerShown,
+      (r) => r.sentenceId,
+      (r) => t(r.at),
+    ),
   };
 }
 
@@ -214,6 +222,8 @@ export function sameContent(a: Backup, b: Backup): boolean {
       x.rewardEvents.map((r) => r.id).sort(),
       x.glossReports.map((g) => g.uid ?? '').sort(),
       x.aiGlosses.map((g) => g.key).sort(),
+      x.liveSentences.map((s) => s.id).sort(),
+      x.readerShown.map((r) => [r.sentenceId, t(r.at)]).sort(),
     ]);
   return norm(a) === norm(b);
 }

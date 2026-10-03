@@ -19,10 +19,11 @@ export const SentenceBankEntrySchema = z.object({
   targetWordId: z.string(),
   level: LevelSchema,
   tokens: z.array(SentenceTokenSchema),
-  /** Only "generated" exists today (phase doc §1); kept as its own schema
-   * rather than a free string so a future manually-authored source is a
-   * deliberate, reviewed addition here, not a silent typo anywhere else. */
-  source: z.literal('generated'),
+  /** "generated" = built offline into data/build (phase doc §1);
+   * "generated-live" = produced on demand for the reader (phase 9) and kept in
+   * the learner's own profile. Kept as an enum rather than a free string so a
+   * new source is a deliberate, reviewed addition here, not a silent typo. */
+  source: z.enum(['generated', 'generated-live']),
   /** Phase 4 §1's "second-pass check... flag doubtful ones" — still shipped
    * (unlike an analyzeText failure, which is dropped outright), just
    * surfaced for human review rather than silently trusted. */

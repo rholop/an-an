@@ -7,10 +7,14 @@ import type {
   JournalExplainResponse,
   JournalReview,
   JournalReviewRequest,
+  SentenceGenRequest,
+  SentenceGenResponse,
   TurnRequest,
   TurnResponse,
   TutorLLM,
 } from '@anan/core';
+
+export type FakeSentenceScript = (req: SentenceGenRequest) => SentenceGenResponse;
 
 export type FakeTurnScript = (req: TurnRequest, callIndex: number) => TurnResponse;
 
@@ -30,7 +34,25 @@ export class FakeTutorLLM implements TutorLLM {
   constructor(
     private readonly script: FakeTurnScript = FakeTutorLLM.defaultScript,
     private readonly journal: FakeJournalScript = {},
+    private readonly sentences: FakeSentenceScript = FakeTutorLLM.defaultSentences,
   ) {}
+
+  /** Calls to generateSentences, for "was the LLM asked?" assertions. */
+  sentenceCalls = 0;
+
+  async generateSentences(req: SentenceGenRequest): Promise<SentenceGenResponse> {
+    this.sentenceCalls++;
+    return this.sentences(req);
+  }
+
+  /** Dev/e2e default: simple sentences around the focus word. */
+  static defaultSentences: FakeSentenceScript = (req) => ({
+    sentences: [`我們去${req.word.headword}。`, `你喜歡${req.word.headword}嗎？`].map((zh) => ({
+      zh,
+      en: `fake sentence about ${req.word.glossEn}`,
+      tokens: [],
+    })),
+  });
 
   /** Calls recorded for tests ("was the LLM asked?"). */
   readonly journalCalls = { review: 0, check: 0, explain: 0 };

@@ -1,4 +1,4 @@
-import { LevelSchema } from '@anan/core';
+import { LevelSchema, SentenceTokenSchema } from '@anan/core';
 import { z } from 'zod';
 
 const ItemRefSchema = z.object({ kind: z.enum(['word', 'grammar']), id: z.string() });
@@ -74,7 +74,7 @@ export const EvidenceSchema = z.object({
   at: z.coerce.date(),
   context: z
     .object({
-      source: z.enum(['chat', 'journal', 'cloze', 'review', 'placement']),
+      source: z.enum(['chat', 'journal', 'cloze', 'review', 'placement', 'reader']),
       refId: z.string().optional(),
       selfFixed: z.boolean().optional(),
     })
@@ -244,6 +244,24 @@ export const AiGlossRowSchema = z.object({
   at: z.coerce.date(),
 });
 
+export const LiveSentenceRowSchema = z.object({
+  id: z.string(),
+  zh: z.string(),
+  en: z.string(),
+  targetWordId: z.string(),
+  level: LevelSchema,
+  tokens: z.array(SentenceTokenSchema),
+  source: z.literal('generated-live'),
+  doubtful: z.boolean().default(false),
+  createdAt: z.coerce.date(),
+});
+
+export const ReaderShownRowSchema = z.object({
+  sentenceId: z.string(),
+  at: z.coerce.date(),
+  updatedAt: z.coerce.date().optional(),
+});
+
 export const BackupSchema = z.object({
   schemaVersion: z.number().int(),
   lexiconVersion: z.string().optional(),
@@ -265,6 +283,9 @@ export const BackupSchema = z.object({
   // Phase 7 (schemaVersion 4).
   glossReports: z.array(GlossReportRowSchema).default([]),
   aiGlosses: z.array(AiGlossRowSchema).default([]),
+  // Phase 9 (schemaVersion 6): reader sentences.
+  liveSentences: z.array(LiveSentenceRowSchema).default([]),
+  readerShown: z.array(ReaderShownRowSchema).default([]),
   // Phase 8 (schemaVersion 5): when each settings/meta key last changed, so
   // two devices can keep the later edit. Absent in older backups.
   settingsUpdatedAt: z.record(z.string(), z.coerce.date()).default({}),

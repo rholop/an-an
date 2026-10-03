@@ -277,3 +277,49 @@ describe('export -> import on another browser', () => {
     expect(strip(await wire(b))).toEqual(strip(BackupSchema.parse(file)));
   });
 });
+
+describe('reader tables (phase 9)', () => {
+  const live = (id: string, zh: string) => ({
+    id,
+    zh,
+    en: '',
+    targetWordId: 'w1',
+    level: 'N1' as const,
+    tokens: [],
+    source: 'generated-live' as const,
+    doubtful: false,
+    createdAt: at(1),
+  });
+
+  it('live-generated sentences from both devices are unioned, never lost', async () => {
+    await a.liveSentences.put(live('live-a', '我去便利商店'));
+    await b.liveSentences.put(live('live-b', '我喜歡咖啡'));
+    await b.liveSentences.put(live('live-a', '我去便利商店'));
+    const merged = mergeBackups(await wire(a), await wire(b));
+    expect(merged.liveSentences.map((s) => s.id).sort()).toEqual(['live-a', 'live-b']);
+  });
+
+  it('the later "last shown" wins, so a sentence shown on either device stays out for 7 days', async () => {
+    await a.readerShown.put({ sentenceId: 's1', at: at(10) });
+    await b.readerShown.put({ sentenceId: 's1', at: at(500) });
+    await a.readerShown.put({ sentenceId: 's2', at: at(20) });
+    for (const m of [
+      mergeBackups(await wire(a), await wire(b)),
+      mergeBackups(await wire(b), await wire(a)),
+    ]) {
+      const byId = Object.fromEntries(m.readerShown.map((r) => [r.sentenceId, r.at.getTime()]));
+      expect(byId).toEqual({ s1: at(500).getTime(), s2: at(20).getTime() });
+    }
+  });
+
+  it('the merged copy writes back and sameContent notices reader differences', async () => {
+    await a.liveSentences.put(live('live-a', '我去便利商店'));
+    await b.readerShown.put({ sentenceId: 's1', at: at(5) });
+    expect(sameContent(await wire(a), await wire(b))).toBe(false);
+    const merged = mergeBackups(await wire(a), await wire(b));
+    await applyMergedBackup(a, merged);
+    expect(await a.liveSentences.count()).toBe(1);
+    expect(await a.readerShown.count()).toBe(1);
+  });
+});
+

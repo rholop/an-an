@@ -25,6 +25,8 @@ export interface JournalSentenceSource {
 
 export interface ChatLineSource {
   zh: string;
+  /** English gloss when the turn has one (npc turns), for the reader. */
+  en?: string;
   role: 'npc' | 'learner';
   scenarioTitle: string;
   npcName?: string;
@@ -99,7 +101,7 @@ function passesCoverage(zh: string, word: Word, opts: SelectClozeSourceOptions):
   return analyzeClozeCoverage(zh, ctx, word.id, opts.coverageThreshold).pass;
 }
 
-function chatSourceLabel(line: ChatLineSource): string {
+export function chatSourceLabel(line: ChatLineSource): string {
   if (line.role === 'npc' && line.npcName)
     return `from your chat with ${line.npcName} (${line.scenarioTitle})`;
   return `from your own reply in ${line.scenarioTitle}`;

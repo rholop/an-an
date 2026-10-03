@@ -6,6 +6,7 @@ import type {
   JournalIssue,
   Level,
   SelfFixRecord,
+  SentenceBankEntry,
   Skill,
   SkillCard,
   TurnToken,
@@ -16,7 +17,7 @@ import type {
 /** Schema version for export/import compatibility checks — bump whenever a
  * Dexie `.version()` changes the stored shape in a way old backups can't
  * satisfy. Independent of the lexicon version (data/build/lexicon.v*.json). */
-export const DB_SCHEMA_VERSION = 5;
+export const DB_SCHEMA_VERSION = 6;
 
 export function itemPk(item: ItemRef, skill: Skill): string {
   return `${item.kind}:${item.id}:${skill}`;
@@ -184,11 +185,37 @@ export interface AiGlossRow {
   at: Date;
 }
 
+/** Phase 9: a sentence the reader generated live (POST /v1/sentences) and that
+ * passed validation. Kept per profile so the bank grows and repeat presses get
+ * cheaper; merged between devices by union. */
+export type LiveSentenceRow = SentenceBankEntry & { source: 'generated-live'; createdAt: Date };
+
+/** Phase 9: when the reader last showed a sentence to this profile (for "not
+ * the same sentence within 7 days"). One row per sentence id; the later `at` wins. */
+export interface ReaderShownRow {
+  sentenceId: string;
+  at: Date;
+  updatedAt?: Date;
+}
+
 export type CustomWordRow = Word & { updatedAt?: Date };
 export type ErrorItemRow = ErrorItem & { updatedAt?: Date };
 
 /** Tables whose rows change in place (so need `updatedAt` for last-writer-wins). */
 const STAMPED_TABLES = [
+  'settings',
+  'meta',
+  'customWords',
+  'journalEntries',
+  'journalReviews',
+  'errorItems',
+  'conversations',
+  'readerShown',
+] as const;
+/** The stamped tables AS OF schema v5. The v5 upgrade must only touch tables
+ * that exist at v5, so it uses this frozen list — never the live
+ * STAMPED_TABLES, which grows as later versions add tables. */
+const V5_STAMPED_TABLES = [
   'settings',
   'meta',
   'customWords',
@@ -214,6 +241,8 @@ const ALL_TABLES = [
   'rewardEvents',
   'glossReports',
   'aiGlosses',
+  'liveSentences',
+  'readerShown',
 ] as const;
 
 const newUid = (): string => globalThis.crypto.randomUUID();
@@ -238,6 +267,9 @@ export class AnanDB extends Dexie {
   rewardEvents!: EntityTable<RewardRow, 'id'>;
   glossReports!: EntityTable<GlossReportRow, 'id'>;
   aiGlosses!: EntityTable<AiGlossRow, 'key'>;
+  /** Phase 9: reader sentences. */
+  liveSentences!: EntityTable<LiveSentenceRow, 'id'>;
+  readerShown!: EntityTable<ReaderShownRow, 'sentenceId'>;
 
   constructor(name = 'anan') {
     super(name);
@@ -309,7 +341,7 @@ export class AnanDB extends Dexie {
             row.startedAt ??
             row.at ??
             epoch) as Date;
-        for (const name of STAMPED_TABLES) {
+        for (const name of V5_STAMPED_TABLES) {
           await tx
             .table(name)
             .toCollection()
@@ -317,6 +349,16 @@ export class AnanDB extends Dexie {
               row.updatedAt ??= stampFrom(row);
             });
         }
+      });
+    // v6 (Phase 9): reader sentence tables. Purely additive, so the upgrade has
+    // no rows to rewrite — it only records when the reader was first available.
+    this.version(6)
+      .stores({
+        liveSentences: 'id, targetWordId, createdAt',
+        readerShown: 'sentenceId, at',
+      })
+      .upgrade(async (tx) => {
+        await tx.table('meta').put({ key: 'readerEnabledAt', value: new Date() });
       });
 
     this.installHooks();

@@ -4,6 +4,7 @@ import {
   JournalCheckResponseSchema,
   JournalExplainResponseSchema,
   JournalReviewSchema,
+  SentenceGenResponseSchema,
   TurnResponseSchema,
   type DefineRequest,
   type DefineResponse,
@@ -13,6 +14,8 @@ import {
   type JournalExplainResponse,
   type JournalReview,
   type JournalReviewRequest,
+  type SentenceGenRequest,
+  type SentenceGenResponse,
   type TurnRequest,
   type TurnResponse,
   type TutorLLM,
@@ -73,6 +76,10 @@ export class FetchTutorLLM implements TutorLLM {
 
   async defineWord(req: DefineRequest): Promise<DefineResponse> {
     return DefineResponseSchema.parse(await this.post('/v1/define', req));
+  }
+
+  async generateSentences(req: SentenceGenRequest): Promise<SentenceGenResponse> {
+    return SentenceGenResponseSchema.parse(await this.post('/v1/sentences', req));
   }
 
   async explainJournalIssue(req: JournalExplainRequest): Promise<JournalExplainResponse> {
