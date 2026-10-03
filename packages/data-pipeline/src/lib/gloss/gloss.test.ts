@@ -29,8 +29,10 @@ import {
   loadTocflCedict,
   loadTop2011,
   loadUnihanDefinitions,
+  isUsableWiktionarySense,
   loadWiktionary,
   parseCedictMeaning,
+  tidyWiktionaryGloss,
 } from './sources.js';
 import { MoeDictionary } from '../moe.js';
 
@@ -61,10 +63,17 @@ describe('csv + normalisation', () => {
     expect(parseGloss('(Tw) (slang) hard to get along with; annoying').tags).toEqual([
       'taiwan',
       'informal',
+      'slang',
     ]);
     expect(parseGloss('surname Huan').junk).toBe(true);
     expect(parseGloss('variant of 瞭|了[liao3]').junk).toBe(true);
     expect(parseGloss('(loanword) dozen').tags).toEqual(['loanword']);
+    expect(parseGloss('[jie3 jie5]').junk).toBe(true);
+    expect(parseGloss('a surname').junk).toBe(true);
+    expect(parseGloss('nose/CL:個|个[ge4],隻|只[zhi1]'.split('/')[1]!).junk).toBe(true);
+    expect(parseGloss('mouth (CL:張|张[zhang1])').text).toBe('mouth');
+    expect(glossOverlap('to be', 'to be')).toBe(1);
+    expect(glossOverlap('to be', 'to do')).toBe(0);
   });
 
   it('condenses to ≤ 6 words and never adds words', () => {
@@ -215,6 +224,62 @@ describe('sense inventory + heuristic baseline', () => {
     expect(onlyMainland.candidates.find((c) => c.source === 'wiktionary')?.tags).toContain(
       'mainland',
     );
+  });
+
+  it("keeps this reading's CEDICT sense primary over Wiktionary, without repeating clauses", () => {
+    const wik = new Map([
+      [
+        '機車',
+        [
+          { pos: 'noun', glosses: ['to see again'], tags: [], pinyinKeys: ['jīchē'] },
+          { pos: 'noun', glosses: ['scooter; motorbike'], tags: [], pinyinKeys: ['jīchē'] },
+        ],
+      ],
+    ]);
+    const inv = buildInventory(jiche, {
+      ...sourcesFor('scooter/motorcycle'),
+      moe: MoeDictionary.fromEntries([]),
+      wiktionary: wik,
+    });
+    const { senses } = heuristicSenses(inv, ['V']);
+    expect(senses[0]!.glossEn).toMatch(/^scooter/);
+    const shown = senses.flatMap((s) => s.glossEn.split('; '));
+    expect(shown.filter((g) => g === 'scooter')).toHaveLength(1);
+  });
+
+  it('teaches slang only when it is Taiwan usage', () => {
+    const inv = buildInventory(
+      jiche,
+      sourcesFor('airport/(slang) flat chest/(Tw) (slang) hard to get along with'),
+    );
+    const shown = heuristicSenses(inv, ['N'])
+      .senses.map((s) => s.glossEn)
+      .join('; ');
+    expect(shown).toContain('hard to get along with');
+    expect(shown).not.toContain('flat chest');
+  });
+
+  it('ignores Wiktionary entries spanning several readings when CEDICT has this one', () => {
+    const wik = new Map([
+      ['機車', [{ pos: 'noun', glosses: ['where'], tags: [], pinyinKeys: ['jīchē', 'jìchē'] }]],
+    ]);
+    const inv = buildInventory(jiche, { ...sourcesFor('scooter'), wiktionary: wik });
+    expect(inv.candidates.some((c) => c.source === 'wiktionary')).toBe(false);
+  });
+
+  it("gives erhua forms the base word's senses for the same reading", () => {
+    const dir = tmp();
+    const c = path.join(dir, 'c.csv');
+    writeFileSync(
+      c,
+      'ID,Traditional,Simplified,Pinyin,POS,Variants,Meaning\n' +
+        'L2-0259,一塊/一塊兒,一块/一块儿,yīkuài/yīkuàir,Adv,,"一塊 [yīkuài] together/in the same place<br> 一塊兒 [yīkuàir] erhua variant of 一塊|一块[yi1 kuai4]"\n',
+    );
+    const inv = buildInventory(
+      { headword: '一塊兒', variants: [], pinyin: 'yī kuàir', pos: ['Adv'] },
+      { cedict: loadTocflCedict(c), top2011: new Map(), moe: MoeDictionary.fromEntries([]) },
+    );
+    expect(heuristicSenses(inv, ['Adv']).senses[0]!.glossEn).toBe('together');
   });
 
   it('flags a word with no source at all', () => {
@@ -589,6 +654,77 @@ describe('optional heavy sources', () => {
       tags: ['Taiwan'],
     });
     expect((await loadWiktionary(path.join(tmp(), 'absent'), new Set(['機車']))).size).toBe(0);
+  });
+
+  it('reads current wiktextract sounds (zh_pron) and keeps only standard-Mandarin pinyin', async () => {
+    const f = path.join(tmp(), 'k.jsonl');
+    writeFileSync(
+      f,
+      JSON.stringify({
+        word: '炸',
+        pos: 'character',
+        sounds: [
+          { zh_pron: 'zhà (zha⁴)', tags: ['Mandarin', 'Pinyin'] },
+          { zh_pron: 'zhà', tags: ['Mandarin', 'Standard-Chinese', 'Pinyin'] },
+          { zh_pron: 'za⁴', tags: ['Mandarin', 'Chengdu', 'Sichuanese', 'Pinyin'] },
+          { zh_pron: 'ㄓㄚˋ', tags: ['Mandarin', 'Bopomofo'] },
+        ],
+        senses: [{ glosses: ['to explode'] }],
+      }),
+    );
+    const map = await loadWiktionary(f, new Set(['炸']));
+    expect(map.get('炸')![0]!.pinyinKeys).toEqual(['zhà']);
+    // …so the zhà sense never reaches 炸 zhá ("to deep fry").
+    const inv = buildInventory(
+      { headword: '炸', variants: [], pinyin: 'zhá', pos: ['V'] },
+      { ...sourcesFor(''), moe: MoeDictionary.fromEntries([]), wiktionary: map },
+    );
+    expect(inv.candidates.filter((c) => c.source === 'wiktionary')).toEqual([]);
+  });
+
+  it('follows soft redirects from Taiwan spellings to the entry with senses', async () => {
+    const f = path.join(tmp(), 'k.jsonl');
+    const line = (o: unknown) => JSON.stringify(o);
+    writeFileSync(
+      f,
+      [
+        line({
+          word: '汙染',
+          pos: 'soft-redirect',
+          redirects: ['污染'],
+          senses: [{ tags: ['no-gloss'] }],
+        }),
+        line({
+          word: '污染',
+          pos: 'verb',
+          senses: [
+            { glosses: ['to pollute; to contaminate'], tags: ['figuratively', 'literally'] },
+          ],
+        }),
+      ].join('\n'),
+    );
+    const map = await loadWiktionary(f, new Set(['汙染']));
+    expect(map.get('汙染')?.map((s) => s.glosses[0])).toEqual(['to pollute; to contaminate']);
+  });
+
+  it.each([
+    ['衣服 "ecstasy" (Taiwan slang)', 'noun', 'ecstasy; MDMA', ['Taiwan', 'slang'], false],
+    ['唱歌 "to urinate" (Wu)', 'verb', 'to urinate', ['Wu', 'humorous'], false],
+    ['再見 literal reading', 'verb', 'to see (a person) again', ['literally'], false],
+    ['污染 literal and figurative', 'verb', 'to pollute', ['figuratively', 'literally'], true],
+    ['衣服 Classical verb', 'verb', 'to put on clothes', ['Classical'], false],
+    ['年 surname', 'character', 'a surname', [], false],
+    ['星星 place name', 'name', 'Xingxing (a community in Chengzhong, Hubei, China)', [], false],
+    ['機車 Taiwan sense', 'noun', 'scooter', ['Taiwan'], true],
+  ])('Wiktionary sense filter: %s', (_label, _pos, gloss, tags, ok) => {
+    expect(isUsableWiktionarySense(gloss, tags)).toBe(ok);
+  });
+
+  it('tidies Wiktionary glosses to CEDICT shape', () => {
+    expect(tidyWiktionaryGloss('Classifier for years.')).toBe('classifier for years');
+    expect(tidyWiktionaryGloss('clothing; clothes (Classifier: 件 m)')).toBe('clothing; clothes');
+    expect(tidyWiktionaryGloss('Spanish')).toBe('Spanish');
+    expect(tidyWiktionaryGloss('Africa')).toBe('Africa');
   });
 
   it('reads Unihan kDefinition lines', () => {

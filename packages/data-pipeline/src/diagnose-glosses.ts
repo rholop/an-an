@@ -195,7 +195,7 @@ ${table(sampleCounts, sample.length)}
 1. Glosses are now **per reading** (CC-CEDICT lines matched on pinyin via ivankra/tocfl's \`tocfl-cedict.csv\`), with MOE's bundled English only as a labelled fallback.
 2. Candidates are ranked by TOCFL POS, the old TOP 2011 gloss (which says which sense the list meant), Taiwan tags, and a penalty for surnames/variants/loanwords/mainland-only senses; near-synonyms are folded together; each word keeps up to four senses, primary first (\`Word.senses\`).
 3. MOE's Chinese definitions are attached verbatim (\`moeDefZh\`), hand \`gloss-overrides.yaml\` always wins, and the offline LLM adjudication (\`build:glosses\`) can refine the choice but only by choosing/condensing from cited candidates.
-4. Wiktionary (kaikki.org) and Unihan are wired in as optional sources; they were **not downloadable in the environment this was built in** (host blocked) and are therefore not yet in the data.
+4. Wiktionary (kaikki.org) and Unihan are optional sources, in the data since 2026-10-01. Wiktionary fills gaps (Taiwan spellings via its soft redirects: 汙染 → 污染) and adds Taiwan-tagged senses, but never outranks this reading's CEDICT senses; its slang, dialect, Classical and literal-only senses are dropped.
 
 ## The same 60 words after the fix
 

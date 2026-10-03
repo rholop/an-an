@@ -44,11 +44,14 @@ const TAG_MARKERS: [RegExp, string][] = [
 ];
 
 const JUNK =
-  /^(?:surname\b|variant of\b|old variant of\b|also written\b|see\b|abbr\. for\b|abbreviation\b|erhua variant\b|Japanese variant\b|archaic variant\b|used in\b|used in names\b|CL:|\(Tw\) variant)/i;
+  /^(?:(?:a )?surname\b|alternative form of\b|erhua form of\b|misspelling of\b|variant of\b|old variant of\b|also written\b|see\b|abbr\. for\b|abbreviation\b|erhua variant\b|Japanese variant\b|archaic variant\b|used in\b|used in names\b|CL:|\(Tw\) variant)/i;
 
 export function parseGloss(raw: string): ParsedGloss {
   const tags: string[] = [];
   let text = raw.trim();
+  // Slang is also 'informal', but is only taught when it's Taiwan usage
+  // (機車 "annoying" yes; 機場 "flat chest" no) — see rankCandidates.
+  const slang = /\(slang\)|\(vulgar\)/i.test(text);
   for (const [re, tag] of TAG_MARKERS) {
     if (re.test(text)) {
       tags.push(tag);
@@ -56,11 +59,17 @@ export function parseGloss(raw: string): ParsedGloss {
     }
   }
   text = text
-    .replace(/\bCL:[^;,]*/g, '')
+    // "CL:個|个[ge4],隻|只[zhi1]" lists classifiers with commas, sometimes in
+    // parentheses ("mouth (CL:張|张[zhang1])"): drop the whole list.
+    .replace(/\(\s*CL:[^)]*\)/g, '')
+    .replace(/\bCL:[^;]*/g, '')
     .replace(/\s{2,}/g, ' ')
     .replace(/^[;,\s]+|[;,\s]+$/g, '')
     .trim();
-  return { text, tags, junk: JUNK.test(text) || text === '' };
+  if (slang) tags.push('slang');
+  // "[jie3]", "[jie3 jie5]" alone: the pointer left over from "variant of 姐姐[jie3 jie5]".
+  const pointer = /^\[[a-z]+\d(?: [a-z]+\d)*\]$/i.test(text);
+  return { text, tags, junk: JUNK.test(text) || pointer || text === '' };
 }
 
 const STOP = new Set([
@@ -97,7 +106,9 @@ export function contentTokens(text: string): string[] {
 export function glossOverlap(a: string, b: string): number {
   const A = new Set(contentTokens(a));
   const B = new Set(contentTokens(b));
-  if (A.size === 0 || B.size === 0) return 0;
+  if (A.size === 0 || B.size === 0)
+    // All stop words ("to be", "to do"): only an identical gloss overlaps.
+    return a.trim().toLowerCase() === b.trim().toLowerCase() && a.trim() !== '' ? 1 : 0;
   let shared = 0;
   for (const t of A) if (B.has(t)) shared++;
   return shared / Math.min(A.size, B.size);

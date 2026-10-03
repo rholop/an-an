@@ -58,6 +58,17 @@ export function buildInventory(
     if (!g.junk) candidates.push({ source: 'cedict', glossEn: g.text, tags: g.tags });
   }
 
+  // Erhua forms (一點兒, 一塊兒, 聊天兒) are only "erhua variant of …" in every
+  // source: use the base word's senses for the same reading minus the -r.
+  if (candidates.length === 0 && /.兒$/.test(word.headword)) {
+    const base = word.headword.slice(0, -1);
+    const basePinyin = word.pinyin.replace(/\s*(?:r|ér|er)$/, '');
+    for (const raw of cedictSensesFor(src.cedict.get(base) ?? [], basePinyin)) {
+      const g = parseGloss(raw);
+      if (!g.junk) candidates.push({ source: 'cedict', glossEn: g.text, tags: g.tags });
+    }
+  }
+
   // Other readings' senses, low priority: only when this reading has none, or
   // for measure words (the list's reading can differ from CEDICT's).
   const isMeasure = word.pos.some((p) => p === 'M' || p === 'Msr');
@@ -88,6 +99,9 @@ export function buildInventory(
   // Wiktionary (optional dump).
   for (const s of spellings.flatMap((sp) => src.wiktionary?.get(sp) ?? [])) {
     if (s.pinyinKeys.length > 0 && !s.pinyinKeys.includes(key)) continue;
+    // One entry spanning several readings (再 zài/dài) doesn't say which sense
+    // goes with which: only trust it where CEDICT has nothing for this reading.
+    if (s.pinyinKeys.length > 1 && cedictSenses.length > 0) continue;
     const g = parseGloss(s.glosses[0]!);
     if (!g.junk)
       candidates.push({

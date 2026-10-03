@@ -14,16 +14,17 @@ CC BY-ND 3.0 TW (shown verbatim), Unihan is under the Unicode terms of use.
 | `ivankra-tocfl-cedict.csv` | TOCFL list merged with CC-CEDICT definitions **per reading** — the per-reading English source | https://raw.githubusercontent.com/ivankra/tocfl/master/tocfl-cedict.csv | 2026-10-01 | yes (0.7 MB) |
 | `ivankra-top-20111208.csv` | Old SC-TOP list (2011) with terse English glosses — **build-time sense hint only** (licence unclear, never shown as a source) | https://raw.githubusercontent.com/ivankra/tocfl/master/top-20111208.csv | 2026-10-01 | yes (0.5 MB) |
 | `ivankra-tocfl-202307.csv` | Parsed 2023 TOCFL list (used to cross-check level counts) | https://raw.githubusercontent.com/ivankra/tocfl/master/tocfl-202307.csv | 2026-10-01 | yes |
-| `kaikki-chinese.jsonl` | English Wiktionary, Chinese entries, via wiktextract (≈1 GB) — Taiwan/Mainland tagged senses | https://kaikki.org/dictionary/Chinese/kaikki.org-dictionary-Chinese.jsonl (or the current wiktextract raw dump if that link is gone) | **NOT DOWNLOADED** — the build environment's network policy blocked `kaikki.org` | no (ignored) |
-| `cedict_1_0_ts_utf-8_mdbg.zip` | Latest CC-CEDICT release | https://www.mdbg.net/chinese/export/cedict/cedict_1_0_ts_utf-8_mdbg.zip | **NOT DOWNLOADED** — `mdbg.net` blocked (CC-CEDICT currently arrives through the ivankra merge instead) | no (ignored) |
-| `Unihan_Readings.txt` (from `Unihan.zip`) | Per-character definitions (`kDefinition`) for the character-breakdown help | https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip | **NOT DOWNLOADED** — `unicode.org` blocked | no (ignored) |
+| `kaikki-chinese.jsonl` | English Wiktionary, Chinese entries, via wiktextract (≈1.2 GB) — Taiwan/Mainland tagged senses | https://kaikki.org/dictionary/Chinese/kaikki.org-dictionary-Chinese.jsonl.gz (gunzip to this name) | 2026-10-01 | no (ignored) |
+| `cedict_1_0_ts_utf-8_mdbg.zip` | Latest CC-CEDICT release | https://www.mdbg.net/chinese/export/cedict/cedict_1_0_ts_utf-8_mdbg.zip | 2026-10-01 — **not read by the build yet**: CC-CEDICT arrives per reading through the ivankra merge | no (ignored) |
+| `Unihan_Readings.txt` (from `Unihan.zip`) | Per-character definitions (`kDefinition`) for the character-breakdown help → `data/build/char-glosses.v1.json` | https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip | 2026-10-01 | no (ignored) |
 
-The build tolerates the three missing files: `build-lexicon.ts` skips each
-optional source when its file is absent and records which sources were used in
+The build still runs without the optional files: `build-lexicon.ts` skips each
+optional source whose file is absent and records which sources were used in
 `data/build/lexicon.v2.json` → `meta.glossSourceFiles`.
 
-To add them, allow the three hosts, download into `data/raw/` with the exact
-file names above (`unzip` Unihan and keep `Unihan_Readings.txt`), then:
+kaikki.org throttles each connection to ≈25 KB/s, so fetch the 155 MB `.gz`
+with parallel range requests (e.g. 20 × `curl -r start-end`, then `cat` the
+parts and `gunzip`), which takes about 8 minutes. To rebuild:
 
 ```sh
 pnpm --filter @anan/data-pipeline build:lexicon      # picks up Wiktionary + Unihan

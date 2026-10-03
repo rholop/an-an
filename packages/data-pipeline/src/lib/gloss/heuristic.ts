@@ -37,7 +37,16 @@ function posBonus(gloss: string, tocflPos: string[]): number {
  * Taiwan tags win, and non-meanings/mainland-only/literary senses sink.
  */
 export function rankCandidates(inv: SenseInventory, tocflPos: string[]): RankedCandidate[] {
-  const english = inv.candidates.filter((c) => c.glossEn && c.source !== 'top2011');
+  const english = inv.candidates.filter(
+    (c) =>
+      c.glossEn &&
+      c.source !== 'top2011' &&
+      !(c.tags.includes('slang') && !c.tags.includes('taiwan')),
+  );
+  // Wiktionary lists rare and literal senses CEDICT leaves out, in no
+  // frequency order: it fills gaps and adds Taiwan senses, but doesn't
+  // outrank this reading's CEDICT senses (再見 "goodbye", not "to meet again").
+  const hasCedict = english.some((c) => c.source === 'cedict' && !c.tags.includes('other-reading'));
   return english
     .map((candidate, i) => {
       const g = candidate.glossEn!;
@@ -51,6 +60,7 @@ export function rankCandidates(inv: SenseInventory, tocflPos: string[]): RankedC
       if (candidate.tags.includes('mainland') && !candidate.tags.includes('taiwan')) score -= 3;
       if (candidate.tags.includes('loanword') && topOverlap === 0) score -= 1;
       if (candidate.tags.includes('reading-unverified')) score -= 0.3;
+      if (candidate.source === 'wiktionary' && hasCedict) score -= 1.5;
       if (candidate.tags.includes('other-reading')) score -= 0.8;
       return { candidate, score };
     })
@@ -69,6 +79,18 @@ function inferPos(gloss: string, tocflPos: string[], tags: string[]): string | u
   return tocflPos[0];
 }
 
+const clauses = (g: string) =>
+  g
+    .split(';')
+    .map((c) => c.trim().toLowerCase())
+    .filter(Boolean);
+/** The `;`-clauses of `gloss` not already in `shown` (lower-cased), rejoined. */
+const freshClauses = (gloss: string, shown: string[]) =>
+  gloss
+    .split(';')
+    .map((c) => c.trim())
+    .filter((c) => c && !shown.includes(c.toLowerCase()))
+    .join('; ');
 const wordCount = (g: string) => g.split(/\s+/).filter(Boolean).length;
 const isVerbGloss = (g: string) => /^to\s/i.test(g);
 
@@ -129,8 +151,13 @@ export function heuristicSenses(
       used.add(i);
       continue;
     }
-    if (wordCount(primaryGloss) + wordCount(r.gloss) > MAX_WORDS) continue;
-    primaryGloss = `${primaryGloss}; ${r.gloss}`;
+    const add = freshClauses(r.gloss, clauses(primaryGloss));
+    if (add === '') {
+      used.add(i);
+      continue;
+    }
+    if (wordCount(primaryGloss) + wordCount(add) > MAX_WORDS) continue;
+    primaryGloss = `${primaryGloss}; ${add}`;
     primarySources.push(r.candidate.source as string);
     used.add(i);
   }
@@ -140,7 +167,14 @@ export function heuristicSenses(
     if (used.has(i)) continue;
     const r = usable[i]!;
     if (senses.some((s) => glossOverlap(s.glossEn, r.gloss) >= 0.8)) continue;
-    senses.push(mk(r, r.gloss, []));
+    // Drop clauses an earlier sense already shows ("nearby; vicinity" after
+    // "nearby; neighboring" -> "vicinity").
+    const fresh = freshClauses(
+      r.gloss,
+      senses.flatMap((s) => clauses(s.glossEn)),
+    );
+    if (fresh === '') continue;
+    senses.push(mk(r, fresh, []));
   }
 
   // A close call only matters when the top two disagree in KIND (a verb vs a

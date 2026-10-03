@@ -14,3 +14,187 @@
 #     - glossEn: annoying; hard to get along with
 #       register: slang
 #       taiwanOnly: true
+
+# ---- 2026-10-01: drafted by Claude (not yet owner-checked) after the
+# Wiktionary/Unihan rebuild. Each fixes a wrong primary sense, or a word with
+# no usable source, picking the sense TOCFL's part of speech points to.
+# Owner: confirm or edit, then delete the "unchecked" note.
+
+- id: tocfl-64e19ba0ac # 塊 kuài M, N1
+  senses:
+    - glossEn: dollar (NT$, spoken)
+      taiwanOnly: true
+    - glossEn: piece; chunk (classifier)
+  note: unchecked
+- id: tocfl-c797debd16 # 快 kuài Vs, N2
+  senses:
+    - glossEn: fast; quick
+  note: unchecked
+- id: tocfl-7b32ec1e40 # 快 kuài Adv, L3
+  senses:
+    - glossEn: soon; almost; about to
+  note: unchecked
+- id: tocfl-6bd26ed516 # 跟 gēn Conj, N2
+  senses:
+    - glossEn: and; with
+  note: unchecked
+- id: tocfl-14611f83c9 # 跟 gēn Prep, L3
+  senses:
+    - glossEn: with; to (sb)
+      noteEn: 跟他說 "tell him", 跟你一樣 "same as you"
+  note: unchecked
+- id: tocfl-10669a4ee7 # 跟 gēn V, L3
+  senses:
+    - glossEn: to follow
+  note: unchecked
+- id: tocfl-2d00638979 # 感冒 gǎn mào Vp, N2
+  senses:
+    - glossEn: to catch a cold
+    - glossEn: a cold
+      pos: N
+  note: unchecked
+- id: tocfl-dabf206f19 # 行 xíng Vs, L1
+  senses:
+    - glossEn: OK; all right; capable
+      noteEn: 行不行? "Is that OK?"
+  note: unchecked
+- id: tocfl-36d3588410 # 往 wǎng Prep, L1
+  senses:
+    - glossEn: towards; in the direction of
+  note: unchecked
+- id: tocfl-706f162f4b # 往 wǎng V, L4
+  senses:
+    - glossEn: to go (towards)
+  note: unchecked
+- id: tocfl-1d8d690b53 # 比較 bǐ jiào Adv, L1
+  senses:
+    - glossEn: comparatively; rather; more
+  note: unchecked
+- id: tocfl-b1511fd229 # 比較 bǐ jiào N, L4
+  senses:
+    - glossEn: comparison
+  note: unchecked
+- id: tocfl-dd31867640 # 較 jiào Adv, L1
+  senses:
+    - glossEn: comparatively; relatively; more
+  note: unchecked
+- id: tocfl-e27b2c4d0e # 較 jiào Prep, L4
+  senses:
+    - glossEn: compared with; than
+  note: unchecked
+- id: tocfl-53b04d894c # 生氣 shēng qì Vs-sep, L1
+  senses:
+    - glossEn: angry; to get angry
+  note: unchecked
+- id: tocfl-e77e65bf74 # 生氣 shēng qì N, L5
+  senses:
+    - glossEn: vitality; liveliness
+  note: unchecked
+- id: tocfl-21b712222f # 替 tì Prep, L1
+  senses:
+    - glossEn: for; on behalf of
+  note: unchecked
+- id: tocfl-c3c3aaa09a # 活動 huó dòng N, L1
+  senses:
+    - glossEn: activity; event
+  note: unchecked
+- id: tocfl-8a81d80edc # 度 dù M, L2
+  senses:
+    - glossEn: degree (temperature, angle)
+  note: unchecked
+- id: tocfl-b0cac9b683 # 當 dāng Prep, L2
+  senses:
+    - glossEn: when; at the time of
+      noteEn: 當…的時候
+  note: unchecked
+- id: tocfl-965d61b400 # 當 dāng Det, L5
+  senses:
+    - glossEn: that same; that very
+      noteEn: 當天 "that same day"
+  note: unchecked
+- id: tocfl-f602439176 # 流行 liú xíng Vs, L2
+  senses:
+    - glossEn: popular; fashionable
+  note: unchecked
+- id: tocfl-aa649f14d3 # 輕鬆 qīng sōng Vs, L2
+  senses:
+    - glossEn: relaxed; easy; light
+  note: unchecked
+- id: tocfl-d60e1140e3 # 打工 dǎ gōng V-sep, L2
+  senses:
+    - glossEn: to work part-time
+  note: unchecked
+- id: tocfl-de3e4c4ba6 # 月台 yuè tái N, L2
+  senses:
+    - glossEn: railway platform
+  note: unchecked
+- id: tocfl-097f952044 # 捷運 jié yùn N, L2
+  senses:
+    - glossEn: MRT; metro
+      taiwanOnly: true
+  note: unchecked
+- id: tocfl-dff815fcd3 # 等 děng Ptc, L2
+  senses:
+    - glossEn: and so on; etc.
+  note: unchecked
+- id: tocfl-21968cd30f # 連 lián Conj, L2
+  senses:
+    - glossEn: even
+      noteEn: 連…都/也 "even …"
+  note: unchecked
+- id: tocfl-ec8d9e36a6 # 連 lián Vst, L2
+  senses:
+    - glossEn: to connect; to link
+  note: unchecked
+- id: tocfl-242ae412ed # 連 lián Adv, L4
+  senses:
+    - glossEn: in a row; in succession
+  note: unchecked
+- id: tocfl-e45288ec5d # 叔 shú N, L2
+  senses:
+    - glossEn: uncle (father's younger brother)
+  note: unchecked
+- id: tocfl-bce85e5a38 # 冰 bīng Vs, L4
+  senses:
+    - glossEn: ice-cold; chilled
+  note: unchecked
+- id: tocfl-86724dcefa # 差一點兒 chà yī diǎnr Adv, L3
+  senses:
+    - glossEn: almost; nearly
+  note: unchecked
+- id: tocfl-4ed22cdec8 # 還要 hái yào Adv, L3
+  senses:
+    - glossEn: even more
+      noteEn: 比…還要… "even more … than"
+  note: unchecked
+- id: tocfl-fe3259a091 # 說起來 shuō qi lai Adv, L3
+  senses:
+    - glossEn: come to think of it
+  note: unchecked
+- id: tocfl-2ccf819c43 # 傢伙 jiā huo N, L5
+  senses:
+    - glossEn: guy; fellow
+      register: informal
+    - glossEn: tool; weapon
+  note: unchecked
+- id: tocfl-6cf455c720 # 意識到 yì shì dào Vpt, L5
+  senses:
+    - glossEn: to realize; to become aware of
+  note: unchecked
+- id: tocfl-08651c406b # 汙染 wū rǎn N, L5
+  senses:
+    - glossEn: pollution
+  note: unchecked
+- word: 愛滋病
+  senses:
+    - glossEn: AIDS
+  note: unchecked
+- word: 老頭兒
+  senses:
+    - glossEn: old man
+      register: informal
+  note: unchecked
+- word: 期貨
+  senses:
+    - glossEn: futures (finance)
+  note: unchecked
