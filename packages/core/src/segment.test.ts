@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { segment } from './segment.js';
 import { buildFixtureLexicon } from './test-fixtures/lexicon-fixture.js';
+import { Lexicon } from './lexicon.js';
+import type { Word } from './types.js';
 
 const lexicon = buildFixtureLexicon();
 
@@ -170,5 +172,22 @@ describe('segment: hint reconciliation', () => {
       whitelist: new Set(['這個']),
     });
     expect(tokens.some((t) => t.text === '這個')).toBe(true);
+  });
+});
+
+describe('segment: compounds missing from TOCFL', () => {
+  const mk = (headword: string, pinyin: string, level: Word['level']): Word => ({
+    id: `t-${headword}`, headword, variants: [], pos: [], level, source: level ? 'tocfl' : 'supplement',
+    pinyin, pinyinNumeric: '', zhuyin: '', glossEn: headword, chars: [...headword], tags: [],
+  });
+  const lex = new Lexicon([mk('路', 'lù', 'N2'), mk('上', 'shàng', 'L2'), mk('路上', 'lù shàng', null)]);
+
+  it('keeps 路上 as one token when the compound is in the lexicon', () => {
+    expect(segment('在路上', new Lexicon([...lex.allWords(), mk('在', 'zài', 'N1')])).map((t) => t.text)).toEqual(['在', '路上']);
+  });
+
+  it('splits it only when the compound is absent (the old bug)', () => {
+    const without = new Lexicon(lex.allWords().filter((w) => w.headword !== '路上'));
+    expect(segment('路上', without).map((t) => t.text)).toEqual(['路', '上']);
   });
 });

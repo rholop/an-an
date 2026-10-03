@@ -1,6 +1,6 @@
 # Lexicon build review report — v2
 
-Built 2026-10-02. 7918 words.
+Built 2026-10-03. 24669 words.
 
 ## Row normalization
 

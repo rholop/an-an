@@ -1,4 +1,19 @@
 import type { GrammarItem, Level, Word } from './types.js';
+import { LEVEL_IDS } from './levels.config.js';
+
+const LEVEL_RANK: Record<Level, number> = Object.fromEntries(LEVEL_IDS.map((id, i) => [id, i])) as Record<Level, number>;
+
+/** Lowest (earliest-learned) level first; level-less words (supplement,
+ * compounds) last. Ties by frequency rank, then id so order is deterministic. */
+function compareSenses(a: Word, b: Word): number {
+  const la = a.level ? LEVEL_RANK[a.level] : Infinity;
+  const lb = b.level ? LEVEL_RANK[b.level] : Infinity;
+  if (la !== lb) return la < lb ? -1 : 1;
+  const fa = a.freqRank ?? Infinity;
+  const fb = b.freqRank ?? Infinity;
+  if (fa !== fb) return fa < fb ? -1 : 1;
+  return a.id.localeCompare(b.id);
+}
 
 export interface LexiconMeta {
   version: string;
@@ -32,13 +47,24 @@ export class Lexicon {
         maxLen = Math.max(maxLen, [...headform].length);
       }
     }
+    // Homographs (去 N1 verb vs 去 L3 particle) must resolve to the sense the
+    // learner meets first, not whichever happened to sort first by id.
+    for (const list of this.wordsByHeadword.values()) if (list.length > 1) list.sort(compareSenses);
     for (const g of grammar) this.grammarById.set(g.id, g);
     this.maxWordLen = maxLen;
   }
 
-  /** Every Word entry (any sense) whose headword or a variant equals `text` exactly. */
+  /** Every Word entry (any sense) whose headword or a variant equals `text`
+   * exactly, ordered lowest level first (level-less entries last). */
   lookup(text: string): Word[] {
     return this.wordsByHeadword.get(text) ?? [];
+  }
+
+  /** The single best sense for `text`: the one matching `pinyin` when given
+   * (and any match exists), else the lowest-level sense. */
+  preferred(text: string, pinyin?: string): Word | undefined {
+    const candidates = this.lookup(text);
+    return (pinyin ? candidates.find((w) => w.pinyin === pinyin) : undefined) ?? candidates[0];
   }
 
   byId(id: string): Word | undefined {
@@ -74,7 +100,7 @@ export class Lexicon {
   /** Single-character lexicon info, if this exact character is itself an entry. */
   charInfo(ch: string): { words: Word[]; level: Level | null } {
     const words = this.wordsByHeadword.get(ch) ?? [];
-    const level = words.find((w) => w.level)?.level ?? null;
+    const level = words.find((w) => w.level)?.level ?? null; // lookup order is lowest-level first
     return { words, level };
   }
 

@@ -198,3 +198,35 @@
   senses:
     - glossEn: futures (finance)
   note: unchecked
+
+# ---- 2026-10-03: drafted by Claude (not yet owner-checked). Same headword and
+# reading as an N1/L2 sense, so the generated gloss repeated the common verb
+# sense on entries TOCFL lists as a particle / adverb / determiner. Owner:
+# confirm or edit, then delete the "unchecked" note.
+- id: tocfl-71136f7a79 # 去 qù Ptc, L3
+  senses:
+    - glossEn: away from the speaker (after a verb)
+      pos: Ptc
+    - glossEn: in order to (after a verb)
+      pos: Ptc
+  note: unchecked; e.g. 回去, 拿去, 吃飯去
+- id: tocfl-b8b10a70e5 # 去 qù Adv, L3
+  senses:
+    - glossEn: very; a great many (多了去了)
+      register: informal
+      pos: Adv
+  note: unchecked; TOCFL lists 去 Adv/Ptc at L3, this is the only adverb use MOE gives
+- id: tocfl-6d12edd00e # 上 shàng V, L2
+  senses:
+    - glossEn: to go up; to get on
+      pos: V
+    - glossEn: to attend (class, work)
+      pos: V
+  note: unchecked
+- id: tocfl-65157ccc1c # 上 shàng Det, L3
+  senses:
+    - glossEn: previous; last (上個月)
+      pos: Det
+    - glossEn: first (of two parts)
+      pos: Det
+  note: unchecked

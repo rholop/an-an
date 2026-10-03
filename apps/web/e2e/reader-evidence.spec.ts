@@ -37,13 +37,30 @@ test.describe('Reader lookup events feed the learner model', () => {
     expect(itemRows.length).toBeGreaterThan(0);
   });
 
-  test('hovering a token (without clicking) records chat_hover_reading evidence', async ({
+  test('hovering a token while the reading is visible records nothing', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => Boolean(window.__anan));
+    await expect(page.getByText(/Lexicon v2 · \d+ words/)).toBeVisible({ timeout: 15000 });
+
+    // Default mode is 'always' (reading on screen): hover is just the pointer passing over.
+    for (const script of ['pinyin', 'zhuyin', 'both']) {
+      await page.locator('.reader-controls select').nth(1).selectOption(script);
+      await page.locator('.an-token').nth(1).hover();
+      await page.locator('.an-token').nth(2).hover();
+    }
+    await page.waitForTimeout(300);
+    const rows = await page.evaluate(() => window.__anan.db.evidence.toArray());
+    expect(rows.some((e) => e.kind === 'chat_hover_reading')).toBe(false);
+  });
+
+  test('hovering a token whose reading is hidden records chat_hover_reading evidence', async ({
     page,
   }) => {
     await page.goto('/');
     await page.waitForFunction(() => Boolean(window.__anan));
     await expect(page.getByText(/Lexicon v2 · \d+ words/)).toBeVisible({ timeout: 15000 });
 
+    await page.locator('.reader-controls select').nth(0).selectOption('hover');
     await page.locator('.an-token').nth(1).hover();
 
     await page.waitForFunction(

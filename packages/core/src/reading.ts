@@ -40,6 +40,13 @@ export function resolveReading(
     return { pinyin: w.pinyin, zhuyin: w.zhuyin, confidence: 'high' };
   }
 
+  // Several senses but one reading (去 as N1 verb / L3 particle): nothing to
+  // disambiguate, so the reading is certain.
+  if (candidates.every((w) => w.pinyin === candidates[0]!.pinyin)) {
+    const w = candidates[0]!;
+    return { pinyin: w.pinyin, zhuyin: w.zhuyin, confidence: 'high' };
+  }
+
   // Multiple senses share this exact headword/variant spelling. For a
   // single character, try the heteronym context-rule table first.
   const chars = [...token.text];

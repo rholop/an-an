@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Lexicon } from './lexicon.js';
+import type { Word } from './types.js';
 import { buildFixtureLexicon, FIXTURE_WORDS } from './test-fixtures/lexicon-fixture.js';
 
 describe('Lexicon', () => {
@@ -52,5 +53,23 @@ describe('Lexicon', () => {
       },
     ]);
     expect(lex.lookup('软体')[0]?.headword).toBe('軟體');
+  });
+
+  it('orders homographs lowest level first, regardless of input/id order', () => {
+    const mk = (id: string, level: Word['level'], pos: string): Word => ({
+      id, headword: '去', variants: [], pos: [pos], level, source: 'tocfl', pinyin: 'qù',
+      pinyinNumeric: 'qu4', zhuyin: 'ㄑㄩˋ', glossEn: 'x', chars: ['去'], tags: [],
+    });
+    const lex = new Lexicon([mk('a-l3-ptc', 'L3', 'Ptc'), mk('b-null', null, 'V'), mk('c-n1-v', 'N1', 'V'), mk('d-l3-adv', 'L3', 'Adv')]);
+    expect(lex.lookup('去').map((w) => w.id)).toEqual(['c-n1-v', 'a-l3-ptc', 'd-l3-adv', 'b-null']);
+    expect(lex.preferred('去')?.id).toBe('c-n1-v');
+    expect(lex.charInfo('去').level).toBe('N1');
+  });
+
+  it('preferred() honours a matching reading before falling back to level', () => {
+    const lex = buildFixtureLexicon();
+    expect(lex.preferred('還', 'huán')?.pinyin).toBe('huán');
+    expect(lex.preferred('還', 'nope')).toBeDefined();
+    expect(lex.preferred('龘')).toBeUndefined();
   });
 });

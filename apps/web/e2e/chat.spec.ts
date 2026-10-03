@@ -41,13 +41,15 @@ test.describe('Chat page', () => {
       { timeout: 5000 },
     );
 
-    // Hover a different token → chat_hover_reading evidence.
+    // Hover a different token whose reading is already shown → no hover evidence
+    // (only clicks count while pinyin/zhuyin is visible).
     await page.locator('.chat-bubble--npc .an-token').nth(2).hover();
-    await page.waitForFunction(
-      async () =>
-        (await window.__anan.db.evidence.toArray()).some((e) => e.kind === 'chat_hover_reading'),
-      { timeout: 5000 },
-    );
+    await page.waitForTimeout(300);
+    expect(
+      (await page.evaluate(() => window.__anan.db.evidence.toArray())).some(
+        (e) => e.kind === 'chat_hover_reading',
+      ),
+    ).toBe(false);
 
     // Send a learner turn; the fake tutor should reply.
     await page.locator('.chat-input').fill('我要一杯珍珠奶茶');

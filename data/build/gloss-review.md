@@ -2,9 +2,9 @@
 
 Words whose gloss a human should check. Put corrections in `data/supplement/gloss-overrides.yaml` (overrides always win and survive rebuilds).
 
-- 7918 words: 42 override, 0 ai, 7857 heuristic, 19 authored, 0 none.
+- 7918 words: 46 override, 0 ai, 7853 heuristic, 19 authored, 0 none.
 - N1–L2 words with a cited source: 100.0% of 1346.
-- 190 flagged.
+- 209 flagged.
 
 | level | word | reading | shown gloss | origin | flags | other candidates |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -32,6 +32,7 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L3 | 當面 | dāng miàn | in sb's presence | heuristic | close-call | to sb's face · in sb's presence · to somebody's face; in somebody's presence; face to face |
 | L3 | 堆 | duī | to pile up; to heap up | heuristic | close-call | to pile up · to heap up · a mass |
 | L3 | 對 | duì | right; correct; towards; at; for | heuristic | close-call | right; correct · towards; at; for · concerning; regarding |
+| L3 | 個 | ge | individual | heuristic | sibling-same-gloss | (classifier used before a noun that has no specific classifier) · (bound form) individual |
 | L3 | 給 | gěi | for the benefit of | heuristic | close-call | to · for · for the benefit of |
 | L3 | 貢獻 | gòng xiàn | contribution | heuristic | close-call | to contribute · to dedicate · to devote |
 | L3 | 怪 | guài | to blame | heuristic | close-call | bewildering · odd · strange |
@@ -46,9 +47,12 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L3 | 滿 | mǎn | to reach the limit | heuristic | close-call | to fill · full · filled |
 | L3 | 滿意 | mǎn yì | satisfied; pleased | heuristic | close-call | satisfied · pleased · to one's satisfaction |
 | L3 | 慢用 | màn yòng | same as 慢慢吃[man4 man4 chi1] | heuristic | close-call | same as 慢慢吃[man4 man4 chi1] · to enjoy (your) meal (said by waiter or waitress, or someone who has to leave before everyone at the table finishes the meal) |
+| L3 | 沒 | méi | have not; not | heuristic | sibling-same-gloss | (negative prefix for verbs) have not; not · not have; there is not; to be without · to be not so ... as (when comparing) |
 | L3 | 沒 | méi | have not; not | heuristic | close-call | (negative prefix for verbs) have not; not · not have; there is not; to be without · to be not so ... as (when comparing) |
 | L3 | 迷路 | mí lù | lost | heuristic | close-call | to lose the way · lost · labyrinth |
 | L3 | 坪 | píng | a traditional unit of areal measure | heuristic | close-call | a plain · ping, unit of area equal to approx. 3.3058 square meters (used in Japan and Taiwan) · plain (especially used in a place name); flatland; level ground; terrace |
+| L3 | 起 | qǐ | to rise; to get up | heuristic | sibling-same-gloss | to rise · to raise · to get up |
+| L3 | 起來 | qǐ lái | to stand up | heuristic | sibling-same-gloss | to stand up · to get up · also pr. [qi3 lai2] |
 | L3 | 深入 | shēn rù | thorough | heuristic | close-call | to penetrate deeply · thorough · thorough; in-depth; deep |
 | L3 | 收穫 | shōu huò | harvest; gain | heuristic | close-call | to harvest · to reap · to gain |
 | L3 | 說明 | shuō míng | explanation | heuristic | close-call | to explain · to illustrate · to indicate |
@@ -64,6 +68,7 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L4 | 拜拜 | bài bai | to pay one's respects by bowing | heuristic | close-call | to pay one's respects by bowing with hands in front of one's chest clasping joss sticks, or with palms pressed together · religious ceremony in which offerings are made to a deity |
 | L4 | 包裝 | bāo zhuāng | packaging | heuristic | close-call | to pack · to package · to wrap |
 | L4 | 把握 | bǎ wò | assurance; certainty | heuristic | close-call | to grasp (also fig.) · to seize · to hold |
+| L4 | 嘗試 | cháng shì | to try; to attempt | heuristic | sibling-same-gloss | to try; to attempt · to attempt; to try |
 | L4 | 超重 | chāo zhòng | overweight | heuristic | close-call | overweight (baggage, freight) · to be overloaded · to be overweight |
 | L4 | 充分 | chōng fèn | to the full | heuristic | close-call | ample · sufficient · adequate |
 | L4 | 創作 | chuàng zuò | creative work; creation | heuristic | close-call | to create · to produce · to write |
@@ -76,8 +81,11 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L4 | 發言 | fā yán | statement | heuristic | close-call | to make a speech · statement · utterance |
 | L4 | 分別 | fēn bié | to part; to leave each other | heuristic | close-call | to part; to leave each other · to distinguish; to tell apart · difference; distinction |
 | L4 | 瘋 | fēng | insane; mad; wild | heuristic | close-call | insane · mad · wild |
+| L4 | 趕 | gǎn | to drive forward; to drive away | heuristic | sibling-same-gloss | to overtake; to catch up with · to hurry; to rush · to try to catch (the bus etc) |
 | L4 | 隔 | gé | to separate | heuristic | close-call | to separate · to partition · to stand or lie between |
+| L4 | 鼓勵 | gǔ lì | to encourage | heuristic | sibling-same-gloss | to encourage · to encourage |
 | L4 | 過 | guò | to pass | heuristic | close-call | to cross · to go over · to pass (time) |
+| L4 | 合 | hé | to join | heuristic | sibling-same-gloss | to close · to join · to fit |
 | L4 | 加上 | jiā shàng | to add | heuristic | close-call | plus · to put in · to add |
 | L4 | 接下來 | jiē xià lái | to accept; to take | heuristic | close-call | to accept · to take · next |
 | L4 | 敬禮 | jìng lǐ | salute | heuristic | close-call | to salute · salute · to salute; to extend one's greetings |
@@ -91,10 +99,11 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L4 | 居然 | jū rán | unexpectedly | heuristic | close-call | unexpectedly · to one's surprise · go so far as to |
 | L4 | 懶得 | lǎn de | not to feel like; disinclined to | heuristic | close-call | not to feel like (doing sth); disinclined to · to not feel like doing something; to not be in a mood to do something, to be lazy to ... |
 | L4 | 利 | lì | to do good to; to benefit | heuristic | close-call | sharp · favorable · advantage |
-| L4 | 夢想 | mèng xiǎng | to dream of | heuristic | close-call | (fig.) to dream of · dream · dream; hope; wish |
+| L4 | 夢想 | mèng xiǎng | to dream of | heuristic | close-call, sibling-same-gloss | (fig.) to dream of · dream · dream; hope; wish |
 | L4 | 夢想 | mèng xiǎng | to dream of | heuristic | close-call | (fig.) to dream of · dream · dream; hope; wish |
 | L4 | 門診 | mén zhěn | outpatient service | heuristic | close-call | outpatient service · to provide an outpatient service |
 | L4 | 面談 | miàn tán | face-to-face meeting | heuristic | close-call | face-to-face meeting · an interview · to talk to someone face-to-face; to have a face-to-face meeting; to conduct an interview |
+| L4 | 暖 | nuǎn | to warm | heuristic | sibling-same-gloss | warm · to warm · warm; toasty |
 | L4 | 排 | pái | a row; a line | heuristic | close-call | a row · a line · to set in order |
 | L4 | 偏 | piān | to lean; to slant | heuristic | close-call | to lean · to slant · oblique |
 | L4 | 偏食 | piān shí | to have a craving for certain | heuristic | close-call | partial to (some kinds of food, usu. unhealthy) · having likes and dislikes · partial eclipse |
@@ -111,6 +120,8 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L4 | 跳遠 | tiào yuǎn | long jump | heuristic | close-call | long jump (athletics) · to do long jump · long jump |
 | L4 | 提前 | tí qián | in advance | heuristic | close-call | to shift to an earlier date · to do sth ahead of time · in advance |
 | L4 | 投票 | tóu piào | vote | heuristic | close-call | to vote · vote · to vote; to cast a vote; to cast a ballot; to poll |
+| L4 | 突破 | tú pò | to make a breakthrough; to surmount | heuristic | sibling-same-gloss | to break through · to make a breakthrough · to surmount (an obstacle) |
+| L4 | 威脅 | wēi xié | to threaten; to menace | heuristic | sibling-same-gloss | to threaten; to menace · to threaten; to menace; to intimidate |
 | L4 | 蝦米 | xiā mi | what | heuristic | close-call | small shrimp; dried, shelled shrimps · what (from Taiwanese 啥物, Tai-lo pr. [siánn-mih], equivalent to Mandarin 什麼\|什么[shen2 me5]) · dried and shelled small shrimp |
 | L4 | 現 | xiàn | present; now; existing; current | heuristic | close-call | to appear · present · now |
 | L4 | 學會 | xué huì | learned society; association | heuristic | close-call | to learn · to master · institute |
@@ -142,13 +153,16 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L5 | 迴響 | huí xiǎng | echo | heuristic | close-call | to echo · to reverberate · to respond |
 | L5 | 毀損 | huǐ sǔn | impair, damage | heuristic | close-call | impair, damage · to damage; to impair |
 | L5 | 會意 | huì yì | knowing | heuristic | close-call | combined ideogram (one of the Six Methods 六書\|六书[liu4 shu1] of forming Chinese characters) · Chinese character that combines the meanings of existing elements · also known as joint ideogram or associative compound |
+| L5 | 混 | hùn | to mix | heuristic | sibling-same-gloss | to mix · to mingle · muddled |
 | L5 | 檢討 | jiǎn tǎo | to examine or inspect | heuristic | close-call | to examine or inspect · self-criticism · review |
 | L5 | 見識 | jiàn shì | to experience for oneself | heuristic | close-call | to gain first-hand knowledge of sth · to experience for oneself · knowledge |
 | L5 | 揭幕 | jiē mù | unveiling | heuristic | close-call | opening · unveiling · to unveil (a monument, etc.); to inaugurate |
 | L5 | 解答 | jiě dá | answer | heuristic | close-call | to solve (a problem) · to resolve (a difficulty) · to provide an answer |
 | L5 | 進場 | jìn cháng | to enter the scene | heuristic | close-call | to enter the venue · to enter the arena · (aviation) to approach the airfield |
 | L5 | 就 | jiù | merely; nothing else but; simply; just | heuristic | close-call | (after a suppositional clause) in that case; then · (after a clause of action) as soon as; immediately after · (same as 就是[jiu4 shi4]) merely; nothing else but; simply; just; precisely; exactly |
+| L5 | 開發 | kāi fā | to exploit; to open up | heuristic | sibling-same-gloss | to exploit (a resource); to open up (for development); to develop · to exploit (a resource) · to open up (for development) |
 | L5 | 空運 | kōng yùn | air transport | heuristic | close-call | air transport · to transport by air |
+| L5 | 困擾 | kùn rǎo | to perplex | heuristic | sibling-same-gloss | to perplex · to disturb · to cause complications |
 | L5 | 類似 | lèi sì | similar; analogous | heuristic | close-call | similar; analogous · to be similar (to); to be analogous (to) |
 | L5 | 力求 | lì qiú | striving to do one's best | heuristic | close-call | to make every effort to · striving to do one's best · to make every effort to; to endeavour or strive for |
 | L5 | 聯 | lián | to ally oneself with; to unite | heuristic | close-call | (bound form) to ally oneself with; to unite; to combine; to join · (bound form) (poetry) antithetical couplet · to connect; to join |
@@ -157,7 +171,9 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L5 | 臨 | lín | just before | heuristic | close-call | to face · to overlook · to arrive |
 | L5 | 臨 | lín | just before | heuristic | close-call | to face · to overlook · to arrive |
 | L5 | 錄影 | lù yǐng | to videotape; to videorecord | heuristic | close-call | to videotape · to videorecord · to video; to record; to videotape |
+| L5 | 拿 | ná | to hold; to seize; to catch | heuristic | sibling-same-gloss | to hold · to seize · to catch |
 | L5 | 內銷 | nèi xiāo | domestic market | heuristic | close-call | to sell in the domestic market · domestic market · to sell in the domestic market; to sell inside the country |
+| L5 | 配 | pèi | to fit; to mix; to match | heuristic | sibling-same-gloss | to join · to fit · to mate |
 | L5 | 噴漆 | pēn qī | lacquer | heuristic | close-call | to spray paint or lacquer · lacquer · spray paint |
 | L5 | 批發 | pī fā | wholesale | heuristic | close-call | wholesale · bulk trade · distribution |
 | L5 | 起步 | qǐ bù | the start | heuristic | close-call | to set out · to set in motion · the start (of some activity) |
@@ -171,12 +187,15 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L5 | 生育 | shēng yù | fertility | heuristic | close-call | to bear · to give birth · to grow |
 | L5 | 失靈 | shī líng | out of order; not working properly | heuristic | close-call | out of order (of machine) · not working properly · a failing (of a system) |
 | L5 | 算命 | suàn mìng | fortune-telling | heuristic | close-call | fortune-telling · to tell fortune · to tell someone's fortune |
+| L5 | 隨 | suí | to follow | heuristic | sibling-same-gloss | to follow · to comply with · varying according to... |
 | L5 | 隨同 | suí tóng | accompanying | heuristic | close-call | accompanying · to be in company with; to be accompanying |
 | L5 | 特約 | tè yuē | to engage by special arrangement | heuristic | close-call | specially engaged · employed or commissioned for a special task · to engage by special arrangement |
 | L5 | 啼 | tí | to cry; to weep loudly | heuristic | close-call | (bound form) to cry; to weep loudly · (bound form) (of a bird or animal) to crow; to hoot; to screech · to cry loudly; to wail |
+| L5 | 調和 | tiáo hé | to mediate; to reconcile | heuristic | sibling-same-gloss | harmonious · to mediate; to reconcile · mediation |
 | L5 | 聽寫 | tīng xiě | dictation | heuristic | close-call | (of a pupil) to write down (in a dictation exercise) · dictation · to transcribe by ear |
 | L5 | 停滯 | tíng zhì | to stagnate; to bog down | heuristic | close-call | stagnation · at a standstill · bogged down |
 | L5 | 同化 | tóng huà | assimilation | heuristic | close-call | assimilation (cultural, digestive, phonemic etc) · to make similar · to assimilate |
+| L5 | 投入 | tóu rù | to throw into; to put into | heuristic | sibling-same-gloss | to throw into · to put into · to throw oneself into |
 | L5 | 現行 | xiàn xíng | in force; current | heuristic | close-call | to be in effect · in force · current |
 | L5 | 消防 | xiāo fáng | fire control | heuristic | close-call | firefighting · fire control · to prevent and fight fire |
 | L5 | 協議 | xié yì | agreement | heuristic | close-call | agreement · pact · protocol |

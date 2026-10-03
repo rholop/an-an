@@ -243,6 +243,11 @@ export function AnnotatedText({
               setOpenId(isOpen ? null : id);
             }}
             onMouseEnter={() => {
+              // Hovering only means something when the reading is hidden until
+              // hover. With pinyin/zhuyin/both already on screen (or off
+              // entirely) the pointer just passes over the text, so only an
+              // actual click counts as a lookup.
+              if (!hoverLike) return;
               if (hoveredIds.current.has(id)) return;
               hoveredIds.current.add(id);
               onLookup?.(at, 'reading');

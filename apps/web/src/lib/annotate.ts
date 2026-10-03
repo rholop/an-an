@@ -36,8 +36,7 @@ export function annotate(
     let word: Word | undefined;
     let sense: Sense | undefined;
     if (token.kind === 'word') {
-      const candidates = lexicon.lookup(token.text);
-      const matched = candidates.find((w) => w.pinyin === reading.pinyin) ?? candidates[0];
+      const matched = lexicon.preferred(token.text, reading.pinyin);
       level = matched?.level ?? null;
       wordId = matched?.id;
       word = matched;

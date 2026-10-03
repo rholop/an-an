@@ -71,6 +71,11 @@ export class MoeDictionary {
     return this.byTitle.get(title);
   }
 
+  /** All titles, for the compound scan in build-lexicon. */
+  titles(): IterableIterator<string> {
+    return this.byTitle.keys();
+  }
+
   gloss(title: string): string | undefined {
     const e = this.byTitle.get(title);
     if (!e) return undefined;

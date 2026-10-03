@@ -14,6 +14,7 @@ import { loadGlossOverrides } from './lib/gloss/overrides.js';
 import { buildAdjudicationRequest } from './lib/gloss/request.js';
 import { computeStats, renderReview, type ReviewRow } from './lib/gloss/review.js';
 import { resolveGloss } from './lib/gloss/resolve.js';
+import { diversifySiblingGlosses } from './lib/gloss/siblings.js';
 import {
   loadTocflCedict,
   loadTop2011,
@@ -249,6 +250,55 @@ async function main(): Promise<void> {
         .map((c) => c.glossEn!),
     });
   }
+  // Same headword + reading, different POS/level (去 V / Ptc / Adv): don't let
+  // the siblings all show the same gloss.
+  const siblingFixes = diversifySiblingGlosses(words);
+  const rowById = new Map(reviewRows.map((r) => [r.word.id, r]));
+  // Review only the cases we could not fix; fixed ones carry a gloss:sibling-diversified tag.
+  for (const f of siblingFixes) if (!f.to) rowById.get(f.wordId)?.gloss.flags.push('sibling-same-gloss');
+  console.log(
+    `Sibling glosses: ${siblingFixes.filter((f) => f.to).length} diversified, ${siblingFixes.filter((f) => !f.to).length} left identical (flagged).`,
+  );
+
+  // Lookup-only compounds: MOE titles (2-3 chars) that TOCFL doesn't list but
+  // whose characters are all in the learner-facing bands, e.g. 路上 "on the
+  // way", 一下. Without them the segmenter splits the compound into its
+  // characters and the learner sees two unrelated glosses. level is null, so
+  // the validator still counts them as gaps, never as known vocabulary.
+  const COMPOUND_CHAR_LEVELS = new Set<string>(['N1', 'N2', 'L1', 'L2', 'L3']);
+  const knownHeads = new Set(words.flatMap((w) => [w.headword, ...w.variants]));
+  const compoundChars = new Set(
+    words.filter((w) => w.level && COMPOUND_CHAR_LEVELS.has(w.level)).flatMap((w) => w.chars),
+  );
+  const JUNK_GLOSS = /^(surname |used in |variant of |old variant of |see |abbr\. for |CL:)/i;
+  let compoundCount = 0;
+  for (const title of moe.titles()) {
+    const len = [...title].length;
+    if (len < 2 || len > 3 || knownHeads.has(title)) continue;
+    if (![...title].every((ch) => compoundChars.has(ch))) continue;
+    const first = moe.gloss(title)?.split('; ')[0]?.replace(/\s*\(CL:[^)]*\)/g, '').trim();
+    if (!first || JUNK_GLOSS.test(first)) continue;
+    const gloss = first.length > 100 ? `${first.slice(0, 97).replace(/\s+\S*$/, '')}…` : first;
+    const resolved = resolveMoeReading(moe, title, '');
+    if (resolved.source !== 'moe-phrase') continue;
+    words.push({
+      id: resolveId(idMap, 'moec', title, resolved.pinyin, 'compound'),
+      headword: title,
+      variants: [],
+      pos: [],
+      level: null,
+      source: 'supplement',
+      pinyin: resolved.pinyin,
+      pinyinNumeric: '',
+      zhuyin: resolved.zhuyin,
+      glossEn: gloss,
+      chars: [...title],
+      tags: ['compound:moe'],
+    });
+    compoundCount++;
+  }
+  console.log(`MOE compounds added: ${compoundCount}`);
+
   const glossStats = computeStats(reviewRows);
   writeFileSync(
     path.join(BUILD_DIR, 'gloss-review.md'),
