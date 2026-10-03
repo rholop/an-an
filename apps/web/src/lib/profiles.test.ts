@@ -211,6 +211,7 @@ describe('migrating the old single database (phase 8 §3)', () => {
   it('keeps the old database if the copy fails, so nothing is ever discarded silently', async () => {
     await seedLegacy();
     const { db: target } = openSession('ron');
+    await target.open(); // settle any open a session listener started, so close() can't race it
     target.close(); // the copy cannot be written
     await expect(migrateLegacyInto(target)).rejects.toBeTruthy();
     expect(await legacyDbExists()).toBe(true);
