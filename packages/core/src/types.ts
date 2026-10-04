@@ -3,7 +3,8 @@
 
 export type { Level } from './levels.config.js';
 import type { Level } from './levels.config.js';
-export type Skill = 'recognition' | 'production';
+/** Phase 15 brings back `listening` (scheduled by FSRS like the others; never part of Phase 14 mastery). */
+export type Skill = 'recognition' | 'production' | 'listening';
 export type ItemState = 'unseen' | 'introduced' | 'learning' | 'review' | 'mature';
 
 export interface Word {
@@ -82,7 +83,12 @@ export interface Evidence {
     | 'placement_known'
     | 'placement_unknown'
     /** Phase 12: the class covered this item's lesson. Introduces the card only. */
-    | 'textbook_lesson_covered';
+    | 'textbook_lesson_covered'
+    /** Phase 15: heard it and got it on the first play (Good). */
+    | 'listening_correct'
+    /** Correct after 2+ replays, at slow speed, or right syllables with a wrong tone (Hard). */
+    | 'listening_correct_replayed'
+    | 'listening_wrong';
   at: Date;
   context?: {
     source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook';

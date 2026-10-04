@@ -270,6 +270,11 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   placement_known: (_c, e, n, cfg) => applyPlacement(e, n, cfg, true),
   placement_unknown: (_c, e, n, cfg) => applyPlacement(e, n, cfg, false),
   textbook_lesson_covered: (c, e, n) => applyTextbookCovered(c, e, n),
+
+  // Phase 15: correct on first play = Good; after replays / slow / wrong tone = Hard; wrong = Again.
+  listening_correct: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
+  listening_correct_replayed: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
+  listening_wrong: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Again, cfg, f),
 };
 
 /**
