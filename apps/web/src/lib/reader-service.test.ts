@@ -227,7 +227,7 @@ describe('ReaderService.next — Lesson focus (Phase 12)', () => {
 
   it('offers only sentences tagged with the current lesson', async () => {
     await seedLearner();
-    const reader = service({ lesson: { n: 3, sentences }, rand: () => 0 });
+    const reader = service({ lesson: { bookId: 'laixue-1', n: 3, sentences }, rand: () => 0 });
     const seen = new Set<string>();
     for (let i = 0; i < 6; i++) {
       const r = await reader.next({ focus: 'lesson', level: 'N1', sessionIds: seen, now: NOW });
@@ -240,14 +240,26 @@ describe('ReaderService.next — Lesson focus (Phase 12)', () => {
   });
 
   it('never repeats a sentence until the lesson pool is used up', async () => {
-    const reader = service({ lesson: { n: 3, sentences }, rand: () => 0 });
+    const reader = service({ lesson: { bookId: 'laixue-1', n: 3, sentences }, rand: () => 0 });
     const a = await reader.next({ focus: 'lesson', level: 'N1', now: NOW });
     const b = await reader.next({ focus: 'lesson', level: 'N1', sessionIds: new Set([a!.pick.sentence.id]), now: NOW });
     expect(b!.pick.sentence.id).not.toBe(a!.pick.sentence.id);
   });
 
+  it('Phase 13: a book-2 lesson is found by its own tag, and a harder level than the chosen one is hidden', async () => {
+    const b2 = [
+      entry('我去喝茶。', 'w-wo', { lesson: 3, textbookId: 'laixue-2', level: 'L1', tags: ['textbook:laixue-2', 'textbook:laixue-2:L03'], source: 'generated' }),
+    ];
+    const mix = [...sentences, ...b2];
+    const reader = service({ lesson: { bookId: 'laixue-2', n: 3, sentences: mix }, rand: () => 0 });
+    const ok = await reader.next({ focus: 'lesson', level: 'L1', now: NOW });
+    expect(ok!.pick.sentence.zh).toBe('我去喝茶。');
+    expect(ok!.pick.sentence.sourceLabel).toBe('來學華語 2 · L3');
+    expect(await reader.next({ focus: 'lesson', level: 'N1', now: NOW })).toBeNull();
+  });
+
   it('returns nothing (and never goes live) when the lesson has no sentences', async () => {
-    const reader = service({ lesson: { n: 9, sentences }, llm: { generateSentences: async () => { throw new Error('should not be called'); } } });
+    const reader = service({ lesson: { bookId: 'laixue-1', n: 9, sentences }, llm: { generateSentences: async () => { throw new Error('should not be called'); } } });
     expect(await reader.next({ focus: 'lesson', level: 'N1', now: NOW })).toBeNull();
   });
 });

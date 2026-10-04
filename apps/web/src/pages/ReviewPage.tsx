@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Evidence, GrammarItem, Lexicon, SkillCard, Word } from '@anan/core';
-import { firstLessonOfTags, lessonBadge, nextLeechTreatment } from '@anan/core';
+import { homeLessonOfTags, lessonBadge, nextLeechTreatment } from '@anan/core';
 import { db, learnerService } from '../db/instance.js';
 import { dueForecast } from '../db/queries.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
@@ -119,7 +119,7 @@ function ReviewCard({
 }) {
   // Phase 12: grammar patterns are schedulable items too — pattern on the front,
   // the app's own explanation on the back.
-  const lesson = grammar ? firstLessonOfTags(grammar.tags ?? []) : word ? firstLessonOfTags(word.tags) : undefined;
+  const lesson = grammar ? homeLessonOfTags(grammar.tags ?? []) : word ? homeLessonOfTags(word.tags) : undefined;
   const front = grammar
     ? grammar.pattern
     : card.skill === 'recognition'
@@ -137,7 +137,7 @@ function ReviewCard({
         {grammar ? 'grammar' : card.skill}
         {lesson !== undefined && (
           <span className="textbook-badge" lang="zh-Hant">
-            {lessonBadge(lesson)}
+            {lessonBadge(lesson.n, lesson.bookId)}
           </span>
         )}
       </div>

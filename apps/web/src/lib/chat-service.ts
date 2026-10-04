@@ -42,7 +42,8 @@ export const DEFAULT_CHAT_SERVICE_CONFIG: ChatServiceConfig = {
  * false means chat behaves exactly as before. */
 export interface ClassChatContext {
   scope: ClassScope;
-  book: Textbook;
+  /** Every imported book of the course, in course order (Phase 13). */
+  books: Textbook[];
 }
 
 export interface SendTurnResult {
@@ -248,8 +249,10 @@ export class ChatService {
     let allowedExtraIds = scenarioExtraIds;
     let validatorExtraIds = scenarioExtraIds;
     if (scenario.textbook && klass) {
-      const scoped = lessonScopedWordIds(klass.book, scenario.textbook.lesson);
-      const lessonOwn = klass.book.lessons[scenario.textbook.lesson - 1]?.vocab ?? [];
+      const { textbookId, lesson } = scenario.textbook;
+      const scoped = lessonScopedWordIds(klass.books, lesson, { bookId: textbookId });
+      const lessonOwn =
+        klass.books.find((b) => b.id === textbookId)?.lessons[lesson - 1]?.vocab ?? [];
       allowedExtraIds = [...new Set([...scenarioExtraIds, ...lessonOwn])].slice(0, 60);
       validatorExtraIds = [
         ...new Set([...scenarioExtraIds, ...scoped, ...derivedCompoundIds(this.lexicon, scoped)]),

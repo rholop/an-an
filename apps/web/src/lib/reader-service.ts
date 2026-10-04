@@ -3,6 +3,7 @@ import {
   buildReaderGenRequest,
   evaluateReaderSentence,
   hashReaderText,
+  levelIndex,
   lessonBadge,
   lessonTag,
   nextNewItems,
@@ -43,7 +44,7 @@ export interface ReaderDeps {
   canGenerate?: () => boolean;
   rand?: () => number;
   /** Phase 12: sentences written for the class's current lesson (the "Lesson" focus). */
-  lesson?: { n: number; sentences: readonly SentenceBankEntry[] };
+  lesson?: { bookId: string; n: number; sentences: readonly SentenceBankEntry[] };
   /** Phase 12: keeps textbook words from lessons beyond current+1 out of the "New words" frontier. */
   classScope?: ClassScope;
 }
@@ -105,14 +106,20 @@ export class ReaderService {
     const lesson = this.deps.lesson;
     if (!lesson) return null;
     const rand = this.deps.rand ?? Math.random;
-    const tag = lessonTag(lesson.n);
-    const pool = lesson.sentences.filter((s) => s.lesson === lesson.n && (s.tags ?? []).includes(tag));
+    const tag = lessonTag(lesson.n, lesson.bookId);
+    // Phase 13: the header level hides sentences harder than the chosen level.
+    const pool = lesson.sentences.filter(
+      (s) =>
+        s.lesson === lesson.n &&
+        (s.tags ?? []).includes(tag) &&
+        levelIndex(s.level) <= levelIndex(req.level),
+    );
     if (pool.length === 0) return null;
     const shown = await this.shownMap(req.sessionIds ?? new Set(), now);
     const unseen = pool.filter((s) => !shown.has(s.id));
     const choices = unseen.length > 0 ? unseen : [...pool].sort((a, b) => (shown.get(a.id) ?? 0) - (shown.get(b.id) ?? 0)).slice(0, 5);
     const entry = choices[Math.floor(rand() * choices.length)]!;
-    const sentence = { ...bankEntryToReaderSentence(entry), sourceLabel: lessonBadge(lesson.n) };
+    const sentence = { ...bankEntryToReaderSentence(entry), sourceLabel: lessonBadge(lesson.n, lesson.bookId) };
     return {
       generated: false,
       pick: {

@@ -2,6 +2,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   dailyPrompt,
   findWordsUsed,
+  courseLessonLevel,
+  filterByLevel,
+  LAIXUE_COURSE,
   lessonBadge,
   pickPromptWords,
   renderBracketsInline,
@@ -65,8 +68,9 @@ function ZhWord({ word }: { word: Word }) {
 export function JournalPage({
   initialPromptId,
   lesson,
+  bookId,
   onDone,
-}: { initialPromptId?: string; lesson?: number; onDone?: () => void } = {}) {
+}: { initialPromptId?: string; lesson?: number; bookId?: string; onDone?: () => void } = {}) {
   const lexiconState = useLexicon();
   const script = useReadingScript();
   const [useFakeLLM, setUseFakeLLM] = useState(false);
@@ -101,13 +105,20 @@ export function JournalPage({
   // Phase 12: while "My class" is on, the current lesson's prompts come first.
   const myClass = useMyClass();
   const textbookState = useTextbook();
-  const classPrompts = useMemo(
-    () =>
-      myClass.enabled && textbookState.status === 'ready'
-        ? (textbookState.book.lessons[(lesson ?? myClass.currentLesson) - 1]?.journalPrompts ?? [])
-        : [],
-    [myClass, textbookState, lesson],
-  );
+  const promptBook = bookId ?? myClass.textbookId;
+  const classPrompts = useMemo(() => {
+    // A "Study this lesson" session (explicit lesson) works for any lesson, class or not.
+    if ((!myClass.enabled && lesson === undefined) || textbookState.status !== 'ready') return [];
+    const prompts =
+      textbookState.books.find((b) => b.id === promptBook)?.lessons[
+        (lesson ?? myClass.currentLesson) - 1
+      ]?.journalPrompts ?? [];
+    // Phase 13: the header level picker shows your level first, easier below, harder hidden —
+    // except in an explicit "Study this lesson" session, which shows the lesson's own prompts.
+    return lesson === undefined
+      ? filterByLevel(prompts, (p) => p.level ?? courseLessonLevel(LAIXUE_COURSE, promptBook, myClass.currentLesson), learnerLevel)
+      : prompts;
+  }, [myClass, textbookState, lesson, promptBook, learnerLevel]);
   const [donePromptIds, setDonePromptIds] = useState<Set<string>>(new Set());
   const [chosenId, setChosenId] = useState<string | null>(initialPromptId ?? null);
   useEffect(() => {
@@ -210,7 +221,7 @@ export function JournalPage({
           <div className="journal-class-prompts" data-testid="class-prompts">
             <p>
               <span className="textbook-badge" lang="zh-Hant">
-                {lessonBadge(lesson ?? myClass.currentLesson)}
+                {lessonBadge(lesson ?? myClass.currentLesson, promptBook)}
               </span>{' '}
               Prompts from class
             </p>

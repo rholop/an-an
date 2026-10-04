@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  classScope,
+  levelIndex,
   buildClozeExercise,
   buildErrorCloze,
   buildLePlacementExercise,
@@ -30,7 +32,7 @@ import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
 import { useMyClass } from '../lib/my-class.js';
-import { useTextbookSentences } from '../lib/textbook-data.js';
+import { sentenceOrdinal, useTextbookSentences } from '../lib/textbook-data.js';
 import './ClozePage.css';
 
 type Outcome = 'correct' | 'correct_wrong_tone' | 'wrong';
@@ -141,7 +143,11 @@ export function ClozePage() {
       bankSentences: [
         ...sentenceBankState.sentences,
         ...(myClass.enabled && textbookSentences.status === 'ready'
-          ? textbookSentences.sentences.filter((x) => (x.lesson ?? 0) <= myClass.currentLesson)
+          ? textbookSentences.sentences.filter(
+              (x) =>
+                (sentenceOrdinal(x) ?? 0) <= classScope(myClass).currentLesson &&
+                levelIndex(x.level) <= levelIndex(learnerLevel),
+            )
           : []),
       ],
       errorItems: errorItems!,

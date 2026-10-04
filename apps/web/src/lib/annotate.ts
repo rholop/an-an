@@ -1,5 +1,5 @@
 import {
-  firstLessonOfTags,
+  homeLessonOfTags,
   Lexicon,
   readingDisplay,
   resolveReading,
@@ -55,8 +55,8 @@ export function annotate(
       }
       gloss = sense?.glossEn ?? matched?.glossEn ?? '';
     }
-    const textbookLesson = word ? firstLessonOfTags(word.tags) : undefined;
-    return { token, reading, level, gloss, wordId, word, sense, textbookLesson };
+    const textbookHome = word ? homeLessonOfTags(word.tags) : undefined;
+    return { token, reading, level, gloss, wordId, word, sense, textbookHome };
   });
 }
 
@@ -99,6 +99,6 @@ export function annotateWord(word: Word, opts: { textbook?: boolean } = {}): Ann
     wordId: word.id,
     word,
     sense,
-    textbookLesson: firstLessonOfTags(word.tags),
+    textbookHome: homeLessonOfTags(word.tags),
   };
 }

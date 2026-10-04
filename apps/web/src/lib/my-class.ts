@@ -1,6 +1,9 @@
 import { useSyncExternalStore } from 'react';
 import {
+  courseBook,
+  courseOrdinal,
   DEFAULT_MY_CLASS,
+  LAIXUE_COURSE,
   lessonCoveredEvidence,
   type Evidence,
   type MyClassSetting,
@@ -16,8 +19,11 @@ import { currentSession, db, onSessionChange } from '../db/instance.js';
  */
 const KEY = 'myClass';
 
-/** What is stored: the setting plus how far lesson evidence has been recorded,
- * so going back a lesson and forward again doesn't re-log everything. */
+/** What is stored: the setting plus how far lesson evidence has been recorded
+ * (a COURSE position: for book 1 it is the lesson number, exactly as in Phase 12),
+ * so going back a lesson and forward again doesn't re-log everything.
+ * Phase 13: `textbookId` + `currentLesson` is "book + lesson"; a Phase 12 value
+ * (laixue-1, n) is already that, so no migration step changes behaviour. */
 export interface StoredMyClass extends MyClassSetting {
   coveredThrough?: number;
 }
@@ -29,12 +35,16 @@ const notify = () => listeners.forEach((l) => l());
 
 function sanitize(v: unknown): StoredMyClass {
   const o = (v ?? {}) as Partial<StoredMyClass>;
+  const book =
+    typeof o.textbookId === 'string' && courseBook(LAIXUE_COURSE, o.textbookId)
+      ? courseBook(LAIXUE_COURSE, o.textbookId)!
+      : courseBook(LAIXUE_COURSE, DEFAULT_MY_CLASS.textbookId)!;
   const lesson = Number.isInteger(o.currentLesson)
-    ? Math.min(10, Math.max(1, o.currentLesson!))
+    ? Math.min(book.lessons, Math.max(1, o.currentLesson!))
     : 1;
   return {
     enabled: o.enabled === true,
-    textbookId: typeof o.textbookId === 'string' ? o.textbookId : DEFAULT_MY_CLASS.textbookId,
+    textbookId: book.id,
     currentLesson: lesson,
     ...(Number.isInteger(o.coveredThrough) ? { coveredThrough: o.coveredThrough } : {}),
   };
@@ -94,43 +104,50 @@ export interface CoverageRecorder {
 }
 
 /**
- * Words and grammar of lessons ≤ current enter the model as `introduced`
- * (never known, no FSRS review of their own). Only lessons not yet covered are
- * recorded. Returns the number of new cards.
+ * Words and grammar of every lesson up to the class position (in COURSE order,
+ * so all earlier books count) enter the model as `introduced` (never known, no
+ * FSRS review of their own). Only lessons not yet covered are recorded.
+ * Returns the number of new cards.
  */
 export async function recordLessonCoverage(
-  book: Textbook,
+  books: Textbook | readonly Textbook[],
   setting: StoredMyClass,
   recorder: CoverageRecorder,
   now: Date = new Date(),
 ): Promise<{ events: number; cards: number; coveredThrough: number }> {
   if (!setting.enabled) return { events: 0, cards: 0, coveredThrough: setting.coveredThrough ?? 0 };
+  const list = Array.isArray(books) ? (books as readonly Textbook[]) : [books as Textbook];
   const from = setting.coveredThrough ?? 0;
-  const all = lessonCoveredEvidence(book, setting.currentLesson, now);
-  const lessonNo = (id: string) => book.lessons.find((l) => l.id === id)?.n ?? 0;
-  const fresh = all.filter((e) => lessonNo(e.context?.refId ?? '') > from);
-  const cards = fresh.length > 0 ? (await recorder.recordBulk(fresh, now)).length : 0;
-  return {
-    events: fresh.length,
-    cards,
-    coveredThrough: Math.max(from, setting.currentLesson),
+  const through =
+    courseOrdinal(LAIXUE_COURSE, setting.textbookId, setting.currentLesson) ?? setting.currentLesson;
+  const all = lessonCoveredEvidence(list, through, now);
+  const ordinalOfLesson = (lessonId: string): number => {
+    for (const b of list) {
+      const l = b.lessons.find((x) => x.id === lessonId);
+      if (l) return courseOrdinal(LAIXUE_COURSE, b.id, l.n) ?? l.n;
+    }
+    return 0;
   };
+  const fresh = all.filter((e) => ordinalOfLesson(e.context?.refId ?? '') > from);
+  const cards = fresh.length > 0 ? (await recorder.recordBulk(fresh, now)).length : 0;
+  return { events: fresh.length, cards, coveredThrough: Math.max(from, through) };
 }
 
 /** Persist + broadcast a change, and record coverage when a book is given. */
 export async function setMyClass(
   patch: Partial<MyClassSetting>,
-  opts: { book?: Textbook; recorder?: CoverageRecorder } = {},
+  opts: { books?: readonly Textbook[]; recorder?: CoverageRecorder } = {},
 ): Promise<{ added: number }> {
   const next = sanitize({ ...current, ...patch });
   current = next;
   loaded = true;
   notify();
   let added = 0;
-  if (opts.book && opts.recorder && next.enabled) {
-    const r = await recordLessonCoverage(opts.book, next, opts.recorder);
+  if (opts.books && opts.recorder && next.enabled) {
+    const r = await recordLessonCoverage(opts.books, next, opts.recorder);
     added = r.cards;
-    current = { ...next, coveredThrough: r.coveredThrough };
+    // Merge into the CURRENT value: another change may have landed while the coverage was recorded.
+    current = { ...current, coveredThrough: Math.max(current.coveredThrough ?? 0, r.coveredThrough) };
     notify();
   }
   await db.settings.put({ key: KEY, value: current });

@@ -9,7 +9,7 @@ test.describe('Textbook / My class (phase 12)', () => {
     page.on('pageerror', (e) => errors.push(String(e)));
 
     await page.goto('/?page=textbook');
-    await expect(page.getByRole('heading', { name: /來學華語/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /來學華語/ }).first()).toBeVisible();
     await expect(page.getByTestId('class-status')).toHaveCount(0); // off by default
 
     await page.getByTestId('my-class-toggle').check();
@@ -34,7 +34,7 @@ test.describe('Textbook / My class (phase 12)', () => {
 
     // A word's popover carries the badge and the book's own gloss.
     await page.locator('.textbook-words .an-token').first().click();
-    await expect(page.getByTestId('textbook-badge').first()).toContainText('來學華語 L4');
+    await expect(page.getByTestId('textbook-badge').first()).toContainText('來學華語 1 · L4');
     // A 404 for the private dialogue is expected where the book text isn't installed (CI).
     const real = errors.filter((e) => !/status of 404/.test(e));
     expect(real, real.join('\n')).toEqual([]);
@@ -133,5 +133,33 @@ test.describe('Textbook / My class (phase 12)', () => {
     await page.getByTestId('my-class-toggle').uncheck();
     await page.getByRole('button', { name: 'Reader', exact: true }).click();
     await expect(page.getByRole('radio', { name: 'Lesson' })).toHaveCount(0);
+  });
+
+  test('the series: four books on one path, a book picker, "My class" at book 2 lesson 3 (Phase 13)', async ({
+    page,
+  }) => {
+    await page.goto('/?page=textbook');
+    await expect(page.getByTestId('book-picker')).toBeVisible();
+    for (const n of [1, 2, 3, 4])
+      await expect(page.getByTestId(`book-progress-laixue-${n}`)).toContainText('of 10 lessons done');
+    await page.getByTestId('book-laixue-3').click(); // jumps to the book's section
+
+    await page.getByTestId('my-class-toggle').check();
+    await page.getByTestId('my-class-book').selectOption('laixue-2');
+    await page.getByTestId('my-class-lesson').selectOption('3');
+    await expect(page.getByTestId('class-status')).toContainText('lesson 3 of 來學華語 第二冊');
+    // everything before it is "past", this lesson is now, the next trickles in, later ones are out
+    await expect(page.getByTestId('lesson-10')).toHaveClass(/textbook-lesson--past/);
+    await expect(page.getByTestId('lesson-laixue-2-3')).toHaveClass(/textbook-lesson--now/);
+    await expect(page.getByTestId('lesson-laixue-2-4')).toHaveClass(/textbook-lesson--next/);
+    await expect(page.getByTestId('lesson-laixue-2-5')).toHaveClass(/textbook-lesson--later/);
+    // the header picker shows the book's level as a hint, and its label carries the CEFR band
+    await expect(page.getByTestId('level-class-hint')).toContainText('A1');
+    await expect(page.getByLabel('My level')).toContainText('L1 入門級 · A1');
+
+    // "Study this lesson" works for a lesson of any book
+    await page.getByTestId('lesson-laixue-2-3').getByRole('button').first().click();
+    await expect(page.getByTestId('textbook-badge').first().or(page.getByText('來學華語 2 · L3').first())).toBeVisible();
+    await expect(page.getByTestId('study-lesson')).toBeEnabled();
   });
 });

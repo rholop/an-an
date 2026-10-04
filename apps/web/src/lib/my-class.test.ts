@@ -114,3 +114,56 @@ describe('recordLessonCoverage (My class → learner model)', () => {
     expect(await db.items.count()).toBe(0);
   });
 });
+
+// ---- Phase 13: book + lesson across the series
+const bookOf = (id: string, prefix: string): Textbook => ({
+  id,
+  titleZh: '',
+  titleEn: '',
+  lessons: Array.from({ length: 10 }, (_, i) => ({
+    ...lesson(i + 1),
+    id: `${id}-L${String(i + 1).padStart(2, '0')}`,
+    vocab: [`${prefix}${i + 1}`],
+    grammar: [`g-${prefix}${i + 1}`],
+  })),
+});
+const b2 = bookOf('laixue-2', 'b');
+
+describe('My class across books', () => {
+  const at = (textbookId: string, currentLesson: number, coveredThrough?: number) => ({
+    enabled: true,
+    textbookId,
+    currentLesson,
+    ...(coveredThrough !== undefined ? { coveredThrough } : {}),
+  });
+
+  it('book 2 lesson 3 covers all of book 1 and lessons 1–3 of book 2, nothing of lesson 5+', async () => {
+    const r = await recordLessonCoverage([book, b2], at('laixue-2', 3), service, NOW);
+    expect(r.coveredThrough).toBe(13);
+    expect(r.cards).toBe(2 * 10 + 2 * 3);
+    expect(await service.getCard({ kind: 'word', id: 'w10' }, 'recognition')).toBeDefined();
+    expect(await service.getCard({ kind: 'word', id: 'b3' }, 'recognition')).toBeDefined();
+    expect(await service.getCard({ kind: 'word', id: 'b5' }, 'recognition')).toBeUndefined();
+    expect(await service.getCard({ kind: 'grammar', id: 'g-b4' }, 'recognition')).toBeUndefined();
+  });
+
+  it('advancing within book 2 only logs the new lesson; a Phase 12 value (laixue-1, 4) is unchanged', async () => {
+    await recordLessonCoverage([book, b2], at('laixue-2', 3), service, NOW);
+    const next = await recordLessonCoverage([book, b2], at('laixue-2', 4, 13), service, NOW);
+    expect(next.cards).toBe(2);
+  });
+
+  it('legacy stored value: coveredThrough was a book-1 lesson number = its course position', async () => {
+    const legacy = await recordLessonCoverage(book, at('laixue-1', 6, 4), service, NOW);
+    expect(legacy.cards).toBe(4); // lessons 5–6 only: 2 words + 2 grammar items
+    expect(legacy.coveredThrough).toBe(6);
+  });
+
+  it('a Phase 12 profile (book 1, lesson n) produces the same queue as before', () => {
+    const lex = new Lexicon(Array.from({ length: 10 }, (_, i) => word(i + 1)));
+    const picked = (s: ReturnType<typeof classScope>) =>
+      nextNewItems([], lex, 10, { currentLevel: 'N1', classScope: s }).map((w) => w.id);
+    expect(picked(classScope(at('laixue-1', 4)))).toEqual(picked(classScope({ enabled: true, textbookId: 'laixue-1', currentLesson: 4 })));
+    expect(picked(classScope(at('laixue-1', 4))).slice(0, 1)).toEqual(['w4']);
+  });
+});

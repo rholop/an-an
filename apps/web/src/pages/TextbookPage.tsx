@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   buildReorderExercise,
+  classLevelHint,
+  classScope,
+  courseBook,
+  courseLessonLevel,
+  courseOrdinal,
+  LAIXUE_COURSE,
+  levelLabel,
   lessonBadge,
   lessonDone,
   lessonProgress,
@@ -35,7 +42,10 @@ import { JournalPage } from './JournalPage.js';
 import { ReviewPage } from './ReviewPage.js';
 import './TextbookPage.css';
 
-type View = { kind: 'path' } | { kind: 'lesson'; n: number } | { kind: 'study'; n: number };
+type View =
+  | { kind: 'path' }
+  | { kind: 'lesson'; bookId: string; n: number }
+  | { kind: 'study'; bookId: string; n: number };
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
@@ -66,10 +76,12 @@ export function TextbookPage() {
       const donePromptIds = new Set(entries.flatMap((e) => (e.promptId ? [e.promptId] : [])));
       setProgress(
         new Map(
-          textbook.book.lessons.map((l) => [
-            l.id,
-            lessonProgress(l, { cards, completedScenarioIds, donePromptIds }),
-          ]),
+          textbook.books.flatMap((b) =>
+            b.lessons.map((l) => [
+              l.id,
+              lessonProgress(l, { cards, completedScenarioIds, donePromptIds }),
+            ] as const),
+          ),
         ),
       );
     })();
@@ -83,7 +95,7 @@ export function TextbookPage() {
   if (textbook.status === 'missing') {
     return (
       <div className="textbook-page">
-        <h1 lang="zh-Hant">來學華語 第一冊</h1>
+        <h1 lang="zh-Hant">來學華語</h1>
         <p>
           The textbook data isn&apos;t built yet. Run <code>pnpm curriculum:build</code> and{' '}
           <code>pnpm --filter @anan/web sync:textbook</code>.
@@ -92,96 +104,138 @@ export function TextbookPage() {
     );
   }
 
-  const { book, data } = textbook;
+  const { books, data: allData } = textbook;
   const lexicon = lexiconState.lexicon;
   const sentences = sentencesState.status === 'ready' ? sentencesState.sentences : [];
+  const scope = classScope(myClass);
 
   if (view.kind === 'study') {
+    const book = books.find((b) => b.id === view.bookId)!;
     const lesson = book.lessons[view.n - 1]!;
     return (
       <StudySession
         lesson={lesson}
-        data={data}
+        bookId={view.bookId}
+        data={allData.find((d) => d.textbook.id === view.bookId)!}
         lexicon={lexicon}
-        sentences={sentences}
+        sentences={sentences.filter((s) => (s.textbookId ?? 'laixue-1') === view.bookId)}
         onExit={() => {
           setTick((t) => t + 1);
-          setView({ kind: 'lesson', n: view.n });
+          setView({ kind: 'lesson', bookId: view.bookId, n: view.n });
         }}
       />
     );
   }
 
   if (view.kind === 'lesson') {
+    const book = books.find((b) => b.id === view.bookId)!;
     return (
       <LessonDetail
         lesson={book.lessons[view.n - 1]!}
-        data={data}
+        bookId={view.bookId}
+        data={allData.find((d) => d.textbook.id === view.bookId)!}
         lexicon={lexicon}
-        sentences={sentences}
+        sentences={sentences.filter((s) => (s.textbookId ?? 'laixue-1') === view.bookId)}
         script={script}
         classOn={myClass.enabled}
-        canStudy={myClass.enabled && view.n <= myClass.currentLesson}
         progress={progress.get(book.lessons[view.n - 1]!.id)}
         onBack={() => setView({ kind: 'path' })}
-        onStudy={() => setView({ kind: 'study', n: view.n })}
+        onStudy={() => setView({ kind: 'study', bookId: view.bookId, n: view.n })}
       />
     );
   }
 
+  const jump = (id: string) =>
+    document.getElementById(`textbook-book-${id}`)?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+
   return (
     <div className="textbook-page">
       <h1>
-        <span lang="zh-Hant">來學華語 第一冊</span> <small>Let&apos;s Learn Mandarin 1</small>
+        <span lang="zh-Hant">{LAIXUE_COURSE.titleZh}</span>{' '}
+        <small>{LAIXUE_COURSE.titleEn}</small>
       </h1>
-      <MyClassPanel book={book} />
+      <MyClassPanel books={books} />
       {myClass.enabled && (
         <p className="textbook-here" data-testid="class-status">
-          We&apos;re on lesson {myClass.currentLesson} in class.
+          {myClass.textbookId === 'laixue-1'
+            ? `We're on lesson ${myClass.currentLesson} in class.`
+            : `We're on lesson ${myClass.currentLesson} of ${courseBook(LAIXUE_COURSE, myClass.textbookId)?.titleZh ?? myClass.textbookId} in class.`}
         </p>
       )}
-      <ol className="textbook-path">
-        {book.lessons.map((l) => {
-          const p = progress.get(l.id);
-          const state = !myClass.enabled
-            ? 'idle'
-            : l.n < myClass.currentLesson
-              ? 'past'
-              : l.n === myClass.currentLesson
-                ? 'now'
-                : l.n === myClass.currentLesson + 1
-                  ? 'next'
-                  : 'later';
-          return (
-            <li
-              key={l.id}
-              className={`textbook-lesson textbook-lesson--${state}`}
-              data-testid={`lesson-${l.n}`}
-            >
-              <button
-                className="textbook-lesson-btn"
-                onClick={() => setView({ kind: 'lesson', n: l.n })}
-              >
-                <span className="textbook-lesson-n">{l.n}</span>
-                <span className="textbook-lesson-title">
-                  <span lang="zh-Hant">{l.titleZh}</span>
-                  <small>
-                    {l.titleEn} · {l.topic}
-                  </small>
-                </span>
-                {state === 'now' && <span className="textbook-chip">this week</span>}
-                {state === 'next' && (
-                  <span className="textbook-chip textbook-chip--soft">next</span>
-                )}
-                {p && lessonDone(p) && (
-                  <span className="textbook-chip textbook-chip--good">done</span>
-                )}
+      {books.length > 1 && (
+        <nav className="textbook-books" aria-label="Books" data-testid="book-picker">
+          {books.map((b) => {
+            const cb = courseBook(LAIXUE_COURSE, b.id);
+            return (
+              <button key={b.id} type="button" onClick={() => jump(b.id)} data-testid={`book-${b.id}`}>
+                <span lang="zh-Hant">{b.titleZh}</span>
+                {cb && <small> · {cb.levelLabel}</small>}
               </button>
-              {p && myClass.enabled && <ProgressRow p={p} />}
-            </li>
-          );
-        })}
-      </ol>
+            );
+          })}
+        </nav>
+      )}
+      {books.map((book) => {
+        const cb = courseBook(LAIXUE_COURSE, book.id);
+        const done = book.lessons.filter((l) => {
+          const p = progress.get(l.id);
+          return p && lessonDone(p);
+        }).length;
+        return (
+          <section key={book.id} id={`textbook-book-${book.id}`} className="textbook-book" aria-label={book.titleEn}>
+            <h2>
+              <span lang="zh-Hant">{book.titleZh}</span> <small>{book.titleEn}</small>
+            </h2>
+            <p className="textbook-muted" data-testid={`book-progress-${book.id}`}>
+              {cb ? `${cb.levelLabel} · ` : ''}
+              {done} of {book.lessons.length} lessons done
+            </p>
+            <ol className="textbook-path">
+              {book.lessons.map((l) => {
+                const p = progress.get(l.id);
+                const ord = courseOrdinal(LAIXUE_COURSE, book.id, l.n) ?? 0;
+                const state = !myClass.enabled
+                  ? 'idle'
+                  : ord < scope.currentLesson
+                    ? 'past'
+                    : ord === scope.currentLesson
+                      ? 'now'
+                      : ord === scope.currentLesson + 1
+                        ? 'next'
+                        : 'later';
+                return (
+                  <li
+                    key={l.id}
+                    className={`textbook-lesson textbook-lesson--${state}`}
+                    data-testid={book.id === 'laixue-1' ? `lesson-${l.n}` : `lesson-${book.id}-${l.n}`}
+                  >
+                    <button
+                      className="textbook-lesson-btn"
+                      onClick={() => setView({ kind: 'lesson', bookId: book.id, n: l.n })}
+                    >
+                      <span className="textbook-lesson-n">{l.n}</span>
+                      <span className="textbook-lesson-title">
+                        <span lang="zh-Hant">{l.titleZh}</span>
+                        <small>
+                          {l.titleEn} · {l.topic}
+                        </small>
+                      </span>
+                      {state === 'now' && <span className="textbook-chip">this week</span>}
+                      {state === 'next' && (
+                        <span className="textbook-chip textbook-chip--soft">next</span>
+                      )}
+                      {p && lessonDone(p) && (
+                        <span className="textbook-chip textbook-chip--good">done</span>
+                      )}
+                    </button>
+                    {p && myClass.enabled && <ProgressRow p={p} />}
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        );
+      })}
     </div>
   );
 }
@@ -200,17 +254,18 @@ function ProgressRow({ p }: { p: LessonProgress }) {
   );
 }
 
-/** Settings: "My class" on/off and the current lesson. Synced with the profile. */
-function MyClassPanel({ book }: { book: Textbook }) {
+/** Settings: "My class" on/off and the class position (book + lesson). Synced with the profile. */
+function MyClassPanel({ books }: { books: Textbook[] }) {
   const myClass = useMyClass();
   const [note, setNote] = useState<string | null>(null);
+  const book = books.find((b) => b.id === myClass.textbookId) ?? books[0]!;
 
-  async function apply(patch: { enabled?: boolean; currentLesson?: number }) {
+  async function apply(patch: { enabled?: boolean; textbookId?: string; currentLesson?: number }) {
     const next = { ...myClass, ...patch };
-    const { added } = await setMyClass(patch, { book, recorder: learnerService });
+    const { added } = await setMyClass(patch, { books, recorder: learnerService });
     setNote(
       next.enabled && added > 0
-        ? `Added ${added} words and grammar points from lessons 1–${next.currentLesson} to your reviews.`
+        ? `Added ${added} words and grammar points from the lessons up to ${lessonBadge(next.currentLesson, next.textbookId)} to your reviews.`
         : null,
     );
   }
@@ -226,6 +281,22 @@ function MyClassPanel({ book }: { book: Textbook }) {
         />{' '}
         My class — I&apos;m studying this textbook
       </label>
+      {books.length > 1 && (
+        <label>
+          Book:{' '}
+          <select
+            value={book.id}
+            onChange={(e) => void apply({ textbookId: e.target.value, currentLesson: 1 })}
+            data-testid="my-class-book"
+          >
+            {books.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.titleZh}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <label>
         Current lesson in class:{' '}
         <select
@@ -240,10 +311,17 @@ function MyClassPanel({ book }: { book: Textbook }) {
           ))}
         </select>
       </label>
+      {myClass.enabled && (
+        <p className="textbook-muted" data-testid="class-level-hint-textbook">
+          {classLevelHint(book.id, myClass.currentLesson)}. Your level picker is not changed for you
+          — {levelLabel(courseLessonLevel(LAIXUE_COURSE, book.id, myClass.currentLesson))} would
+          match this lesson.
+        </p>
+      )}
       <p className="textbook-muted">
-        Words and grammar from lessons up to the current one join your reviews (never marked known
-        by themselves). Going back a lesson deletes nothing. Turn this off and the app behaves
-        exactly as it did before.
+        Words and grammar from every earlier lesson of the course (all earlier books too) and up to
+        the current one join your reviews (never marked known by themselves). Going back a lesson
+        deletes nothing. Turn this off and the app behaves exactly as it did before.
       </p>
       {note && <p role="status">{note}</p>}
     </section>
@@ -252,23 +330,23 @@ function MyClassPanel({ book }: { book: Textbook }) {
 
 function LessonDetail({
   lesson,
+  bookId,
   data,
   lexicon,
   sentences,
   script,
   classOn,
-  canStudy,
   progress,
   onBack,
   onStudy,
 }: {
   lesson: Lesson;
+  bookId: string;
   data: BookData;
   lexicon: Lexicon;
   sentences: SentenceBankEntry[];
   script: AnnotationScript;
   classOn: boolean;
-  canStudy: boolean;
   progress: LessonProgress | undefined;
   onBack: () => void;
   onStudy: () => void;
@@ -286,28 +364,15 @@ function LessonDetail({
       <button onClick={onBack}>← All lessons</button>
       <h1>
         <span className="textbook-badge" lang="zh-Hant">
-          {lessonBadge(lesson.n)}
+          {lessonBadge(lesson.n, bookId)}
         </span>{' '}
         <span lang="zh-Hant">{lesson.titleZh}</span> <small>{lesson.titleEn}</small>
       </h1>
       <p className="textbook-muted">Topic: {lesson.topic}</p>
       {progress && classOn && <ProgressRow p={progress} />}
-      <button
-        className="textbook-study-btn"
-        disabled={!canStudy}
-        onClick={onStudy}
-        title={canStudy ? undefined : 'Turn on My class and reach this lesson to study it'}
-        data-testid="study-lesson"
-      >
+      <button className="textbook-study-btn" onClick={onStudy} data-testid="study-lesson">
         Study this lesson
       </button>
-      {!canStudy && (
-        <p className="textbook-muted">
-          {classOn
-            ? 'The class has not reached this lesson yet.'
-            : 'Turn on My class to study lessons.'}
-        </p>
-      )}
 
       <h2>By the end you can…</h2>
       <ul>
@@ -361,7 +426,7 @@ function LessonDetail({
       ))}
 
       <h2>Dialogue</h2>
-      <Dialogue lesson={lesson} lexicon={lexicon} script={script} />
+      <Dialogue lesson={lesson} bookId={bookId} lexicon={lexicon} script={script} />
     </div>
   );
 }
@@ -373,23 +438,25 @@ function bookGloss(w: Word): string {
 /** The book's own dialogue: private, fetched through the proxy behind the household code. */
 function Dialogue({
   lesson,
+  bookId,
   lexicon,
   script,
 }: {
   lesson: Lesson;
+  bookId: string;
   lexicon: Lexicon;
   script: AnnotationScript;
 }) {
   const [res, setRes] = useState<PrivateResult<Record<string, PrivateDialogue>> | null>(null);
   useEffect(() => {
     let cancelled = false;
-    fetchPrivateTextbook<Record<string, PrivateDialogue>>('dialogues').then((r) => {
+    fetchPrivateTextbook<Record<string, PrivateDialogue>>('dialogues', bookId).then((r) => {
       if (!cancelled) setRes(r);
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [bookId]);
   if (!res) return <p className="textbook-muted">Loading…</p>;
   if (res.status !== 'ok') {
     return (
@@ -431,12 +498,14 @@ const STEPS: Array<{ id: Step; label: string }> = [
 
 function StudySession({
   lesson,
+  bookId,
   data,
   lexicon,
   sentences,
   onExit,
 }: {
   lesson: Lesson;
+  bookId: string;
   data: BookData;
   lexicon: Lexicon;
   sentences: SentenceBankEntry[];
@@ -466,7 +535,7 @@ function StudySession({
     <div className="textbook-study" data-testid="study-session">
       <div className="textbook-study-bar">
         <strong>
-          <span lang="zh-Hant">{lessonBadge(lesson.n)}</span> · Step {i + 1} of {steps.length}:{' '}
+          <span lang="zh-Hant">{lessonBadge(lesson.n, bookId)}</span> · Step {i + 1} of {steps.length}:{' '}
           {step.label}
         </strong>
         <span>
@@ -480,6 +549,7 @@ function StudySession({
       {step.id === 'grammar' && (
         <GrammarStep
           lesson={lesson}
+          bookId={bookId}
           data={data}
           lexicon={lexicon}
           sentences={sentences}
@@ -493,6 +563,7 @@ function StudySession({
         <JournalPage
           key={lesson.id}
           lesson={lesson.n}
+          bookId={bookId}
           initialPromptId={(lesson.journalPrompts[0] ?? {}).id}
           onDone={next}
         />
@@ -533,12 +604,14 @@ function VocabStep({ lesson, onDone }: { lesson: Lesson; onDone: () => void }) {
 
 function GrammarStep({
   lesson,
+  bookId,
   data,
   lexicon,
   sentences,
   onDone,
 }: {
   lesson: Lesson;
+  bookId: string;
   data: BookData;
   lexicon: Lexicon;
   sentences: SentenceBankEntry[];
@@ -548,7 +621,7 @@ function GrammarStep({
   const { level } = useCurrentLevel();
   void level;
   const [exercises] = useState<GrammarExercise[]>(() =>
-    buildGrammarExercises(lesson, data.grammarItems, sentences),
+    buildGrammarExercises(lesson, data.grammarItems, sentences, { bookId }),
   );
   const [privateEx, setPrivateEx] = useState<PrivateExample[]>([]);
   const [idx, setIdx] = useState(0);
@@ -556,11 +629,11 @@ function GrammarStep({
 
   // The book's own worked examples (private) add extra "put the words in order" items when available.
   useEffect(() => {
-    fetchPrivateTextbook<Record<string, PrivateExample[]>>('examples').then((r) => {
+    fetchPrivateTextbook<Record<string, PrivateExample[]>>('examples', bookId).then((r) => {
       if (r.status === 'ok')
         setPrivateEx((r.data[lesson.id] ?? []).filter((e) => !/[A-Za-z]/.test(e.zh)).slice(0, 3));
     });
-  }, [lesson.id]);
+  }, [lesson.id, bookId]);
 
   const total = exercises.length;
   const current = exercises[idx];

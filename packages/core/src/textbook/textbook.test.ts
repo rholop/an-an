@@ -388,3 +388,21 @@ describe('Phase 12 "My class" setting migrates to (laixue-1, n)', () => {
     }
   });
 });
+
+describe('level filter for textbook content', () => {
+  const items = [
+    { id: 'a', level: 'N1' as const },
+    { id: 'b', level: 'L1' as const },
+    { id: 'c', level: 'L2' as const },
+    { id: 'd', level: 'L1' as const },
+    { id: 'e', level: 'L3' as const },
+  ];
+  it('shows the chosen level first, easier ones below, hides harder ones', async () => {
+    const { filterByLevel, levelFit, classLevelHint } = await import('./level-filter.js');
+    expect(filterByLevel(items, (x) => x.level, 'L1').map((x) => x.id)).toEqual(['b', 'd', 'a']);
+    expect(filterByLevel(items, (x) => x.level, 'L2').map((x) => x.id)).toEqual(['c', 'b', 'd', 'a']);
+    expect(filterByLevel(items, (x) => x.level, 'N1').map((x) => x.id)).toEqual(['a']);
+    expect(levelFit('L2', 'L1')).toBe('harder');
+    expect(classLevelHint('laixue-2', 3)).toBe('來學華語 第二冊 (A1) ≈ L1 入門級 · A1');
+  });
+});

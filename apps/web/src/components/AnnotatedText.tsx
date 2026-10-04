@@ -28,7 +28,8 @@ export interface AnnotatedToken {
   word?: Word;
   sense?: Sense;
   /** Phase 12: the first 來學華語 lesson this word appears in, for the badge. */
-  textbookLesson?: number;
+  /** Where in the course the word is first taught (book + lesson). */
+  textbookHome?: { bookId: string; n: number };
   /** Phase 2 §1 pinyin fading (readingDisplay()), set by the caller per-token
    * from the learner's own card. Only consulted when the page mode is
    * 'auto'; undefined (no card yet, e.g. a never-seen word) behaves like
@@ -251,12 +252,12 @@ function Popover({
           <span className="an-popover-source">教育部《重編國語辭典修訂本》</span>
         </div>
       )}
-      {(at.level || at.textbookLesson !== undefined) && (
+      {(at.level || at.textbookHome !== undefined) && (
         <div className="an-popover-level">
           {at.level}
-          {at.textbookLesson !== undefined && (
+          {at.textbookHome !== undefined && (
             <span className="textbook-badge" lang="zh-Hant" data-testid="textbook-badge">
-              {lessonBadge(at.textbookLesson)}
+              {lessonBadge(at.textbookHome.n, at.textbookHome.bookId)}
             </span>
           )}
         </div>

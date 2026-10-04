@@ -218,3 +218,8 @@ body {
 .chat-class-section h2 { font-size: 1rem; }
 .journal-class-prompts { margin-bottom: 0.75rem; }
 .garden-textbook-filter { display: inline-block; margin: 0.5rem 0; font-size: 0.9rem; }
+
+.level-class-hint {
+  font-size: 0.8rem;
+  color: var(--muted, #666);
+}

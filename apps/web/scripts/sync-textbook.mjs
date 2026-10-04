@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
-const BOOKS = ['laixue-1'];
+const BOOKS = ['laixue-1', 'laixue-2', 'laixue-3', 'laixue-4'];
 
 for (const id of BOOKS) {
   const src = path.join(REPO_ROOT, 'data/curriculum', id, 'book.json');

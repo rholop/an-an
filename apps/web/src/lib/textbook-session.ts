@@ -1,5 +1,8 @@
 import {
   buildGrammarCloze,
+  courseOrdinal,
+  homeLessonOfTags,
+  LAIXUE_COURSE,
   type GrammarClozeExercise,
   type GrammarItem,
   type Lesson,
@@ -29,7 +32,7 @@ export function buildGrammarExercises(
   lesson: Pick<Lesson, 'n' | 'grammar'>,
   grammarItems: readonly GrammarItem[],
   sentences: readonly SentenceBankEntry[],
-  opts: { perPoint?: number; max?: number; rng?: () => number } = {},
+  opts: { perPoint?: number; max?: number; rng?: () => number; bookId?: string } = {},
 ): GrammarExercise[] {
   const rng = opts.rng ?? Math.random;
   const perPoint = opts.perPoint ?? 2;
@@ -37,12 +40,12 @@ export function buildGrammarExercises(
   const byId = new Map(grammarItems.map((g) => [g.id, g]));
   const lessonSentences = sentences.filter((s) => s.lesson === lesson.n);
   // Distractors: the signal words of every point up to this lesson.
+  const here = courseOrdinal(LAIXUE_COURSE, opts.bookId ?? 'laixue-1', lesson.n) ?? lesson.n;
   const pool = grammarItems
-    .filter((g) =>
-      (g.tags ?? []).some(
-        (t) => /:L(\d\d)$/.test(t) && Number(/:L(\d\d)$/.exec(t)![1]) <= lesson.n,
-      ),
-    )
+    .filter((g) => {
+      const home = homeLessonOfTags(g.tags ?? []);
+      return home !== undefined && home.ordinal <= here;
+    })
     .flatMap((g) => g.focus ?? []);
   const out: GrammarExercise[] = [];
   for (const gid of lesson.grammar) {

@@ -32,7 +32,7 @@ export function parseVocabIndex(pageTexts: string[]): IndexEntry[] {
   let buf: string[] = [];
   for (const text of pageTexts) {
     for (const raw of text.split('\n')) {
-      const l = raw.replace(/ /g, ' ').trim();
+      const l = raw.replace(/\u00a0/g, ' ').trim();
       if (!l || HEADER.has(l) || /^\d{3}$/.test(l) || /^[A-Z]$/.test(l)) continue;
       const m = LOCATOR.exec(l);
       if (!m) {

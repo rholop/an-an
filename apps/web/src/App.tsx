@@ -1,5 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { levelLabel, levelUpSuggestion, type Level } from '@anan/core';
+import {
+  bookNumber,
+  classLevelHint,
+  LAIXUE_COURSE,
+  levelLabel,
+  levelUpSuggestion,
+  type Level,
+} from '@anan/core';
 import { LevelPicker } from './components/LevelPicker.js';
 import { MoreSheet, TabBar } from './components/TabBar.js';
 import { ThemeToggle } from './components/ThemeToggle.js';
@@ -76,6 +83,11 @@ export type Route =
 function LevelHeader({ route }: { route: Route }) {
   const lexiconState = useLexicon();
   const { level, setLevel } = useCurrentLevel();
+  // Phase 13: while "My class" is on, show which level the current book matches (a hint; never changes the choice).
+  const myClassHint = useMyClass();
+  const classOn = myClassHint.enabled;
+  const classBook = myClassHint.textbookId;
+  const classLesson = myClassHint.currentLesson;
   const [suggestion, setSuggestion] = useState<Level | null>(null);
   const [dismissed, setDismissed] = useState<Level | null>(null);
 
@@ -107,6 +119,11 @@ function LevelHeader({ route }: { route: Route }) {
     <header className="app-header">
       <ProfileChip />
       <LevelPicker value={level} onChange={(l) => void setLevel(l)} />
+      {classOn && (
+        <span className="level-class-hint" data-testid="level-class-hint">
+          {classLevelHint(classBook, classLesson)}
+        </span>
+      )}
       <div className="header-theme">
         <ThemeToggle />
       </div>
@@ -223,7 +240,7 @@ export function App() {
           disabled={route === 'textbook'}
           data-testid="nav-textbook"
         >
-          Textbook{myClass.enabled ? ` · L${myClass.currentLesson}` : ''}
+          Textbook{myClass.enabled ? ` · ${myClass.textbookId === 'laixue-1' ? '' : bookNumber(LAIXUE_COURSE, myClass.textbookId) + '.'}L${myClass.currentLesson}` : ''}
         </button>
         <button onClick={() => setRoute('placement')} disabled={route === 'placement'}>
           Placement
@@ -267,7 +284,7 @@ export function App() {
           route={route}
           onGo={go}
           onClose={() => setMoreOpen(false)}
-          textbookSuffix={myClass.enabled ? ` · L${myClass.currentLesson}` : ''}
+          textbookSuffix={myClass.enabled ? ` · ${myClass.textbookId === 'laixue-1' ? '' : bookNumber(LAIXUE_COURSE, myClass.textbookId) + '.'}L${myClass.currentLesson}` : ''}
         />
       )}
     </div>

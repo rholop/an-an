@@ -35,7 +35,7 @@ export function parseDialogue(pageText: string): { lines: DialogueLine[]; droppe
       dropped.push(l);
       continue;
     }
-    // Speakers may be written with an ideographic space inside (杜　翔：…).
+    // Speakers may be written with an ideographic space inside (杜(ideographic space)翔：…).
     const m = l.match(/^([^：:，。？！、「」（）()]{1,6}?)\s*[：:]\s*(.*)$/u);
     if (m && m[1]) {
       out.push({ speaker: m[1].replace(/\s+/g, ''), zh: m[2]!.trim() });
@@ -46,14 +46,14 @@ export function parseDialogue(pageText: string): { lines: DialogueLine[]; droppe
     }
   }
   // A lesson that is a narrative paragraph (book 2 lesson 8) has no speakers:
-  // keep it as narration, one entry per paragraph (paragraphs open with 　　).
+  // keep it as narration, one entry per paragraph (paragraphs open with (ideographic space)(ideographic space)).
   if (out.length === 0) {
     const paras: string[] = [];
     const untrimmed = body.split('\n').map((l) => l.replace(/\u00a0/g, ' ').replace(/\s+$/, ''));
     for (const l of untrimmed) {
       const t = l.trim();
       if (!CJK.test(t) || /^(\d+\.|綜合活動)/.test(t)) continue;
-      if (/^　　/.test(l) || paras.length === 0) paras.push(t);
+      if (/^\u3000\u3000/.test(l) || paras.length === 0) paras.push(t);
       else paras[paras.length - 1] += t;
     }
     if (paras.length) return { lines: paras.map((zh) => ({ speaker: '', zh })), dropped: [] };

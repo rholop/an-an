@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
+  courseOrdinal,
+  LAIXUE_COURSE,
   SentenceBankFileSchema,
   type GrammarItem,
   type SentenceBankEntry,
@@ -8,6 +10,7 @@ import {
 } from '@anan/core';
 import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
 
+/** The book Phase 12 shipped; the default for "My class" and the private-text calls. */
 export const TEXTBOOK_ID = 'laixue-1';
 
 /** book.json as shipped: structure + grammar items + the book's gloss per word. */
@@ -24,29 +27,38 @@ export interface BookData extends TextbookFile {
   }>;
 }
 
+/** Phase 13: the whole series. Books that were not imported are simply absent (hidden in the UI). */
 export type TextbookLoadState =
   | { status: 'loading' }
   | { status: 'missing' }
-  | { status: 'ready'; data: BookData; book: Textbook };
+  | { status: 'ready'; data: BookData[]; books: Textbook[] };
 
-const base = () => `${import.meta.env.BASE_URL}textbook/${TEXTBOOK_ID}`;
+const bookBase = (id: string) => `${import.meta.env.BASE_URL}textbook/${id}`;
 
-let cached: Promise<BookData | null> | undefined;
-function loadBook(): Promise<BookData | null> {
-  cached ??= fetch(`${base()}/book.json`)
-    .then((r) => (r.ok ? (r.json() as Promise<BookData>) : null))
-    .catch(() => null);
+let cached: Promise<BookData[]> | undefined;
+function loadBooks(): Promise<BookData[]> {
+  cached ??= Promise.all(
+    LAIXUE_COURSE.books.map((b) =>
+      fetch(`${bookBase(b.id)}/book.json`)
+        .then((r) => (r.ok ? (r.json() as Promise<BookData>) : null))
+        .catch(() => null),
+    ),
+  ).then((all) => all.filter((x): x is BookData => !!x));
   return cached;
 }
 
-/** Fetches the textbook structure once (a static file with no book text). */
+/** Fetches the textbook structure once (static files with no book text). */
 export function useTextbook(): TextbookLoadState {
   const [state, setState] = useState<TextbookLoadState>({ status: 'loading' });
   useEffect(() => {
     let cancelled = false;
-    loadBook().then((data) => {
+    loadBooks().then((data) => {
       if (cancelled) return;
-      setState(data ? { status: 'ready', data, book: data.textbook } : { status: 'missing' });
+      setState(
+        data.length > 0
+          ? { status: 'ready', data, books: data.map((d) => d.textbook) }
+          : { status: 'missing' },
+      );
     });
     return () => {
       cancelled = true;
@@ -60,14 +72,28 @@ export type TextbookSentencesState =
 
 let sentencesCache: Promise<SentenceBankEntry[]> | undefined;
 export function loadTextbookSentences(): Promise<SentenceBankEntry[]> {
-  sentencesCache ??= fetch(`${base()}/sentences.json`)
-    .then((r) => (r.ok ? r.json() : null))
-    .then((j) => (j ? SentenceBankFileSchema.parse(j).sentences : []))
-    .catch(() => []);
+  sentencesCache ??= Promise.all(
+    LAIXUE_COURSE.books.map((b) =>
+      fetch(`${bookBase(b.id)}/sentences.json`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => (j ? SentenceBankFileSchema.parse(j).sentences : []))
+        .catch(() => [] as SentenceBankEntry[]),
+    ),
+  ).then((all) => all.flat());
   return sentencesCache;
 }
 
-/** The generated lesson sentences (tagged textbook:laixue-1 / …:Lnn). */
+/** Which book a textbook sentence belongs to (Phase 12 files carry no `textbookId`). */
+export function sentenceBookId(s: Pick<SentenceBankEntry, 'textbookId'>): string {
+  return s.textbookId ?? TEXTBOOK_ID;
+}
+
+/** Course position of a textbook sentence's lesson (undefined for non-textbook entries). */
+export function sentenceOrdinal(s: SentenceBankEntry): number | undefined {
+  return s.lesson === undefined ? undefined : courseOrdinal(LAIXUE_COURSE, sentenceBookId(s), s.lesson);
+}
+
+/** The generated lesson sentences of every book (tagged textbook:laixue-N / …:Lnn). */
 export function useTextbookSentences(enabled = true): TextbookSentencesState {
   const [state, setState] = useState<TextbookSentencesState>({ status: 'loading' });
   useEffect(() => {
@@ -105,9 +131,10 @@ export type PrivateResult<T> =
  */
 export async function fetchPrivateTextbook<T>(
   kind: 'dialogues' | 'examples',
+  bookId: string = TEXTBOOK_ID,
 ): Promise<PrivateResult<T>> {
   try {
-    const res = await fetch(`${proxyBase()}/v1/textbook/${TEXTBOOK_ID}/${kind}`, {
+    const res = await fetch(`${proxyBase()}/v1/textbook/${bookId}/${kind}`, {
       headers: authHeaders(),
     });
     if (res.status === 401) {

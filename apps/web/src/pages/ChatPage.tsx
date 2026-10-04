@@ -3,6 +3,11 @@ import {
   classScope,
   formatDuration,
   isTextbookScenarioUnlocked,
+  classLevelHint,
+  courseLessonLevel,
+  courseOrdinal,
+  filterByLevel,
+  LAIXUE_COURSE,
   lessonBadge,
   scenarioMatchesLevels,
   type Level,
@@ -81,7 +86,7 @@ export function ChatPage({
       // Phase 12: read fresh each turn, so changing the class lesson applies at once.
       () =>
         textbookState.status === 'ready'
-          ? { scope: classScope(peekMyClass()), book: textbookState.book }
+          ? { scope: classScope(peekMyClass()), books: textbookState.books }
           : undefined,
     );
   }, [lexiconState, tutorLLM, textbookState]);
@@ -364,12 +369,14 @@ export function ChatPage({
         </div>
         {myClass.enabled && (
           <section className="chat-class-section" aria-label="My class scenarios">
-            <h2 lang="zh-Hant">來學華語 · My class (lesson {myClass.currentLesson})</h2>
+            <h2 lang="zh-Hant">
+              來學華語 · My class ({lessonBadge(myClass.currentLesson, myClass.textbookId)})
+            </h2>
+            <p className="chat-level-note" data-testid="class-level-hint">
+              {classLevelHint(myClass.textbookId, myClass.currentLesson)}
+            </p>
             <div className="chat-scenario-list">
-              {scenariosState.scenarios
-                .filter((sc) => sc.textbook?.textbookId === myClass.textbookId)
-                .sort((a, b) => a.textbook!.lesson - b.textbook!.lesson)
-                .map((sc) => {
+              {classScenarios(scenariosState.scenarios, myClass, learnerLevel).map((sc) => {
                   const unlocked = isTextbookScenarioUnlocked(sc, myClass);
                   return (
                     <button
@@ -380,14 +387,14 @@ export function ChatPage({
                       title={
                         unlocked
                           ? undefined
-                          : `Unlocks when the class reaches lesson ${sc.textbook!.lesson}`
+                          : `Unlocks when the class reaches ${lessonBadge(sc.textbook!.lesson, sc.textbook!.textbookId)}`
                       }
                       data-testid={`class-scenario-${sc.id}`}
                     >
                       <div className="chat-scenario-title">{sc.title}</div>
                       <div className="chat-scenario-range">
                         <span className="textbook-badge" lang="zh-Hant">
-                          {lessonBadge(sc.textbook!.lesson)}
+                          {lessonBadge(sc.textbook!.lesson, sc.textbook!.textbookId)}
                         </span>
                         {!unlocked && ' · 🔒 locked'}
                       </div>
@@ -591,5 +598,30 @@ function ChatSummaryPanel({ scenario, summary }: { scenario: Scenario; summary: 
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * Phase 13: the class section lists the textbook scenarios of every book up to
+ * the class position (earlier books count as covered) plus the rest of the
+ * current book (locked). The header level picker filters them like everything
+ * else: your level first, easier below, harder hidden.
+ */
+function classScenarios(
+  all: readonly Scenario[],
+  klass: { textbookId: string; currentLesson: number },
+  chosen: Level,
+): Scenario[] {
+  const here = courseOrdinal(LAIXUE_COURSE, klass.textbookId, klass.currentLesson) ?? 0;
+  const ord = (sc: Scenario) =>
+    courseOrdinal(LAIXUE_COURSE, sc.textbook!.textbookId, sc.textbook!.lesson) ?? 99;
+  const visible = all
+    .filter((sc) => sc.textbook)
+    .filter((sc) => ord(sc) <= here || sc.textbook!.textbookId === klass.textbookId)
+    .sort((a, b) => ord(a) - ord(b));
+  return filterByLevel(
+    visible,
+    (sc) => courseLessonLevel(LAIXUE_COURSE, sc.textbook!.textbookId, sc.textbook!.lesson),
+    chosen,
   );
 }

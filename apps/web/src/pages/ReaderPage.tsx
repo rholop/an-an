@@ -162,7 +162,7 @@ function ReaderView({
         classScope: classScope(myClass),
         lesson:
           myClass.enabled && textbookSentences.status === 'ready'
-            ? { n: myClass.currentLesson, sentences: textbookSentences.sentences }
+            ? { bookId: myClass.textbookId, n: myClass.currentLesson, sentences: textbookSentences.sentences }
             : undefined,
         scenarios: scenarios.status === 'ready' ? scenarios.scenarios : [],
         // Live generation needs the household code (phase 8); dev has no gate.
