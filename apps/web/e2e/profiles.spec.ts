@@ -104,12 +104,12 @@ test.describe('household code, who are you, switching', () => {
     await switchTo('冠宇');
     expect(await page.evaluate(() => window.__anan.profileId)).toBe('guanyu');
     expect(await page.evaluate(() => window.__anan.db.items.count())).toBe(0); // 冠宇's untouched queue
-    await page.getByRole('button', { name: 'Review' }).click();
+    await page.getByRole('button', { name: 'Review', exact: true }).click();
     await expect(page.getByText(/Nothing due right now/)).toBeVisible();
 
     await switchTo('羅恩');
     expect(await page.evaluate(() => window.__anan.db.items.count())).toBe(3); // intact
-    await page.getByRole('button', { name: 'Review' }).click();
+    await page.getByRole('button', { name: 'Review', exact: true }).click();
     await expect(page.getByText(/3 due now/)).toBeVisible();
 
     expect(await page.evaluate(() => (window as unknown as { __marker?: number }).__marker)).toBe(
