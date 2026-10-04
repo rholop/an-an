@@ -1,12 +1,12 @@
 # Audio review
 
-Voice: zh-TW-HsiaoChenNeural · built 2026-10-04T14:40:40.594Z
+Voice: zh-TW-HsiaoChenNeural · built 2026-10-04T15:58:28.352Z
 
 ## Flagged by a person (0)
 
 _none_
 
-## Suspect: speech-to-text disagreed (243)
+## Suspect: speech-to-text disagreed (261)
 
 Not played in the app until someone marks them OK on the review page.
 
@@ -253,6 +253,24 @@ Not played in the app until someone marks them OK on the review page.
 - word `tocfl-fc42af28db` “餓” (ㄜˋ) — heard “呃。”
 - word `tocfl-ff470ddc58` “油” (ㄧㄡˊ) — heard “郵。”
 - word `tocfl-ffb21a1371` “公園” (ㄍㄨㄥ ㄩㄢˊ) — heard “公元。”
+- word `moec-b8a867198f` “姐姐” (ㄐㄧㄝˇ ˙ㄐㄧㄝ) — heard “姊姊。”
+- word `tb-0f7c542524` “臺灣人” (ㄊㄞˊ ㄨㄢ ㄖㄣˊ) — heard “台灣人。”
+- word `tb-1ced8f822f` “臺灣” (ㄊㄞˊ ㄨㄢ) — heard “台灣。”
+- word `tb-2e9db6e051` “美味餐廳” (ㄇㄟˇ ㄨㄟˋ ㄘㄢ ㄊㄧㄥ) — heard “每位餐廳。”
+- word `tb-354710efde` “學文” (ㄒㄩㄝˊ ㄨㄣˊ) — heard “雪文。”
+- word `tb-4edb729a91` “王小文” (ㄨㄤˊ ㄒㄧㄠˇ ㄨㄣˊ) — heard “王曉雯。”
+- word `tb-6325ca44a1` “是啊” (ㄕˋ ˙ㄚ) — heard “”
+- word `tb-801ccf4079` “兄弟姊妹” (ㄒㄩㄥ ㄉㄧˋ ㄐㄧㄝˇ ㄇㄟˋ) — heard “兄弟姐妹。”
+- word `tb-8749bde1a4` “王學文” (ㄨㄤˊ ㄒㄩㄝˊ ㄨㄣˊ) — heard “王雪文。”
+- word `tb-967d75cca7` “王家文” (ㄨㄤˊ ㄐㄧㄚ ㄨㄣˊ) — heard “王嘉雯。”
+- word `tb-a0f45b43eb` “林美美” (ㄌㄧㄣˊ ㄇㄟˇ ㄇㄟˇ) — heard “林妹妹。”
+- word `tb-afcab8df87` “台一銀行” (ㄊㄞˊ ㄧ ㄧㄣˊ ㄏㄤˊ) — heard “邰一銀行。”
+- word `tb-afdc0a7ceb` “林” (ㄌㄧㄣˊ) — heard “零。”
+- word `tb-b5912b1dd9` “美生” (ㄇㄟˇ ㄕㄥ) — heard “美聲。”
+- word `tb-c60e9ca34c` “噢” (ㄩˇ) — heard “與。”
+- word `tb-ca5aef669e` “家文” (ㄐㄧㄚ ㄨㄣˊ) — heard “佳文。”
+- word `tb-de30499b7f` “小生” (ㄒㄧㄠˇ ㄕㄥ) — heard “小聲。”
+- word `tocfl-4e56220e25` “吧” (˙ㄅㄚ) — heard “八。”
 
 ## Skipped: no clip made (4)
 

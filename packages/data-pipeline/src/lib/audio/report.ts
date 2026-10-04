@@ -19,7 +19,7 @@ export function renderReviewReport(
   if (!flagged.length) lines.push('_none_');
 
   const suspect = all.filter(([, , e]) => e.status === 'suspect');
-  lines.push('', `## Suspect: speech-to-text disagreed (${suspect.length})`, '', 'Not played in the app until someone marks them OK on the review page.', '');
+  lines.push('', `## Suspect: speech-to-text disagreed (${suspect.length})`, '', 'The app currently plays these anyway (ALLOW_SUSPECT_AUDIO); mark them OK / Wrong on the review page.', '');
   for (const [kind, id, e] of suspect) {
     lines.push(`- ${kind} \`${id}\` “${e.text}”${e.zhuyin ? ` (${e.zhuyin})` : ''} — heard “${e.heard ?? ''}”`);
   }

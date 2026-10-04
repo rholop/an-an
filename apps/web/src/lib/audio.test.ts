@@ -33,13 +33,14 @@ const state = (m: AudioManifest | null) => ({
 });
 
 describe('findClip', () => {
-  it('offers auto_ok clips (words by id, sentences by id or exact text) and nothing for suspect or unknown', () => {
+  it('offers clips (words by id, sentences by id or exact text), none for unknown ones', () => {
     const s = state(manifest('auto_ok'));
     expect(findClip(s, { kind: 'word', id: 'w1' })?.url).toContain('words/w1.mp3?v=cccccccccc');
     expect(findClip(s, { kind: 'sentence', text: '你好' })?.id).toBe('s1');
     expect(findClip(s, { kind: 'sentence', id: 'nope', text: '你好' })?.id).toBe('s1');
     expect(findClip(s, { kind: 'sentence', text: '再見' })).toBeNull();
-    expect(findClip(state(manifest('suspect')), { kind: 'word', id: 'w1' })).toBeNull();
+    // suspect clips play for now (ALLOW_SUSPECT_AUDIO), but are still marked suspect
+    expect(findClip(state(manifest('suspect')), { kind: 'word', id: 'w1' })).not.toBeNull();
     expect(findClip(state(null), { kind: 'word', id: 'w1' })).toBeNull();
   });
 });

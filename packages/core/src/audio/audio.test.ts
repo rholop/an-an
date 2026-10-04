@@ -129,6 +129,13 @@ describe('clip status gating', () => {
     expect(playableClip(manifest('suspect'), {}, 'word', 'w1')).toBeNull();
     expect(playableClip(manifest('auto_ok'), { 'word:w1': mark('flagged') }, 'word', 'w1')).toBeNull();
   });
+  it('with allowSuspect, suspect clips play (still marked suspect) but flagged ones never do', () => {
+    const policy = { allowSuspect: true };
+    const clip = playableClip(manifest('suspect'), {}, 'word', 'w1', policy);
+    expect(clip?.status).toBe('suspect');
+    expect(playableClip(manifest('suspect'), { 'word:w1': mark('flagged') }, 'word', 'w1', policy)).toBeNull();
+    expect(playableClip(manifest('auto_ok'), { 'word:w1': mark('flagged') }, 'word', 'w1', policy)).toBeNull();
+  });
   it('a flag about an older version of the clip no longer applies after a rebuild', () => {
     const m = manifest('auto_ok', 'b'.repeat(64));
     expect(effectiveStatus(m.words.w1!, mark('flagged', 'a'.repeat(64)))).toBe('auto_ok');

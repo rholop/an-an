@@ -66,7 +66,15 @@ export function effectiveStatus(
   return entry.status;
 }
 
-export const isPlayableStatus = (s: AudioStatus): boolean => s === 'verified' || s === 'auto_ok';
+export interface PlayPolicy {
+  /** Also play clips the automatic check marked `suspect` (they stay marked suspect).
+   * Off by default; the web app turns it on while no human reviewer is available.
+   * `flagged` clips never play under any policy. */
+  allowSuspect?: boolean;
+}
+
+export const isPlayableStatus = (s: AudioStatus, policy: PlayPolicy = {}): boolean =>
+  s === 'verified' || s === 'auto_ok' || (s === 'suspect' && policy.allowSuspect === true);
 
 /** The file to play for this clip, or null — the only gate the player uses. */
 export function playableClip(
@@ -74,10 +82,11 @@ export function playableClip(
   marks: Readonly<Record<string, AudioMark>>,
   kind: AudioKind,
   id: string,
+  policy: PlayPolicy = {},
 ): { url: string; entry: AudioManifestEntry; status: AudioStatus } | null {
   const entry = (kind === 'word' ? manifest?.words : manifest?.sentences)?.[id];
   if (!entry) return null;
   const status = effectiveStatus(entry, marks[clipKey(kind, id)]);
-  if (!isPlayableStatus(status)) return null;
+  if (!isPlayableStatus(status, policy)) return null;
   return { url: `${entry.file}?v=${entry.hash.slice(0, 10)}`, entry, status };
 }

@@ -16,6 +16,14 @@ import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
 // ones people flagged or approved. `playableClip` in core is the only gate, and
 // a clip with no manifest entry, or one flagged/suspect, simply has no button.
 
+/**
+ * Owner's decision (no Mandarin-speaking reviewer yet): clips the automatic
+ * check marked `suspect` still play. They stay marked suspect in the manifest
+ * and on the review page. Set to false once the review page has been worked
+ * through; `flagged` clips never play either way.
+ */
+export const ALLOW_SUSPECT_AUDIO = true;
+
 const MARKS_KEY = 'anan.audioMarks';
 const PENDING_KEY = 'anan.audioPending';
 const SLOW_KEY = 'anan.audioSlow';
@@ -164,7 +172,7 @@ export function findClip(
 ): ClipRef | null {
   const id = ref.kind === 'sentence' ? (ref.id && s.manifest?.sentences[ref.id] ? ref.id : s.byText.get(ref.text ?? '')) : ref.id;
   if (!id) return null;
-  const clip = playableClip(s.manifest, s.marks, ref.kind, id);
+  const clip = playableClip(s.manifest, s.marks, ref.kind, id, { allowSuspect: ALLOW_SUSPECT_AUDIO });
   if (!clip) return null;
   return {
     kind: ref.kind,

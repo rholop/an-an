@@ -38,7 +38,7 @@ pnpm --filter @anan/data-pipeline audio:build --levels=L3     # more later
 - Inputs: the lexicon, `data/build/sentences.v1.<level>.json`, and live sentences (phase 9) read from the newest saved copy of each profile in `apps/proxy/sync-data` (`--sync-dir=` to change).
 - Idempotent/resumable: a clip is skipped when its SSML hash is unchanged. A rebuild with no changes makes zero Azure calls.
 - Automatic check: each clip is run back through Azure speech-to-text (`zh-TW`); if the recognised characters differ from the text it is `suspect`. STT needs wav, so the clip is decoded with `ffmpeg` if installed; otherwise the same SSML is synthesized a second time as PCM (doubling characters).
-- Statuses: `verified` (human OK), `auto_ok`, `suspect`, `flagged`. The app plays `verified` and `auto_ok` only (`playableClip` in core is the single gate).
+- Statuses: `verified` (human OK), `auto_ok`, `suspect`, `flagged`. `playableClip` in core is the single gate: `verified` and `auto_ok` always play, `flagged` never does. **Current policy:** `suspect` clips also play, because no Mandarin-speaking reviewer is available yet (`ALLOW_SUSPECT_AUDIO` in `apps/web/src/lib/audio.ts`; they stay marked suspect). Set it to `false` once the review page has been worked through.
 
 The mp3s are committed under `data/build/audio` so the existing deploy (git pull on the droplet) ships them; `pnpm --filter @anan/web sync:audio` copies them to `public/audio` (done by the web `dev`/`build`). If the folder gets too large for git, rsync it to the droplet instead.
 
