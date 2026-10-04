@@ -316,3 +316,27 @@ describe('due-review ordering and grammar evidence', () => {
     expect(stepKey({ kind: 'level', level: 'N1' })).toBe('level:N1');
   });
 });
+
+import { planReviewSession, studyGrammarId, studyTargetWordIds } from './queue.js';
+describe('review plan (Phase 14)', () => {
+  const f = getStudyFocus(profile(), new Date('2026-10-04'));
+  const idx = lessonIndex(books);
+  it('new items are the active lesson’s, in book order; due cards are all kept, textbook first', () => {
+    const due = ['N2-0', 'laixue-2-w1a', 'laixue-1-w1a'].map((id) => ({ item: { kind: 'word' as const, id } }));
+    const plan = planReviewSession(due, f, idx, 2);
+    expect(plan.newItems.map((i) => i.id)).toEqual(['laixue-1-w1a', 'laixue-1-w1b']);
+    expect(plan.ordered.map((c) => c.item.id)).toEqual(['laixue-1-w1a', 'laixue-2-w1a', 'N2-0']);
+  });
+  it('study order off: the plan is the input, nothing new', () => {
+    const due = [{ item: { kind: 'word' as const, id: 'N2-0' } }, { item: { kind: 'word' as const, id: 'laixue-1-w1a' } }];
+    const plan = planReviewSession(due, { ...f, enabled: false }, idx);
+    expect(plan.ordered).toEqual(due);
+    expect(plan.newItems).toEqual([]);
+    expect(planReviewSession(due, undefined, idx).ordered).toEqual(due);
+  });
+  it('targets and grammar hint come from the active lesson', () => {
+    expect(studyTargetWordIds(f, 5)).toEqual(['laixue-1-w1a', 'laixue-1-w1b']);
+    expect(studyGrammarId(f)).toBe('g-laixue-1-1');
+    expect(studyTargetWordIds({ ...f, enabled: false }, 5)).toEqual([]);
+  });
+});

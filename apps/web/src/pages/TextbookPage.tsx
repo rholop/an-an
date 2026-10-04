@@ -834,3 +834,29 @@ function ReorderView({
     </>
   );
 }
+
+/** "Study this" from the home card: the same vocab → grammar → scenario → journal session, for any lesson. */
+export function StudyLessonView({ bookId, n, onExit }: { bookId: string; n: number; onExit: () => void }) {
+  const lexiconState = useLexicon();
+  const textbook = useTextbook();
+  const sentencesState = useTextbookSentences();
+  if (lexiconState.status !== 'ready' || textbook.status !== 'ready') return <p>Loading…</p>;
+  const book = textbook.books.find((b) => b.id === bookId);
+  const data = textbook.data.find((d) => d.textbook.id === bookId);
+  const lesson = book?.lessons[n - 1];
+  if (!book || !data || !lesson) return <p>That lesson isn&apos;t installed.</p>;
+  const sentences =
+    sentencesState.status === 'ready'
+      ? sentencesState.sentences.filter((s) => (s.textbookId ?? 'laixue-1') === bookId)
+      : [];
+  return (
+    <StudySession
+      lesson={lesson}
+      bookId={bookId}
+      data={data}
+      lexicon={lexiconState.lexicon}
+      sentences={sentences}
+      onExit={onExit}
+    />
+  );
+}

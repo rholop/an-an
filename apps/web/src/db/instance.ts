@@ -1,6 +1,7 @@
 import { DEFAULT_LEARNER_CONFIG } from '@anan/core';
 import { setActiveProfileForApi } from '../lib/api.js';
 import { GameService } from '../lib/game-service.js';
+import { markStudyDirty } from '../lib/study-dirty.js';
 import { LearnerService } from '../lib/learner-service.js';
 import type { ProfileId } from '../profiles.js';
 import { DexieLearnerRepo } from './learner-repo.js';
@@ -39,7 +40,10 @@ export function createSession(
   const learnerService = new LearnerService(
     learnerRepo,
     DEFAULT_LEARNER_CONFIG,
-    (evidence, prior) => gameService.onEvidence(evidence, prior),
+    (evidence, prior) => {
+      markStudyDirty();
+      return gameService.onEvidence(evidence, prior);
+    },
   );
   return { profileId, db, learnerRepo, gameService, learnerService };
 }

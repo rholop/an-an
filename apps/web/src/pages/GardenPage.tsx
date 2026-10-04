@@ -20,6 +20,7 @@ import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
+import { NowStudying } from '../components/NowStudying.js';
 import { ReviewPage } from './ReviewPage.js';
 import './GardenPage.css';
 
@@ -117,6 +118,7 @@ export function GardenPage() {
   return (
     <div className="garden-page">
       <h1>Word garden</h1>
+      <NowStudying />
       <p className="garden-meta">
         {shownPlants.length === 0
           ? snapshot.plants.length === 0

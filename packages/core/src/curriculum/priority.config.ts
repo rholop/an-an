@@ -19,6 +19,8 @@ export const PRIORITY_CONFIG = {
   classAheadLessons: 1,
   /** Share of a batch of new items that may come from beyond the active step. 0 = none. */
   aheadShare: 0,
+  /** New items a review session introduces from the active step. */
+  reviewNewItems: 5,
   /** Reader: share of sentences built around a weak item of a review lesson instead. */
   reviewLessonShare: 0.3,
   /** Evidence kinds that count as a correct / incorrect use of a grammar point. */

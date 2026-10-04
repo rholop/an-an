@@ -3,6 +3,8 @@ import {
   derivedCompoundIds,
   lessonScopedWordIds,
   nextNewItems,
+  studyTargetWordIds,
+  type StudyFocus,
   resolveScenarioVocabExtraIds,
   segment,
   type AnalyzeContext,
@@ -88,6 +90,8 @@ export class ChatService {
     /** Phase 6: called once when a conversation completes (all goals done). */
     private readonly onCompleted?: (conversation: ConversationRow) => Promise<void>,
     private readonly classContext?: () => ClassChatContext | undefined,
+    /** Phase 14: the study order's focus, so ANY scenario's target words come from unmastered textbook items first. */
+    private readonly studyFocus?: () => Promise<StudyFocus | undefined>,
   ) {}
 
   /** Starts a conversation: the scenario's opener is authored data, not
@@ -261,11 +265,20 @@ export class ChatService {
     const dueCards = await this.learnerService.dueCards(now, 10_000);
     const dueWordIds = dueCards.filter((c) => c.skill === 'recognition').map((c) => c.item.id);
     const allCards: SkillCard[] = dueCards; // best-effort pool for nextNewItems' "touched" check
-    const targets = nextNewItems(allCards, this.lexicon, this.config.newTargetsPerTurn, {
-      scenarioTags: [scenario.id],
-      currentLevel: options.learnerLevel,
-      ...(scope ? { classScope: scope } : {}),
-    });
+    const want = this.config.newTargetsPerTurn;
+    const studyIds = studyTargetWordIds(await this.studyFocus?.().catch(() => undefined), want);
+    const studyWords = studyIds.flatMap((id) => this.lexicon.byId(id) ?? []);
+    const targets =
+      studyWords.length >= want
+        ? studyWords.slice(0, want)
+        : [
+            ...studyWords,
+            ...nextNewItems(allCards, this.lexicon, want, {
+              scenarioTags: [scenario.id],
+              currentLevel: options.learnerLevel,
+              ...(scope ? { classScope: scope } : {}),
+            }).filter((w) => !studyIds.includes(w.id)),
+          ].slice(0, want);
     const targetIds = targets.map((w) => w.id);
 
     const req: TurnRequest = {

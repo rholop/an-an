@@ -19,6 +19,7 @@ import { useLexicon } from './lib/useLexicon.js';
 import { useMediaQuery } from './lib/useMediaQuery.js';
 import { installViewportTracking } from './lib/viewport.js';
 import { useMyClass } from './lib/my-class.js';
+import { useStudyContextRegistration } from './lib/study.js';
 import './App.css';
 import './components/LevelPicker.css';
 import './components/ProfileGate.css';
@@ -199,6 +200,7 @@ export function App() {
     (new URLSearchParams(location.search).get('page') as Route) ?? 'reader',
   );
   const myClass = useMyClass();
+  useStudyContextRegistration();
   const [moreOpen, setMoreOpen] = useState(false);
   // The tab bar only exists on a phone-width screen (the CSS hides it above 640px too,
   // but then it would still be in the page and duplicate the top nav's labels).

@@ -34,3 +34,4 @@ export * from './audio/clips.js';
 export * from './textbook/index.js';
 export * from './study/study-focus.js';
 export * from './curriculum/priority.config.js';
+export * from './study/queue.js';

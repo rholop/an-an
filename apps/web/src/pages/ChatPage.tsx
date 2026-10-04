@@ -4,6 +4,7 @@ import {
   formatDuration,
   isTextbookScenarioUnlocked,
   classLevelHint,
+  stepName,
   courseLessonLevel,
   courseOrdinal,
   filterByLevel,
@@ -30,6 +31,7 @@ import { useKeyboardOpen } from '../lib/viewport.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useMyClass, peekMyClass } from '../lib/my-class.js';
 import { useTextbook } from '../lib/textbook-data.js';
+import { getStudyFocusNow, useStudyFocus } from '../lib/study.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSetting } from '../lib/useSetting.js';
 import './ChatPage.css';
@@ -49,6 +51,14 @@ export function ChatPage({
 
   const myClass = useMyClass();
   const textbookState = useTextbook();
+  const { focus: studyFocus } = useStudyFocus();
+  // Phase 14: the active lesson's scenarios are pinned on top and ignore the level filter.
+  const pinnedIds: string[] =
+    studyFocus?.enabled && studyFocus.activeLesson && textbookState.status === 'ready'
+      ? (textbookState.books
+          .find((b) => b.id === studyFocus.activeLesson!.bookId)
+          ?.lessons[studyFocus.activeLesson.n - 1]?.scenarios ?? [])
+      : [];
   const [cardsByWordId, setCardsByWordId] = useState<Map<string, SkillCard>>(new Map());
   const refreshCards = useCallback(async () => {
     setCardsByWordId(await recognitionCardsByWordId(db));
@@ -88,6 +98,7 @@ export function ChatPage({
         textbookState.status === 'ready'
           ? { scope: classScope(peekMyClass()), books: textbookState.books }
           : undefined,
+      getStudyFocusNow,
     );
   }, [lexiconState, tutorLLM, textbookState]);
 
@@ -311,6 +322,28 @@ export function ChatPage({
         <h1>An'an chat</h1>
         <p className="chat-level-note">Your level: {learnerLevel}</p>
         <LevelChips selected={levelFilter} onChange={setLevelFilter} current={learnerLevel} />
+        {pinnedIds.length > 0 && (
+          <section className="chat-class-section" aria-label="Current lesson" data-testid="pinned-scenarios">
+            <h2 lang="zh-Hant">
+              Current lesson · {studyFocus?.activeLesson ? stepName(studyFocus.activeLesson) : ''}
+            </h2>
+            <div className="chat-scenario-list">
+              {scenariosState.scenarios
+                .filter((sc) => pinnedIds.includes(sc.id))
+                .map((sc) => (
+                  <button
+                    key={sc.id}
+                    className="chat-scenario-card"
+                    onClick={() => startScenario(sc)}
+                    data-testid={`pinned-${sc.id}`}
+                  >
+                    <div className="chat-scenario-title">{sc.title}</div>
+                    <div className="chat-scenario-range">Current lesson</div>
+                  </button>
+                ))}
+            </div>
+          </section>
+        )}
         <div className="chat-scenario-list">
           {(
             snapshot?.nodes ??
@@ -376,7 +409,7 @@ export function ChatPage({
               {classLevelHint(myClass.textbookId, myClass.currentLesson)}
             </p>
             <div className="chat-scenario-list">
-              {classScenarios(scenariosState.scenarios, myClass, learnerLevel).map((sc) => {
+              {classScenarios(scenariosState.scenarios, myClass, learnerLevel, new Set(pinnedIds)).map((sc) => {
                   const unlocked = isTextbookScenarioUnlocked(sc, myClass);
                   return (
                     <button
@@ -611,6 +644,8 @@ function classScenarios(
   all: readonly Scenario[],
   klass: { textbookId: string; currentLesson: number },
   chosen: Level,
+  /** Scenarios of the active study step: shown whatever the level picker says. */
+  keep: ReadonlySet<string> = new Set(),
 ): Scenario[] {
   const here = courseOrdinal(LAIXUE_COURSE, klass.textbookId, klass.currentLesson) ?? 0;
   const ord = (sc: Scenario) =>
@@ -619,9 +654,12 @@ function classScenarios(
     .filter((sc) => sc.textbook)
     .filter((sc) => ord(sc) <= here || sc.textbook!.textbookId === klass.textbookId)
     .sort((a, b) => ord(a) - ord(b));
-  return filterByLevel(
+  const filtered = filterByLevel(
     visible,
     (sc) => courseLessonLevel(LAIXUE_COURSE, sc.textbook!.textbookId, sc.textbook!.lesson),
     chosen,
   );
+  return visible
+    .filter((sc) => keep.has(sc.id) || filtered.includes(sc))
+    .sort((a, b) => Number(keep.has(b.id)) - Number(keep.has(a.id)) || filtered.indexOf(a) - filtered.indexOf(b));
 }

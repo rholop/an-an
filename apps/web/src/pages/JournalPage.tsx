@@ -7,6 +7,8 @@ import {
   LAIXUE_COURSE,
   lessonBadge,
   pickPromptWords,
+  studyGrammarId,
+  studyTargetWordIds,
   renderBracketsInline,
   type JournalIssue,
   type Level,
@@ -28,6 +30,7 @@ import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useMyClass } from '../lib/my-class.js';
 import { useTextbook } from '../lib/textbook-data.js';
+import { useStudyFocus } from '../lib/study.js';
 import { SHEET_QUERY, useMediaQuery } from '../lib/useMediaQuery.js';
 import { useSetting } from '../lib/useSetting.js';
 import './JournalPage.css';
@@ -106,19 +109,28 @@ export function JournalPage({
   const myClass = useMyClass();
   const textbookState = useTextbook();
   const promptBook = bookId ?? myClass.textbookId;
+  // Phase 14: the study order's active lesson (prompts first, words and grammar from unmastered items).
+  const { focus: studyFocus } = useStudyFocus();
+  const activeLessonPrompts = useMemo(() => {
+    if (lesson !== undefined || !studyFocus?.enabled || !studyFocus.activeLesson || textbookState.status !== 'ready') return [];
+    const a = studyFocus.activeLesson;
+    return textbookState.books.find((b) => b.id === a.bookId)?.lessons[a.n - 1]?.journalPrompts ?? [];
+  }, [lesson, studyFocus, textbookState]);
   const classPrompts = useMemo(() => {
     // A "Study this lesson" session (explicit lesson) works for any lesson, class or not.
-    if ((!myClass.enabled && lesson === undefined) || textbookState.status !== 'ready') return [];
+    if ((!myClass.enabled && lesson === undefined) || textbookState.status !== 'ready')
+      return activeLessonPrompts;
     const prompts =
       textbookState.books.find((b) => b.id === promptBook)?.lessons[
         (lesson ?? myClass.currentLesson) - 1
       ]?.journalPrompts ?? [];
     // Phase 13: the header level picker shows your level first, easier below, harder hidden —
     // except in an explicit "Study this lesson" session, which shows the lesson's own prompts.
-    return lesson === undefined
-      ? filterByLevel(prompts, (p) => p.level ?? courseLessonLevel(LAIXUE_COURSE, promptBook, myClass.currentLesson), learnerLevel)
-      : prompts;
-  }, [myClass, textbookState, lesson, promptBook, learnerLevel]);
+    if (lesson !== undefined) return prompts;
+    const rest = filterByLevel(prompts, (p) => p.level ?? courseLessonLevel(LAIXUE_COURSE, promptBook, myClass.currentLesson), learnerLevel);
+    // Active-lesson prompts lead and ignore the level picker; the rest follow.
+    return [...activeLessonPrompts, ...rest.filter((p) => !activeLessonPrompts.some((a) => a.id === p.id))];
+  }, [myClass, textbookState, lesson, promptBook, learnerLevel, activeLessonPrompts]);
   const [donePromptIds, setDonePromptIds] = useState<Set<string>>(new Set());
   const [chosenId, setChosenId] = useState<string | null>(initialPromptId ?? null);
   useEffect(() => {
@@ -146,16 +158,24 @@ export function JournalPage({
     if (lexiconState.status !== 'ready') return [];
     if (chosenClass)
       return chosenClass.useWords.flatMap((id) => lexiconState.lexicon.byId(id) ?? []);
-    return pickPromptWords(dueCards, lexiconState.lexicon, new Date(), 3, learnerLevel);
-  }, [lexiconState, dueCards, learnerLevel, chosenClass]);
+    // Phase 14: with the study order on, the 3 words come from unmastered textbook items first.
+    const study = studyTargetWordIds(studyFocus, 3).flatMap((id) => lexiconState.lexicon.byId(id) ?? []);
+    if (study.length >= 3) return study;
+    const rest = pickPromptWords(dueCards, lexiconState.lexicon, new Date(), 3, learnerLevel).filter(
+      (w) => !study.some((s) => s.id === w.id),
+    );
+    return [...study, ...rest].slice(0, 3);
+  }, [lexiconState, dueCards, learnerLevel, chosenClass, studyFocus]);
   const grammarHints = useMemo(
     () =>
       lexiconState.status === 'ready' && chosenClass
         ? chosenClass.useGrammar.flatMap(
             (id) => lexiconState.lexicon.grammarItemById(id)?.pattern ?? [],
           )
-        : [],
-    [lexiconState, chosenClass],
+        : lexiconState.status === 'ready' && studyGrammarId(studyFocus)
+          ? ([lexiconState.lexicon.grammarItemById(studyGrammarId(studyFocus)!)?.pattern].filter(Boolean) as string[])
+          : [],
+    [lexiconState, chosenClass, studyFocus],
   );
 
   const reload = useCallback(
@@ -221,7 +241,7 @@ export function JournalPage({
           <div className="journal-class-prompts" data-testid="class-prompts">
             <p>
               <span className="textbook-badge" lang="zh-Hant">
-                {lessonBadge(lesson ?? myClass.currentLesson, promptBook)}
+                {promptBadge(classPrompts[0]?.lessonId, lesson ?? myClass.currentLesson, promptBook)}
               </span>{' '}
               Prompts from class
             </p>
@@ -862,4 +882,10 @@ function RevealStage({
       <button onClick={finish}>Finish entry</button>
     </section>
   );
+}
+
+/** "來學華語 2 · L3" for the lesson a prompt belongs to (falls back to the class position). */
+function promptBadge(lessonId: string | undefined, n: number, bookId: string): string {
+  const m = lessonId ? /^(laixue-\d+)-L(\d+)$/.exec(lessonId) : null;
+  return m ? lessonBadge(Number(m[2]), m[1]!) : lessonBadge(n, bookId);
 }

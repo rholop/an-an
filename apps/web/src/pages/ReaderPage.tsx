@@ -3,6 +3,7 @@ import type { TouchEvent } from 'react';
 import {
   checkTaiwanness,
   classScope,
+  lessonIndex,
   coverage,
   isReaderFocus,
   levelIndex,
@@ -31,6 +32,7 @@ import { useLexicon, type LexiconLoadState } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
 import { useMyClass } from '../lib/my-class.js';
+import { getStudyBooks, getStudyFocusNow, useStudyFocus } from '../lib/study.js';
 import { useTextbookSentences } from '../lib/textbook-data.js';
 import { useSetting } from '../lib/useSetting.js';
 
@@ -115,12 +117,15 @@ function ReaderView({
   // Phase 8: display settings are per profile (stored in the profile's database).
   const [mode, setMode] = useSetting<AnnotationMode>('readerMode', 'always');
   const [script, setScript] = useSetting<AnnotationScript>('readerScript', 'pinyin');
-  const [storedFocus, setFocus] = useSetting<ReaderFocus>('readerFocus', 'mixed');
+  const [storedFocus, setFocus] = useSetting<ReaderFocus>('readerFocus', 'lesson');
+  const { focus: studyFocus } = useStudyFocus();
+  // Phase 14: with the study order on, "Lesson" is the default and always available.
+  const studyOn = Boolean(studyFocus?.enabled && studyFocus.activeStep);
   const myClass = useMyClass();
   // "Lesson" only exists while My class is on; otherwise a stored 'lesson' falls back to Mixed.
   const focus: ReaderFocus =
-    isReaderFocus(storedFocus) && (storedFocus !== 'lesson' || myClass.enabled) ? storedFocus : 'mixed';
-  const textbookSentences = useTextbookSentences(myClass.enabled);
+    isReaderFocus(storedFocus) && (storedFocus !== 'lesson' || myClass.enabled || studyOn) ? storedFocus : 'mixed';
+  const textbookSentences = useTextbookSentences(true);
 
   const [lookupLog, setLookupLog] = useState<string[]>([]);
   const [knownSet, setKnownSet] = useState<Set<string>>(new Set());
@@ -160,6 +165,9 @@ function ReaderView({
         llm,
         staticBank: bank.status === 'ready' ? bank.sentences : [],
         classScope: classScope(myClass),
+        studyFocus: getStudyFocusNow,
+        lessonIndex: lessonIndex(getStudyBooks()),
+        ...(textbookSentences.status === 'ready' ? { textbookSentences: textbookSentences.sentences } : {}),
         lesson:
           myClass.enabled && textbookSentences.status === 'ready'
             ? { bookId: myClass.textbookId, n: myClass.currentLesson, sentences: textbookSentences.sentences }
@@ -400,7 +408,7 @@ function ReaderView({
       </p>
 
       <div className="reader-focus" role="radiogroup" aria-label="Sentence focus">
-        {READER_FOCUSES.filter((f) => f !== "lesson" || myClass.enabled).map((f) => (
+        {READER_FOCUSES.filter((f) => f !== "lesson" || myClass.enabled || studyOn).map((f) => (
           <button
             key={f}
             type="button"

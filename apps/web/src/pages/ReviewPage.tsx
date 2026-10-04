@@ -1,11 +1,32 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Evidence, GrammarItem, Lexicon, SkillCard, Word } from '@anan/core';
 import { homeLessonOfTags, lessonBadge, nextLeechTreatment } from '@anan/core';
+import { emptyCard, lessonIndex, planReviewSession } from '@anan/core';
 import { db, learnerService } from '../db/instance.js';
+import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
 import { dueForecast } from '../db/queries.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import './ReviewPage.css';
+
+/** A card for an item that has no card yet: rating it records the first evidence. */
+function newCard(item: SkillCard['item'], now: Date): SkillCard {
+  return {
+    item,
+    skill: 'recognition',
+    card: emptyCard(now),
+    state: 'unseen',
+    lapses: 0,
+    leech: false,
+    leechTreatmentsTried: [],
+    clozeRung: 1,
+    clozeStreak: 0,
+    familiarity: 0,
+    readingDependence: 0,
+    flags: {},
+    updatedAt: now,
+  };
+}
 
 function shuffle<T>(arr: T[]): T[] {
   const copy = [...arr];
@@ -42,10 +63,22 @@ export function ReviewPage({
   const loadQueue = useCallback(async () => {
     const now = new Date();
     const due = focusCards ?? (await learnerService.dueCards(now, 200));
-    setQueue(shuffle(due)); // interleaved across topics: due order has no topical structure, shuffling avoids any incidental clustering
+    // Phase 14: with the study order on (and not a custom focus list) the shuffled due cards are
+    // ordered textbook-first (never dropped) and a few NEW items from the active step lead the session.
+    const shuffled = shuffle(due); // interleaved across topics: due order has no topical structure
+    let next: SkillCard[] = shuffled;
+    if (!focusCards) {
+      const focus = await getStudyFocusNow(now);
+      if (focus?.enabled) {
+        const plan = planReviewSession(shuffled, focus, lessonIndex(getStudyBooks()));
+        const fresh = plan.newItems.map((item) => newCard(item, now));
+        next = [...fresh, ...plan.ordered];
+      }
+    }
+    setQueue(next);
     setIndex(0);
     setRevealed(false);
-    setTotalDue(due.length);
+    setTotalDue(next.length);
     setForecast(await dueForecast(db, now, 7));
   }, [focusCards]);
 

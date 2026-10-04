@@ -4,6 +4,8 @@ import {
   evaluateReaderSentence,
   hashReaderText,
   levelIndex,
+  PRIORITY_CONFIG,
+  type StudyFocus,
   lessonBadge,
   lessonTag,
   nextNewItems,
@@ -47,6 +49,12 @@ export interface ReaderDeps {
   lesson?: { bookId: string; n: number; sentences: readonly SentenceBankEntry[] };
   /** Phase 12: keeps textbook words from lessons beyond current+1 out of the "New words" frontier. */
   classScope?: ClassScope;
+  /** Phase 14: the study order's focus (the "Lesson" focus is built around unmastered items). */
+  studyFocus?: () => Promise<StudyFocus | undefined>;
+  /** Phase 14: item key ("word:id") → lesson id, to find the lesson an item belongs to. */
+  lessonIndex?: ReadonlyMap<string, string>;
+  /** Phase 14: sentences of every imported book. */
+  textbookSentences?: readonly SentenceBankEntry[];
 }
 
 export interface NextSentenceRequest {
@@ -102,7 +110,70 @@ export class ReaderService {
 
   /** "Lesson" focus: only sentences tagged with the current lesson, least
    * recently shown first (never a live-generated or out-of-lesson one). */
+  /**
+   * Phase 14: a sentence built around ONE unmastered item of the active lesson (about
+   * `reviewLessonShare` of the time a weak item of a review lesson instead). Level-picker
+   * exempt: the active step shows whatever the picker says.
+   */
+  private async nextStudySentence(
+    sf: StudyFocus,
+    req: NextSentenceRequest,
+    now: Date,
+  ): Promise<NextSentenceResult | null> {
+    const all = this.deps.textbookSentences ?? this.deps.lesson?.sentences ?? [];
+    const idx = this.deps.lessonIndex;
+    if (!idx || all.length === 0) return null;
+    const rand = this.deps.rand ?? Math.random;
+    const useReview = sf.reviewItems.length > 0 && rand() < PRIORITY_CONFIG.reviewLessonShare;
+    const items = useReview ? sf.reviewItems : sf.focusItems;
+    const shown = await this.shownMap(req.sessionIds ?? new Set(), now);
+    // Walk the items in order (book order, starting at a random offset among the first few)
+    // until one has a sentence.
+    const start = Math.floor(rand() * Math.min(items.length, 3));
+    for (let k = 0; k < items.length; k++) {
+      const item = items[(start + k) % items.length]!;
+      const lessonId = idx.get(`${item.kind}:${item.id}`);
+      const m = lessonId ? /^(laixue-\d+)-L(\d+)$/.exec(lessonId) : null;
+      if (!m) continue;
+      const bookId = m[1]!;
+      const n = Number(m[2]);
+      const headword = item.kind === 'word' ? this.deps.lexicon.byId(item.id)?.headword : undefined;
+      const pool = all.filter(
+        (s) =>
+          s.lesson === n &&
+          (s.textbookId ?? 'laixue-1') === bookId &&
+          (item.kind === 'grammar'
+            ? (s.grammarIds ?? []).includes(item.id)
+            : headword !== undefined && s.zh.includes(headword)),
+      );
+      if (pool.length === 0) continue;
+      const unseen = pool.filter((s) => !shown.has(s.id));
+      const choices = unseen.length > 0 ? unseen : [...pool].sort((a, b) => (shown.get(a.id) ?? 0) - (shown.get(b.id) ?? 0)).slice(0, 3);
+      const entry = choices[Math.floor(rand() * choices.length)]!;
+      return {
+        generated: false,
+        pick: {
+          sentence: { ...bankEntryToReaderSentence(entry), sourceLabel: lessonBadge(n, bookId) },
+          focus: 'lesson',
+          focusWordId: item.kind === 'word' ? item.id : entry.targetWordId,
+          reason: `Studying ${lessonBadge(n, bookId)}${useReview ? ' (review)' : ''}`,
+          exact: true,
+          coverage: 1,
+          unknownCount: 0,
+        },
+      };
+    }
+    return null;
+  }
+
   private async nextLessonSentence(req: NextSentenceRequest, now: Date): Promise<NextSentenceResult | null> {
+    const sf = await this.deps.studyFocus?.().catch(() => undefined);
+    if (sf?.enabled) {
+      const r = await this.nextStudySentence(sf, req, now);
+      if (r) return r;
+      // The active step is a TOCFL level: the frontier ("new words") of that level is the lesson.
+      if (!sf.activeLesson) return this.next({ ...req, focus: 'new' });
+    }
     const lesson = this.deps.lesson;
     if (!lesson) return null;
     const rand = this.deps.rand ?? Math.random;
