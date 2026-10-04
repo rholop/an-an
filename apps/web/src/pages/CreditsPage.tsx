@@ -64,6 +64,7 @@ export const CREDITS: {
 /** Phase 10 §7: per-profile switch for every speaker button. */
 function AudioSettingsPanel() {
   const [enabled, setEnabled] = useSetting<boolean>('audioEnabled', true);
+  const [listening, setListening] = useSetting<boolean>('listeningEnabled', true);
   return (
     <section>
       <h2>Audio</h2>
@@ -75,6 +76,16 @@ function AudioSettingsPanel() {
           data-testid="audio-toggle"
         />{' '}
         Show speaker buttons
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={listening}
+          disabled={!enabled}
+          onChange={(e) => setListening(e.target.checked)}
+          data-testid="listening-toggle"
+        />{' '}
+        Listening practice (Listen session and listening exercises in review)
       </label>
     </section>
   );

@@ -27,7 +27,23 @@ export class DexieLearnerRepo implements LearnerRepo {
   }
 
   async dueCards(now: Date, limit: number): Promise<SkillCard[]> {
-    const rows = await this.db.items.where('card.due').belowOrEqual(now).limit(limit).toArray();
+    // Phase 15: listening cards are their own queue (`dueListeningCards`), never part of plain review.
+    const rows = await this.db.items
+      .where('card.due')
+      .belowOrEqual(now)
+      .filter((r) => r.skill !== 'listening')
+      .limit(limit)
+      .toArray();
+    return rows.map(stripPk);
+  }
+
+  async dueListeningCards(now: Date, limit: number): Promise<SkillCard[]> {
+    const rows = await this.db.items
+      .where('card.due')
+      .belowOrEqual(now)
+      .filter((r) => r.skill === 'listening')
+      .limit(limit)
+      .toArray();
     return rows.map(stripPk);
   }
 
@@ -35,7 +51,7 @@ export class DexieLearnerRepo implements LearnerRepo {
     const minIdx = ITEM_STATE_ORDER.indexOf(minState);
     const ids = new Set<string>();
     await this.db.items.each((row) => {
-      if (ITEM_STATE_ORDER.indexOf(row.state) >= minIdx) ids.add(row.item.id);
+      if (row.skill !== 'listening' && ITEM_STATE_ORDER.indexOf(row.state) >= minIdx) ids.add(row.item.id);
     });
     return ids;
   }

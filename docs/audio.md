@@ -66,3 +66,17 @@ Speaker buttons: word popover, review cards (after reveal), cloze feedback (the 
 ## Known data note
 
 The lexicon currently gives 和 as `ㄏㄜˊ` (hé). The brief's MOE example is hàn for 和 as "and". Audio follows the lexicon so it always matches the screen; fix the lexicon reading (not the audio) if hàn is wanted.
+
+## Phase 15 — Listening practice
+
+Listening is a third skill (`listening`) with its own FSRS card per item, created once the item's
+recognition card reaches `review` and it has a usable clip. It never counts toward Phase 14
+mastery and is excluded from plain review/cloze due lists, `knownSet` and forecasts.
+
+- **Clips:** only `verified`/`auto_ok`; tone check and tone pairs use `verified` only (`listeningClip`).
+- **Evidence:** `listening_correct` (Good), `listening_correct_replayed` (Hard; replays and the 0.75× slow play count), `listening_wrong` (Again). "Sounds wrong" removes the clip and skips with no evidence.
+- **Exercises:** hear & pick, hear & type (tones required; a wrong tone is Hard-level), tone check (no 一/不, no 3+3), tone pairs, sentence dictation (per-word grading, ≤12 chars at Novice), listen & understand. Harder types unlock as stability grows (`LISTENING_CONFIG.unlock`).
+- **Where:** Review → "Listen session"; ~20% mixed into review and cloze sessions; "Study this lesson" gets a listening round; lesson cards show listening stats separately.
+- **Settings:** Credits → Audio → Listening practice (default on when audio is on). E2E: `localStorage anan.listening.disabled=1`.
+- Nothing ever autoplays; a Listen session works offline once clips are cached (`prefetchClips`).
+- Sentence clips and verified marks are currently absent, so sentence dictation, listen & understand, tone check and tone pairs appear only once such clips exist.

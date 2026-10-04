@@ -3,6 +3,9 @@ import {
   classScope,
   lessonIndex,
   studyRank,
+  planListenSession,
+  LISTENING_CONFIG,
+  type PlanItem,
   type SkillCard,
   levelIndex,
   buildClozeExercise,
@@ -28,6 +31,8 @@ import {
   type SessionItem,
 } from '@anan/core';
 import { db, gameService, learnerService } from '../db/instance.js';
+import { ListenRunner } from './ListenPage.js';
+import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { allChatLines, allJournalSentences } from '../db/queries.js';
@@ -122,6 +127,12 @@ export function ClozePage() {
   const [index, setIndex] = useState(0);
   const [tally, setTally] = useState({ correct: 0, hinted: 0, wrong: 0 });
   const [showBonus, setShowBonus] = useState(false);
+  // Phase 15: ~20% of a session is listening exercises for items that already have a listening card.
+  const clips = useListeningClips();
+  const listeningOn = useListeningEnabled();
+  const [slots, setSlots] = useState<Map<number, PlanItem>>(new Map());
+  const [doneSlots, setDoneSlots] = useState<Set<number>>(new Set());
+  const [slotCardIds, setSlotCardIds] = useState<Set<string>>(new Set());
 
   const ready =
     lexiconState.status === 'ready' &&
@@ -175,9 +186,32 @@ export function ClozePage() {
       now: new Date(),
     });
     setSession(built);
+    setSlots(new Map());
+    setDoneSlots(new Set());
+    if (listeningOn && clips.ready) void buildListeningSlots(built.length, lexiconState.lexicon);
     setIndex(0);
     setTally({ correct: 0, hinted: 0, wrong: 0 });
     setShowBonus(false);
+  }
+
+  async function buildListeningSlots(length: number, lexicon: Lexicon) {
+    const now = new Date();
+    const cards = await ensureListeningCards(clips.hasClip, now);
+    const practiced = cards.filter((c) => c.card.reps > 0 && c.card.due <= now);
+    const n = Math.min(practiced.length, Math.round(length * LISTENING_CONFIG.mixShare));
+    if (n <= 0) return;
+    const plan = planListenSession({
+      lexicon,
+      dueListening: practiced,
+      newWordIds: [],
+      hasClip: clips.hasClip,
+      sentences: [],
+      size: n,
+    });
+    const next = new Map<number, PlanItem>();
+    plan.forEach((p, k) => next.set(Math.max(1, Math.round(((k + 1) * length) / (plan.length + 1))), p));
+    setSlotCardIds(new Set(cards.map((c) => c.item.id)));
+    setSlots(next);
   }
 
   async function recordOutcome(item: SessionItem, outcome: Outcome) {
@@ -244,6 +278,27 @@ export function ClozePage() {
   }
 
   const entry = session[index];
+  const listenNow = slots.get(index) && !doneSlots.has(index) ? slots.get(index) : undefined;
+  if (listenNow && entry && lexiconState.status === 'ready') {
+    return (
+      <div className="cloze-page">
+        <div className="cloze-header">
+          <span>
+            Item {index + 1} / {session.length}
+          </span>
+          <span className="cloze-badge">Listening</span>
+        </div>
+        <ListenRunner
+          key={`slot-${index}`}
+          plan={[listenNow]}
+          lexicon={lexiconState.lexicon}
+          clips={clips}
+          cardIds={slotCardIds}
+          onFinished={() => setDoneSlots((d) => new Set(d).add(index))}
+        />
+      </div>
+    );
+  }
 
   if (!entry) {
     return (

@@ -2,7 +2,7 @@ import { LevelSchema, SentenceTokenSchema } from '@anan/core';
 import { z } from 'zod';
 
 const ItemRefSchema = z.object({ kind: z.enum(['word', 'grammar']), id: z.string() });
-const SkillSchema = z.enum(['recognition', 'production']);
+const SkillSchema = z.enum(['recognition', 'production', 'listening']);
 const ItemStateSchema = z.enum(['unseen', 'introduced', 'learning', 'review', 'mature']);
 const LeechTreatmentSchema = z.enum([
   'new_context',
@@ -65,6 +65,9 @@ const EvidenceKindSchema = z.enum([
   'placement_known',
   'placement_unknown',
   'textbook_lesson_covered',
+  'listening_correct',
+  'listening_correct_replayed',
+  'listening_wrong',
 ]);
 
 export const EvidenceSchema = z.object({

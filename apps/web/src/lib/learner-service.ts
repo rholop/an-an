@@ -66,6 +66,11 @@ export class LearnerService {
     return this.repo.dueCards(now, limit);
   }
 
+  /** Phase 15: due listening cards (their own queue). */
+  dueListeningCards(now: Date = new Date(), limit = 50): Promise<SkillCard[]> {
+    return (this.repo as unknown as { dueListeningCards(n: Date, l: number): Promise<SkillCard[]> }).dueListeningCards(now, limit);
+  }
+
   knownSet(minState: ItemState = 'review'): Promise<Set<string>> {
     return this.repo.knownSet(minState);
   }

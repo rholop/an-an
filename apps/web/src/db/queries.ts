@@ -22,7 +22,11 @@ export async function dueForecast(db: AnanDB, now: Date, days = 7): Promise<numb
   for (let i = 0; i < days; i++) {
     const from = dayStart(i);
     const to = dayStart(i + 1);
-    const count = await db.items.where('card.due').between(from, to, true, false).count();
+    const count = await db.items
+      .where('card.due')
+      .between(from, to, true, false)
+      .filter((r) => r.skill !== 'listening')
+      .count();
     counts.push(count);
   }
   return counts;
@@ -37,6 +41,12 @@ export async function dueForecast(db: AnanDB, now: Date, days = 7): Promise<numb
  * convenience, not a cross-storage-backend API. */
 export async function allTouchedCards(db: AnanDB): Promise<SkillCard[]> {
   const rows = await db.items.where('state').notEqual('unseen').toArray();
+  // Phase 15: listening cards are a separate queue (see `allListeningCards`).
+  return rows.filter((r) => r.skill !== 'listening').map(({ pk: _pk, ...card }) => card);
+}
+
+export async function allListeningCards(db: AnanDB): Promise<SkillCard[]> {
+  const rows = await db.items.filter((r) => r.skill === 'listening').toArray();
   return rows.map(({ pk: _pk, ...card }) => card);
 }
 

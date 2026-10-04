@@ -1,3 +1,4 @@
+import { emptyCard } from '../learner/fsrs-instance.js';
 import type { SkillCard } from '../learner/types.js';
 import type { Lexicon } from '../lexicon.js';
 import type { SentenceBankEntry } from '../cloze/sentence.js';
@@ -312,4 +313,23 @@ export function planListenSession(input: ListenPlanInput): PlanItem[] {
 /** ~20% of a normal review/cloze session's slots are listening exercises once the item has a listening card. */
 export function shouldMixListening(rng: () => number, config: ListeningConfig = LISTENING_CONFIG): boolean {
   return rng() < config.mixShare;
+}
+
+/** A fresh listening card for an item (state `introduced`, FSRS-new); the caller persists it. */
+export function blankListeningCard(wordId: string, now: Date): SkillCard {
+  return {
+    item: { kind: 'word', id: wordId },
+    skill: 'listening',
+    card: emptyCard(now),
+    state: 'introduced',
+    lapses: 0,
+    leech: false,
+    leechTreatmentsTried: [],
+    clozeRung: 1,
+    clozeStreak: 0,
+    familiarity: 0,
+    readingDependence: 0,
+    flags: {},
+    updatedAt: now,
+  };
 }

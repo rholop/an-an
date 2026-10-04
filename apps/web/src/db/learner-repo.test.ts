@@ -99,4 +99,16 @@ describe('DexieLearnerRepo', () => {
     await repo.putCards([card('a', { state: 'unseen' }), card('b', { state: 'mature' })]);
     expect((await repo.knownSet('unseen')).size).toBe(2);
   });
+
+  it('keeps listening cards out of dueCards and knownSet, but returns them from dueListeningCards', async () => {
+    const past = new Date('2020-01-01');
+    await repo.putCards([
+      card('a', { skill: 'recognition', state: 'review', card: { ...emptyCard(past), due: past } }),
+      card('b', { skill: 'listening', state: 'review', card: { ...emptyCard(past), due: past } }),
+    ]);
+    const now = new Date('2026-06-01');
+    expect((await repo.dueCards(now, 50)).map((c) => c.item.id)).toEqual(['a']);
+    expect((await repo.knownSet('introduced')).has('b')).toBe(false);
+    expect((await repo.dueListeningCards(now, 50)).map((c) => c.item.id)).toEqual(['b']);
+  });
 });

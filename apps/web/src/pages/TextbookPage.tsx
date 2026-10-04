@@ -39,6 +39,9 @@ import {
 import { useLexicon } from '../lib/useLexicon.js';
 import { QuickKnownCheck } from '../components/QuickKnownCheck.js';
 import { ChatPage } from './ChatPage.js';
+import { ListenPage } from './ListenPage.js';
+import { useListeningClips, useListeningEnabled } from '../lib/listening.js';
+import { allListeningCards } from '../db/queries.js';
 import { JournalPage } from './JournalPage.js';
 import { ReviewPage } from './ReviewPage.js';
 import './TextbookPage.css';
@@ -353,6 +356,20 @@ function LessonDetail({
   onStudy: () => void;
 }) {
   const [checking, setChecking] = useState(false);
+  // Phase 15: listening stats show separately (they never count toward mastery).
+  const [listenStats, setListenStats] = useState<{ started: number; strong: number } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    allListeningCards(db).then((cards) => {
+      if (cancelled) return;
+      const mine = new Set(lesson.vocab.filter((id) => !lesson.properNouns.includes(id)));
+      const own = cards.filter((c) => mine.has(c.item.id));
+      setListenStats({ started: own.length, strong: own.filter((c) => c.card.stability >= 7).length });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [lesson]);
   const grammar = lesson.grammar
     .map((id) => data.grammarItems.find((g) => g.id === id))
     .filter((g): g is GrammarItem => Boolean(g));
@@ -371,6 +388,11 @@ function LessonDetail({
         <span lang="zh-Hant">{lesson.titleZh}</span> <small>{lesson.titleEn}</small>
       </h1>
       <p className="textbook-muted">Topic: {lesson.topic}</p>
+      {listenStats && listenStats.started > 0 && (
+        <p className="textbook-muted" data-testid="listening-stats">
+          Listening: {listenStats.started} words started, {listenStats.strong} strong (not part of mastery)
+        </p>
+      )}
       {progress && classOn && <ProgressRow p={progress} />}
       <button className="textbook-study-btn" onClick={onStudy} data-testid="study-lesson">
         Study this lesson
@@ -502,10 +524,11 @@ function Dialogue({
 // Study this lesson: vocab → grammar cloze/reorder → scenario → journal.
 // ---------------------------------------------------------------------------
 
-type Step = 'vocab' | 'grammar' | 'scenario' | 'journal';
+type Step = 'vocab' | 'grammar' | 'listening' | 'scenario' | 'journal';
 const STEPS: Array<{ id: Step; label: string }> = [
   { id: 'vocab', label: 'Vocabulary review' },
   { id: 'grammar', label: 'Grammar practice' },
+  { id: 'listening', label: 'Listening round' },
   { id: 'scenario', label: 'Chat scenario' },
   { id: 'journal', label: 'Journal prompt' },
 ];
@@ -525,17 +548,21 @@ function StudySession({
   sentences: SentenceBankEntry[];
   onExit: () => void;
 }) {
+  const clips = useListeningClips();
+  const listeningOn = useListeningEnabled();
   // Steps with nothing to do are dropped; the rest can each be skipped.
   const steps = useMemo(
     () =>
       STEPS.filter((s) =>
-        s.id === 'scenario'
+        s.id === 'listening'
+          ? listeningOn && clips.ready && lesson.vocab.some((id) => clips.hasClip('word', id))
+          : s.id === 'scenario'
           ? lesson.scenarios.length > 0
           : s.id === 'journal'
             ? lesson.journalPrompts.length > 0
             : true,
       ),
-    [lesson],
+    [lesson, listeningOn, clips],
   );
   const [i, setI] = useState(0);
   const step = steps[i];
@@ -568,6 +595,16 @@ function StudySession({
           lexicon={lexicon}
           sentences={sentences}
           onDone={next}
+        />
+      )}
+      {step.id === 'listening' && (
+        <ListenPage
+          key={`listen-${lesson.id}`}
+          title={`${lessonBadge(lesson.n, bookId)} — listening`}
+          size={6}
+          onlyWordIds={new Set(lesson.vocab.filter((id) => !lesson.properNouns.includes(id)))}
+          onExit={next}
+          exitLabel="Continue →"
         />
       )}
       {step.id === 'scenario' && (

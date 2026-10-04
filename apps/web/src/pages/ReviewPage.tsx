@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Evidence, GrammarItem, Lexicon, SkillCard, Word } from '@anan/core';
 import { homeLessonOfTags, lessonBadge, nextLeechTreatment } from '@anan/core';
-import { emptyCard, lessonIndex, planReviewSession } from '@anan/core';
+import { emptyCard, LISTENING_CONFIG, lessonIndex, planListenSession, planReviewSession, type PlanItem } from '@anan/core';
+import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
+import { ListenPage, ListenRunner } from './ListenPage.js';
 import { db, learnerService } from '../db/instance.js';
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
 import { dueForecast } from '../db/queries.js';
@@ -59,6 +61,13 @@ export function ReviewPage({
   const [revealed, setRevealed] = useState(false);
   const [forecast, setForecast] = useState<number[] | null>(null);
   const [totalDue, setTotalDue] = useState(0);
+  // Phase 15: a "Listen" session, and ~20% listening exercises mixed in once an item has a listening card.
+  const clips = useListeningClips();
+  const listeningOn = useListeningEnabled();
+  const [listening, setListening] = useState(false);
+  const [slots, setSlots] = useState<Map<number, PlanItem>>(new Map());
+  const [doneSlots, setDoneSlots] = useState<Set<number>>(new Set());
+  const [slotCardIds, setSlotCardIds] = useState<Set<string>>(new Set());
 
   const loadQueue = useCallback(async () => {
     const now = new Date();
@@ -86,11 +95,47 @@ export function ReviewPage({
     loadQueue();
   }, [loadQueue]);
 
+  useEffect(() => {
+    if (focusCards || !queue || !listeningOn || !clips.ready || lexiconState.status !== 'ready') return;
+    let cancelled = false;
+    (async () => {
+      const now = new Date();
+      const cards = await ensureListeningCards(clips.hasClip, now);
+      const practiced = cards.filter((c) => c.card.reps > 0 && c.card.due <= now);
+      const n = Math.min(practiced.length, Math.round(queue.length * LISTENING_CONFIG.mixShare));
+      if (n <= 0) return;
+      const plan = planListenSession({
+        lexicon: lexiconState.lexicon,
+        dueListening: practiced,
+        newWordIds: [],
+        hasClip: clips.hasClip,
+        sentences: [],
+        size: n,
+      });
+      // spread over the session, never first
+      const next = new Map<number, PlanItem>();
+      plan.forEach((p, k) => next.set(Math.max(1, Math.round(((k + 1) * queue.length) / (plan.length + 1))), p));
+      if (cancelled) return;
+      setSlotCardIds(new Set(cards.map((c) => c.item.id)));
+      setDoneSlots(new Set());
+      setSlots(next);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // built once per queue
+  }, [queue, listeningOn, clips.ready]);
+
   if (lexiconState.status === 'loading' || queue === null) return <p>Loading…</p>;
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
 
   const lexicon = lexiconState.lexicon;
   const current = queue[index];
+  const pendingSlot = slots.get(index);
+  const listenNow = pendingSlot && !doneSlots.has(index) ? pendingSlot : undefined;
+
+  if (listening)
+    return <ListenPage onExit={() => setListening(false)} exitLabel="← Back to review" />;
 
   async function rate(grade: Grade) {
     if (!current) return;
@@ -114,7 +159,22 @@ export function ReviewPage({
         {forecast && <span className="review-forecast"> · next 7 days: {forecast.join(', ')}</span>}
       </p>
 
-      {!current ? (
+      {listeningOn && clips.ready && !focusCards && (
+        <button onClick={() => setListening(true)} data-testid="listen-session-btn">
+          🎧 Listen session
+        </button>
+      )}
+
+      {listenNow ? (
+        <ListenRunner
+          key={`slot-${index}`}
+          plan={[listenNow]}
+          lexicon={lexicon}
+          clips={clips}
+          cardIds={slotCardIds}
+          onFinished={() => setDoneSlots((d) => new Set(d).add(index))}
+        />
+      ) : !current ? (
         <p className="review-done">
           {totalDue === 0 ? 'Nothing due right now.' : 'All done for now — nice work.'}
         </p>

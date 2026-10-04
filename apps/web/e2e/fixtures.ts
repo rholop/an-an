@@ -18,6 +18,8 @@ export const test = base.extend({
       // Phase 14: the study order reorders queues; specs written for the plain queues switch it off
       // (the study-order specs remove this key).
       setIfAbsent('anan.study.disabled', '1');
+      // Phase 15: listening exercises add steps and slots; specs for the plain flows switch them off.
+      setIfAbsent('anan.listening.disabled', '1');
     });
     await use(context);
   },

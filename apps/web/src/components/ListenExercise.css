@@ -1,0 +1,16 @@
+.listen-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+.listen-controls button { min-height: 44px; min-width: 44px; padding: 0 0.9rem; }
+.listen-play { font-weight: 600; }
+.listen-wrong { margin-left: auto; opacity: 0.8; }
+.listen-meta { font-size: 1rem; opacity: 0.75; }
+.listen-options { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+.listen-options button { min-height: 52px; min-width: 52px; font-size: 1.25rem; padding: 0 1rem; }
+.listen-options button.is-right { outline: 2px solid #2a7; }
+.listen-options button.is-wrong { outline: 2px solid #c44; }
+.listen-diff { font-size: 1.25rem; }
+.listen-diff--ok { }
+.listen-diff--missed { background: #fd6; padding: 0 2px; text-decoration: underline; }
+.listen-diff--extra { color: #c44; text-decoration: line-through; }
+.listen-feedback { margin: 0.75rem 0; }
+.listen-feedback button { min-height: 44px; }
+.listen-reveal { font-size: 1.25rem; }
