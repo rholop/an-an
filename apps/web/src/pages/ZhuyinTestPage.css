@@ -43,3 +43,18 @@
   margin-left: 2px;
   color: var(--c-muted);
 }
+
+/* phones: less padding and type, and a sample wider than the screen scrolls inside its own box */
+@media (max-width: 639.98px) {
+  .zhuyin-test-page {
+    padding: 0.5rem 0;
+    font-size: 1.4rem;
+  }
+  .zt-sample {
+    padding: 0.75rem;
+    overflow-x: auto;
+  }
+  .zt-b-word {
+    margin-right: 0.5em;
+  }
+}

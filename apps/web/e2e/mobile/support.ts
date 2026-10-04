@@ -91,7 +91,10 @@ export async function seedDueCards(
 }
 
 /** A past conversation, so chat-sourced cloze sentences exist. */
-export async function seedChatHistory(page: Page, lines: { zh: string; en?: string }[]): Promise<void> {
+export async function seedChatHistory(
+  page: Page,
+  lines: { zh: string; en?: string }[],
+): Promise<void> {
   await page.evaluate(async (ls) => {
     const at = new Date(Date.now() - 86_400_000);
     const conv = await window.__anan.db.conversations.add({
@@ -104,7 +107,13 @@ export async function seedChatHistory(page: Page, lines: { zh: string; en?: stri
       englishFallbackUsed: false,
     });
     for (const l of ls) {
-      await window.__anan.db.turns.add({ conversationId: conv, role: 'npc', zh: l.zh, en: l.en, at });
+      await window.__anan.db.turns.add({
+        conversationId: conv,
+        role: 'npc',
+        zh: l.zh,
+        en: l.en,
+        at,
+      });
     }
   }, lines);
 }
@@ -212,7 +221,10 @@ export const ROUTES: RouteDef[] = [
         ]),
       );
       await page.getByRole('button', { name: /New sentence/ }).tap();
-      await page.getByRole('button', { name: /Show English|Finding/ }).first().waitFor({ timeout: 15000 });
+      await page
+        .getByRole('button', { name: /Show English|Finding/ })
+        .first()
+        .waitFor({ timeout: 15000 });
     },
   },
   ...(['zhuyin', 'both'] as const).map<RouteDef>((script) => ({
@@ -221,7 +233,10 @@ export const ROUTES: RouteDef[] = [
     highRes: true,
     run: async (page) => {
       await openApp(page, 'reader');
-      await page.evaluate((s) => window.__anan.db.settings.put({ key: 'readerScript', value: s }), script);
+      await page.evaluate(
+        (s) => window.__anan.db.settings.put({ key: 'readerScript', value: s }),
+        script,
+      );
       await page.reload();
       await expect(page.locator('.an-token').first()).toBeVisible({ timeout: 20000 });
       await page.waitForTimeout(400);
@@ -255,7 +270,9 @@ export const ROUTES: RouteDef[] = [
       await openApp(page, 'review');
       await seedDueCards(page, [{ id: WORDS.咖啡 }, { id: WORDS.吃 }, { id: WORDS.喝 }]);
       await page.reload();
-      await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible({ timeout: 20000 });
+      await expect(page.getByRole('button', { name: 'Show answer' })).toBeVisible({
+        timeout: 20000,
+      });
     },
   },
   {
@@ -276,7 +293,9 @@ export const ROUTES: RouteDef[] = [
       await openApp(page, 'cloze');
       await seedDueCards(page, [{ id: WORDS.咖啡 }, { id: WORDS.飯 }]);
       await page.reload();
-      await expect(page.getByRole('button', { name: /Start session/ })).toBeVisible({ timeout: 20000 });
+      await expect(page.getByRole('button', { name: /Start session/ })).toBeVisible({
+        timeout: 20000,
+      });
     },
   },
   ...[1, 2, 3].map<RouteDef>((rung) => ({
@@ -296,7 +315,9 @@ export const ROUTES: RouteDef[] = [
       ]);
       await page.reload();
       await page.getByRole('button', { name: /Start session/ }).click();
-      await expect(page.locator('.cloze-exercise, .cloze-page').first()).toBeVisible({ timeout: 20000 });
+      await expect(page.locator('.cloze-exercise, .cloze-page').first()).toBeVisible({
+        timeout: 20000,
+      });
       await expect(page.locator('.cloze-badge').first()).toBeVisible();
     },
   })),
@@ -318,7 +339,9 @@ export const ROUTES: RouteDef[] = [
       await page.getByLabel(/Use fake tutor/).check();
       await page.getByLabel('Journal entry').fill('今天我搭地鐵。我去 [gym]。');
       await page.getByRole('button', { name: 'Submit for feedback' }).click();
-      await expect(page.getByRole('heading', { name: 'Spot the mistakes' })).toBeVisible({ timeout: 15000 });
+      await expect(page.getByRole('heading', { name: 'Spot the mistakes' })).toBeVisible({
+        timeout: 15000,
+      });
     },
   },
   {
@@ -329,22 +352,36 @@ export const ROUTES: RouteDef[] = [
       await page.getByLabel(/Use fake tutor/).check();
       await page.getByLabel('Journal entry').fill('今天我搭地鐵。我去 [gym]。');
       await page.getByRole('button', { name: 'Submit for feedback' }).click();
-      await expect(page.getByRole('heading', { name: 'Spot the mistakes' })).toBeVisible({ timeout: 15000 });
+      await expect(page.getByRole('heading', { name: 'Spot the mistakes' })).toBeVisible({
+        timeout: 15000,
+      });
       await page.getByRole('button', { name: 'Show corrections' }).tap();
       await expect(page.getByRole('button', { name: 'Finish entry' })).toBeVisible();
     },
   },
-  ...(['progress', 'textbook', 'placement', 'anki-import', 'credits', 'audio-review', 'zhuyin-test'] as const).map<RouteDef>(
-    (route) => ({
-      id: route,
-      session: 'signed-in',
-      run: async (page) => {
-        await openApp(page, route);
-        await page.waitForTimeout(1200);
-        await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 20000 });
-      },
-    }),
-  ),
+  ...(
+    [
+      'progress',
+      'textbook',
+      'placement',
+      'anki-import',
+      'credits',
+      'audio-review',
+      'zhuyin-test',
+    ] as const
+  ).map<RouteDef>((route) => ({
+    id: route,
+    session: 'signed-in',
+    run: async (page) => {
+      await openApp(page, route);
+      await page.waitForTimeout(1200);
+      // some screens have no heading when their data is absent (audio review says
+      // "No audio has been built yet", the textbook says its private text is missing)
+      await expect(page.locator('.page-slot').getByText(/\S/).first()).toBeVisible({
+        timeout: 20000,
+      });
+    },
+  })),
 ];
 
 // ---------------------------------------------------------------------------
@@ -381,7 +418,10 @@ export async function collectFindings(page: Page): Promise<Finding[]> {
       };
       const describe = (el: Element): { sel: string; label: string } => {
         const e = el as HTMLElement;
-        const cls = [...e.classList].slice(0, 2).map((c) => `.${c}`).join('');
+        const cls = [...e.classList]
+          .slice(0, 2)
+          .map((c) => `.${c}`)
+          .join('');
         const label =
           e.getAttribute('aria-label') ||
           (e.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 24) ||
@@ -401,7 +441,11 @@ export async function collectFindings(page: Page): Promise<Finding[]> {
 
       const root = document.documentElement;
       if (root.scrollWidth > root.clientWidth + 1)
-        add('horizontal-scroll', { sel: 'page', label: '' }, `scrollWidth ${root.scrollWidth} > clientWidth ${root.clientWidth}`);
+        add(
+          'horizontal-scroll',
+          { sel: 'page', label: '' },
+          `scrollWidth ${root.scrollWidth} > clientWidth ${root.clientWidth}`,
+        );
 
       // elements poking outside the screen (not inside their own horizontal scroller)
       const vw = window.innerWidth;
@@ -417,7 +461,8 @@ export async function collectFindings(page: Page): Promise<Finding[]> {
             break;
           }
         }
-        if (!scrolled) add('offscreen', describe(el), `x ${Math.round(r.left)}–${Math.round(r.right)} of ${vw}`);
+        if (!scrolled)
+          add('offscreen', describe(el), `x ${Math.round(r.left)}–${Math.round(r.right)} of ${vw}`);
       }
 
       // tap targets
@@ -430,7 +475,11 @@ export async function collectFindings(page: Page): Promise<Finding[]> {
         if (el.matches('input[type=checkbox][readonly], input[readonly][type=checkbox]')) continue;
         // a checkbox / radio is tapped through its label: that is the hit area
         const isToggle = el.matches('input[type=checkbox], input[type=radio]');
-        const hit = (isToggle && (el.closest('label') ?? (e.id ? document.querySelector(`label[for="${e.id}"]`) : null))) || el;
+        const hit =
+          (isToggle &&
+            (el.closest('label') ??
+              (e.id ? document.querySelector(`label[for="${e.id}"]`) : null))) ||
+          el;
         const r = hit.getBoundingClientRect();
         if (r.width < MIN_TARGET - 0.5 || r.height < MIN_TARGET - 0.5)
           add('small-target', describe(el), `${Math.round(r.width)}×${Math.round(r.height)}px`);
@@ -442,13 +491,15 @@ export async function collectFindings(page: Page): Promise<Finding[]> {
       for (let n = walker.nextNode(); n; n = walker.nextNode()) {
         const text = n.textContent ?? '';
         const parent = n.parentElement;
-        if (!parent || !han.test(text) || !visible(parent) || parent.closest('rt, script, style')) continue;
+        if (!parent || !han.test(text) || !visible(parent) || parent.closest('rt, script, style'))
+          continue;
         const px = parseFloat(getComputedStyle(parent).fontSize);
         // Chinese body text: 20px. A Chinese word inside an English sentence just
         // has to match the 16px body text around it.
         const letters = text.replace(/[\s\d\p{P}]/gu, '');
         const mostlyChinese = [...letters].filter((c) => han.test(c)).length >= letters.length / 2;
-        if (px < (mostlyChinese ? MIN_CHINESE_PX : 16)) add('small-chinese', describe(parent), `${px}px`);
+        if (px < (mostlyChinese ? MIN_CHINESE_PX : 16))
+          add('small-chinese', describe(parent), `${px}px`);
       }
 
       // pinyin / zhuyin annotations
@@ -459,7 +510,9 @@ export async function collectFindings(page: Page): Promise<Finding[]> {
       }
 
       // iOS zooms the page when a focused field is under 16px
-      for (const el of document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]), textarea, select')) {
+      for (const el of document.querySelectorAll(
+        'input:not([type=checkbox]):not([type=radio]):not([type=hidden]), textarea, select',
+      )) {
         if (!visible(el)) continue;
         const px = parseFloat(getComputedStyle(el).fontSize);
         if (px < MIN_INPUT_PX) add('small-input', describe(el), `${px}px`);
@@ -473,9 +526,18 @@ export async function collectFindings(page: Page): Promise<Finding[]> {
       for (const list of groups.values()) {
         const first = list[0]!;
         if (list.length <= 2) {
-          for (const r of list) out.push({ kind: r.kind, where: r.label ? `${r.sel} “${r.label}”` : r.sel, detail: r.detail });
+          for (const r of list)
+            out.push({
+              kind: r.kind,
+              where: r.label ? `${r.sel} “${r.label}”` : r.sel,
+              detail: r.detail,
+            });
         } else {
-          out.push({ kind: first.kind, where: `${first.sel} (×${list.length})`, detail: first.detail });
+          out.push({
+            kind: first.kind,
+            where: `${first.sel} (×${list.length})`,
+            detail: first.detail,
+          });
         }
       }
       return out;
