@@ -152,9 +152,20 @@ describe.skipIf(!built)('built textbook data (laixue-1)', () => {
 
 describe('textbook copyright handling', () => {
   it('the PDF and the extracted book text are gitignored and not tracked', () => {
-    const ignore = readFileSync(path.join(REPO, '.gitignore'), 'utf8');
-    expect(ignore).toContain('data/raw/textbook/');
-    expect(ignore).toContain('data/curriculum/laixue-1/private/');
+    // Ask git itself, so the exact .gitignore pattern (a glob or a literal path) doesn't matter.
+    for (const p of [
+      'data/raw/textbook/laixue-1.pdf',
+      'data/curriculum/laixue-1/private/dialogues.json',
+    ]) {
+      let ignored = false;
+      try {
+        execFileSync('git', ['check-ignore', '-q', p], { cwd: REPO });
+        ignored = true;
+      } catch (err) {
+        if ((err as { status?: number }).status === 128) return; // not a git checkout
+      }
+      expect(ignored, `${p} must be gitignored`).toBe(true);
+    }
     let tracked = '';
     try {
       tracked = execFileSync(
