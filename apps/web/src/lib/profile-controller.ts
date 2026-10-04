@@ -1,3 +1,4 @@
+import type { AnanDB } from '../db/schema.js';
 import { closeSession, currentSession, openSession, type Session } from '../db/instance.js';
 import type { ProfileId } from '../profiles.js';
 import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
@@ -48,6 +49,12 @@ export function withDeadline(promise: Promise<unknown>, ms: number): Promise<voi
   ]);
 }
 
+/** Has this browser already used this profile? (It saved a level, or has any progress.) */
+export async function isReturningDevice(db: AnanDB): Promise<boolean> {
+  if (await db.settings.get('currentLevel')) return true;
+  return (await db.items.count()) > 0;
+}
+
 export class ProfileController {
   private sync: SyncManager | null = null;
   private unsubscribeStatus: (() => void) | null = null;
@@ -89,11 +96,17 @@ export class ProfileController {
     // e2e suite so unrelated specs don't share one server copy).
     if (localStorage.getItem('anan.sync.disabled') === '1') return session;
     sync.start();
-    // Pull if the server moved on, then push anything pending. The first screen
-    // waits for this only briefly: on a slow or stalled connection the app opens
-    // on the local copy instead, and when the pull lands later the data-changed
-    // hook (above) refreshes whatever is on screen.
-    await withDeadline(sync.flush(), FIRST_PULL_DEADLINE_MS);
+    // Pull if the server moved on, then push anything pending.
+    //  - A device that already has this profile's data waits only briefly: on a slow
+    //    or stalled connection the app opens on the local copy, and when the pull
+    //    lands the data-changed hook (above) refreshes whatever is on screen.
+    //  - A NEW device (nothing saved here yet) waits for the pull, however long it
+    //    takes. Opening on an empty database would let first-run defaults (the
+    //    starting level, ...) be written with a newer timestamp than the real
+    //    values on the server, and then win the merge and overwrite them.
+    if (await isReturningDevice(session.db))
+      await withDeadline(sync.flush(), FIRST_PULL_DEADLINE_MS);
+    else await sync.flush().catch(() => undefined);
     this.events.onSyncStatus(sync.status);
     return session;
   }

@@ -116,13 +116,11 @@ async function seedLegacy(): Promise<void> {
     conversations: '++id, scenarioId, startedAt',
     turns: '++id, conversationId, at',
   });
-  old
-    .version(2)
-    .stores({
-      journalEntries: 'id, createdAt, status',
-      journalReviews: 'entryId, createdAt',
-      errorItems: 'id, journalEntryId, card.due, pattern',
-    });
+  old.version(2).stores({
+    journalEntries: 'id, createdAt, status',
+    journalReviews: 'entryId, createdAt',
+    errorItems: 'id, journalEntryId, card.due, pattern',
+  });
   old.version(3).stores({ rewardEvents: 'id, at, kind' });
   old.version(4).stores({ glossReports: '++id, wordId, at', aiGlosses: 'key, at' });
   await old.open();
@@ -155,28 +153,24 @@ async function seedLegacy(): Promise<void> {
       updatedAt: now,
     })),
   );
-  await old
-    .table('evidence')
-    .bulkAdd(
-      ['a', 'b', 'c'].map((id) => ({
-        item: { kind: 'word', id },
-        skill: 'recognition',
-        kind: 'review_good',
-        at: now,
-      })),
-    );
+  await old.table('evidence').bulkAdd(
+    ['a', 'b', 'c'].map((id) => ({
+      item: { kind: 'word', id },
+      skill: 'recognition',
+      kind: 'review_good',
+      at: now,
+    })),
+  );
   await old.table('settings').put({ key: 'currentLevel', value: 'L2' });
-  const conv = (await old
-    .table('conversations')
-    .add({
-      scenarioId: 'tea',
-      npcId: 'n',
-      startedAt: now,
-      goalStepsDone: ['order'],
-      completed: true,
-      stuckCount: 0,
-      englishFallbackUsed: false,
-    })) as number;
+  const conv = (await old.table('conversations').add({
+    scenarioId: 'tea',
+    npcId: 'n',
+    startedAt: now,
+    goalStepsDone: ['order'],
+    completed: true,
+    stuckCount: 0,
+    englishFallbackUsed: false,
+  })) as number;
   await old.table('turns').bulkAdd([
     { conversationId: conv, role: 'npc', zh: '歡迎光臨', at: now },
     { conversationId: conv, role: 'learner', zh: '我要茶', at: new Date(now.getTime() + 1000) },
@@ -279,5 +273,52 @@ describe('first screen is not blocked on sync (phase 11)', () => {
     await withDeadline(Promise.resolve(), 5000);
     await withDeadline(Promise.reject(new Error('server down')), 5000);
     expect(Date.now() - started).toBeLessThan(500);
+  });
+});
+
+describe('new device vs returning device (phase 11)', () => {
+  it('a database with nothing saved is a NEW device: it must wait for the first pull', async () => {
+    const { isReturningDevice } = await import('./profile-controller.js');
+    const db = new AnanDB(`anan-new-${Math.random()}`);
+    expect(await isReturningDevice(db)).toBe(false);
+    await db.delete();
+  });
+
+  it('a saved level, or any progress, makes it a returning device (the pull may be capped)', async () => {
+    const { isReturningDevice } = await import('./profile-controller.js');
+    const withLevel = new AnanDB(`anan-ret1-${Math.random()}`);
+    await withLevel.settings.put({ key: 'currentLevel', value: 'L2' });
+    expect(await isReturningDevice(withLevel)).toBe(true);
+    await withLevel.delete();
+
+    const withCards = new AnanDB(`anan-ret2-${Math.random()}`);
+    await withCards.items.put({
+      pk: 'word:w1:recognition',
+      item: { kind: 'word', id: 'w1' },
+      skill: 'recognition',
+      card: {
+        due: new Date(),
+        stability: 1,
+        difficulty: 5,
+        elapsed_days: 0,
+        scheduled_days: 1,
+        learning_steps: 0,
+        reps: 1,
+        lapses: 0,
+        state: 2,
+      },
+      state: 'review',
+      lapses: 0,
+      leech: false,
+      leechTreatmentsTried: [],
+      clozeRung: 1,
+      clozeStreak: 0,
+      familiarity: 0,
+      readingDependence: 0,
+      flags: {},
+      updatedAt: new Date(),
+    } as never);
+    expect(await isReturningDevice(withCards)).toBe(true);
+    await withCards.delete();
   });
 });

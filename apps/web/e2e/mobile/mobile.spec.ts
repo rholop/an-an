@@ -26,7 +26,9 @@ declare global {
 
 test.describe('every screen fits a phone', () => {
   for (const route of ROUTES) {
-    test(`${route.id}: no sideways scroll, nothing cut off, targets ≥44px, text sizes ok`, async ({ page }) => {
+    test(`${route.id}: no sideways scroll, nothing cut off, targets ≥44px, text sizes ok`, async ({
+      page,
+    }) => {
       test.setTimeout(60000);
       await prepareContext(page, route.session, 'light');
       await route.run(page);
@@ -48,10 +50,14 @@ test.describe('navigation and shell', () => {
     await expect(tabbar).toBeVisible();
     await expect(tabbar.getByRole('button')).toHaveCount(5); // Home, Chat, Review, Journal, More
     await expect(page.locator('.app-nav')).toBeHidden(); // the 13-button top strip is gone
-    // pinned to the bottom of the screen
-    const box = (await tabbar.boundingBox())!;
+    // pinned to the bottom of the screen (poll: the bar mounts a moment after the page)
     const vh = page.viewportSize()!.height;
-    expect(Math.abs(box.y + box.height - vh)).toBeLessThanOrEqual(1);
+    await expect
+      .poll(async () => {
+        const box = await tabbar.boundingBox();
+        return box ? Math.abs(box.y + box.height - vh) : Infinity;
+      })
+      .toBeLessThanOrEqual(1);
 
     await tabbar.getByRole('button', { name: 'More' }).tap();
     const sheet = page.getByRole('dialog', { name: 'More' });
@@ -76,10 +82,15 @@ test.describe('navigation and shell', () => {
     expect(box.height).toBeLessThan(80);
   });
 
-  test('the page extends under the notch and home bar (viewport-fit=cover) and uses dvh', async ({ page }) => {
+  test('the page extends under the notch and home bar (viewport-fit=cover) and uses dvh', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await openApp(page, 'garden');
-    await expect(page.locator('meta[name=viewport]')).toHaveAttribute('content', /viewport-fit=cover/);
+    await expect(page.locator('meta[name=viewport]')).toHaveAttribute(
+      'content',
+      /viewport-fit=cover/,
+    );
     const css = await page.evaluate(async () => {
       const sheets = [...document.styleSheets];
       let text = '';
@@ -97,13 +108,17 @@ test.describe('navigation and shell', () => {
     expect(css).toMatch(/100dvh/);
   });
 
-  test('the household code screen: a big Continue button and a field that will not autofill or zoom', async ({ page }) => {
+  test('the household code screen: a big Continue button and a field that will not autofill or zoom', async ({
+    page,
+  }) => {
     await prepareContext(page, 'no-code', 'light');
     await page.goto('/');
     const input = page.locator('#site-code');
     await expect(input).toBeVisible({ timeout: 20000 });
     await expect(input).toHaveAttribute('autocomplete', 'off');
-    expect(parseFloat(await input.evaluate((el) => getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+    expect(
+      parseFloat(await input.evaluate((el) => getComputedStyle(el).fontSize)),
+    ).toBeGreaterThanOrEqual(16);
     const button = page.getByRole('button', { name: /continue/i });
     const b = (await button.boundingBox())!;
     expect(b.height).toBeGreaterThanOrEqual(52);
@@ -112,7 +127,9 @@ test.describe('navigation and shell', () => {
 });
 
 test.describe('no hover on a phone: everything works by tap', () => {
-  test('a tap opens the definition as a bottom sheet that stays on screen; tapping elsewhere closes it', async ({ page }) => {
+  test('a tap opens the definition as a bottom sheet that stays on screen; tapping elsewhere closes it', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await openApp(page, 'reader');
     const tokens = page.locator('.an-token');
@@ -142,7 +159,9 @@ test.describe('no hover on a phone: everything works by tap', () => {
     await expect(sheet).toHaveCount(0);
   });
 
-  test('"hover" mode: the first tap shows the reading, the second opens the definition — with the same evidence hovering had', async ({ page }) => {
+  test('"hover" mode: the first tap shows the reading, the second opens the definition — with the same evidence hovering had', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await openApp(page, 'reader');
     await page.evaluate(() => window.__anan.db.settings.put({ key: 'readerMode', value: 'hover' }));
@@ -176,7 +195,9 @@ test.describe('no hover on a phone: everything works by tap', () => {
     await expect(token.locator('rt').first()).toHaveCSS('opacity', '0');
   });
 
-  test('tapping a word is not a hover: with the reading already shown, a tap records one lookup and no hover event', async ({ page }) => {
+  test('tapping a word is not a hover: with the reading already shown, a tap records one lookup and no hover event', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await openApp(page, 'reader');
     await expect(page.locator('.an-token').first()).toBeVisible({ timeout: 20000 });
@@ -190,7 +211,9 @@ test.describe('no hover on a phone: everything works by tap', () => {
 });
 
 test.describe('keyboards and inputs', () => {
-  test('chat: with the keyboard up the input row stays inside the visible area and the latest message is in view', async ({ page }) => {
+  test('chat: with the keyboard up the input row stays inside the visible area and the latest message is in view', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await ROUTES.find((r) => r.id === 'chat-conversation')!.run(page);
     const { height } = page.viewportSize()!;
@@ -214,17 +237,28 @@ test.describe('keyboards and inputs', () => {
     expect(last.y + last.height).toBeGreaterThan(0);
   });
 
-  test('chat: input is 16px+ (no iOS zoom), suggestions scroll in one row, "I\'m stuck" is reachable without scrolling', async ({ page }) => {
+  test('chat: input is 16px+ (no iOS zoom), suggestions scroll in one row, "I\'m stuck" is reachable without scrolling', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await ROUTES.find((r) => r.id === 'chat-conversation')!.run(page);
     const input = page.locator('.chat-input');
-    expect(parseFloat(await input.evaluate((el) => getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
-    for (const [attr, value] of [['autocapitalize', 'off'], ['autocorrect', 'off'], ['spellcheck', 'false'], ['lang', 'zh-Hant-TW']]) {
+    expect(
+      parseFloat(await input.evaluate((el) => getComputedStyle(el).fontSize)),
+    ).toBeGreaterThanOrEqual(16);
+    for (const [attr, value] of [
+      ['autocapitalize', 'off'],
+      ['autocorrect', 'off'],
+      ['spellcheck', 'false'],
+      ['lang', 'zh-Hant-TW'],
+    ]) {
       await expect(input).toHaveAttribute(attr!, value!);
     }
     const chips = page.locator('.chat-chip');
     if ((await chips.count()) > 1) {
-      const ys = await chips.evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+      const ys = await chips.evaluateAll((els) =>
+        els.map((e) => Math.round(e.getBoundingClientRect().top)),
+      );
       expect(new Set(ys).size).toBe(1); // one row
     }
     const stuck = (await page.getByRole('button', { name: "I'm stuck" }).boundingBox())!;
@@ -233,27 +267,41 @@ test.describe('keyboards and inputs', () => {
     expect(stuck.y).toBeGreaterThanOrEqual(0);
   });
 
-  test('journal: the entry box fills the screen, Submit is pinned within reach, typing is not auto-corrected', async ({ page }) => {
+  test('journal: the entry box fills the screen, Submit is pinned within reach, typing is not auto-corrected', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await openApp(page, 'journal');
     await page.getByLabel('Journal entry').waitFor();
     const box = (await page.getByLabel('Journal entry').boundingBox())!;
     expect(box.height).toBeGreaterThan(page.viewportSize()!.height * 0.35);
     const textarea = page.getByLabel('Journal entry');
-    for (const [attr, value] of [['autocapitalize', 'off'], ['autocorrect', 'off'], ['spellcheck', 'false']]) {
+    for (const [attr, value] of [
+      ['autocapitalize', 'off'],
+      ['autocorrect', 'off'],
+      ['spellcheck', 'false'],
+    ]) {
       await expect(textarea).toHaveAttribute(attr!, value!);
     }
-    expect(parseFloat(await textarea.evaluate((el) => getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+    expect(
+      parseFloat(await textarea.evaluate((el) => getComputedStyle(el).fontSize)),
+    ).toBeGreaterThanOrEqual(16);
     const submit = (await page.getByRole('button', { name: 'Submit for feedback' }).boundingBox())!;
     expect(submit.y + submit.height).toBeLessThanOrEqual(page.viewportSize()!.height);
   });
 
-  test('cloze: typed answers get the Chinese keyboard, no auto-capitals or auto-correct, and a done key', async ({ page }) => {
+  test('cloze: typed answers get the Chinese keyboard, no auto-capitals or auto-correct, and a done key', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await openApp(page, 'cloze');
     await page.evaluate(() => void 0);
     // rung 3 = typed answers
-    await seedDueCards(page, [{ id: WORDS.咖啡, rung: 3 }, { id: WORDS.飯, rung: 3 }, { id: WORDS.便利商店, rung: 3 }]);
+    await seedDueCards(page, [
+      { id: WORDS.咖啡, rung: 3 },
+      { id: WORDS.飯, rung: 3 },
+      { id: WORDS.便利商店, rung: 3 },
+    ]);
     await page.reload();
     await page.getByRole('button', { name: /Start session/ }).tap();
     const input = page.locator('.cloze-input-row input').first();
@@ -262,18 +310,23 @@ test.describe('keyboards and inputs', () => {
       await expect(input).toHaveAttribute('autocorrect', 'off');
       await expect(input).toHaveAttribute('spellcheck', 'false');
       await expect(input).toHaveAttribute('enterkeyhint', 'done');
-      expect(parseFloat(await input.evaluate((el) => getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+      expect(
+        parseFloat(await input.evaluate((el) => getComputedStyle(el).fontSize)),
+      ).toBeGreaterThanOrEqual(16);
     }
   });
 });
 
 test.describe('screen-specific', () => {
-  test('review: Show answer, then all four grade buttons in ONE row, near the bottom', async ({ page }) => {
+  test('review: Show answer, then all four grade buttons in ONE row, near the bottom', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await ROUTES.find((r) => r.id === 'review-answer')!.run(page);
     const names = ['Again', 'Hard', 'Good', 'Easy'];
     const boxes = [];
-    for (const n of names) boxes.push((await page.getByRole('button', { name: n, exact: true }).boundingBox())!);
+    for (const n of names)
+      boxes.push((await page.getByRole('button', { name: n, exact: true }).boundingBox())!);
     expect(new Set(boxes.map((b) => Math.round(b.y))).size).toBe(1);
     const { width, height } = page.viewportSize()!;
     for (const b of boxes) {
@@ -284,7 +337,9 @@ test.describe('screen-specific', () => {
     }
   });
 
-  test('reader: New sentence is a large button pinned at the bottom; it works by tap', async ({ page }) => {
+  test('reader: New sentence is a large button pinned at the bottom; it works by tap', async ({
+    page,
+  }) => {
     await prepareContext(page, 'signed-in', 'light');
     await ROUTES.find((r) => r.id === 'reader-sentence')!.run(page);
     const button = page.getByRole('button', { name: /New sentence/ });
@@ -300,7 +355,8 @@ test.describe('screen-specific', () => {
     const stacked = await page.evaluate(() => {
       const t = document.createElement('table');
       t.className = 'anki-preview';
-      t.innerHTML = '<thead><tr><th>A</th></tr></thead><tbody><tr><td data-label="A">x</td></tr></tbody>';
+      t.innerHTML =
+        '<thead><tr><th>A</th></tr></thead><tbody><tr><td data-label="A">x</td></tr></tbody>';
       document.body.appendChild(t);
       const out = {
         theadHidden: getComputedStyle(t.querySelector('thead')!).display === 'none',
@@ -315,10 +371,15 @@ test.describe('screen-specific', () => {
 
 test.describe('pinyin and zhuyin at phone sizes', () => {
   for (const script of ['pinyin', 'zhuyin', 'both'] as const) {
-    test(`${script}: readable, never overlapping a neighbour, never wrapped away from its character`, async ({ page }) => {
+    test(`${script}: readable, never overlapping a neighbour, never wrapped away from its character`, async ({
+      page,
+    }) => {
       await prepareContext(page, 'signed-in', 'light');
       await openApp(page, 'reader');
-      await page.evaluate((s) => window.__anan.db.settings.put({ key: 'readerScript', value: s }), script);
+      await page.evaluate(
+        (s) => window.__anan.db.settings.put({ key: 'readerScript', value: s }),
+        script,
+      );
       await page.reload();
       await expect(page.locator('.an-token').first()).toBeVisible({ timeout: 20000 });
       await page.waitForTimeout(400);
@@ -344,14 +405,16 @@ test.describe('pinyin and zhuyin at phone sizes', () => {
           if (col) {
             const a = rect(c);
             const b = rect(col);
-            if (b.left < a.left - 1 || b.right > a.right + 1) problems.push(`zhuyin outside its cell: ${c.textContent}`);
+            if (b.left < a.left - 1 || b.right > a.right + 1)
+              problems.push(`zhuyin outside its cell: ${c.textContent}`);
           }
         }
         for (let i = 1; i < cells.length; i++) {
           const a = rect(cells[i - 1]!);
           const b = rect(cells[i]!);
           const sameLine = Math.abs(a.top - b.top) < 4;
-          if (sameLine && a.right > b.left + 1) problems.push(`cells overlap: ${cells[i - 1]!.textContent}|${cells[i]!.textContent}`);
+          if (sameLine && a.right > b.left + 1)
+            problems.push(`cells overlap: ${cells[i - 1]!.textContent}|${cells[i]!.textContent}`);
         }
         return { smallest, count: readings.length, problems };
       });
@@ -361,4 +424,3 @@ test.describe('pinyin and zhuyin at phone sizes', () => {
     });
   }
 });
-

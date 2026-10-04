@@ -36,10 +36,19 @@ export default defineConfig({
     // iPhones. Chrome on iOS is WebKit too, so ONE engine covers both — the
     // two projects are a small and a large current iPhone. Real WebKit (not
     // Chromium emulating an iPhone), so Safari-only layout bugs show up here.
-    { name: 'iphone-13', testMatch: 'mobile/**/*.spec.ts', use: { ...devices['iPhone 13'] } },
+    // The phone projects run AFTER the desktop project (dependencies), not alongside
+    // it: the desktop specs that exercise real sync are timing-sensitive and flaked
+    // when the extra WebKit workers competed with them for CPU.
+    {
+      name: 'iphone-13',
+      testMatch: 'mobile/**/*.spec.ts',
+      dependencies: ['desktop'],
+      use: { ...devices['iPhone 13'] },
+    },
     {
       name: 'iphone-15-pro-max',
       testMatch: 'mobile/**/*.spec.ts',
+      dependencies: ['desktop'],
       use: { ...devices['iPhone 15 Pro Max'] },
     },
   ],
