@@ -123,7 +123,7 @@ export function parseVocabBlock(
         const headLine = rest || ls[i + 1] || '';
         if (LOOKS_HEADWORD.test(headLine)) {
           const n = Number(m[1]);
-          const prev = cur?.n ?? run.at(-1)?.n;
+          const prev: number | undefined = cur ? (cur as RawEntry).n : run.at(-1)?.n;
           closeEntry();
           if (prev !== undefined && n !== prev + 1) {
             closeRun();

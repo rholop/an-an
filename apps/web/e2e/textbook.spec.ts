@@ -25,8 +25,11 @@ test.describe('Textbook / My class (phase 12)', () => {
     await expect(page.getByRole('heading', { name: /我爸爸在電腦公司工作/ })).toBeVisible();
     await expect(page.getByText('Grammar (3)')).toBeVisible();
     // The book's own dialogue arrives through the proxy, with the household code.
-    await expect(page.getByTestId('dialogue')).toBeVisible();
-    await expect(page.getByTestId('dialogue')).toContainText('王明文');
+    // The book's own dialogue is private (not in git): CI and fresh checkouts don't have it.
+    const dialogue = page.getByTestId('dialogue');
+    const missing = page.getByTestId('dialogue-unavailable');
+    await expect(dialogue.or(missing)).toBeVisible();
+    if (await dialogue.isVisible()) await expect(dialogue).toContainText('王明文');
     await page.screenshot({ path: 'screenshots/textbook-lesson.png', fullPage: true });
 
     // A word's popover carries the badge and the book's own gloss.
@@ -41,7 +44,10 @@ test.describe('Textbook / My class (phase 12)', () => {
     const base = 'http://localhost:3002/v1/textbook/laixue-1';
     expect((await request.get(`${base}/dialogues`)).status()).toBe(401);
     expect((await request.get(`${base}/examples`)).status()).toBe(401);
-    expect((await request.get(`${base}/dialogues`, { headers: { 'x-site-code': 'tofu' } })).status()).toBe(200);
+    // With the code: 200 if the private text is installed here, otherwise 404 — never 401.
+    expect([200, 404]).toContain(
+      (await request.get(`${base}/dialogues`, { headers: { 'x-site-code': 'tofu' } })).status(),
+    );
     // Never a public static file.
     for (const p of ['/textbook/laixue-1/dialogues.json', '/textbook/laixue-1/private/dialogues.json', '/textbook/laixue-1/laixue-1.pdf']) {
       const res = await request.get(`http://localhost:5183${p}`);

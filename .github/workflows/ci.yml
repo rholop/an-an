@@ -84,5 +84,9 @@ jobs:
       - name: Sync scenarios into apps/web/public
         run: pnpm --filter @anan/web sync:scenarios
 
+      # Phase 12: the Textbook page loads the structure + lesson sentences from here.
+      - name: Sync textbook into apps/web/public
+        run: pnpm --filter @anan/web sync:textbook
+
       - name: E2E tests
         run: pnpm --filter @anan/web exec playwright test
