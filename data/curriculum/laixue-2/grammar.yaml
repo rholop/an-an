@@ -1,0 +1,297 @@
+# 來學華語 第二冊: the 34 grammar points, read from the book's 語法 pages (numbering
+# follows the book; sub-parts such as 2-1/2-2 belong to their numbered point).
+# Patterns follow the book; explanations are written for this app, not copied.
+# `matcher` tags which of our sentences exercise a point; `focus` are the
+# signal words the grammar cloze blanks (empty: reorder exercise only).
+
+# ---- Lesson 1
+- id: gram-bi-comparison
+  lesson: 1
+  n: 1
+  pdfPage: 17
+  pattern: "A + 比 + B + Vs"
+  explanationEn: "比 compares two things: A is more … than B. Put the state verb straight after B. Do not add 很 or 真 (他比我很忙 is wrong); say how much more with 一點 or 多了 if you need to."
+  matcher: "比"
+  focus: ["比"]
+- id: gram-tai-le
+  lesson: 1
+  n: 2
+  pdfPage: 19
+  pattern: "(S) + 太 + Vs + 了"
+  explanationEn: "太…了 means 'too …' or 'so …'. It can be a complaint (太貴了) or enthusiasm (太好了), depending on the verb."
+  matcher: "太.+了"
+  focus: ["太"]
+- id: gram-neng-possibility
+  lesson: 1
+  n: 3
+  pdfPage: 21
+  pattern: "S + (Adv) + 能 + V (O)"
+  explanationEn: "能 says something is possible in the circumstances (you have time, the weather allows it). It sits before the main verb; negate with 不能. Compare 會 for skills and 可以 for permission."
+  matcher: "能"
+  focus: ["能"]
+- id: gram-hui-likelihood
+  lesson: 1
+  n: 4
+  pdfPage: 23
+  pattern: "S + (Adv) + 會 + V (O)"
+  explanationEn: "This second meaning of 會 predicts what will probably happen (明天可能會下雨). It is not the 'can, know how to' meaning from book 1. Negate with 不會; 可能 and 一定 often come before it."
+  matcher: "會"
+  focus: ["會"]
+
+# ---- Lesson 2
+- id: gram-gei-for
+  lesson: 2
+  n: 1
+  pdfPage: 33
+  pattern: "S + 給 + someone + V + O"
+  explanationEn: "Here 給 is a preposition: do something FOR a person (給我爸爸買禮物 = buy a gift for my dad). The person comes right after 給, then the verb."
+  matcher: "給.{1,6}[買做寫送拿]"
+  focus: ["給"]
+- id: gram-time-expressions
+  lesson: 2
+  n: 2
+  pdfPage: 35
+  pattern: "上 / 這 / 下 + 個 + 星期 / 月；去年 / 今年 / 明年"
+  explanationEn: "Relative time words: 上個, 這個, 下個 before 星期 or 月 give last, this and next; 去年, 今年, 明年 are last, this and next year. Time words come before the verb."
+  matcher: "[上這下]個(星期|禮拜|月)|去年|今年|明年|上星期|下星期"
+  focus: []
+- id: gram-you-and-you
+  lesson: 2
+  n: 3
+  pdfPage: 37
+  pattern: "S + 又 + Vs1 + 又 + Vs2"
+  explanationEn: "又…又… joins two qualities that are both true: 又便宜又好吃. The two state verbs are usually both good or both bad."
+  matcher: "又.+又"
+  focus: ["又"]
+- id: gram-yinwei-suoyi
+  lesson: 2
+  n: 4
+  pdfPage: 39
+  pattern: "因為 + Clause A，所以 + Clause B"
+  explanationEn: "因為 gives the reason and 所以 the result, and they usually come as a pair. The reason always comes first."
+  matcher: "因為.+所以|因為|所以"
+  focus: ["因為", "所以"]
+
+# ---- Lesson 3
+- id: gram-qpr-dou
+  lesson: 3
+  n: 1
+  pdfPage: 51
+  pattern: "S + QPr + (N) + 都 + V"
+  explanationEn: "A question word before 都 means 'every' or, with 不, 'none': 我什麼魚都吃 (I eat any fish), 誰都不想做飯 (nobody wants to cook). The whole phrase goes before the verb."
+  matcher: "(什麼|誰|哪裡|哪|什麼時候).*都"
+  focus: ["都"]
+- id: gram-haishi-or
+  lesson: 3
+  n: 2
+  pdfPage: 54
+  pattern: "S + Option A + 還是 + Option B"
+  explanationEn: "還是 offers two choices in a question: 你要吃白飯還是包子？ Answer by naming the one you pick; do not answer with 嗎 or 是/不是."
+  matcher: "還是"
+  focus: ["還是"]
+- id: gram-ba-suggestion
+  lesson: 3
+  n: 3
+  pdfPage: 56
+  pattern: "Sentence + 吧"
+  explanationEn: "吧 at the end of a sentence turns it into a gentle suggestion (我們去吧). It makes the speaker sound less direct."
+  matcher: "吧"
+  focus: ["吧"]
+
+# ---- Lesson 4
+- id: gram-de-omit-noun
+  lesson: 4
+  n: 1
+  pdfPage: 69
+  pattern: "…… 的 + (head noun)"
+  explanationEn: "When it is clear what the noun is, you can drop it after 的: 您要熱的還是冰的？ (hot one or iced one?). The adjective plus 的 stands in for the noun."
+  matcher: "[熱冰大小貴便宜甜鹹紅杯]的(還是|[。，？！吧嗎]|$)"
+  focus: ["的"]
+- id: gram-ruguo-jiu
+  lesson: 4
+  n: 2
+  pdfPage: 71
+  pattern: "如果 + S1 + V1，S2 + 就 + V2"
+  explanationEn: "如果 sets up a condition and 就 introduces what follows from it: 如果下雨，我就不去. 就 goes before the verb (and before other adverbs) in the second clause."
+  matcher: "如果.+就"
+  focus: ["如果", "就"]
+- id: gram-gen-yiyang
+  lesson: 4
+  n: 3
+  pdfPage: 72
+  pattern: "A + 跟 + B + 一樣 (+ Vs)"
+  explanationEn: "A 跟 B 一樣 says A and B are the same; add a state verb to say in what way: 中文跟法文一樣難."
+  matcher: "跟.+一樣"
+  focus: ["一樣"]
+
+# ---- Lesson 5
+- id: gram-le-new-situation
+  lesson: 5
+  n: 1
+  pdfPage: 83
+  pattern: "S + Vs + 了 ； S + 不 + V + 了"
+  explanationEn: "Sentence-final 了 marks a change: a new situation compared with before (天氣熱了, 我不喝咖啡了 = I don't drink coffee any more)."
+  matcher: "了([，。！？]|$)"
+  focus: ["了"]
+- id: gram-suiran-keshi
+  lesson: 5
+  n: 2
+  pdfPage: 85
+  pattern: "雖然 + Clause, 可是 + Clause"
+  explanationEn: "雖然…可是… means 'although …, still …'. The 雖然 clause comes first. Unlike English you can use both words."
+  matcher: "雖然.+可是"
+  focus: ["雖然", "可是"]
+- id: gram-money-units
+  lesson: 5
+  n: 3
+  pdfPage: 87
+  pattern: "N 塊 N 毛 N 分 (錢)"
+  explanationEn: "Taiwanese money: 塊 is the dollar, 毛 a tenth of it, 分 a hundredth. Say each unit in turn and end with 錢 if you like: 四十五塊六毛八分錢."
+  matcher: "[0-9一二兩三四五六七八九十百]+塊|毛|分錢"
+  focus: ["塊"]
+
+# ---- Lesson 6
+- id: gram-li-distance
+  lesson: 6
+  n: 1
+  pdfPage: 97
+  pattern: "Place A + 離 + Place B + 很 + 遠 / 近"
+  explanationEn: "離 measures the distance between two places: A 離 B 很遠 (A is far from B). The distance word needs an adverb such as 很 or 不 before it."
+  matcher: "離.+[遠近]"
+  focus: ["離"]
+- id: gram-cong-dao
+  lesson: 6
+  n: 2
+  pdfPage: 99
+  pattern: "從 + Place A + 到 + Place B，……"
+  explanationEn: "從…到… gives the start and end of a trip, then says how long or how far: 從我家到學校，開車要二十分鐘."
+  matcher: "從.+到"
+  focus: ["從", "到"]
+- id: gram-duration
+  lesson: 6
+  n: 3
+  pdfPage: 100
+  pattern: "S + V + O，V + length of time"
+  explanationEn: "A length of time comes AFTER the verb. With an object, repeat the verb: 他學中文，學兩年了. Time words: 年, 個月, 個星期, 天, 個鐘頭, 分鐘."
+  matcher: "(兩|三|四|五|六|七|八|九|十|一|半)(個)?(鐘頭|分鐘|小時|天|年|月)|一個月|半年"
+  focus: []
+- id: gram-de-modifier
+  lesson: 6
+  n: 4
+  pdfPage: 103
+  pattern: "V / VP / Clause + 的 + N"
+  explanationEn: "A verb, verb phrase or whole clause can describe a noun if 的 comes between them: 住的地方 (the place where one lives), 我太太做的蛋糕 (the cake my wife made)."
+  matcher: "[住做買喝吃看寫說賣開穿作班學].{0,6}的(人|地方|東西|蛋糕|菜|書|衣服|房子|時候|事|蘋果|飲料|咖啡|電影|老師|朋友|學校|餐廳)"
+  focus: ["的"]
+
+# ---- Lesson 7
+- id: gram-positional-words
+  lesson: 7
+  n: 1
+  pdfPage: 115
+  pattern: "N + 的 + 前面 / 後面 / 旁邊 / 對面 …"
+  explanationEn: "Positional words (前面, 後面, 裡面, 外面, 上面, 下面, 左邊, 右邊, 旁邊, 對面) follow the place noun they relate to. 的 between them can be dropped: 學校（的）後面."
+  matcher: "(前|後|裡|外|上|下)面|左邊|右邊|旁邊|對面|前邊|後邊|裡邊|外邊|樓上|樓下"
+  focus: []
+- id: gram-zai-location
+  lesson: 7
+  n: 2
+  pdfPage: 117
+  pattern: "N (place) + 在 + N + 的 + positional word"
+  explanationEn: "To say where a place is, put 在 and a locative phrase after it: 超級市場在餐廳對面. Ask with 在哪裡？"
+  matcher: "在.+((前|後|裡|外|上|下)面|左邊|右邊|旁邊|對面|樓上|樓下)"
+  focus: ["在"]
+- id: gram-ji-approximate
+  lesson: 7
+  n: 3
+  pdfPage: 119
+  pattern: "(十 / 二十 …) + 幾 + MW + N"
+  explanationEn: "幾 stands for any digit 1–9: 幾分鐘 is a few minutes; 十幾個人 is 11–19 people; 二十幾個 is 21–29."
+  matcher: "幾"
+  focus: ["幾"]
+
+# ---- Lesson 8
+- id: gram-xian-ranhou
+  lesson: 8
+  n: 1
+  pdfPage: 129
+  pattern: "S + 先 VP1，然後 VP2"
+  explanationEn: "先…然後… orders two actions: first one, then the other. 先 comes before the first verb, 然後 starts the second part."
+  matcher: "先.+然後"
+  focus: ["先", "然後"]
+- id: gram-le-completion
+  lesson: 8
+  n: 2
+  pdfPage: 131
+  pattern: "S + V + O + 了 ； S + V + 了 + Num + MW + O"
+  explanationEn: "了 marks an action as completed. At the end of the sentence it reports the event (我吃早飯了). Right after the verb it goes with a counted object (我喝了三瓶啤酒), and V1了 O1，V2 O2 means 'after V1, V2'."
+  matcher: "了"
+  focus: ["了"]
+- id: gram-verb-reduplication
+  lesson: 8
+  n: 3
+  pdfPage: 133
+  pattern: "V (一) V + O"
+  explanationEn: "Repeating a verb (聽聽音樂) makes the action short, casual or 'a bit'. 一 can go in the middle: 看一看. Use it for relaxed activities."
+  matcher: "(.)\\1[音樂書電視]|看一看|(聽聽|看看|走走|玩玩|坐坐|想想|問問|試試|逛逛)"
+  focus: []
+
+# ---- Lesson 9
+- id: gram-duo-shao
+  lesson: 9
+  n: 1
+  pdfPage: 143
+  pattern: "多 / 少 + V + (O)"
+  explanationEn: "Before a verb, 多 means 'do more' and 少 'do less': 你應該多休息, 少吃一點. It is often used for advice."
+  matcher: "[多少][休息喝吃睡運動看練習走注說寫買]"
+  focus: ["多", "少"]
+- id: gram-mei-negation
+  lesson: 9
+  n: 2
+  pdfPage: 145
+  pattern: "S + 沒 (有) + V + (O)"
+  explanationEn: "沒(有) negates a completed action: 昨天沒來上班 (didn't come to work yesterday). Do not use 了 with it."
+  matcher: "沒"
+  focus: ["沒"]
+- id: gram-you-again
+  lesson: 9
+  n: 3
+  pdfPage: 147
+  pattern: "S + 又 + V + (O) + 了"
+  explanationEn: "又…了 says something has happened again: 他又來了. It reports a repetition that has already taken place, not one that will happen."
+  matcher: "又.+了"
+  focus: ["又"]
+
+# ---- Lesson 10
+- id: gram-zai-progressive
+  lesson: 10
+  n: 1
+  pdfPage: 157
+  pattern: "S + 在 + VP + (呢)"
+  explanationEn: "在 before a verb means the action is in progress right now: 他在看電視. A final 呢 can be added."
+  matcher: "在[^，。？！]{0,4}[做看吃喝寫聽說玩學洗找準想練]"
+  focus: ["在"]
+- id: gram-kuaiyao-le
+  lesson: 10
+  n: 2
+  pdfPage: 159
+  pattern: "(S) + 快 (要) + VP + 了"
+  explanationEn: "快（要）…了 says something is about to happen: 我快要畢業了. Both 快 and 了 are needed."
+  matcher: "快.*了"
+  focus: ["快"]
+- id: gram-yi-jiu
+  lesson: 10
+  n: 3
+  pdfPage: 160
+  pattern: "S1 + 一 + VP1，S2 + 就 + VP2"
+  explanationEn: "一…就… means 'as soon as …, then …': 王先生一到家，王太太就出去了. If both clauses share the subject, say it once."
+  matcher: "一.+就"
+  focus: ["一", "就"]
+- id: gram-guo-experience
+  lesson: 10
+  n: 4
+  pdfPage: 161
+  pattern: "S + V + 過 + O ； S + 沒 + V + 過 + O"
+  explanationEn: "過 after a verb says you have had that experience at least once: 我看過那個電影. Negate with 沒…過 (我沒去過日本)."
+  matcher: "[^經]過[^去來]|過了"
+  focus: ["過"]

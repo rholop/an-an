@@ -1,0 +1,57 @@
+lesson: 5
+sentences:
+  - { zh: 天氣熱了。, en: "The weather has turned hot.", grammar: [gram-le-new-situation] }
+  - { zh: 我最近胖了。, en: "I have gained weight lately.", grammar: [gram-le-new-situation] }
+  - { zh: 他不喝咖啡了。, en: "He doesn't drink coffee any more.", grammar: [gram-le-new-situation] }
+  - { zh: 她現在不吃肉了。, en: "She doesn't eat meat any more.", grammar: [gram-le-new-situation] }
+  - { zh: 這件外套小了，我要大的。, en: "This coat has become small; I want a bigger one.", grammar: [gram-le-new-situation] }
+  - { zh: 我們現在不住在這裡了。, en: "We don't live here any more.", grammar: [gram-le-new-situation] }
+  - { zh: 這雙運動鞋太小了。, en: "These sports shoes are too small.", grammar: [gram-le-new-situation] }
+  - { zh: 最近天氣熱了，我常常喝冰水。, en: "It's gotten hot lately, so I often drink iced water.", grammar: [gram-le-new-situation] }
+  - { zh: 我不看電視了，我要休息。, en: "I'm not watching TV any more; I want to rest.", grammar: [gram-le-new-situation] }
+  - { zh: 現在有空了，我們去逛街吧。, en: "Now that I'm free, let's go shopping.", grammar: [gram-le-new-situation] }
+  - { zh: 雖然這條裙子很好看，可是太貴了。, en: "Although this skirt looks nice, it is too expensive.", grammar: [gram-suiran-keshi] }
+  - { zh: 雖然這件外套很便宜，可是樣子不好看。, en: "Although this coat is cheap, the style is not nice.", grammar: [gram-suiran-keshi] }
+  - { zh: 雖然我很忙，可是我想去逛街。, en: "Although I'm busy, I want to go shopping.", grammar: [gram-suiran-keshi] }
+  - { zh: 雖然今天很冷，可是我想出來跑步。, en: "Although it's cold today, I want to come out and run.", grammar: [gram-suiran-keshi] }
+  - { zh: 雖然這雙鞋很好看，可是我不能穿。, en: "Although these shoes are nice, I can't wear them.", grammar: [gram-suiran-keshi] }
+  - { zh: 雖然那家店的東西很便宜，可是樣子都不好看。, en: "Although things at that shop are cheap, the styles are all unattractive.", grammar: [gram-suiran-keshi] }
+  - { zh: 雖然我喜歡藍色，可是我最近都穿黑色。, en: "Although I like blue, lately I've been wearing black.", grammar: [gram-suiran-keshi] }
+  - { zh: 雖然你不能付現金，可是你可以刷卡。, en: "Although you can't pay cash, you can use a card.", grammar: [gram-suiran-keshi] }
+  - { zh: 雖然她不喜歡咖啡，可是她想試一下。, en: "Although she doesn't like coffee, she wants to try it.", grammar: [gram-suiran-keshi] }
+  - { zh: 這件外套一共四百五十塊。, en: "This coat is 450 dollars altogether.", grammar: [gram-money-units] }
+  - { zh: 這條長褲三百九十塊。, en: "These pants are 390 dollars.", grammar: [gram-money-units] }
+  - { zh: 一杯咖啡五十五塊。, en: "A cup of coffee is 55 dollars.", grammar: [gram-money-units] }
+  - { zh: 一共二十三塊五毛。, en: "That's 23 dollars and 50 cents altogether.", grammar: [gram-money-units] }
+  - { zh: 這件運動衫四十五塊六毛八分錢。, en: "This T-shirt is 45 dollars 68 cents.", grammar: [gram-money-units] }
+  - { zh: 我要付三百塊現金。, en: "I'll pay 300 dollars in cash.", grammar: [gram-money-units] }
+scenarios:
+  - slug: clothes-shop
+    title: "Buy a coat from the clerk"
+    npc:
+      id: clerk
+      name: 店員
+      personality: >
+        A polite clothing-store clerk who is patient and helpful, comments kindly on
+        colors and styles, and always tells the price clearly.
+      speechStyle: >
+        Short polite sentences with words from books 1 and 2 (up to lesson 5).
+        Says prices in 塊 / 毛 / 分 and uses 雖然……可是…… when giving an honest comment.
+      particles: []
+    setting: >
+      A clothing store. The learner wants a coat or a skirt and asks about color,
+      size, price and how to pay.
+    goalSteps:
+      - { id: item, description: "Say what you want to look at (外套, 裙子, 長褲……).", keywordHints: ["外套", "裙子", "長褲", "運動衫"] }
+      - { id: color, description: "Say which color or size you want.", keywordHints: ["藍色", "黑色", "白色", "中號", "大號"] }
+      - { id: try, description: "Ask to try it on (試).", keywordHints: ["試", "穿"] }
+      - { id: comment, description: "Say something nice about it but also a problem (雖然……可是……).", keywordHints: ["雖然", "可是"] }
+      - { id: price, description: "Ask how much it costs and say if it is too expensive.", keywordHints: ["多少錢", "太貴了", "塊"] }
+      - { id: pay, description: "Say how you will pay (現金 or 信用卡).", keywordHints: ["現金", "信用卡", "刷卡"] }
+    vocabExtras: [外套, 看, 樣子, 顏色, 好看, 藍色, 黑色, 穿, 最近, 胖, 了, 條, 裙子, 白色, 試, 雖然, 塊, 錢, 長褲, 一共, 運動衫, 毛, 付, 現金, 信用卡, 再, 付錢, 中號, 大號, 刷卡, 分]
+    opener: { zh: 您好！您想看外套還是長褲？, en: "Hello! Would you like to look at coats or pants?" }
+    successLine: { zh: 好的，一共三百五十塊，謝謝您！, en: "Alright, that's 350 dollars altogether. Thank you!" }
+journalPrompts:
+  - { en: "Describe something you bought recently and how much it cost.", zh: 我買了一件外套，三百五十塊。, words: [外套, 錢, 一共, 好看], grammar: [gram-money-units] }
+  - { en: "Write about a change in your life using 了 (for example 我不喝咖啡了).", words: [最近, 胖, 穿], grammar: [gram-le-new-situation] }
+  - { en: "Use 雖然……可是…… to say something is nice but has a problem.", words: [裙子, 顏色, 樣子, 好看], grammar: [gram-suiran-keshi] }

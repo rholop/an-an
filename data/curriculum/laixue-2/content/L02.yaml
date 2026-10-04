@@ -1,0 +1,56 @@
+lesson: 2
+sentences:
+  - { zh: 我要給爸爸買一個背包。, en: "I am going to buy a backpack for my dad.", grammar: [gram-gei-for] }
+  - { zh: 她想給她先生買一件衣服。, en: "She wants to buy a piece of clothing for her husband.", grammar: [gram-gei-for] }
+  - { zh: 我給媽媽買了一盒巧克力。, en: "I bought a box of chocolates for my mom.", grammar: [gram-gei-for] }
+  - { zh: 我想給弟弟買一雙運動鞋。, en: "I want to buy a pair of sports shoes for my younger brother.", grammar: [gram-gei-for] }
+  - { zh: 他給太太買了太陽眼鏡。, en: "He bought sunglasses for his wife.", grammar: [gram-gei-for] }
+  - { zh: 你想給家人買什麼禮物？, en: "What gifts do you want to buy for your family?", grammar: [gram-gei-for] }
+  - { zh: 我想給我父母做牛肉麵。, en: "I want to make beef noodle soup for my parents.", grammar: [gram-gei-for] }
+  - { zh: 明文想給家文買帽子。, en: "Mingwen wants to buy a hat for Jiawen.", grammar: [gram-gei-for] }
+  - { zh: 下星期三我們去逛街。, en: "We are going shopping next Wednesday.", grammar: [gram-time-expressions] }
+  - { zh: 上個月我去臺灣旅行了。, en: "Last month I went travelling in Taiwan.", grammar: [gram-time-expressions] }
+  - { zh: 去年我在臺灣工作，今年我在美國工作。, en: "Last year I worked in Taiwan; this year I work in the U.S.", grammar: [gram-time-expressions] }
+  - { zh: 明年我想去法國旅行。, en: "Next year I want to travel to France.", grammar: [gram-time-expressions] }
+  - { zh: 這個星期天你有空嗎？, en: "Are you free this Sunday?", grammar: [gram-time-expressions] }
+  - { zh: 下個月五號是我的生日。, en: "The fifth of next month is my birthday.", grammar: [gram-time-expressions] }
+  - { zh: 上星期我們去百貨公司買東西。, en: "Last week we went to the department store to shop.", grammar: [gram-time-expressions] }
+  - { zh: 這個背包又大又便宜。, en: "This backpack is both big and inexpensive.", grammar: [gram-you-and-you] }
+  - { zh: 網路商店的東西又便宜又方便。, en: "Things from online stores are both cheap and convenient.", grammar: [gram-you-and-you] }
+  - { zh: 她又高興又累。, en: "She is both happy and tired.", grammar: [gram-you-and-you] }
+  - { zh: 這件衣服又大又貴。, en: "This piece of clothing is both big and expensive.", grammar: [gram-you-and-you] }
+  - { zh: 這家百貨公司的東西又多又便宜。, en: "This department store has lots of things and they are cheap.", grammar: [gram-you-and-you] }
+  - { zh: 因為我今天有空，所以想去逛街。, en: "Because I am free today, I want to go shopping.", grammar: [gram-yinwei-suoyi] }
+  - { zh: 因為網路商店的東西比較便宜，所以我常常上網買東西。, en: "Because things in online stores are cheaper, I often shop online.", grammar: [gram-yinwei-suoyi] }
+  - { zh: 因為明天是媽媽的生日，所以我想給她買禮物。, en: "Because tomorrow is my mom's birthday, I want to buy her a gift.", grammar: [gram-yinwei-suoyi, gram-gei-for] }
+  - { zh: 因為昨天很忙，所以我今天想休息。, en: "Because I was busy yesterday, I want to rest today.", grammar: [gram-yinwei-suoyi] }
+  - { zh: 因為這裡的百貨公司太貴了，所以我常常上網買東西。, en: "Because the department stores here are too expensive, I often shop online.", grammar: [gram-yinwei-suoyi] }
+scenarios:
+  - slug: gift-shopping
+    title: "Lisa asks about gifts for your family"
+    npc:
+      id: lisa
+      name: 麗莎
+      personality: >
+        Gloria's sweet, warm-hearted coworker. She loves finding the perfect gift
+        and always asks a friendly follow-up question.
+      speechStyle: >
+        Short kind sentences with words from books 1 and 2 (up to lesson 2).
+        One question at a time; likes to say 又……又…… about nice things.
+      particles: []
+    setting: >
+      Lisa and the learner are chatting at the office at lunchtime about what
+      gifts to buy for their families and whether shopping online is better.
+    goalSteps:
+      - { id: who, description: "Say who you want to buy a gift for and what (給……買).", keywordHints: ["給", "買"] }
+      - { id: when, description: "Say when you will go shopping (下個星期, 這個月……).", keywordHints: ["下星期", "下個月", "這個星期", "明年"] }
+      - { id: why, description: "Explain why you shop online with 因為……所以…….", keywordHints: ["因為", "所以"] }
+      - { id: quality, description: "Describe something that is both cheap and good (又……又……).", keywordHints: ["又"] }
+      - { id: compare, description: "Say whether the department store or the online store is more convenient.", keywordHints: ["方便", "比較"] }
+    vocabExtras: [家人, 回, 帽子, 件, 衣服, 盒, 巧克力, 網路, 商店, 東西, 比較, 方便, 又, 便宜, 因為, 所以, 百貨公司, 背包, 旅行, 有用, 太陽眼鏡, 上網, 逛街, 有空, 出門, 下星期, 去年, 明年, 為什麼, 上星期]
+    opener: { zh: 你好！你想給家人買什麼禮物？, en: "Hello! What gifts do you want to buy for your family?" }
+    successLine: { zh: 網路商店的東西又便宜又方便，我們都常常上網買東西。, en: "Things in online stores are cheap and convenient; we both often shop online." }
+journalPrompts:
+  - { en: "Write who you want to buy gifts for and what you will buy for each person.", zh: 我想給媽媽買一個背包。, words: [帽子, 衣服, 巧克力, 背包], grammar: [gram-gei-for] }
+  - { en: "Explain why you like (or do not like) shopping online, using 因為……所以…….", words: [網路, 商店, 方便, 便宜], grammar: [gram-yinwei-suoyi] }
+  - { en: "Describe a shop or a gift that is both cheap and good (又……又……).", words: [百貨公司, 東西, 便宜], grammar: [gram-you-and-you] }

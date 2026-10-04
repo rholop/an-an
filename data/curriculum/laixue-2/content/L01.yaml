@@ -1,0 +1,56 @@
+lesson: 1
+sentences:
+  - { zh: 今天比昨天冷。, en: "Today is colder than yesterday.", grammar: [gram-bi-comparison] }
+  - { zh: 臺灣的夏天比這裡的夏天熱。, en: "Summer in Taiwan is hotter than summer here.", grammar: [gram-bi-comparison] }
+  - { zh: 我哥哥比我大。, en: "My older brother is older than I am.", grammar: [gram-bi-comparison] }
+  - { zh: 這裡的冬天比臺灣的冬天冷。, en: "Winter here is colder than winter in Taiwan.", grammar: [gram-bi-comparison] }
+  - { zh: 春天比夏天舒服。, en: "Spring is more comfortable than summer.", grammar: [gram-bi-comparison] }
+  - { zh: 今天的天氣比昨天好。, en: "Today's weather is better than yesterday's.", grammar: [gram-bi-comparison] }
+  - { zh: 我太太比我忙。, en: "My wife is busier than I am.", grammar: [gram-bi-comparison] }
+  - { zh: 夏天太熱了。, en: "Summer is too hot.", grammar: [gram-tai-le] }
+  - { zh: 今天太冷了，我不想出來。, en: "It is too cold today; I don't want to come out.", grammar: [gram-tai-le] }
+  - { zh: 這裡的冬天太冷了，我不喜歡。, en: "Winter here is too cold; I don't like it.", grammar: [gram-tai-le] }
+  - { zh: 太好了，明天是晴天！, en: "Great, tomorrow will be sunny!", grammar: [gram-tai-le] }
+  - { zh: 下雨的時候，跑步太麻煩了。, en: "When it rains, running is too much trouble.", grammar: [gram-tai-le] }
+  - { zh: 下雨的時候，我不能出來跑步。, en: "When it rains, I can't come out to run.", grammar: [gram-neng-possibility] }
+  - { zh: 明天你能來嗎？, en: "Can you come tomorrow?", grammar: [gram-neng-possibility] }
+  - { zh: 我今天不能打網球，我很忙。, en: "I can't play tennis today; I'm busy.", grammar: [gram-neng-possibility] }
+  - { zh: 你能給我電話號碼嗎？, en: "Can you give me your phone number?", grammar: [gram-neng-possibility] }
+  - { zh: 明天可能會下雨。, en: "It will probably rain tomorrow.", grammar: [gram-hui-likelihood] }
+  - { zh: 明天會比今天冷。, en: "Tomorrow will be colder than today.", grammar: [gram-hui-likelihood, gram-bi-comparison] }
+  - { zh: 天氣預報說明天會下雪。, en: "The weather forecast says it will snow tomorrow.", grammar: [gram-hui-likelihood] }
+  - { zh: 我希望明天會是晴天。, en: "I hope tomorrow will be a sunny day.", grammar: [gram-hui-likelihood] }
+  - { zh: 我明天一定會來。, en: "I will definitely come tomorrow.", grammar: [gram-hui-likelihood] }
+  - { zh: 她可能不會來。, en: "She probably won't come.", grammar: [gram-hui-likelihood] }
+  - { zh: 春天比夏天舒服，也比冬天舒服。, en: "Spring is more comfortable than summer, and than winter.", grammar: [gram-bi-comparison] }
+  - { zh: 臺灣的冬天不太冷，可是下雨太麻煩了。, en: "Winters in Taiwan are not very cold, but the rain is too much trouble.", grammar: [gram-tai-le] }
+  - { zh: 昨天比今天冷，我不能出來跑步。, en: "Yesterday was colder than today, so I couldn't come out to run.", grammar: [gram-bi-comparison, gram-neng-possibility] }
+scenarios:
+  - slug: park-weather
+    title: "Mingwen meets you in the park"
+    npc:
+      id: mingwen
+      name: 明文
+      personality: >
+        A kind, friendly graduate student who jogs in the park and likes to chat
+        about the weather. He is patient and asks one easy question at a time.
+      speechStyle: >
+        Short friendly sentences using only words from books 1 and 2, lesson 1.
+        Repeats the learner's idea back with a small comparison (比).
+      particles: []
+    setting: >
+      A sunny morning in the park. Mingwen is jogging and stops to talk with
+      the learner about the weather, the seasons and tomorrow's forecast.
+    goalSteps:
+      - { id: today, description: "Say what the weather is like today.", keywordHints: ["今天", "天氣"] }
+      - { id: compare, description: "Compare the weather of two places or two days with 比.", keywordHints: ["比"] }
+      - { id: toohot, description: "Say a season is too hot or too cold with 太……了.", keywordHints: ["太", "了"] }
+      - { id: cannot, description: "Say what you cannot do when it rains.", keywordHints: ["不能", "下雨"] }
+      - { id: forecast, description: "Talk about tomorrow's forecast and say what you hope for.", keywordHints: ["明天", "希望"] }
+    vocabExtras: [天氣, 這裡, 真, 舒服, 夏天, 比, 春天, 秋天, 冷, 熱, 冬天, 太, 時候, 麻煩, 能, 出來, 可能, 會, 希望, 晴天, 下雨, 下雪, 天氣預報, 昨天, 大]
+    opener: { zh: 你好！今天天氣很好，你來跑步嗎？, en: "Hello! The weather is nice today. Are you here to run?" }
+    successLine: { zh: 天氣預報說明天可能會下雨，我希望明天是晴天。, en: "The forecast says it may rain tomorrow; I hope it will be sunny." }
+journalPrompts:
+  - { en: "Describe the weather in each of the four seasons where you live.", zh: 我這裡的夏天太熱了。, words: [夏天, 冷, 熱, 春天], grammar: [gram-tai-le] }
+  - { en: "Compare the weather of two places you know (for example your home and Taiwan).", words: [天氣, 比, 舒服], grammar: [gram-bi-comparison] }
+  - { en: "Say what you can and cannot do when it rains, and what you hope the weather will be tomorrow.", words: [下雨, 能, 希望, 晴天], grammar: [gram-neng-possibility, gram-hui-likelihood] }

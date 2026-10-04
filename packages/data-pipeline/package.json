@@ -15,7 +15,8 @@
     "test": "vitest run",
     "curriculum:import": "tsx src/curriculum-import.ts",
     "curriculum:content": "tsx src/build-textbook-content.ts",
-    "curriculum:build": "tsx src/curriculum-import.ts && tsx src/build-textbook-content.ts && tsx src/build-lexicon.ts && tsx src/build-scenarios.ts"
+    "curriculum:build": "tsx src/curriculum-import.ts all && tsx src/build-textbook-content.ts all && tsx src/build-lexicon.ts && tsx src/build-scenarios.ts",
+    "curriculum:plan": "tsx src/curriculum-plan.ts"
   },
   "dependencies": {
     "@anan/core": "workspace:*",

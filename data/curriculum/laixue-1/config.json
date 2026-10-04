@@ -1,0 +1,43 @@
+{
+  "bookId": "laixue-1",
+  "titleZh": "來學華語 第一冊",
+  "titleEn": "Let's Learn Mandarin 1",
+  "stated": { "words": 223, "grammar": 34 },
+  "lessonStartPages": [13, 25, 37, 53, 69, 85, 101, 117, 133, 151],
+  "endPage": 164,
+  "tocPages": [8, 9],
+  "indexPages": [174, 182],
+  "glyphDecode": false,
+  "rubyDuplicates": true,
+  "vocab": {
+    "sections": "headings",
+    "headings": {
+      "core": "^生詞\\s*Vocabulary$",
+      "phrase": "^短語\\s*Phrases$",
+      "proper": "^專有名詞\\s*Proper\\s*Nouns?$",
+      "supplementary": "^補充生詞\\s*Supplementary\\s*Vocabulary$"
+    },
+    "grammarHeading": "^語法\\s*Grammar$",
+    "distinctSenses": ["家", "要"]
+  },
+  "dialogueMarker": "Read aloud",
+  "grammarSource": "builtin:laixue1",
+  "extraNames": [
+    { "headword": "明文", "pinyin": "Míngwén", "glossEn": "Mingwen (given name)", "lesson": 1 },
+    { "headword": "家文", "pinyin": "Jiāwén", "glossEn": "Jiawen (given name)", "lesson": 1 },
+    { "headword": "王家文", "pinyin": "Wáng Jiāwén", "glossEn": "Wang Jiawen (name)", "lesson": 1 },
+    { "headword": "學文", "pinyin": "Xuéwén", "glossEn": "Xuewen (given name)", "lesson": 3 },
+    { "headword": "王學文", "pinyin": "Wáng Xuéwén", "glossEn": "Wang Xuewen (name)", "lesson": 3 },
+    { "headword": "美美", "pinyin": "Měiměi", "glossEn": "Meimei (given name)", "lesson": 7 },
+    { "headword": "美生", "pinyin": "Měishēng", "glossEn": "Meisheng (given name)", "lesson": 3 },
+    { "headword": "小生", "pinyin": "Xiǎoshēng", "glossEn": "Xiaosheng (given name)", "lesson": 3 },
+    { "headword": "小文", "pinyin": "Xiǎowén", "glossEn": "Xiaowen (given name)", "lesson": 4 },
+    { "headword": "王小文", "pinyin": "Wáng Xiǎowén", "glossEn": "Wang Xiaowen (name)", "lesson": 5 },
+    { "headword": "李", "pinyin": "Lǐ", "glossEn": "Li (surname)", "lesson": 4 },
+    { "headword": "安安", "pinyin": "Ān’ān", "glossEn": "Anan (given name)", "lesson": 3 },
+    { "headword": "明美", "pinyin": "Míngměi", "glossEn": "Mingmei (given name)", "lesson": 3 }
+  ],
+  "explanations": [
+    "Repeats of the same word and sense (和 L3/L6, 今天 L4/L8) count once; 家 (home → measure word for shops) and 要 (want → want to) are new senses and count again: 225 − 2 = 223."
+  ]
+}

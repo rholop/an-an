@@ -1,0 +1,55 @@
+lesson: 3
+sentences:
+  - { zh: 我什麼魚都愛吃。, en: "I love to eat every kind of fish.", grammar: [gram-qpr-dou] }
+  - { zh: 他什麼青菜都不吃。, en: "He doesn't eat any green vegetables at all.", grammar: [gram-qpr-dou] }
+  - { zh: 我什麼都不想做。, en: "I don't feel like doing anything.", grammar: [gram-qpr-dou] }
+  - { zh: 誰都不想做飯。, en: "Nobody feels like cooking.", grammar: [gram-qpr-dou] }
+  - { zh: 她什麼時候都有空。, en: "She is free any time.", grammar: [gram-qpr-dou] }
+  - { zh: 我們哪裡都不想去。, en: "We don't want to go anywhere.", grammar: [gram-qpr-dou] }
+  - { zh: 弟弟什麼飯都愛吃，可是不吃辣的。, en: "My younger brother loves every kind of food, but he doesn't eat spicy things.", grammar: [gram-qpr-dou] }
+  - { zh: 我什麼湯都想喝。, en: "I want to drink every kind of soup.", grammar: [gram-qpr-dou] }
+  - { zh: 你要吃白飯還是包子？, en: "Do you want steamed rice or steamed buns?", grammar: [gram-haishi-or] }
+  - { zh: 你喝啤酒還是咖啡？, en: "Do you drink beer or coffee?", grammar: [gram-haishi-or] }
+  - { zh: 我們點炸豆腐還是炒青菜？, en: "Shall we order fried tofu or stir-fried vegetables?", grammar: [gram-haishi-or] }
+  - { zh: 你想去餐廳吃還是在家吃？, en: "Do you want to eat at a restaurant or at home?", grammar: [gram-haishi-or] }
+  - { zh: 你喜歡秋天還是冬天？, en: "Do you like fall or winter?", grammar: [gram-haishi-or] }
+  - { zh: 這碗湯酸還是辣？, en: "Is this bowl of soup sour or spicy?", grammar: [gram-haishi-or] }
+  - { zh: 你要一盤炸豆腐還是一碗酸辣湯？, en: "Do you want a plate of fried tofu or a bowl of hot and sour soup?", grammar: [gram-haishi-or] }
+  - { zh: 你想今天去還是明天去？, en: "Do you want to go today or tomorrow?", grammar: [gram-haishi-or] }
+  - { zh: 我們點一盤炒青菜吧。, en: "Let's order a plate of stir-fried vegetables.", grammar: [gram-ba-suggestion] }
+  - { zh: 我們下午去吃牛肉麵吧！, en: "Let's go eat beef noodle soup this afternoon!", grammar: [gram-ba-suggestion] }
+  - { zh: 你喝一瓶啤酒吧。, en: "Why don't you have a bottle of beer.", grammar: [gram-ba-suggestion] }
+  - { zh: 今天我做飯，你休息吧。, en: "I'll cook today; you take a rest.", grammar: [gram-ba-suggestion] }
+  - { zh: 我們一起去逛街吧。, en: "Let's go shopping together.", grammar: [gram-ba-suggestion] }
+  - { zh: 我們現在點菜吧。, en: "Let's order now.", grammar: [gram-ba-suggestion] }
+  - { zh: 你吃一個豆沙包吧，非常好吃。, en: "Have a red-bean bun; it's really delicious.", grammar: [gram-ba-suggestion] }
+  - { zh: 聽說這家餐廳的紅燒魚非常好吃，我們去吃吧。, en: "I hear the braised fish at this restaurant is really delicious; let's go.", grammar: [gram-ba-suggestion] }
+scenarios:
+  - slug: restaurant-order
+    title: "Order a meal from the waiter"
+    npc:
+      id: waiter
+      name: 服務員
+      personality: >
+        A polite, quick waiter in a Chinese restaurant. He is proud of the braised
+        fish and always offers one more choice between two dishes.
+      speechStyle: >
+        Very short polite sentences with words from books 1 and 2 (up to lesson 3).
+        Offers two choices with 還是 and makes suggestions with 吧.
+      particles: []
+    setting: >
+      A busy Chinese restaurant at dinner time. The waiter takes the learner's
+      order: dishes, soup, vegetables, rice and drinks.
+    goalSteps:
+      - { id: dish, description: "Order a main dish (點).", keywordHints: ["點", "紅燒魚", "炒青菜", "炸豆腐"] }
+      - { id: choose, description: "Choose between two things when the waiter asks 還是.", keywordHints: ["還是", "白飯", "包子"] }
+      - { id: taste, description: "Say what you like to eat or that you eat everything (什麼都……).", keywordHints: ["什麼", "都", "愛"] }
+      - { id: drink, description: "Order a drink or soup.", keywordHints: ["啤酒", "湯", "咖啡"] }
+      - { id: suggest, description: "Make a suggestion to the waiter or a friend with 吧.", keywordHints: ["吧"] }
+    vocabExtras: [紅燒魚, 魚, 非常, 愛, 豆腐, 還是, 青菜, 點, 炸, 盤, 炒, 碗, 白飯, 酸, 辣, 湯, 好喝, 瓶, 啤酒, 包子, 豆沙包, 服務員, 酸辣湯, 炸豆腐, 炒青菜, 聽說, 點菜]
+    opener: { zh: 您好！請問您要點什麼？我們的紅燒魚非常好吃。, en: "Hello! What would you like to order? Our braised fish is very delicious." }
+    successLine: { zh: 好的，一盤紅燒魚，一碗白飯，謝謝您。, en: "Alright: a plate of braised fish and a bowl of rice. Thank you." }
+journalPrompts:
+  - { en: "Write what you like to eat and what you do not eat at all (什麼都不……).", zh: 我什麼青菜都愛吃。, words: [魚, 豆腐, 青菜, 愛], grammar: [gram-qpr-dou] }
+  - { en: "Describe a meal you had in a restaurant: what you ordered and how it tasted.", words: [點, 湯, 酸, 辣, 好喝], grammar: [gram-haishi-or] }
+  - { en: "Make a suggestion to a friend about where to eat or what to order (……吧).", words: [點菜, 包子, 白飯], grammar: [gram-ba-suggestion] }

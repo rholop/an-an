@@ -1,0 +1,57 @@
+lesson: 7
+sentences:
+  - { zh: 我在公園看到了張家安。, en: "I saw Joann Zhang in the park.", grammar: [gram-v-dao-result] }
+  - { zh: 我找到了一個好旅館。, en: "I found a good hotel.", grammar: [gram-v-dao-result] }
+  - { zh: 我沒找到我的手機。, en: "I didn't find my cell phone.", grammar: [gram-v-dao-result] }
+  - { zh: 你買到想買的東西了嗎？, en: "Did you manage to buy what you wanted?", grammar: [gram-v-dao-result] }
+  - { zh: 這種東西在這裡買不到。, en: "You can't buy this kind of thing here.", grammar: [gram-v-dao-result] }
+  - { zh: 老闆聽到這件事，很高興。, en: "The boss was happy to hear about this.", grammar: [gram-v-dao-result] }
+  - { zh: 我想不到他會來。, en: "I never thought he would come.", grammar: [gram-v-dao-result] }
+  - { zh: 我已經準備好了。, en: "I am already prepared.", grammar: [gram-v-hao-result] }
+  - { zh: 你的論文寫好了嗎？, en: "Have you finished writing your thesis?", grammar: [gram-v-hao-result] }
+  - { zh: 我們談好了，明天見面。, en: "We have settled it; we'll meet tomorrow.", grammar: [gram-v-hao-result] }
+  - { zh: 菜做好了，大家來吃飯吧。, en: "The food is ready; everyone come eat.", grammar: [gram-v-hao-result] }
+  - { zh: 我還沒準備好去歐洲。, en: "I'm not ready to go to Europe yet.", grammar: [gram-v-hao-result] }
+  - { zh: 他準備好了。, en: "He is ready.", grammar: [gram-v-hao-result] }
+  - { zh: 天氣越來越冷了。, en: "The weather is getting colder and colder.", grammar: [gram-yuelaiyue] }
+  - { zh: 臺灣的交通越來越方便。, en: "Transportation in Taiwan is getting more and more convenient.", grammar: [gram-yuelaiyue] }
+  - { zh: 我的中文越來越好。, en: "My Chinese is getting better and better.", grammar: [gram-yuelaiyue] }
+  - { zh: 這裡的人越來越多。, en: "There are more and more people here.", grammar: [gram-yuelaiyue] }
+  - { zh: 最近越來越忙。, en: "Lately I'm getting busier and busier.", grammar: [gram-yuelaiyue] }
+  - { zh: 他越來越喜歡臺灣的文化。, en: "He likes Taiwanese culture more and more.", grammar: [gram-yuelaiyue] }
+  - { zh: 現在才七點，你怎麼起床了？, en: "It's only seven; why are you up?", grammar: [gram-cai-little] }
+  - { zh: 我才學了三個月中文。, en: "I have studied Chinese for only three months.", grammar: [gram-cai-little] }
+  - { zh: 這家店才開一個月。, en: "This shop has been open only a month.", grammar: [gram-cai-little] }
+  - { zh: 老闆八點才來。, en: "The boss doesn't come until eight.", grammar: [gram-cai-little] }
+  - { zh: 公車十點才來。, en: "The bus doesn't come until ten.", grammar: [gram-cai-little] }
+  - { zh: 他才二十歲，很年輕。, en: "He is only twenty, very young.", grammar: [gram-cai-little] }
+scenarios:
+  - slug: europe-business-trip
+    title: "Dushyant asks about your trip to Europe"
+    npc:
+      id: dushyant
+      name: 杜翔
+      personality: >
+        A hard-working, friendly engineer who travels for work and enjoys comparing
+        transport and food in different countries.
+      speechStyle: >
+        Friendly short sentences with words from books 1 to 3 (up to book 3 lesson 7).
+        Likes to say 越來越 and asks follow-up questions about the trip.
+      particles: []
+    setting: >
+      Dushyant and the learner meet at lunch. The learner is about to leave for
+      Germany and a few other places in Europe on a business trip.
+    goalSteps:
+      - { id: purpose, description: "Say why you are going to Europe (出差).", keywordHints: ["出差", "歐洲", "德國"] }
+      - { id: result, description: "Say what you managed to arrange or find (V到 / V好).", keywordHints: ["談好", "找到", "準備好"] }
+      - { id: relatives, description: "Say if you will visit relatives or take the chance (順便, 親戚).", keywordHints: ["順便", "親戚", "阿姨", "表妹"] }
+      - { id: transport, description: "Say how you will get around (火車, 公車).", keywordHints: ["火車", "公車", "交通"] }
+      - { id: language, description: "Say how you will communicate (德文, 溝通).", keywordHints: ["德文", "溝通", "用"] }
+      - { id: change, description: "Say how something is getting better or busier (越來越).", keywordHints: ["越來越"] }
+    vocabExtras: [出差, 順便, 親戚, 談, 順利, 老闆, 投資, 開, 句, 用, 溝通, 阿姨, 表妹, 火車, 才, 交通, 公車, 其他, 文化, 請教, 好玩, 沒看到, 談好了, 越來越, 歐洲, 德國, 德文]
+    opener: { zh: 你好！聽說你要去歐洲出差，什麼時候去？, en: "Hello! I hear you are going to Europe on business. When do you leave?" }
+    successLine: { zh: 祝你出差順利，回來以後告訴我德國怎麼樣。, en: "Have a smooth trip, and tell me how Germany was when you get back." }
+journalPrompts:
+  - { en: "Write a paragraph about a business trip: what you found, bought or finished arranging (V到, V好).", zh: 我已經準備好了。, words: [出差, 順便, 談, 順利], grammar: [gram-v-dao-result, gram-v-hao-result] }
+  - { en: "Write a paragraph about how a city or your life is changing (越來越……).", words: [交通, 火車, 公車, 文化], grammar: [gram-yuelaiyue, gram-v-hao-result] }
+  - { en: "Write a paragraph about something that happened only just recently or only a little (才).", words: [火車, 親戚, 好玩, 其他], grammar: [gram-cai-little, gram-yuelaiyue] }

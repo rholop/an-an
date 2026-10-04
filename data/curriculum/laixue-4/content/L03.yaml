@@ -1,0 +1,57 @@
+lesson: 3
+sentences:
+  - { zh: 我想租公寓，另外，也想買一些家具。, en: "I want to rent an apartment; in addition, I'd like to buy some furniture.", grammar: [gram-lingwai] }
+  - { zh: 這間房子很安靜，另外，離捷運站也很近。, en: "This place is quiet; also, it is close to the MRT station.", grammar: [gram-lingwai] }
+  - { zh: 我今天要去超市，另外，也要去銀行。, en: "Today I have to go to the supermarket; also, to the bank.", grammar: [gram-lingwai] }
+  - { zh: 房租不貴，另外，水費和電費也不用付。, en: "The rent isn't expensive; also, no water or electricity bill to pay.", grammar: [gram-lingwai] }
+  - { zh: 我先打掃房間，另外，還要整理書房。, en: "I'll clean the room first; also, I still need to tidy the study.", grammar: [gram-lingwai] }
+  - { zh: 公寓裡有電視，另外，還有冰箱。, en: "The apartment has a TV; in addition, there is a refrigerator.", grammar: [gram-lingwai] }
+  - { zh: 這間公寓算是很乾淨。, en: "This apartment counts as quite clean.", grammar: [gram-suanshi] }
+  - { zh: 這裡的房租算是便宜的。, en: "The rent here counts as cheap.", grammar: [gram-suanshi] }
+  - { zh: 這家便利商店算是大的。, en: "This convenience store counts as a big one.", grammar: [gram-suanshi] }
+  - { zh: 這個巷子不算安靜。, en: "This alley isn't really quiet.", grammar: [gram-suanshi] }
+  - { zh: 他不算有名，可是很多人認識他。, en: "He isn't exactly famous, but many people know him.", grammar: [gram-suanshi] }
+  - { zh: 我們公司算是小的。, en: "Our company counts as a small one.", grammar: [gram-suanshi] }
+  - { zh: 房子很舊，再加上沒有電梯，所以很不方便。, en: "The house is old and has no elevator on top of that, so it's inconvenient.", grammar: [gram-zai-jia-shang] }
+  - { zh: 這裡很安靜，再加上離捷運站很近，所以我很滿意。, en: "It's quiet here and near the MRT besides, so I'm satisfied.", grammar: [gram-zai-jia-shang] }
+  - { zh: 租金很貴，再加上水費和電費，所以我不想租。, en: "The rent is high and the water and electricity bills on top, so I don't want to rent.", grammar: [gram-zai-jia-shang] }
+  - { zh: 工作很忙，再加上壓力很大，他生病了。, en: "Work is busy and the pressure on top of that made him sick.", grammar: [gram-zai-jia-shang] }
+  - { zh: 天氣很冷，再加上下雨，我不想出去。, en: "It's cold and raining on top of that; I don't want to go out.", grammar: [gram-zai-jia-shang] }
+  - { zh: 他很年輕，再加上很認真，所以老闆很喜歡他。, en: "He is young and earnest on top of that, so the boss likes him.", grammar: [gram-zai-jia-shang] }
+  - { zh: 等朋友都來了，我們再開始吧。, en: "Let's start once all our friends have arrived.", grammar: [gram-deng-zai] }
+  - { zh: 等你有空，我們再去看房子。, en: "When you are free, we'll go look at houses.", grammar: [gram-deng-zai] }
+  - { zh: 等電梯好了，我再搬進去。, en: "I'll move in once the elevator is fixed.", grammar: [gram-deng-zai] }
+  - { zh: 等我吃完飯，再給你打電話。, en: "After I finish eating, I'll call you.", grammar: [gram-deng-zai] }
+  - { zh: 你等一下，我看完了再告訴你。, en: "Wait a moment; I'll tell you once I've finished reading.", grammar: [gram-deng-zai] }
+  - { zh: 等房租付完了，再說吧。, en: "Let's talk once the rent has been paid.", grammar: [gram-deng-zai] }
+scenarios:
+  - slug: renting-apartment
+    title: "The landlord shows you an apartment"
+    npc:
+      id: landlord
+      name: 房東
+      personality: >
+        A friendly, businesslike landlord who knows the neighborhood well and is
+        honest about both the advantages and the weak points of the apartment.
+      speechStyle: >
+        Polite, clear sentences with words from books 1 to 4 (up to book 4 lesson 3).
+        Describes the place with 算是 / 不算 and adds reasons with 另外 and 再加上.
+      particles: []
+    setting: >
+      In front of an apartment building near an MRT station. The landlord shows the
+      learner the apartment and explains the rent, bills and furniture.
+    goalSteps:
+      - { id: need, description: "Say what kind of place you need (安靜, 乾淨).", keywordHints: ["公寓", "安靜", "乾淨", "需要"] }
+      - { id: around, description: "Ask about the surroundings (捷運站, 超市, 便利商店).", keywordHints: ["捷運站", "超市", "便利商店", "巷子"] }
+      - { id: rent, description: "Ask about the rent and bills (房租, 水費, 電費).", keywordHints: ["房租", "租金", "水費", "電費", "包括"] }
+      - { id: furniture, description: "Ask about furniture (家具, 冰箱, 電視).", keywordHints: ["家具", "冰箱", "電視", "電梯"] }
+      - { id: judge, description: "Give your judgement with 算是 / 不算.", keywordHints: ["算是", "不算"] }
+      - { id: also, description: "Add another point with 另外 or 再加上.", keywordHints: ["另外", "再加上"] }
+      - { id: decide, description: "Say you will decide after something (等……再……).", keywordHints: ["等", "再"] }
+    vocabExtras: [公寓, 棟, 大樓, 舊, 乾淨, 剛好, 電梯, 壞, 樓梯, 哈, 巷子, 安靜, 另外, 馬路, 巷子口, 步, 便利商店, 超市, 房租, 家具, 再加上, 電視, 冰箱, 租金, 萬, 千, 包括, 水費, 電費, 房東, 裝, 網路費, 關心, 壞了, 不算, 捷運站]
+    opener: { zh: 您好！您想租什麼樣的公寓？, en: "Hello! What kind of apartment would you like to rent?" }
+    successLine: { zh: 好，這間公寓很不錯，您決定了再告訴我。, en: "Good, this apartment is pretty nice; tell me once you have decided." }
+journalPrompts:
+  - { en: "Write a paragraph about the home you want to rent and what you need (另外, 算是).", zh: 我想租一間安靜的公寓。, words: [公寓, 乾淨, 安靜, 電梯], grammar: [gram-lingwai, gram-suanshi] }
+  - { en: "Write a paragraph comparing two places to live: price, noise, distance (算是 / 不算, 再加上).", words: [房租, 租金, 便利商店, 超市, 包括], grammar: [gram-suanshi, gram-zai-jia-shang] }
+  - { en: "Write a paragraph about what you will do after you move, step by step (等……再……, 另外).", words: [家具, 冰箱, 裝, 房東], grammar: [gram-deng-zai, gram-lingwai] }

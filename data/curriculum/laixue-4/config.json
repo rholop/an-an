@@ -1,0 +1,60 @@
+{
+  "glyphDecode": false,
+  "rubyDuplicates": false,
+  "vocab": {
+    "sections": "order",
+    "headings": {
+      "core": "^生詞\\s*Vocabulary$",
+      "phrase": "^短語\\s*Phrases$",
+      "proper": "^專有名詞\\s*Proper\\s*Nouns?$",
+      "supplementary": "^補充生詞\\s*Supplementary\\s*Vocabulary$"
+    },
+    "grammarHeading": "^語法\\s*Grammar$",
+    "distinctSenses": []
+  },
+  "dialogueMarker": "Read aloud",
+  "grammarSource": "grammar.yaml",
+  "extraNames": [],
+  "explanations": [
+    "328 numbered entries in the lessons = 328 in the index = the 328 the editor's note states. 像 (L1/L9) and 裝 (L3/L10) repeat with different senses and are counted twice by the book."
+  ],
+  "bookId": "laixue-4",
+  "titleZh": "來學華語 第四冊",
+  "titleEn": "Let's Learn Mandarin 4",
+  "stated": {
+    "words": 328,
+    "grammar": 38
+  },
+  "lessonStartPages": [
+    13,
+    27,
+    45,
+    67,
+    85,
+    105,
+    127,
+    145,
+    163,
+    179
+  ],
+  "endPage": 196,
+  "tocPages": [
+    8,
+    9
+  ],
+  "indexPages": [
+    214,
+    229
+  ],
+  "extraWords": [
+    {
+      "headword": "的話",
+      "pinyin": "de huà",
+      "glossEn": "if (clause-final marker)",
+      "pos": [
+        "Ptc"
+      ],
+      "lesson": 1
+    }
+  ]
+}

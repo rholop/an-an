@@ -1,0 +1,57 @@
+lesson: 8
+sentences:
+  - { zh: 我寫錯了這個字。, en: "I wrote this character wrong.", grammar: [gram-v-cuo] }
+  - { zh: 他說錯了價錢。, en: "He stated the wrong price.", grammar: [gram-v-cuo] }
+  - { zh: 我做錯了一件事，經理很生氣。, en: "I did something wrong and the manager is angry.", grammar: [gram-v-cuo] }
+  - { zh: 你看錯了，這不是我的合約。, en: "You misread it; this is not my contract.", grammar: [gram-v-cuo] }
+  - { zh: 我們走錯路了。, en: "We took the wrong road.", grammar: [gram-v-cuo] }
+  - { zh: 她聽錯了，以為你不來。, en: "She misheard and thought you weren't coming.", grammar: [gram-v-cuo] }
+  - { zh: 我打錯電話了。, en: "I dialed the wrong number.", grammar: [gram-v-cuo] }
+  - { zh: 我被經理罵了。, en: "I was scolded by the manager.", grammar: [gram-bei-passive] }
+  - { zh: 他被老闆罵了一頓。, en: "He got a scolding from the boss.", grammar: [gram-bei-passive] }
+  - { zh: 我的合約被他存在電腦裡了。, en: "My contract was saved by him on the computer.", grammar: [gram-bei-passive] }
+  - { zh: 我的錢被他用完了。, en: "My money was used up by him.", grammar: [gram-bei-passive] }
+  - { zh: 這杯咖啡被弟弟喝完了。, en: "This cup of coffee was finished by my younger brother.", grammar: [gram-bei-passive] }
+  - { zh: 他被大家罵，心情很難過。, en: "He was scolded by everyone and feels very sad.", grammar: [gram-bei-passive] }
+  - { zh: 這件事讓我很生氣。, en: "This matter makes me very angry.", grammar: [gram-rang-let] }
+  - { zh: 你讓我很難過。, en: "You make me very sad.", grammar: [gram-rang-let] }
+  - { zh: 老闆讓我翻譯這份合約。, en: "The boss had me translate this contract.", grammar: [gram-rang-let] }
+  - { zh: 經理讓我檢查一下價錢。, en: "The manager had me check the price.", grammar: [gram-rang-let] }
+  - { zh: 請你讓我看一下檔案。, en: "Please let me take a look at the file.", grammar: [gram-rang-let] }
+  - { zh: 聽音樂讓我很開心。, en: "Listening to music makes me happy.", grammar: [gram-rang-let] }
+  - { zh: 我用電腦翻譯。, en: "I translate with a computer.", grammar: [gram-yong-with] }
+  - { zh: 我用中文寫合約。, en: "I write contracts in Chinese.", grammar: [gram-yong-with] }
+  - { zh: 請你用中文說一次。, en: "Please say it once in Chinese.", grammar: [gram-yong-with] }
+  - { zh: 他用手機打電話。, en: "He makes calls with his cell phone.", grammar: [gram-yong-with] }
+  - { zh: 我用電腦存檔案。, en: "I save files on the computer.", grammar: [gram-yong-with] }
+  - { zh: 你可以用信用卡買。, en: "You can buy it with a credit card.", grammar: [gram-yong-with] }
+scenarios:
+  - slug: mistake-at-work
+    title: "The manager asks about the mistake in the contract"
+    npc:
+      id: manager
+      name: 經理
+      personality: >
+        A fair but strict manager who values careful work. He asks calm, direct
+        questions and wants to hear how the learner will fix the problem.
+      speechStyle: >
+        Direct, polite sentences with words from books 1 to 3 (up to book 3 lesson 8).
+        Uses 小心 and 別 for warnings and asks the learner to check and hand in files.
+      particles: []
+    setting: >
+      The manager's office. A price in a contract is wrong and the manager asks the
+      learner what happened and how to fix it.
+    goalSteps:
+      - { id: mistake, description: "Say what you did wrong (V錯).", keywordHints: ["錯", "做錯了", "寫錯"] }
+      - { id: what, description: "Explain what happened with the price or the file.", keywordHints: ["價錢", "合約", "發生", "問題"] }
+      - { id: scolded, description: "Say you were scolded or the file was lost (被).", keywordHints: ["被", "罵", "不見了"] }
+      - { id: feel, description: "Say how this makes you feel (讓).", keywordHints: ["讓", "難過", "生氣", "心情"] }
+      - { id: fix, description: "Say how you will fix it (用, 檢查, 翻譯, 交).", keywordHints: ["用", "檢查", "翻譯", "交", "存"] }
+      - { id: promise, description: "Promise to be careful next time (小心).", keywordHints: ["小心", "別"] }
+    vocabExtras: [錯, 心情, 被, 經理, 罵, 發生, 唉, 清楚, 合約, 價錢, 問題, 嚴重, 發現, 零, 生氣, 頓, 感覺, 讓, 難過, 小心, 別, 翻譯, 份, 交, 存, 檔案, 檢查, 要不然, 做錯了, 看清楚, 有一次, 不見了, 打]
+    opener: { zh: 你好！合約的價錢有問題，你知道發生了什麼事嗎？, en: "Hello! There is a problem with the price in the contract. Do you know what happened?" }
+    successLine: { zh: 好，下次小心一點，請你再檢查一下，然後交給我。, en: "Alright. Be more careful next time; check it again and then hand it to me." }
+journalPrompts:
+  - { en: "Write a paragraph about a mistake you made at work or school and what you did wrong (V錯).", zh: 我做錯了一件事。, words: [錯, 發生, 價錢, 合約, 問題], grammar: [gram-v-cuo, gram-bei-passive] }
+  - { en: "Write a paragraph about something that happened to you and how it made you feel (被, 讓).", words: [罵, 生氣, 難過, 感覺, 心情], grammar: [gram-bei-passive, gram-rang-let] }
+  - { en: "Write a paragraph about the tools you use to do your work, such as the computer or a language (用).", words: [翻譯, 檔案, 存, 檢查], grammar: [gram-yong-with, gram-rang-let] }

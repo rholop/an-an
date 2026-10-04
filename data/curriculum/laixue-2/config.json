@@ -1,0 +1,84 @@
+{
+  "glyphDecode": false,
+  "rubyDuplicates": false,
+  "vocab": {
+    "sections": "order",
+    "headings": {
+      "core": "^生詞\\s*Vocabulary$",
+      "phrase": "^短語\\s*Phrases$",
+      "proper": "^專有名詞\\s*Proper\\s*Nouns?$",
+      "supplementary": "^補充生詞\\s*Supplementary\\s*Vocabulary$"
+    },
+    "grammarHeading": "^語法\\s*Grammar$",
+    "distinctSenses": [
+      "又",
+      "塊"
+    ]
+  },
+  "dialogueMarker": "Read aloud",
+  "grammarSource": "grammar.yaml",
+  "extraNames": [
+    {
+      "headword": "高莉亞",
+      "pinyin": "Gāo Lìyǎ",
+      "glossEn": "Gloria Lee (name)",
+      "lesson": 1
+    },
+    {
+      "headword": "莉亞",
+      "pinyin": "Lìyǎ",
+      "glossEn": "Liya, Gloria (given name)",
+      "lesson": 1
+    },
+    {
+      "headword": "麗莎",
+      "pinyin": "Lìshā",
+      "glossEn": "Lisa (given name)",
+      "lesson": 1
+    },
+    {
+      "headword": "何希",
+      "pinyin": "Héxī",
+      "glossEn": "Jose (given name)",
+      "lesson": 1
+    },
+    {
+      "headword": "凱文",
+      "pinyin": "Kǎiwén",
+      "glossEn": "Kevin (given name)",
+      "lesson": 1
+    }
+  ],
+  "explanations": [
+    "又 L2 #13 (both…and) and L9 #16 (again), and 塊 L4 #9 (a slice) and L5 #18 (dollar), are different senses that the book numbers and counts separately: 274 entries, 274 word+sense items, equal to the 274 the editor's note states.",
+    "L1 #22 太……了 is a sentence pattern; it is one of the 274 but is kept out of the lexicon (see below)."
+  ],
+  "bookId": "laixue-2",
+  "titleZh": "來學華語 第二冊",
+  "titleEn": "Let's Learn Mandarin 2",
+  "stated": {
+    "words": 274,
+    "grammar": 34
+  },
+  "lessonStartPages": [
+    13,
+    29,
+    47,
+    65,
+    79,
+    93,
+    111,
+    125,
+    139,
+    153
+  ],
+  "endPage": 168,
+  "tocPages": [
+    8,
+    9
+  ],
+  "indexPages": [
+    180,
+    191
+  ]
+}

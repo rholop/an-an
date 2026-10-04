@@ -15,7 +15,7 @@ export function parseLessonFront(pageText: string): LessonFront {
   const titleEn = ls[1] ?? '';
   const topicLine = ls.find((l) => /^Topic:/i.test(l)) ?? '';
   const topic = topicLine.replace(/^Topic:\s*/i, '').trim();
-  const start = ls.findIndex((l) => /At the end of this lesson/i.test(l));
+  const start = ls.findIndex((l) => /(?:At|By) the end of this lesson/i.test(l));
   const end = ls.findIndex((l) => /^Learning Objectives$/i.test(l));
   const body = ls.slice(start + 1, end < 0 ? undefined : end);
   const objectives: string[] = [];

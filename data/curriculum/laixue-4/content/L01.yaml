@@ -1,0 +1,56 @@
+lesson: 1
+sentences:
+  - { zh: 你有空的話，我們一起去吃飯吧。, en: "If you are free, let's go eat together.", grammar: [gram-de-hua-if] }
+  - { zh: 明天下雨的話，我就不去公園。, en: "If it rains tomorrow, I won't go to the park.", grammar: [gram-de-hua-if] }
+  - { zh: 如果你想去臺灣的話，可以先學中文。, en: "If you want to go to Taiwan, you can study Chinese first.", grammar: [gram-de-hua-if] }
+  - { zh: 要是你不喜歡的話，可以換一個。, en: "If you don't like it, you can swap it for another.", grammar: [gram-de-hua-if] }
+  - { zh: 你太累的話，就休息一下吧。, en: "If you are too tired, take a short rest.", grammar: [gram-de-hua-if] }
+  - { zh: 他願意的話，我們可以合作。, en: "If he is willing, we can cooperate.", grammar: [gram-de-hua-if] }
+  - { zh: 如果天氣不錯的話，我想去海邊。, en: "If the weather is good, I want to go to the beach.", grammar: [gram-de-hua-if] }
+  - { zh: 你喜歡牛肉的話，可以試試看牛肉麵。, en: "If you like beef, you can try beef noodle soup.", grammar: [gram-de-hua-if] }
+  - { zh: 除了咖啡，我還喜歡喝茶。, en: "Besides coffee, I also like to drink tea.", grammar: [gram-chule-hai] }
+  - { zh: 哥哥除了喜歡游泳，還喜歡爬山。, en: "Besides swimming, my older brother also likes hiking.", grammar: [gram-chule-hai] }
+  - { zh: 除了會說中文，他也會說德文。, en: "Besides speaking Chinese, he also speaks German.", grammar: [gram-chule-hai] }
+  - { zh: 我們公司除了在臺灣，也在美國有分公司。, en: "Besides Taiwan, our company also has a branch in the U.S.", grammar: [gram-chule-hai] }
+  - { zh: 除了週末，平常我也去跑步。, en: "Besides weekends, I also go running on weekdays.", grammar: [gram-chule-hai] }
+  - { zh: 她除了寫論文，還要找工作。, en: "Besides writing her thesis, she has to look for a job.", grammar: [gram-chule-hai] }
+  - { zh: 除了牛肉麵，臺灣還有很多好吃的小吃。, en: "Besides beef noodle soup, Taiwan has many other tasty snacks.", grammar: [gram-chule-hai] }
+  - { zh: 除了老師，我們也請了張家安。, en: "Besides the teacher, we also invited Joann Zhang.", grammar: [gram-chule-hai] }
+  - { zh: 請你把房間整理整理。, en: "Please tidy up the room.", grammar: [gram-ba-reduplicated-request] }
+  - { zh: 請你把這件衣服洗一洗。, en: "Please wash this piece of clothing.", grammar: [gram-ba-reduplicated-request] }
+  - { zh: 請你把合約看一看。, en: "Please take a look over the contract.", grammar: [gram-ba-reduplicated-request] }
+  - { zh: 麻煩你把桌子擦擦。, en: "Could you wipe the table, please?", grammar: [gram-ba-reduplicated-request] }
+  - { zh: 請你把資料檢查檢查。, en: "Please check the materials.", grammar: [gram-ba-reduplicated-request] }
+  - { zh: 請你把麵包烤一烤再吃。, en: "Please toast the bread before you eat it.", grammar: [gram-ba-reduplicated-request] }
+  - { zh: 你把這個計畫想想，好不好？, en: "Think over this plan, okay?", grammar: [gram-ba-reduplicated-request] }
+  - { zh: 請你把院子打掃打掃。, en: "Please tidy up the yard.", grammar: [gram-ba-reduplicated-request] }
+scenarios:
+  - slug: job-change-news
+    title: "Mingwen hears your news about the job in Taiwan"
+    npc:
+      id: mingwen
+      name: 明文
+      personality: >
+        A kind, friendly graduate student who helps the learner practise Mandarin. He is
+        happy about good news and asks gentle questions about plans and worries.
+      speechStyle: >
+        Friendly short sentences with words from books 1 to 4 (up to book 4 lesson 1).
+        Says 如果……的話 and 除了……還…… when he gives suggestions.
+      particles: []
+    setting: >
+      Mingwen and the learner are at a coffee shop. The learner has just heard the
+      company wants to send them to work in Taiwan, and they talk about it.
+    goalSteps:
+      - { id: news, description: "Share the news: the company wants to send you to Taiwan.", keywordHints: ["消息", "派", "臺灣", "工作"] }
+      - { id: feeling, description: "Say how you feel (興奮, 擔心).", keywordHints: ["興奮", "擔心", "緊張"] }
+      - { id: ifthen, description: "Say what you will do if something happens (……的話).", keywordHints: ["的話"] }
+      - { id: besides, description: "Say what you want to do besides working (除了……還 / 也……).", keywordHints: ["除了", "還", "也"] }
+      - { id: request, description: "Ask the friend to do something (請你把……V一V).", keywordHints: ["請你", "把"] }
+      - { id: pickup, description: "Talk about getting picked up at the airport (接, 機場).", keywordHints: ["機場", "接"] }
+    vocabExtras: [午安, 遲到, 事情, 消息, 終於, 興奮, 生活, 機場, 接, 擔心, 迷路, 半年, 留, 除了, 試試看, 像, 打聽, 課, 替, 留下, 美好, 印象, 對不起, 沒關係]
+    opener: { zh: 莉亞，午安。你終於有好消息了嗎？, en: "Liya, good afternoon. Do you finally have good news?" }
+    successLine: { zh: 放心，我弟弟會去機場接你，你一定會喜歡臺灣的。, en: "Don't worry, my younger brother will pick you up at the airport; you will surely like Taiwan." }
+journalPrompts:
+  - { en: "Write a paragraph about a job or life change and the reason for it (的話, 除了……還 / 也……).", zh: 公司派我去臺灣工作。, words: [消息, 終於, 興奮, 生活], grammar: [gram-de-hua-if, gram-chule-hai] }
+  - { en: "Write a paragraph about what you hope to do in a new place besides working (除了……還 / 也……).", words: [印象, 美好, 留下, 試試看], grammar: [gram-chule-hai, gram-de-hua-if] }
+  - { en: "Write a paragraph about what you would ask a friend to do for you (請你把……V一V), and what you will do if something happens (……的話).", words: [接, 機場, 擔心, 打聽], grammar: [gram-ba-reduplicated-request, gram-de-hua-if] }

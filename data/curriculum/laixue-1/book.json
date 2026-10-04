@@ -76,7 +76,8 @@
             ],
             "useGrammar": [
               "gram-xing-jiao"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L01-jp2",
@@ -89,7 +90,8 @@
             ],
             "useGrammar": [
               "gram-shi-identity"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L01-jp3",
@@ -102,7 +104,8 @@
             ],
             "useGrammar": [
               "gram-shenme-question"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       },
@@ -159,7 +162,8 @@
             ],
             "useGrammar": [
               "gram-number-measure"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L02-jp2",
@@ -172,7 +176,8 @@
             ],
             "useGrammar": [
               "gram-ye-also"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L02-jp3",
@@ -185,7 +190,8 @@
             ],
             "useGrammar": [
               "gram-you-meiyou"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       },
@@ -258,7 +264,8 @@
             ],
             "useGrammar": [
               "gram-zai-place"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L03-jp2",
@@ -271,7 +278,8 @@
             ],
             "useGrammar": [
               "gram-dou-all"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L03-jp3",
@@ -284,7 +292,8 @@
             ],
             "useGrammar": [
               "gram-bu-negation"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       },
@@ -347,7 +356,8 @@
             ],
             "useGrammar": [
               "gram-de-possessive"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L04-jp2",
@@ -360,7 +370,8 @@
             ],
             "useGrammar": [
               "gram-a-not-a"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L04-jp3",
@@ -373,7 +384,8 @@
             ],
             "useGrammar": [
               "gram-ne-followup"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       },
@@ -442,7 +454,8 @@
             ],
             "useGrammar": [
               "gram-zhe-shi-intro"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L05-jp2",
@@ -455,7 +468,8 @@
             ],
             "useGrammar": [
               "gram-zhuzai"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L05-jp3",
@@ -468,7 +482,8 @@
             ],
             "useGrammar": [
               "gram-qu-place-verb"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       },
@@ -532,7 +547,8 @@
             ],
             "useGrammar": [
               "gram-time-place-order"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L06-jp2",
@@ -545,7 +561,8 @@
             ],
             "useGrammar": [
               "gram-hai-also"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L06-jp3",
@@ -558,7 +575,8 @@
             ],
             "useGrammar": [
               "gram-ye-dou-order"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       },
@@ -643,7 +661,8 @@
             ],
             "useGrammar": [
               "gram-gei-call"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L07-jp2",
@@ -656,7 +675,8 @@
             ],
             "useGrammar": [
               "gram-numbers-0-100"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L07-jp3",
@@ -669,7 +689,8 @@
             ],
             "useGrammar": [
               "gram-yihou"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       },
@@ -740,7 +761,8 @@
             ],
             "useGrammar": [
               "gram-ji-questions"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L08-jp2",
@@ -753,7 +775,8 @@
             ],
             "useGrammar": [
               "gram-tag-question"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L08-jp3",
@@ -766,7 +789,8 @@
             ],
             "useGrammar": [
               "gram-dates"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       },
@@ -846,7 +870,8 @@
             ],
             "useGrammar": [
               "gram-gen-yiqi"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L09-jp2",
@@ -859,7 +884,8 @@
             ],
             "useGrammar": [
               "gram-dian-clock"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L09-jp3",
@@ -872,7 +898,8 @@
             ],
             "useGrammar": [
               "gram-xingqi"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       },
@@ -944,7 +971,8 @@
             ],
             "useGrammar": [
               "gram-youyidian"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L10-jp2",
@@ -957,7 +985,8 @@
             ],
             "useGrammar": [
               "gram-de-complement"
-            ]
+            ],
+            "level": "N1"
           },
           {
             "id": "laixue-1-L10-jp3",
@@ -970,7 +999,8 @@
             ],
             "useGrammar": [
               "gram-hui-can"
-            ]
+            ],
+            "level": "N1"
           }
         ]
       }

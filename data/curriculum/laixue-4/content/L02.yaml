@@ -1,0 +1,57 @@
+lesson: 2
+sentences:
+  - { zh: 臺北夏天的天氣熱得不得了。, en: "The summer weather in Taipei is unbelievably hot.", grammar: [gram-bu-deliao] }
+  - { zh: 我今天忙得不得了。, en: "I am extremely busy today.", grammar: [gram-bu-deliao] }
+  - { zh: 飛機上的人多得不得了。, en: "The plane was incredibly full of people.", grammar: [gram-bu-deliao] }
+  - { zh: 他高興得不得了。, en: "He is overjoyed.", grammar: [gram-bu-deliao] }
+  - { zh: 這個行李重得不得了。, en: "This luggage is extremely heavy.", grammar: [gram-bu-deliao] }
+  - { zh: 我餓得不得了。, en: "I am starving.", grammar: [gram-bu-deliao] }
+  - { zh: 我先去拿行李，再去搭捷運。, en: "I'll get my luggage first and then take the MRT.", grammar: [gram-xian-zai] }
+  - { zh: 我們先換錢，再去吃飯。, en: "We'll exchange money first and then eat.", grammar: [gram-xian-zai] }
+  - { zh: 他先吃飯，再看電視。, en: "He eats first and then watches TV.", grammar: [gram-xian-zai] }
+  - { zh: 先右轉，再往前走。, en: "Turn right first, then go straight.", grammar: [gram-xian-zai, gram-cong-wang] }
+  - { zh: 你先休息一下，再工作吧。, en: "Rest a little first, then work.", grammar: [gram-xian-zai] }
+  - { zh: 我先給老闆打電話，再回家。, en: "I'll call my boss first and then go home.", grammar: [gram-xian-zai] }
+  - { zh: 我一點都不餓。, en: "I'm not hungry at all.", grammar: [gram-yidian-dou-bu] }
+  - { zh: 他一點也不累。, en: "He isn't tired at all.", grammar: [gram-yidian-dou-bu] }
+  - { zh: 這個行李一點都不重。, en: "This luggage isn't heavy at all.", grammar: [gram-yidian-dou-bu] }
+  - { zh: 我一點時間也沒有。, en: "I have no time at all.", grammar: [gram-yidian-dou-bu] }
+  - { zh: 今天一點都不冷。, en: "It's not cold at all today.", grammar: [gram-yidian-dou-bu] }
+  - { zh: 她一點都不緊張。, en: "She isn't nervous at all.", grammar: [gram-yidian-dou-bu] }
+  - { zh: 我一點也不想吃飯。, en: "I don't feel like eating at all.", grammar: [gram-yidian-dou-bu] }
+  - { zh: 從這裡往前走，就是機場。, en: "Go straight ahead from here and you'll reach the airport.", grammar: [gram-cong-wang] }
+  - { zh: 請往左轉。, en: "Please turn left.", grammar: [gram-cong-wang] }
+  - { zh: 你往右轉，就可以看到停車場。, en: "Turn right and you will see the parking lot.", grammar: [gram-cong-wang] }
+  - { zh: 請往前走，不要往後走。, en: "Please go forward, not backward.", grammar: [gram-cong-wang] }
+  - { zh: 他往上走。, en: "He goes up.", grammar: [gram-cong-wang] }
+scenarios:
+  - slug: airport-pickup
+    title: "Jiawen meets you at the airport"
+    npc:
+      id: jiawen
+      name: 家文
+      personality: >
+        A lively, cheerful Taiwanese high-school student who is happy to welcome a
+        guest and keeps asking whether the guest is tired or hungry.
+      speechStyle: >
+        Cheerful short sentences with words from books 1 to 4 (up to book 4 lesson 2).
+        Gives directions with 先……再…… and 往.
+      particles: []
+    setting: >
+      Taoyuan airport arrivals hall. Jiawen has come to pick up the learner, helps
+      with the luggage and explains how to get to the city.
+    goalSteps:
+      - { id: flight, description: "Say how the flight was (時差, 累).", keywordHints: ["飛機", "時差", "累"] }
+      - { id: hungry, description: "Say if you are hungry, thirsty or tired (餓, 渴, 得不得了).", keywordHints: ["餓", "渴", "不得了"] }
+      - { id: luggage, description: "Talk about the luggage and push cart (行李, 推車, 重).", keywordHints: ["行李", "推車", "重"] }
+      - { id: notatall, description: "Say something is not a problem at all (一點都不……).", keywordHints: ["一點", "都不", "也不"] }
+      - { id: directions, description: "Follow or give directions (往前走, 右轉, 出口).", keywordHints: ["往", "右轉", "出口", "停車場"] }
+      - { id: order, description: "Say what you will do first and then (先……再……).", keywordHints: ["先", "再"] }
+      - { id: transport, description: "Choose transport (捷運, 巴士) or talk about traffic (塞車).", keywordHints: ["捷運", "巴士", "塞車"] }
+    vocabExtras: [這麼, 行李, 推車, 重, 推, 時差, 餓, 飽, 渴, 臺幣, 往, 轉, 出口, 停車場, 北部, 塞車, 左右, 巴士, 捷運, 工具, 幫, 訂, 省, 細心, 接待, 不好意思, 所有的, 不得了, 換錢, 右轉, 開過來, 沒想到, 桃園]
+    opener: { zh: 歡迎來臺灣！飛機上的時間長不長？你累不累？, en: "Welcome to Taiwan! Was the flight long? Are you tired?" }
+    successLine: { zh: 謝謝你來接我，我們先換錢，再去坐捷運吧。, en: "Thank you for picking me up. Let's exchange money first and then take the MRT." }
+journalPrompts:
+  - { en: "Write a paragraph about a long trip: how tired, hungry or busy you were (……得不得了, 一點都不……).", zh: 我餓得不得了。, words: [時差, 餓, 渴, 重, 行李], grammar: [gram-bu-deliao, gram-yidian-dou-bu] }
+  - { en: "Write the steps of how you get from an airport to your hotel or home (先……再……, 往……).", words: [出口, 停車場, 轉, 往, 巴士], grammar: [gram-xian-zai, gram-cong-wang] }
+  - { en: "Write a paragraph about the traffic and transport near an airport you know (往, 先……再……, ……得不得了).", words: [塞車, 捷運, 工具, 省, 左右], grammar: [gram-cong-wang, gram-bu-deliao] }

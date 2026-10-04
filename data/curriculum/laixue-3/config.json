@@ -1,0 +1,57 @@
+{
+  "glyphDecode": true,
+  "rubyDuplicates": false,
+  "vocab": {
+    "sections": "order",
+    "headings": {
+      "core": "^生詞\\s*Vocabulary$",
+      "phrase": "^短語\\s*Phrases$",
+      "proper": "^專有名詞\\s*Proper\\s*Nouns?$",
+      "supplementary": "^補充生詞\\s*Supplementary\\s*Vocabulary$"
+    },
+    "grammarHeading": "^語法\\s*Grammar$",
+    "distinctSenses": []
+  },
+  "dialogueMarker": "Read aloud",
+  "grammarSource": "grammar.yaml",
+  "extraNames": [
+    {
+      "headword": "杜翔",
+      "pinyin": "Dù Xiáng",
+      "glossEn": "Dushyant (name)",
+      "lesson": 1
+    }
+  ],
+  "explanations": [
+    "The appendix index and the ten lesson lists agree entry for entry on 296 numbered words (every index locator is confirmed below). The editor's note says 290, 6 fewer. 9 of the 296 re-teach a word an earlier volume already taught (listed below, one lexicon item each) and one (心情, L2 and L8) repeats inside the book; no simple rule on those reproduces 290, so the book's own index and lesson lists (296) are taken as authoritative and the 290 is reported as the editor's figure.",
+    "Grammar: the book numbers 39 sections; its lesson-1 section 以前 / 以後 teaches two patterns, cites a different earlier volume for each, and is listed here as two points, giving the stated 40. 以後 and 從…到… are re-teaches of points from books 1 and 2 and keep their original items."
+  ],
+  "bookId": "laixue-3",
+  "titleZh": "來學華語 第三冊",
+  "titleEn": "Let's Learn Mandarin 3",
+  "stated": {
+    "words": 290,
+    "grammar": 40
+  },
+  "lessonStartPages": [
+    13,
+    29,
+    45,
+    63,
+    81,
+    97,
+    117,
+    133,
+    149,
+    167
+  ],
+  "endPage": 186,
+  "tocPages": [
+    8,
+    9
+  ],
+  "indexPages": [
+    201,
+    213
+  ]
+}

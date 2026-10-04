@@ -1,0 +1,57 @@
+lesson: 7
+sentences:
+  - { zh: 銀行在學校的對面。, en: "The bank is across from the school.", grammar: [gram-positional-words, gram-zai-location] }
+  - { zh: 我家的後面有一個公園。, en: "There is a park behind my home.", grammar: [gram-positional-words] }
+  - { zh: 房子的前面有一個游泳池。, en: "There is a swimming pool in front of the house.", grammar: [gram-positional-words] }
+  - { zh: 廚房在客廳的旁邊。, en: "The kitchen is next to the living room.", grammar: [gram-positional-words, gram-zai-location] }
+  - { zh: 浴室在樓上，廚房在樓下。, en: "The bathroom is upstairs and the kitchen is downstairs.", grammar: [gram-positional-words] }
+  - { zh: 我的房間在樓上，我哥哥的房間在樓下。, en: "My room is upstairs and my older brother's room is downstairs.", grammar: [gram-positional-words] }
+  - { zh: 請進！客廳在你的左邊。, en: "Please come in! The living room is on your left.", grammar: [gram-positional-words, gram-zai-location] }
+  - { zh: 水果在廚房裡面。, en: "The fruit is inside the kitchen.", grammar: [gram-positional-words, gram-zai-location] }
+  - { zh: 學校的右邊是銀行，左邊是公園。, en: "To the right of the school is the bank, to the left is the park.", grammar: [gram-positional-words] }
+  - { zh: 超級市場在游泳池旁邊。, en: "The supermarket is next to the swimming pool.", grammar: [gram-positional-words, gram-zai-location] }
+  - { zh: 咖啡店在百貨公司的外面。, en: "The coffee shop is outside the department store.", grammar: [gram-positional-words, gram-zai-location] }
+  - { zh: 公園的前面是一家餐廳。, en: "In front of the park is a restaurant.", grammar: [gram-positional-words] }
+  - { zh: 我家在公園的對面。, en: "My home is across from the park.", grammar: [gram-zai-location, gram-positional-words] }
+  - { zh: 游泳池在我家的後面。, en: "The swimming pool is behind my home.", grammar: [gram-zai-location, gram-positional-words] }
+  - { zh: 學校在銀行的右邊。, en: "The school is to the right of the bank.", grammar: [gram-zai-location, gram-positional-words] }
+  - { zh: 李老師的家在我家左邊。, en: "Teacher Li's home is to the left of mine.", grammar: [gram-zai-location, gram-positional-words] }
+  - { zh: 你家在哪裡？我家在超級市場的後面。, en: "Where is your home? My home is behind the supermarket.", grammar: [gram-zai-location, gram-positional-words] }
+  - { zh: 他的辦公室在公司的樓上。, en: "His office is upstairs in the company.", grammar: [gram-zai-location, gram-positional-words] }
+  - { zh: 這家餐廳在百貨公司的下面。, en: "This restaurant is below the department store.", grammar: [gram-zai-location, gram-positional-words] }
+  - { zh: 我家有幾個房間？, en: "How many rooms does my home have?", grammar: [gram-ji-approximate] }
+  - { zh: 這個社區有十幾家商店。, en: "This neighborhood has a dozen or so shops.", grammar: [gram-ji-approximate] }
+  - { zh: 我等了幾分鐘。, en: "I waited a few minutes.", grammar: [gram-ji-approximate] }
+  - { zh: 這家餐廳有二十幾個人。, en: "There are twenty-some people in this restaurant.", grammar: [gram-ji-approximate] }
+  - { zh: 他住在這裡十幾年了。, en: "He has lived here for over ten years.", grammar: [gram-ji-approximate] }
+  - { zh: 我們公司有三十幾個人。, en: "Our company has thirty-some people.", grammar: [gram-ji-approximate] }
+  - { zh: 我買了幾個蘋果。, en: "I bought a few apples.", grammar: [gram-ji-approximate] }
+scenarios:
+  - slug: find-supermarket
+    title: "Jiawen is looking for the supermarket"
+    npc:
+      id: jiawen
+      name: 家文
+      personality: >
+        A lively, cheerful high-school student who is visiting the city and gets lost
+        easily. He is grateful and repeats the directions back to check.
+      speechStyle: >
+        Short cheerful sentences with words from books 1 and 2 (up to lesson 7).
+        Asks 在哪裡 and repeats positional words (旁邊, 對面, 左邊, 右邊).
+      particles: []
+    setting: >
+      A street in a new neighborhood. Jiawen needs the supermarket and the
+      swimming pool and asks the learner for directions.
+    goalSteps:
+      - { id: where, description: "Say where the supermarket is (在……旁邊 / 對面).", keywordHints: ["在", "旁邊", "對面"] }
+      - { id: pool, description: "Say where the swimming pool is.", keywordHints: ["游泳池", "後面", "前面"] }
+      - { id: leftright, description: "Give a direction with 左邊 or 右邊.", keywordHints: ["左邊", "右邊"] }
+      - { id: howmany, description: "Say how many shops or people there are (幾).", keywordHints: ["幾", "十幾", "二十幾"] }
+      - { id: home, description: "Say where your own home is and how many rooms it has.", keywordHints: ["我家", "房間", "在"] }
+    vocabExtras: [旁邊, 恭喜, 新, 客氣, 客廳, 水果, 點心, 漂亮, 介紹, 房子, 樓下, 廚房, 樓上, 房間, 間, 浴室, 後面, 對面, 外面, 請進, 散步, 前面, 裡面, 左邊, 右邊, 上面, 下面]
+    opener: { zh: 你好！請問，超級市場在哪裡？, en: "Hello! Excuse me, where is the supermarket?" }
+    successLine: { zh: 謝謝！超級市場在游泳池旁邊，我現在就去。, en: "Thanks! The supermarket is next to the swimming pool; I'll go right now." }
+journalPrompts:
+  - { en: "Describe where things are near your home (超級市場在……).", zh: 超級市場在我家的對面。, words: [旁邊, 後面, 對面, 外面], grammar: [gram-zai-location] }
+  - { en: "Describe your home: which room is where (in front of, behind, upstairs, downstairs).", words: [房子, 房間, 客廳, 廚房, 樓上], grammar: [gram-positional-words] }
+  - { en: "Write how many people or things there are in a place near you, using 幾.", words: [漂亮, 水果, 散步], grammar: [gram-ji-approximate] }

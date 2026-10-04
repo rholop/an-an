@@ -1,0 +1,58 @@
+lesson: 8
+sentences:
+  - { zh: 從下個月起，公司不用加班了。, en: "From next month on, the company doesn't need overtime.", grammar: [gram-cong-qi] }
+  - { zh: 從今天開始，我要多運動。, en: "Starting today, I'm going to exercise more.", grammar: [gram-cong-qi] }
+  - { zh: 從小時候起，我就愛看書。, en: "Since I was little, I have loved reading.", grammar: [gram-cong-qi] }
+  - { zh: 從明年起，我們要搬到臺北。, en: "From next year, we will move to Taipei.", grammar: [gram-cong-qi] }
+  - { zh: 從星期一開始，我每天早起。, en: "From Monday on, I get up early every day.", grammar: [gram-cong-qi] }
+  - { zh: 從這個月起，房租要貴一點。, en: "From this month on, the rent will be a bit higher.", grammar: [gram-cong-qi] }
+  - { zh: 夜市的小吃很受歡迎，尤其是雞排。, en: "Night market snacks are popular, especially chicken cutlets.", grammar: [gram-youqi] }
+  - { zh: 我喜歡運動，尤其是游泳。, en: "I like sports, especially swimming.", grammar: [gram-youqi] }
+  - { zh: 臺灣的夏天很熱，尤其是七月。, en: "Summers in Taiwan are hot, especially July.", grammar: [gram-youqi] }
+  - { zh: 這個城市有很多寺廟，尤其是在東區。, en: "This city has many temples, especially in the eastern district.", grammar: [gram-youqi] }
+  - { zh: 他們的婚禮很熱鬧，尤其是敬酒的時候。, en: "Their wedding was lively, especially during the toast.", grammar: [gram-youqi] }
+  - { zh: 我喜歡吃甜的，尤其是蛋糕。, en: "I like sweet things, especially cake.", grammar: [gram-youqi] }
+  - { zh: 他連中文都不會說。, en: "He can't even speak Chinese.", grammar: [gram-lian-dou] }
+  - { zh: 我連一杯咖啡也沒喝。, en: "I didn't even drink a cup of coffee.", grammar: [gram-lian-dou] }
+  - { zh: 她太忙了，連吃飯都沒時間。, en: "She is so busy she doesn't even have time to eat.", grammar: [gram-lian-dou] }
+  - { zh: 這個字很容易，連小孩子都認識。, en: "This character is easy; even children know it.", grammar: [gram-lian-dou] }
+  - { zh: 他連自己的生日都忘記了。, en: "He even forgot his own birthday.", grammar: [gram-lian-dou] }
+  - { zh: 連老師都不知道。, en: "Even the teacher doesn't know.", grammar: [gram-lian-dou] }
+  - { zh: 你看得出來他是誰嗎？, en: "Can you tell who he is?", grammar: [gram-v-chulai] }
+  - { zh: 我聽不出來這是什麼歌。, en: "I can't tell what song this is.", grammar: [gram-v-chulai] }
+  - { zh: 我想不出來他的名字。, en: "I can't think of his name.", grammar: [gram-v-chulai] }
+  - { zh: 你認得出來嗎？, en: "Can you recognize it?", grammar: [gram-v-chulai] }
+  - { zh: 他穿上禮服，我認不出來是誰。, en: "He put on formal clothes and I couldn't recognize who it was.", grammar: [gram-v-chulai] }
+  - { zh: 我看得出來你很高興。, en: "I can see that you are very happy.", grammar: [gram-v-chulai] }
+  - { zh: 這個菜我吃得出來有點酸。, en: "I can taste that this dish is a bit sour.", grammar: [gram-v-chulai] }
+scenarios:
+  - slug: wedding-invitation
+    title: "Mingwen invites you to a wedding"
+    npc:
+      id: mingwen
+      name: 明文
+      personality: >
+        A kind, friendly graduate student who knows Taiwanese customs well and
+        explains them patiently, with a smile.
+      speechStyle: >
+        Friendly sentences with words from books 1 to 4 (up to book 4 lesson 8).
+        Explains customs with 尤其是 and 連……都……
+      particles: []
+    setting: >
+      Mingwen has just invited the learner to the wedding of a friend. They talk about
+      the invitation, red envelopes, what to wear and what happens at the ceremony.
+    goalSteps:
+      - { id: invite, description: "Say that you received the wedding invitation (收到喜帖).", keywordHints: ["喜帖", "收到", "參加", "結婚典禮"] }
+      - { id: clothes, description: "Ask or say what to wear (禮服, 打扮, 正式).", keywordHints: ["禮服", "打扮", "正式", "穿"] }
+      - { id: redenvelope, description: "Ask about the red envelope and the number (紅包, 雙數, 幸運).", keywordHints: ["紅包", "雙數", "數字", "幸運"] }
+      - { id: ceremony, description: "Talk about the bride, groom or toast (新娘, 新郎, 敬酒).", keywordHints: ["新娘", "新郎", "敬酒", "客人"] }
+      - { id: especially, description: "Say what you like especially (尤其是).", keywordHints: ["尤其"] }
+      - { id: evenor, description: "Say something extreme with 連……都…….", keywordHints: ["連", "都", "也"] }
+      - { id: recognize, description: "Say what you can or cannot recognise (看得出來 / 認不出來).", keywordHints: ["出來", "認"] }
+    vocabExtras: [參加, 典禮, 收到, 喜帖, 紅包, 數字, 包, 雙數, 幸運, 習俗, 古代, 複雜, 詳細, 禮服, 家庭, 重視, 時代, 簡單, 尤其, 在乎, 穿上, 新娘, 新郎, 帥, 連, 認, 隨便, 打扮, 正式, 雙方, 敬酒, 主人, 表示, 感謝, 客人, 祝福, 喝喜酒, 百年好合, 早生貴子]
+    opener: { zh: 你收到喜帖了嗎？你要參加我朋友的結婚典禮嗎？, en: "Did you receive the wedding invitation? Will you attend my friend's wedding?" }
+    successLine: { zh: 謝謝你來參加，祝福新娘和新郎百年好合！, en: "Thank you for coming; we wish the bride and groom a happy life together!" }
+journalPrompts:
+  - { en: "Write a paragraph about a custom or celebration you know and when it starts (從……起 / 開始, 尤其).", zh: 從今天開始，我要參加典禮。, words: [習俗, 典禮, 重視, 古代, 時代], grammar: [gram-cong-qi, gram-youqi] }
+  - { en: "Write a paragraph about what people care about at a wedding, using 連……都 / 也 for emphasis.", words: [禮服, 打扮, 在乎, 簡單, 正式], grammar: [gram-lian-dou, gram-youqi] }
+  - { en: "Write a paragraph about something you can or cannot recognise or work out (V得 / 不出來).", words: [新娘, 新郎, 認, 帥, 隨便], grammar: [gram-v-chulai, gram-lian-dou] }

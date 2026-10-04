@@ -1,0 +1,57 @@
+lesson: 2
+sentences:
+  - { zh: 這個旅館看起來很漂亮。, en: "This hotel looks very pretty.", grammar: [gram-qilai-judgement] }
+  - { zh: 這個計畫聽起來很不錯。, en: "This plan sounds pretty good.", grammar: [gram-qilai-judgement] }
+  - { zh: 這件外套穿起來很舒服。, en: "This coat feels comfortable to wear.", grammar: [gram-qilai-judgement] }
+  - { zh: 這杯咖啡喝起來有點酸。, en: "This cup of coffee tastes a little sour.", grammar: [gram-qilai-judgement] }
+  - { zh: 這個字寫起來不容易。, en: "This character is not easy to write.", grammar: [gram-qilai-judgement] }
+  - { zh: 這個蛋糕吃起來很甜。, en: "This cake tastes very sweet.", grammar: [gram-qilai-judgement] }
+  - { zh: 海邊的風景看起來真美。, en: "The scenery at the beach looks really beautiful.", grammar: [gram-qilai-judgement] }
+  - { zh: 我們一邊坐船，一邊看風景。, en: "We watched the scenery while riding the boat.", grammar: [gram-yibian-yibian] }
+  - { zh: 她一邊走路，一邊聽音樂。, en: "She listens to music while walking.", grammar: [gram-yibian-yibian] }
+  - { zh: 他一邊吃早飯，一邊看電視。, en: "He watches TV while eating breakfast.", grammar: [gram-yibian-yibian] }
+  - { zh: 我喜歡一邊喝咖啡，一邊看書。, en: "I like to read while drinking coffee.", grammar: [gram-yibian-yibian] }
+  - { zh: 弟弟一邊洗澡，一邊唱歌。, en: "My younger brother sings while taking a shower.", grammar: [gram-yibian-yibian] }
+  - { zh: 請問，到旅館怎麼走？, en: "Excuse me, how do I get to the hotel?", grammar: [gram-zenme-how] }
+  - { zh: 這個字怎麼寫？, en: "How do you write this character?", grammar: [gram-zenme-how] }
+  - { zh: 我們怎麼去旅館？, en: "How are we getting to the hotel?", grammar: [gram-zenme-how] }
+  - { zh: 這個菜怎麼做？, en: "How do you make this dish?", grammar: [gram-zenme-how] }
+  - { zh: 潛水怎麼學？, en: "How does one learn to dive?", grammar: [gram-zenme-how] }
+  - { zh: 你們是怎麼去海邊的？, en: "How did you get to the beach?", grammar: [gram-shi-de-focus, gram-zenme-how] }
+  - { zh: 我是上個月去海邊的。, en: "It was last month that I went to the beach.", grammar: [gram-shi-de-focus] }
+  - { zh: 我們是搭飛機去的。, en: "We went by plane.", grammar: [gram-shi-de-focus] }
+  - { zh: 他是坐船去的。, en: "He went by boat.", grammar: [gram-shi-de-focus] }
+  - { zh: 我們是在旅館租車的。, en: "It was at the hotel that we rented the car.", grammar: [gram-shi-de-focus] }
+  - { zh: 你是跟誰一起去的？, en: "Who did you go with?", grammar: [gram-shi-de-focus] }
+  - { zh: 這張照片是在海邊照的。, en: "This photo was taken at the beach.", grammar: [gram-shi-de-focus] }
+  - { zh: 她不是去年來的，她是今年來的。, en: "She didn't come last year; she came this year.", grammar: [gram-shi-de-focus] }
+scenarios:
+  - slug: beach-vacation
+    title: "Dushyant asks about your beach vacation"
+    npc:
+      id: dushyant
+      name: 杜翔
+      personality: >
+        A hard-working, friendly engineer who has not had a holiday for a long time
+        and loves to hear about other people's trips.
+      speechStyle: >
+        Short friendly sentences with words from books 1 to 3 (up to book 3 lesson 2).
+        Asks 你是怎麼去的 and repeats the learner's answer with a comment (聽起來……).
+      particles: []
+    setting: >
+      Dushyant and the learner are having coffee after class. He heard the learner
+      just came back from a beach vacation and wants to hear all about it.
+    goalSteps:
+      - { id: where, description: "Say where you went on vacation.", keywordHints: ["海邊", "度假", "去"] }
+      - { id: how, description: "Say how you got there (搭飛機 / 坐船).", keywordHints: ["飛機", "船", "搭", "坐"] }
+      - { id: whenwho, description: "Say when you went or who you went with (是……的).", keywordHints: ["是", "的"] }
+      - { id: did, description: "Say what you did there (潛水, 晒太陽) or learned.", keywordHints: ["潛水", "教練", "晒"] }
+      - { id: scenery, description: "Describe the scenery or hotel with ……起來.", keywordHints: ["風景", "起來", "旅館"] }
+      - { id: feeling, description: "Say how the vacation felt or how your mood was.", keywordHints: ["心情", "輕鬆"] }
+    vocabExtras: [海邊, 風景, 次, 輕鬆, 坐, 船, 潛水, 各, 種, 容易, 教練, 到處, 晒, 旅館, 美, 一邊, 天上, 星星, 心情, 怎麼, 搭, 飛機, 租, 決定, 有一天, 海裡, 聽起來, 看到]
+    opener: { zh: 你好！聽說你上個星期去度假了，你是去哪裡度假的？, en: "Hello! I hear you went on vacation last week. Where did you go?" }
+    successLine: { zh: 聽起來你的假期很輕鬆，我也想去海邊潛水！, en: "Your vacation sounds relaxing; I want to go diving at the beach too!" }
+journalPrompts:
+  - { en: "Write a paragraph about a vacation: where you went and how you got there (是……的, 怎麼).", zh: 我是搭飛機去海邊的。, words: [海邊, 搭, 飛機, 船], grammar: [gram-shi-de-focus, gram-zenme-how] }
+  - { en: "Describe the scenery and how things felt, while doing two things at once (……起來, 一邊……一邊……).", words: [風景, 美, 輕鬆, 心情], grammar: [gram-qilai-judgement, gram-yibian-yibian] }
+  - { en: "Write a paragraph about what you did at the beach and how the holiday made you feel (一邊……一邊……, ……起來).", words: [潛水, 教練, 容易, 到處], grammar: [gram-yibian-yibian, gram-qilai-judgement] }

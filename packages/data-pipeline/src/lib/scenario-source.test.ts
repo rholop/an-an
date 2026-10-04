@@ -9,8 +9,8 @@ const SCENARIOS_DIR = path.resolve(__dirname, '../../../../data/scenarios');
 describe('loadScenarios: the real data/scenarios/*.yaml files', () => {
   it('parses all seven scenarios (Phase 3: tea shop + EasyCard; Phase 6: five more)', () => {
     const scenarios = loadScenarios(SCENARIOS_DIR);
-    // Phase 12 adds generated textbook scenarios (laixue-1-*); they are checked in curriculum-data.test.ts.
-    const ids = scenarios.map((s) => s.id).filter((id) => !id.startsWith('laixue-1-')).sort();
+    // Phase 12/13 add generated textbook scenarios (laixue-1-* … laixue-4-*); they are checked in curriculum-data.test.ts.
+    const ids = scenarios.map((s) => s.id).filter((id) => !id.startsWith('laixue-')).sort();
     expect(ids).toEqual([
       'clinic-call',
       'convenience-store',
@@ -56,7 +56,8 @@ describe('loadScenarios: the real data/scenarios/*.yaml files', () => {
   });
 
   it('Phase 6 scenarios span the levels and each has 3-5 goal steps', () => {
-    const scenarios = loadScenarios(SCENARIOS_DIR);
+    // Textbook scenarios (laixue-*) are longer by design in the higher books; see curriculum-data.test.ts.
+    const scenarios = loadScenarios(SCENARIOS_DIR).filter((s) => !s.textbook);
     const mins = new Set(scenarios.map((s) => s.levelRange.min));
     expect(mins.size).toBeGreaterThanOrEqual(4); // a real progression, not one level
     for (const s of scenarios) {

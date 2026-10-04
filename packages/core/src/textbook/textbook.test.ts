@@ -9,14 +9,22 @@ import {
   classScope,
   filterIdsInScope,
   firstLessonOfTags,
-  lessonBadge,
+  homeLessonOfTags,
   lessonCoveredEvidence,
+  lessonScopedWordIds,
   lessonTag,
   lessonsOfTags,
   tagsInScope,
   textbookTag,
 } from './scope.js';
 import { lessonProgress } from './progress.js';
+import {
+  courseLessonLevel,
+  courseOrdinal,
+  lessonBadge,
+  LAIXUE_COURSE,
+  locateOrdinal,
+} from './course.js';
 import type { Lesson, Textbook } from './types.js';
 
 const NOW = new Date('2026-10-04T00:00:00Z');
@@ -80,7 +88,8 @@ const book: Textbook = {
 describe('tags', () => {
   it('builds and reads lesson tags', () => {
     expect(lessonTag(3)).toBe('textbook:laixue-1:L03');
-    expect(lessonBadge(3)).toBe('來學華語 L3');
+    expect(lessonBadge(3)).toBe('來學華語 1 · L3');
+    expect(lessonBadge(5, 'laixue-2')).toBe('來學華語 2 · L5');
     expect(lessonsOfTags(['x', ...tb(6), lessonTag(3)])).toEqual([3, 6]);
     expect(firstLessonOfTags(['x'])).toBeUndefined();
   });
@@ -246,5 +255,136 @@ describe('buildGrammarCloze', () => {
     expect(
       buildGrammarCloze({ zh: '你忙不忙？' }, { id: 'gram-a-not-a', focus: [] }, pool),
     ).toBeUndefined();
+  });
+});
+
+
+// ---- Phase 13: the whole series is one course ------------------------------
+const tbBook = (bookId: string, n: number) => [textbookTag(bookId), lessonTag(n, bookId)];
+
+function bookOf(bookId: string, count: number, wordFor: (n: number) => string): Textbook {
+  return {
+    id: bookId,
+    titleZh: '',
+    titleEn: '',
+    lessons: Array.from({ length: count }, (_, i) => ({
+      ...lesson(i + 1, [wordFor(i + 1)], [`g-${bookId}-${i + 1}`]),
+      id: `${bookId}-L${String(i + 1).padStart(2, '0')}`,
+    })),
+  };
+}
+
+describe('the course', () => {
+  it('numbers lessons across books and round-trips', () => {
+    expect(courseOrdinal(LAIXUE_COURSE, 'laixue-1', 1)).toBe(1);
+    expect(courseOrdinal(LAIXUE_COURSE, 'laixue-2', 1)).toBe(11);
+    expect(courseOrdinal(LAIXUE_COURSE, 'laixue-4', 10)).toBe(40);
+    expect(courseOrdinal(LAIXUE_COURSE, 'laixue-2', 11)).toBeUndefined();
+    expect(courseOrdinal(LAIXUE_COURSE, 'nope', 1)).toBeUndefined();
+    expect(locateOrdinal(LAIXUE_COURSE, 23)).toEqual({ bookId: 'laixue-3', n: 3 });
+    for (let o = 1; o <= 40; o++) {
+      const at = locateOrdinal(LAIXUE_COURSE, o)!;
+      expect(courseOrdinal(LAIXUE_COURSE, at.bookId, at.n)).toBe(o);
+    }
+  });
+
+  it('maps books to app levels; book 4 splits in half', () => {
+    expect(courseLessonLevel(LAIXUE_COURSE, 'laixue-1', 9)).toBe('N1');
+    expect(courseLessonLevel(LAIXUE_COURSE, 'laixue-2', 1)).toBe('L1');
+    expect(courseLessonLevel(LAIXUE_COURSE, 'laixue-3', 10)).toBe('L2');
+    expect(courseLessonLevel(LAIXUE_COURSE, 'laixue-4', 5)).toBe('L2');
+    expect(courseLessonLevel(LAIXUE_COURSE, 'laixue-4', 6)).toBe('L3');
+  });
+
+  it('a word taught in book 1 and book 3 is one item with both tags; home = book 1', () => {
+    const shared = word('w-shared', '朋友', [...tbBook('laixue-1', 6), ...tbBook('laixue-3', 2)]);
+    const home = homeLessonOfTags(shared.tags)!;
+    expect(home).toMatchObject({ bookId: 'laixue-1', n: 6, ordinal: 6 });
+    expect(shared.tags.filter((t) => /^textbook:laixue-\d:L\d\d$/.test(t))).toHaveLength(2);
+    // Out-of-order tags still resolve to the earliest lesson of the course.
+    const rev = homeLessonOfTags([...tbBook('laixue-3', 2), ...tbBook('laixue-2', 9)])!;
+    expect(rev).toMatchObject({ bookId: 'laixue-2', n: 9, ordinal: 19 });
+  });
+});
+
+describe('class scope across books', () => {
+  const b1 = bookOf('laixue-1', 10, (n) => `a${n}`);
+  const b2 = bookOf('laixue-2', 10, (n) => `b${n}`);
+  const b3 = bookOf('laixue-3', 10, (n) => `c${n}`);
+  const setting = { enabled: true, textbookId: 'laixue-2', currentLesson: 3 };
+
+  it('book 2 lesson 3: all of book 1 and book 2 L1–3 covered, only L4 trickles, L5+ out', () => {
+    const s = classScope(setting);
+    expect(s.currentLesson).toBe(13);
+    for (let n = 1; n <= 10; n++) expect(tagsInScope(tbBook('laixue-1', n), s)).toBe(true);
+    for (const n of [1, 2, 3, 4]) expect(tagsInScope(tbBook('laixue-2', n), s)).toBe(true);
+    for (const n of [5, 6, 10]) expect(tagsInScope(tbBook('laixue-2', n), s)).toBe(false);
+    expect(tagsInScope(tbBook('laixue-3', 1), s)).toBe(false);
+
+    const ev = lessonCoveredEvidence([b1, b2, b3], s.currentLesson, NOW);
+    const ids = ev.filter((e) => e.item.kind === 'word').map((e) => e.item.id);
+    expect(ids).toEqual([
+      ...Array.from({ length: 10 }, (_, i) => `a${i + 1}`),
+      'b1',
+      'b2',
+      'b3',
+    ]);
+    expect(ids).not.toContain('b5');
+  });
+
+  it('at the end of a book the next book\'s first lesson is the one that trickles in', () => {
+    const s = classScope({ enabled: true, textbookId: 'laixue-1', currentLesson: 10 });
+    expect(tagsInScope(tbBook('laixue-2', 1), s)).toBe(true);
+    expect(tagsInScope(tbBook('laixue-2', 2), s)).toBe(false);
+  });
+
+  it('a word shared by book 1 and book 3 is covered once book 1 is, even if class is in book 2', () => {
+    const s = classScope({ enabled: true, textbookId: 'laixue-2', currentLesson: 1 });
+    expect(tagsInScope([...tbBook('laixue-1', 8), ...tbBook('laixue-3', 9)], s)).toBe(true);
+    // ...but a word new in book 3 is not.
+    expect(tagsInScope(tbBook('laixue-3', 9), s)).toBe(false);
+  });
+
+  it('new-word queue: current lesson first, next lesson trickles, later lessons stay out', () => {
+    const lex = new Lexicon([
+      word('a1', '甲', tbBook('laixue-1', 1)),
+      word('b3', '乙', tbBook('laixue-2', 3)),
+      word('b4', '丙', tbBook('laixue-2', 4)),
+      word('b5', '丁', tbBook('laixue-2', 5)),
+      word('c1', '戊', tbBook('laixue-3', 1)),
+    ]);
+    const picked = nextNewItems([], lex, 10, { classScope: classScope(setting) }).map((w) => w.id);
+    expect(picked.slice(0, 1)).toEqual(['b3']);
+    expect(picked).toContain('a1');
+    expect(picked).toContain('b4');
+    expect(picked).not.toContain('b5');
+    expect(picked).not.toContain('c1');
+  });
+
+  it('validator scope for a scenario = course words up to and including its lesson', () => {
+    const ids = lessonScopedWordIds([b1, b2, b3], 3, { bookId: 'laixue-2' });
+    expect(ids.has('a10')).toBe(true);
+    expect(ids.has('b3')).toBe(true);
+    expect(ids.has('b4')).toBe(false);
+    expect(ids.has('c1')).toBe(false);
+  });
+});
+
+describe('Phase 12 "My class" setting migrates to (laixue-1, n)', () => {
+  it('identical queues for book-1 only profiles', () => {
+    const lex = new Lexicon(words);
+    for (const n of [1, 4, 10]) {
+      const legacy = { enabled: true, textbookId: 'laixue-1', currentLesson: n };
+      const s = classScope(legacy);
+      expect(s.currentLesson).toBe(n);
+      const picked = nextNewItems([], lex, 12, { classScope: s }).map((w) => w.id);
+      const expected = words
+        .filter((w) => {
+          const l = firstLessonOfTags(w.tags);
+          return l === undefined || l <= n + 1;
+        })
+        .map((w) => w.id);
+      expect(new Set(picked)).toEqual(new Set(expected));
+    }
   });
 });

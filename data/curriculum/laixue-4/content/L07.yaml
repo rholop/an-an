@@ -1,0 +1,57 @@
+lesson: 7
+sentences:
+  - { zh: 王先生從來沒喝過酒。, en: "Mr. Wang has never had alcohol.", grammar: [gram-conglai] }
+  - { zh: 我從來沒去過KTV。, en: "I have never been to a KTV.", grammar: [gram-conglai] }
+  - { zh: 他從來不遲到。, en: "He is never late.", grammar: [gram-conglai] }
+  - { zh: 我從來沒看過美式足球比賽。, en: "I have never watched an American football game.", grammar: [gram-conglai] }
+  - { zh: 弟弟從來不喝咖啡。, en: "My younger brother never drinks coffee.", grammar: [gram-conglai] }
+  - { zh: 她從來沒有忘記過我的生日。, en: "She has never forgotten my birthday.", grammar: [gram-conglai] }
+  - { zh: 我本來不喜歡足球，後來變成球迷了。, en: "I didn't like soccer at first, but later I became a fan.", grammar: [gram-benlai-houlai] }
+  - { zh: 我本來想去海邊，現在想在家休息。, en: "I originally wanted to go to the beach; now I want to rest at home.", grammar: [gram-benlai-houlai] }
+  - { zh: 他本來是我的同事，後來變成我的男朋友。, en: "He was originally my colleague and later became my boyfriend.", grammar: [gram-benlai-houlai] }
+  - { zh: 我本來不喜歡唱歌，現在常去KTV。, en: "I didn't like singing before; now I often go to KTV.", grammar: [gram-benlai-houlai] }
+  - { zh: 本來我想坐捷運，後來坐了計程車。, en: "I wanted to take the MRT but ended up taking a taxi.", grammar: [gram-benlai-houlai] }
+  - { zh: 本來天氣很好，後來下雨了。, en: "The weather was fine at first, but later it rained.", grammar: [gram-benlai-houlai] }
+  - { zh: 只要你願意，我就幫你。, en: "As long as you are willing, I will help you.", grammar: [gram-zhiyao-jiu] }
+  - { zh: 只要有手機，就不會迷路。, en: "As long as you have a phone, you won't get lost.", grammar: [gram-zhiyao-jiu] }
+  - { zh: 只要大家努力，我們就會贏。, en: "As long as everyone works hard, we will win.", grammar: [gram-zhiyao-jiu] }
+  - { zh: 只要有時間，我就去運動場跑步。, en: "Whenever I have time, I go running at the sports ground.", grammar: [gram-zhiyao-jiu] }
+  - { zh: 只要你喜歡，就買吧。, en: "As long as you like it, buy it.", grammar: [gram-zhiyao-jiu] }
+  - { zh: 只要多聽多說，你的中文就會進步。, en: "As long as you listen and speak a lot, your Chinese will improve.", grammar: [gram-zhiyao-jiu] }
+  - { zh: 他們在個性上很不一樣。, en: "They are very different in personality.", grammar: [gram-zai-shang] }
+  - { zh: 在生活上，他沒有問題。, en: "In daily life, he has no problems.", grammar: [gram-zai-shang] }
+  - { zh: 這兩家店在價錢上差不多。, en: "These two shops are about the same in price.", grammar: [gram-zai-shang] }
+  - { zh: 我們在工作上互相幫忙。, en: "We help each other in our work.", grammar: [gram-zai-shang] }
+  - { zh: 在學習上，她很認真。, en: "As far as study goes, she is very earnest.", grammar: [gram-zai-shang] }
+  - { zh: 亞洲人和歐洲人在吃飯的習慣上不同。, en: "Asians and Europeans differ in eating habits.", grammar: [gram-zai-shang] }
+scenarios:
+  - slug: leisure-talk
+    title: "Mingwen chats about leisure and ball games"
+    npc:
+      id: mingwen
+      name: 明文
+      personality: >
+        A kind, friendly graduate student who loves baseball and often cheers for his
+        team. He enjoys telling how he became a fan.
+      speechStyle: >
+        Friendly sentences with words from books 1 to 4 (up to book 4 lesson 7).
+        Uses 本來……後來…… when he tells a story and 只要……就…… for encouragement.
+      particles: []
+    setting: >
+      Mingwen and the learner are walking past a sports ground on a Saturday and
+      talk about leisure activities, ball games and a KTV night.
+    goalSteps:
+      - { id: favorite, description: "Say your favourite leisure activity (足球, 籃球, 棒球, KTV).", keywordHints: ["足球", "籃球", "棒球", "KTV", "喜歡"] }
+      - { id: never, description: "Say something you have never done (從來沒……).", keywordHints: ["從來沒", "從來不"] }
+      - { id: change, description: "Tell how your interest changed (本來……後來……).", keywordHints: ["本來", "後來", "現在"] }
+      - { id: cheer, description: "Talk about shouting for a team and winning or losing (加油, 贏, 輸).", keywordHints: ["加油", "贏", "輸", "球隊", "球賽"] }
+      - { id: aslong, description: "Say what you can do as long as you have time (只要……就……).", keywordHints: ["只要", "就"] }
+      - { id: enjoy, description: "Say how you enjoy it and forget your work (享受, 忘記, 過癮).", keywordHints: ["享受", "忘記", "過癮", "暫時"] }
+      - { id: differ, description: "Say how two people differ (在……上).", keywordHints: ["上", "個性", "習慣"] }
+    vocabExtras: [本來, 男朋友, 迷, 只要, 後來, 美式足球, 足球, 籃球, 經過, 運動場, 聽見, 喊, 加油, 叫, 過癮, 球隊, 贏, 輸, 球賽, 酒吧, 暫時, 忘記, KTV, 流行, 歌曲, 享受, 可惜, 從來沒, 棒球迷, 世界上, 前幾天, 大聲, 怎麼這麼]
+    opener: { zh: 你好！你喜歡什麼休閒活動？看球賽還是唱KTV？, en: "Hello! What leisure activity do you like? Watching ball games or singing at KTV?" }
+    successLine: { zh: 只要有時間，我們就一起去看球賽，為球隊加油吧！, en: "Whenever we have time, let's watch a game together and cheer for the team!" }
+journalPrompts:
+  - { en: "Write a paragraph about something you never did before (從來沒……) and how your interest changed (本來……，後來……).", zh: 我從來沒去過KTV。, words: [本來, 後來, 迷, 球隊, 忘記], grammar: [gram-conglai, gram-benlai-houlai] }
+  - { en: "Write a paragraph about what makes a leisure activity enjoyable if one condition is met (只要……就……).", words: [享受, 過癮, 暫時, 流行, 歌曲], grammar: [gram-zhiyao-jiu, gram-conglai] }
+  - { en: "Write a paragraph about how people differ in character, habits or work (在……上).", words: [贏, 輸, 加油, 可惜, 酒吧], grammar: [gram-zai-shang, gram-zhiyao-jiu] }

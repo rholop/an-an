@@ -4,6 +4,7 @@ export interface DialogueLine {
 }
 
 const CJK = /[㐀-鿿]/;
+const TONE_MARK = /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/;
 
 /**
  * "1. Read aloud" block of a lesson's activities → speaker/line pairs. The
@@ -34,14 +35,28 @@ export function parseDialogue(pageText: string): { lines: DialogueLine[]; droppe
       dropped.push(l);
       continue;
     }
-    const m = l.match(/^([^\s：:]+)\s*[：:]\s*(.*)$/u);
-    if (m && m[1] && !CJK.test(m[2]!.slice(0, 0))) {
-      out.push({ speaker: m[1], zh: m[2]!.trim() });
+    // Speakers may be written with an ideographic space inside (杜　翔：…).
+    const m = l.match(/^([^：:，。？！、「」（）()]{1,6}?)\s*[：:]\s*(.*)$/u);
+    if (m && m[1]) {
+      out.push({ speaker: m[1].replace(/\s+/g, ''), zh: m[2]!.trim() });
     } else if (out.length && CJK.test(l)) {
       out[out.length - 1]!.zh += l;
     } else if (!/^\d+$/.test(l)) {
       dropped.push(l);
     }
+  }
+  // A lesson that is a narrative paragraph (book 2 lesson 8) has no speakers:
+  // keep it as narration, one entry per paragraph (paragraphs open with 　　).
+  if (out.length === 0) {
+    const paras: string[] = [];
+    const untrimmed = body.split('\n').map((l) => l.replace(/\u00a0/g, ' ').replace(/\s+$/, ''));
+    for (const l of untrimmed) {
+      const t = l.trim();
+      if (!CJK.test(t) || /^(\d+\.|綜合活動)/.test(t)) continue;
+      if (/^　　/.test(l) || paras.length === 0) paras.push(t);
+      else paras[paras.length - 1] += t;
+    }
+    if (paras.length) return { lines: paras.map((zh) => ({ speaker: '', zh })), dropped: [] };
   }
   return { lines: out, dropped };
 }
@@ -63,10 +78,13 @@ export function parseExamples(pageText: string): BookExample[] {
     const m = ls[i]!.match(/^\(\d{1,2}\)\s*(.+)$/u);
     if (!m || !CJK.test(m[1]!) || m[1]!.includes('①')) continue;
     const zh = m[1]!.trim();
-    const pinyin = ls[i + 1] ?? '';
-    if (CJK.test(pinyin) || /^\(\d/.test(pinyin)) continue;
+    const next = ls[i + 1] ?? '';
+    if (CJK.test(next) || /^\(\d/.test(next)) continue;
+    // Books 2–4 print some worked examples without pinyin: the next line is then English.
+    const hasPinyin = TONE_MARK.test(next) || /^[a-z'’ -]+$/.test(next);
+    const pinyin = hasPinyin ? next : '';
     const en: string[] = [];
-    for (let j = i + 2; j < ls.length && !CJK.test(ls[j]!) && !/^\(\d/.test(ls[j]!); j++) {
+    for (let j = hasPinyin ? i + 2 : i + 1; j < ls.length && !CJK.test(ls[j]!) && !/^\(\d/.test(ls[j]!); j++) {
       if (/^(Exercise|Please put|\d+)$/.test(ls[j]!) || /^[AB]\s?:/.test(ls[j]!) || ls[j] === '。')
         break;
       en.push(ls[j]!);

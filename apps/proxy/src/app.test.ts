@@ -156,6 +156,7 @@ function buildApp(
     audio: new MemoryAudioStore(),
     textbook: new MemoryTextbookStore({
       'laixue-1/dialogues': { 'laixue-1-L01': { lines: [{ speaker: '王明文', zh: '您好。' }] } },
+      'laixue-3/dialogues': { 'laixue-3-L01': { lines: [{ speaker: '林老師', zh: '大家好。' }] } },
     }),
     rateLimiter:
       overrides.rateLimiter ??
@@ -768,6 +769,16 @@ describe('textbook text (phase 12)', () => {
     expect((await app.request('/v1/textbook/laixue-1/dialogues')).status).toBe(401);
     expect((await app.request('/v1/textbook/laixue-1/examples')).status).toBe(401);
     expect((await app.request('/v1/textbook/nope/dialogues')).status).toBe(401);
+    expect((await app.request('/v1/textbook/laixue-3/dialogues')).status).toBe(401);
+  });
+
+  it('serves every book of the series the same way (Phase 13): books 2–4 behind the same code', async () => {
+    const app = buildApp();
+    const res = await app.request('/v1/textbook/laixue-3/dialogues');
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as Record<string, unknown>)['laixue-3-L01']).toBeTruthy();
+    // a book that is not installed is a 404, not an error
+    expect((await app.request('/v1/textbook/laixue-4/dialogues')).status).toBe(404);
   });
 
   it('is served with the code; unknown books, kinds and traversal attempts are 404', async () => {

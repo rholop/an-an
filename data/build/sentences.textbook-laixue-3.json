@@ -1,0 +1,9705 @@
+{
+  "meta": {
+    "version": "v1",
+    "buildDate": "2026-10-04",
+    "level": "L2"
+  },
+  "sentences": [
+    {
+      "id": "tb-b3-L01-001",
+      "zh": "今天是我學中文的第一天。",
+      "en": "Today is my first day of studying Chinese.",
+      "targetWordId": "tocfl-c00f8ea193",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "第"
+        },
+        {
+          "text": "一天"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-di-ordinal"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-002",
+      "zh": "這是這個學期的第一天。",
+      "en": "This is the first day of this term.",
+      "targetWordId": "tocfl-0f5118597c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "這個"
+        },
+        {
+          "text": "學期"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "第"
+        },
+        {
+          "text": "一天"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-di-ordinal"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-003",
+      "zh": "我是第一個來教室的人。",
+      "en": "I am the first person to come to the classroom.",
+      "targetWordId": "tocfl-cd979f3604",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "第一"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "來"
+        },
+        {
+          "text": "教室"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-di-ordinal"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-004",
+      "zh": "這個星期是六月的第二個星期。",
+      "en": "This week is the second week of June.",
+      "targetWordId": "tocfl-c00f8ea193",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "個星期"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "六月"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "第"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "個星期"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-di-ordinal"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-005",
+      "zh": "第二杯咖啡比第一杯好喝。",
+      "en": "The second cup of coffee is tastier than the first.",
+      "targetWordId": "tocfl-c00f8ea193",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "第"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "咖啡"
+        },
+        {
+          "text": "比"
+        },
+        {
+          "text": "第一"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "好喝"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-di-ordinal"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-006",
+      "zh": "今天是第幾天？",
+      "en": "Which day is today (of the course)?",
+      "targetWordId": "tocfl-c00f8ea193",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "第"
+        },
+        {
+          "text": "幾"
+        },
+        {
+          "text": "天"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-di-ordinal"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-007",
+      "zh": "他是第一個到公司的人。",
+      "en": "He is the first person to arrive at the company.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "第一"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "公司"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-di-ordinal"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-008",
+      "zh": "我就是張家安。",
+      "en": "I am Joann Zhang.",
+      "targetWordId": "tb-e4fb6c1ab6",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "就是"
+        },
+        {
+          "text": "張家安"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-jiu-indeed"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-009",
+      "zh": "他家就在公園旁邊。",
+      "en": "His home is right next to the park.",
+      "targetWordId": "tocfl-d34556a566",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "家"
+        },
+        {
+          "text": "就"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "公園"
+        },
+        {
+          "text": "旁邊"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-jiu-indeed"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-010",
+      "zh": "這裡就是我的公司。",
+      "en": "This is my company.",
+      "targetWordId": "tocfl-87b2e4188b",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這裡"
+        },
+        {
+          "text": "就是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "公司"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-jiu-indeed"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-011",
+      "zh": "林老師就在教室裡面。",
+      "en": "Teacher Lin is right inside the classroom.",
+      "targetWordId": "tb-afdc0a7ceb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "林"
+        },
+        {
+          "text": "老師"
+        },
+        {
+          "text": "就"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "教室"
+        },
+        {
+          "text": "裡面"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-jiu-indeed"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-012",
+      "zh": "銀行就在學校對面。",
+      "en": "The bank is right across from the school.",
+      "targetWordId": "tocfl-d34556a566",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "就"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "學校"
+        },
+        {
+          "text": "對面"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-jiu-indeed"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-013",
+      "zh": "他就是我的新同學。",
+      "en": "He is my new classmate.",
+      "targetWordId": "tocfl-e2bca556ce",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "就是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "新"
+        },
+        {
+          "text": "同學"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-jiu-indeed"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-014",
+      "zh": "我以前學過中文。",
+      "en": "I have studied Chinese before.",
+      "targetWordId": "tocfl-298a924da2",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "以前"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "過"
+        },
+        {
+          "text": "中文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yiqian-before"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-015",
+      "zh": "我以前住在臺灣。",
+      "en": "I used to live in Taiwan.",
+      "targetWordId": "tocfl-298a924da2",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "以前"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "臺灣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yiqian-before"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-016",
+      "zh": "上班以前，我先洗澡。",
+      "en": "Before work, I take a shower first.",
+      "targetWordId": "tocfl-298a924da2",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "上班"
+        },
+        {
+          "text": "以前"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "先"
+        },
+        {
+          "text": "洗澡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yiqian-before"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-017",
+      "zh": "我以前不喜歡喝咖啡，現在很喜歡。",
+      "en": "I didn't like coffee before; now I like it a lot.",
+      "targetWordId": "tocfl-298a924da2",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "以前"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "咖啡"
+        },
+        {
+          "text": "現在"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "喜歡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yiqian-before"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-018",
+      "zh": "你以前在哪裡工作？",
+      "en": "Where did you work before?",
+      "targetWordId": "tocfl-298a924da2",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "以前"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "哪裡"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yiqian-before"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-019",
+      "zh": "下課以後，我們一起去吃飯。",
+      "en": "After class, let's go eat together.",
+      "targetWordId": "tocfl-e869a714ba",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "下課"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "我們"
+        },
+        {
+          "text": "一起"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "吃飯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yihou"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-020",
+      "zh": "以後我想去臺灣工作。",
+      "en": "In the future I want to work in Taiwan.",
+      "targetWordId": "tocfl-a2cefdd5e9",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "以後"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "臺灣"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yihou"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-021",
+      "zh": "我吃了早飯以後，就去上班。",
+      "en": "After eating breakfast, I go to work.",
+      "targetWordId": "tocfl-d34556a566",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "早飯"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "就"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "上班"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yihou"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-022",
+      "zh": "我希望以後有機會去墨西哥度假。",
+      "en": "I hope to have a chance to vacation in Mexico someday.",
+      "targetWordId": "tb-5812a3138d",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "希望"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "機會"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "墨西哥"
+        },
+        {
+          "text": "度假"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yihou"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-023",
+      "zh": "我學了兩年多中文。",
+      "en": "I have studied Chinese for over two years.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "年"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "中文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-number-duo"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-024",
+      "zh": "這件外套五百多塊。",
+      "en": "This coat costs over five hundred dollars.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "件"
+        },
+        {
+          "text": "外套"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "百"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "塊"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-number-duo"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-025",
+      "zh": "我們公司有一百多個人。",
+      "en": "Our company has over a hundred people.",
+      "targetWordId": "tocfl-1f6fbc0616",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "公司"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "百"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "個人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-number-duo"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-026",
+      "zh": "我等了二十多分鐘。",
+      "en": "I waited more than twenty minutes.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "等"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "分鐘"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-number-duo"
+      ]
+    },
+    {
+      "id": "tb-b3-L01-027",
+      "zh": "她在這裡住了三個多月。",
+      "en": "She has lived here for over three months.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "這裡"
+        },
+        {
+          "text": "住"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "三"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "月"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L01"
+      ],
+      "lesson": 1,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-number-duo"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-001",
+      "zh": "這個旅館看起來很漂亮。",
+      "en": "This hotel looks very pretty.",
+      "targetWordId": "tocfl-a321062d30",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "旅館"
+        },
+        {
+          "text": "看起來"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "漂亮"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-qilai-judgement"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-002",
+      "zh": "這個計畫聽起來很不錯。",
+      "en": "This plan sounds pretty good.",
+      "targetWordId": "tocfl-57ca5e6fa0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "計畫"
+        },
+        {
+          "text": "聽起來"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "不錯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-qilai-judgement"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-003",
+      "zh": "這件外套穿起來很舒服。",
+      "en": "This coat feels comfortable to wear.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "件"
+        },
+        {
+          "text": "外套"
+        },
+        {
+          "text": "穿"
+        },
+        {
+          "text": "起來"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "舒服"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-qilai-judgement"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-004",
+      "zh": "這杯咖啡喝起來有點酸。",
+      "en": "This cup of coffee tastes a little sour.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "咖啡"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "起來"
+        },
+        {
+          "text": "有點"
+        },
+        {
+          "text": "酸"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-qilai-judgement"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-005",
+      "zh": "這個字寫起來不容易。",
+      "en": "This character is not easy to write.",
+      "targetWordId": "tocfl-8380ffba20",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "字"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "起來"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "容易"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-qilai-judgement"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-006",
+      "zh": "這個蛋糕吃起來很甜。",
+      "en": "This cake tastes very sweet.",
+      "targetWordId": "moec-258a0d1886",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "蛋糕"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "起來"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "甜"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-qilai-judgement"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-007",
+      "zh": "海邊的風景看起來真美。",
+      "en": "The scenery at the beach looks really beautiful.",
+      "targetWordId": "moec-ffc3ae329c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "海邊"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "風景"
+        },
+        {
+          "text": "看起來"
+        },
+        {
+          "text": "真"
+        },
+        {
+          "text": "美"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-qilai-judgement"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-008",
+      "zh": "我們一邊坐船，一邊看風景。",
+      "en": "We watched the scenery while riding the boat.",
+      "targetWordId": "moec-cb43069ecc",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "坐"
+        },
+        {
+          "text": "船"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "風景"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yibian-yibian"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-009",
+      "zh": "她一邊走路，一邊聽音樂。",
+      "en": "She listens to music while walking.",
+      "targetWordId": "moec-cb43069ecc",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "走路"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "音樂"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yibian-yibian"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-010",
+      "zh": "他一邊吃早飯，一邊看電視。",
+      "en": "He watches TV while eating breakfast.",
+      "targetWordId": "moec-cb43069ecc",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "早飯"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "電視"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yibian-yibian"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-011",
+      "zh": "我喜歡一邊喝咖啡，一邊看書。",
+      "en": "I like to read while drinking coffee.",
+      "targetWordId": "moec-cb43069ecc",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "咖啡"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "看書"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yibian-yibian"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-012",
+      "zh": "弟弟一邊洗澡，一邊唱歌。",
+      "en": "My younger brother sings while taking a shower.",
+      "targetWordId": "moec-cb43069ecc",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "洗澡"
+        },
+        {
+          "text": "一邊"
+        },
+        {
+          "text": "唱歌"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yibian-yibian"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-013",
+      "zh": "請問，到旅館怎麼走？",
+      "en": "Excuse me, how do I get to the hotel?",
+      "targetWordId": "tocfl-a321062d30",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請問"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "旅館"
+        },
+        {
+          "text": "怎麼"
+        },
+        {
+          "text": "走"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zenme-how"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-014",
+      "zh": "這個字怎麼寫？",
+      "en": "How do you write this character?",
+      "targetWordId": "tocfl-0d98acf663",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "字"
+        },
+        {
+          "text": "怎麼"
+        },
+        {
+          "text": "寫"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zenme-how"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-015",
+      "zh": "我們怎麼去旅館？",
+      "en": "How are we getting to the hotel?",
+      "targetWordId": "tocfl-0d98acf663",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "怎麼"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "旅館"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zenme-how"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-016",
+      "zh": "這個菜怎麼做？",
+      "en": "How do you make this dish?",
+      "targetWordId": "tocfl-0d98acf663",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "菜"
+        },
+        {
+          "text": "怎麼"
+        },
+        {
+          "text": "做"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zenme-how"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-017",
+      "zh": "潛水怎麼學？",
+      "en": "How does one learn to dive?",
+      "targetWordId": "tb-56f1526e62",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "潛水"
+        },
+        {
+          "text": "怎麼"
+        },
+        {
+          "text": "學"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zenme-how"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-018",
+      "zh": "你們是怎麼去海邊的？",
+      "en": "How did you get to the beach?",
+      "targetWordId": "tocfl-0d98acf663",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你們"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "怎麼"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "海邊"
+        },
+        {
+          "text": "的"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-shi-de-focus",
+        "gram-zenme-how"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-019",
+      "zh": "我是上個月去海邊的。",
+      "en": "It was last month that I went to the beach.",
+      "targetWordId": "moec-ffc3ae329c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "上"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "海邊"
+        },
+        {
+          "text": "的"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-shi-de-focus"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-020",
+      "zh": "我們是搭飛機去的。",
+      "en": "We went by plane.",
+      "targetWordId": "tocfl-b1f31905cf",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "搭"
+        },
+        {
+          "text": "飛機"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "的"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-shi-de-focus"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-021",
+      "zh": "他是坐船去的。",
+      "en": "He went by boat.",
+      "targetWordId": "tocfl-391dc0c2bb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "坐"
+        },
+        {
+          "text": "船"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "的"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-shi-de-focus"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-022",
+      "zh": "我們是在旅館租車的。",
+      "en": "It was at the hotel that we rented the car.",
+      "targetWordId": "tocfl-a321062d30",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "旅館"
+        },
+        {
+          "text": "租"
+        },
+        {
+          "text": "車"
+        },
+        {
+          "text": "的"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-shi-de-focus"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-023",
+      "zh": "你是跟誰一起去的？",
+      "en": "Who did you go with?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "跟"
+        },
+        {
+          "text": "誰"
+        },
+        {
+          "text": "一起"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "的"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-shi-de-focus"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-024",
+      "zh": "這張照片是在海邊照的。",
+      "en": "This photo was taken at the beach.",
+      "targetWordId": "moec-ffc3ae329c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "張"
+        },
+        {
+          "text": "照片"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "海邊"
+        },
+        {
+          "text": "照"
+        },
+        {
+          "text": "的"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-shi-de-focus"
+      ]
+    },
+    {
+      "id": "tb-b3-L02-025",
+      "zh": "她不是去年來的，她是今年來的。",
+      "en": "She didn't come last year; she came this year.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "不是"
+        },
+        {
+          "text": "去年"
+        },
+        {
+          "text": "來"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "她"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "今年"
+        },
+        {
+          "text": "來"
+        },
+        {
+          "text": "的"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L02"
+      ],
+      "lesson": 2,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-shi-de-focus"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-001",
+      "zh": "從星期一到星期五，我都上班。",
+      "en": "From Monday to Friday I work.",
+      "targetWordId": "tocfl-493bda239f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "從"
+        },
+        {
+          "text": "星期"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "星期五"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "上班"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cong-dao"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-002",
+      "zh": "從現在到感恩節，只有十天。",
+      "en": "From now until Thanksgiving there are only ten days.",
+      "targetWordId": "tb-e53af56b7a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "從"
+        },
+        {
+          "text": "現在"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "感恩節"
+        },
+        {
+          "text": "只有"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "天"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cong-dao"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-003",
+      "zh": "從早上八點到下午五點，我在公司工作。",
+      "en": "From eight in the morning to five in the afternoon I work at the company.",
+      "targetWordId": "tocfl-493bda239f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "從"
+        },
+        {
+          "text": "早上"
+        },
+        {
+          "text": "八"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "下午"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "公司"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cong-dao"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-004",
+      "zh": "我們從下個月一號到十號放假。",
+      "en": "We are on vacation from the 1st to the 10th of next month.",
+      "targetWordId": "tocfl-1f6fbc0616",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "從"
+        },
+        {
+          "text": "下"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "一號"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "號"
+        },
+        {
+          "text": "放假"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cong-dao"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-005",
+      "zh": "從七月到九月，這裡的天氣都很熱。",
+      "en": "From July to September the weather here is hot.",
+      "targetWordId": "tocfl-493bda239f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "從"
+        },
+        {
+          "text": "七月"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "九"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "這裡"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "天氣"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "熱"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cong-dao"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-006",
+      "zh": "他從早上到晚上都在準備晚飯。",
+      "en": "He is preparing dinner from morning till night.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "從"
+        },
+        {
+          "text": "早上"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "晚上"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "準備"
+        },
+        {
+          "text": "晚飯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cong-dao"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-007",
+      "zh": "從今天到下星期，我都有空。",
+      "en": "From today until next week I am free.",
+      "targetWordId": "tocfl-493bda239f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "從"
+        },
+        {
+          "text": "今天"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "下星期"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "有空"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cong-dao"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-008",
+      "zh": "我明天想早一點起床。",
+      "en": "Tomorrow I want to get up a little earlier.",
+      "targetWordId": "tb-cb02b1161f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "明天"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "早一點"
+        },
+        {
+          "text": "起床"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zao-wan-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-009",
+      "zh": "今天工作很多，我要晚一點下班。",
+      "en": "There is a lot of work today; I'll get off work a bit later.",
+      "targetWordId": "tocfl-233f3386db",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "要"
+        },
+        {
+          "text": "晚"
+        },
+        {
+          "text": "一點"
+        },
+        {
+          "text": "下班"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zao-wan-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-010",
+      "zh": "你可以早一點來幫忙嗎？",
+      "en": "Can you come a little earlier to help?",
+      "targetWordId": "tocfl-76fa79162a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "可以"
+        },
+        {
+          "text": "早一點"
+        },
+        {
+          "text": "來"
+        },
+        {
+          "text": "幫忙"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zao-wan-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-011",
+      "zh": "我們晚一點再吃飯吧。",
+      "en": "Let's eat a little later.",
+      "targetWordId": "tocfl-233f3386db",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "晚"
+        },
+        {
+          "text": "一點"
+        },
+        {
+          "text": "再"
+        },
+        {
+          "text": "吃飯"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zao-wan-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-012",
+      "zh": "週末人很多，我們早一點出門吧。",
+      "en": "There are many people on weekends; let's leave a little earlier.",
+      "targetWordId": "tb-cb02b1161f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "週末"
+        },
+        {
+          "text": "人"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "我們"
+        },
+        {
+          "text": "早一點"
+        },
+        {
+          "text": "出門"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zao-wan-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-013",
+      "zh": "感恩節的菜，我想早一點準備。",
+      "en": "For the Thanksgiving dishes, I want to prepare a little earlier.",
+      "targetWordId": "tb-e53af56b7a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "感恩節"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "菜"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "早一點"
+        },
+        {
+          "text": "準備"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zao-wan-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-014",
+      "zh": "你晚一點給我打電話吧。",
+      "en": "Call me a bit later.",
+      "targetWordId": "tocfl-233f3386db",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "晚"
+        },
+        {
+          "text": "一點"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "打電話"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-zao-wan-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-015",
+      "zh": "這個火雞太小了，我想買大一點的。",
+      "en": "This turkey is too small; I want to buy a bigger one.",
+      "targetWordId": "moec-f07bd36ad0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "火雞"
+        },
+        {
+          "text": "太"
+        },
+        {
+          "text": "小"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "買"
+        },
+        {
+          "text": "大"
+        },
+        {
+          "text": "一點"
+        },
+        {
+          "text": "的"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vs-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-016",
+      "zh": "你可以說多一點嗎？",
+      "en": "Could you say a little more?",
+      "targetWordId": "tocfl-76fa79162a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "可以"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "一點"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vs-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-017",
+      "zh": "請你快一點！",
+      "en": "Please be a bit quicker!",
+      "targetWordId": "tocfl-823b5cfee3",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "快"
+        },
+        {
+          "text": "一點"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vs-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-018",
+      "zh": "這家店的麵包便宜一點。",
+      "en": "The bread at this shop is a bit cheaper.",
+      "targetWordId": "tocfl-31a6254c82",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "家"
+        },
+        {
+          "text": "店"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "麵包"
+        },
+        {
+          "text": "便宜"
+        },
+        {
+          "text": "一點"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vs-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-019",
+      "zh": "星期天的人比較多，今天人少一點。",
+      "en": "There are more people on Sunday; today there are a few fewer.",
+      "targetWordId": "tocfl-823b5cfee3",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "星期天"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "人"
+        },
+        {
+          "text": "比較"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "今天"
+        },
+        {
+          "text": "人"
+        },
+        {
+          "text": "少"
+        },
+        {
+          "text": "一點"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vs-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-020",
+      "zh": "我想買貴一點的甜點。",
+      "en": "I want to buy a slightly more expensive dessert.",
+      "targetWordId": "tocfl-823b5cfee3",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "買"
+        },
+        {
+          "text": "貴"
+        },
+        {
+          "text": "一點"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "甜點"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vs-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-021",
+      "zh": "這件外套小了，有大一點的嗎？",
+      "en": "This coat is too small; do you have a slightly bigger one?",
+      "targetWordId": "tocfl-823b5cfee3",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "件"
+        },
+        {
+          "text": "外套"
+        },
+        {
+          "text": "小"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "大"
+        },
+        {
+          "text": "一點"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vs-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L03-022",
+      "zh": "明天的天氣會冷一點。",
+      "en": "The weather tomorrow will be a bit colder.",
+      "targetWordId": "tocfl-823b5cfee3",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "明天"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "天氣"
+        },
+        {
+          "text": "會"
+        },
+        {
+          "text": "冷"
+        },
+        {
+          "text": "一點"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "lesson": 3,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vs-yidian"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-001",
+      "zh": "我還想喝咖啡。",
+      "en": "I still want to drink coffee.",
+      "targetWordId": "tocfl-d3c7860a8f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "咖啡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-hai-still"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-002",
+      "zh": "天氣還很冷。",
+      "en": "The weather is still very cold.",
+      "targetWordId": "tocfl-d3c7860a8f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "天氣"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "冷"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-hai-still"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-003",
+      "zh": "他還沒回家。",
+      "en": "He hasn't gone home yet.",
+      "targetWordId": "tocfl-d3c7860a8f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "沒"
+        },
+        {
+          "text": "回家"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-hai-still"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-004",
+      "zh": "你還記得我嗎？",
+      "en": "Do you still remember me?",
+      "targetWordId": "tocfl-d3c7860a8f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "記得"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-hai-still"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-005",
+      "zh": "我還在公司，你先走吧。",
+      "en": "I'm still at the company; you go ahead.",
+      "targetWordId": "tocfl-d3c7860a8f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "公司"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "先"
+        },
+        {
+          "text": "走"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-hai-still"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-006",
+      "zh": "我還不知道他的名字。",
+      "en": "I still don't know his name.",
+      "targetWordId": "tocfl-d3c7860a8f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "知道"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "名字"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-hai-still"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-007",
+      "zh": "朋友對我很好。",
+      "en": "My friend is very good to me.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "朋友"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-to"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-008",
+      "zh": "林老師對學生很客氣。",
+      "en": "Teacher Lin is very polite to students.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "林"
+        },
+        {
+          "text": "老師"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "學生"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "客氣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-to"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-009",
+      "zh": "他對我說，明天有空。",
+      "en": "He told me he is free tomorrow.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "明天"
+        },
+        {
+          "text": "有空"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-to"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-010",
+      "zh": "她對每個人都很客氣。",
+      "en": "She is polite to everyone.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "每"
+        },
+        {
+          "text": "個人"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "客氣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-to"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-011",
+      "zh": "公司對我不太好。",
+      "en": "The company is not very good to me.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "公司"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "太"
+        },
+        {
+          "text": "好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-to"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-012",
+      "zh": "我對他說了很多次。",
+      "en": "I told him many times.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "次"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-to"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-013",
+      "zh": "我們坐飛機飛到臺灣。",
+      "en": "We fly to Taiwan by plane.",
+      "targetWordId": "tocfl-1f6fbc0616",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "坐"
+        },
+        {
+          "text": "飛機"
+        },
+        {
+          "text": "飛"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "臺灣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-arrive"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-014",
+      "zh": "他搬到東區了。",
+      "en": "He has moved to the eastern district.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "搬到"
+        },
+        {
+          "text": "東區"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-arrive"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-015",
+      "zh": "請你送到我的公司。",
+      "en": "Please deliver it to my company.",
+      "targetWordId": "tocfl-eefeda1588",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "送"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "公司"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-arrive"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-016",
+      "zh": "我們開車開到海邊。",
+      "en": "We drove all the way to the beach.",
+      "targetWordId": "tocfl-1f6fbc0616",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "開車"
+        },
+        {
+          "text": "開"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "海邊"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-arrive"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-017",
+      "zh": "我走到公園，坐一下。",
+      "en": "I walked to the park and sat for a bit.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "走"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "公園"
+        },
+        {
+          "text": "坐"
+        },
+        {
+          "text": "一下"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-arrive"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-018",
+      "zh": "我們送到你家，好不好？",
+      "en": "We'll deliver it to your home, okay?",
+      "targetWordId": "tocfl-1f6fbc0616",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "送"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "家"
+        },
+        {
+          "text": "好不好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-arrive"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-019",
+      "zh": "我對中文很有興趣。",
+      "en": "I am very interested in Chinese.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "興趣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-you-noun"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-020",
+      "zh": "他對科技產品很有興趣。",
+      "en": "He is very interested in technology products.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "科技"
+        },
+        {
+          "text": "產品"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "興趣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-you-noun"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-021",
+      "zh": "多喝水對身體有好處。",
+      "en": "Drinking more water is good for your health.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "多"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "水"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "身體"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "好處"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-you-noun"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-022",
+      "zh": "這個工作對我很有幫助。",
+      "en": "This job is very helpful to me.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "幫助"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-you-noun"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-023",
+      "zh": "你對這個工作有經驗嗎？",
+      "en": "Do you have experience with this job?",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "這個"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "經驗"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-you-noun"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-024",
+      "zh": "她對世界很有興趣。",
+      "en": "She is very interested in the world.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "世界"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "興趣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-you-noun"
+      ]
+    },
+    {
+      "id": "tb-b3-L04-025",
+      "zh": "學中文對未來有幫助。",
+      "en": "Learning Chinese helps your future.",
+      "targetWordId": "tocfl-c75d36aadb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "學"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "對"
+        },
+        {
+          "text": "未來"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "幫助"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "lesson": 4,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-dui-you-noun"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-001",
+      "zh": "烏龍茶沒有咖啡那麼濃。",
+      "en": "Oolong tea is not as strong as coffee.",
+      "targetWordId": "tocfl-da9cf71e31",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "烏龍茶"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "咖啡"
+        },
+        {
+          "text": "那麼"
+        },
+        {
+          "text": "濃"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-meiyou-nameme"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-002",
+      "zh": "這杯茶沒有那杯那麼香。",
+      "en": "This cup of tea is not as fragrant as that one.",
+      "targetWordId": "tocfl-0d4fae0e72",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "茶"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "那"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "那麼"
+        },
+        {
+          "text": "香"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-meiyou-nameme"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-003",
+      "zh": "臺灣的冬天沒有這裡這麼冷。",
+      "en": "Winter in Taiwan is not as cold as it is here.",
+      "targetWordId": "tb-1ced8f822f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "臺灣"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "冬天"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "這裡"
+        },
+        {
+          "text": "這麼"
+        },
+        {
+          "text": "冷"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-meiyou-nameme"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-004",
+      "zh": "我的中文沒有你那麼好。",
+      "en": "My Chinese is not as good as yours.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "那麼"
+        },
+        {
+          "text": "好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-meiyou-nameme"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-005",
+      "zh": "這家店的東西沒有那家那麼貴。",
+      "en": "The things in this shop are not as expensive as at that one.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "家"
+        },
+        {
+          "text": "店"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "東西"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "那"
+        },
+        {
+          "text": "家"
+        },
+        {
+          "text": "那麼"
+        },
+        {
+          "text": "貴"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-meiyou-nameme"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-006",
+      "zh": "今天沒有昨天那麼熱。",
+      "en": "Today is not as hot as yesterday.",
+      "targetWordId": "tocfl-74c7794307",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "昨天"
+        },
+        {
+          "text": "那麼"
+        },
+        {
+          "text": "熱"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-meiyou-nameme"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-007",
+      "zh": "弟弟沒有哥哥那麼高。",
+      "en": "My younger brother is not as tall as my older brother.",
+      "targetWordId": "tocfl-80c4c8a3da",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "那麼"
+        },
+        {
+          "text": "高"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-meiyou-nameme"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-008",
+      "zh": "這個工作沒有那個工作那麼麻煩。",
+      "en": "This job is not as troublesome as that one.",
+      "targetWordId": "tocfl-360e45880b",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "那個"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "那麼"
+        },
+        {
+          "text": "麻煩"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-meiyou-nameme"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-009",
+      "zh": "你喝喝看這杯烏龍茶。",
+      "en": "Try this cup of oolong tea.",
+      "targetWordId": "tocfl-da9cf71e31",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "這"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "烏龍茶"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vv-kan"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-010",
+      "zh": "這個甜點很好吃，你吃吃看。",
+      "en": "This dessert is delicious; try it.",
+      "targetWordId": "moec-258a0d1886",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "甜點"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "好吃"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "看"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vv-kan"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-011",
+      "zh": "這件外套很好看，你穿穿看。",
+      "en": "This coat looks nice; try it on.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "件"
+        },
+        {
+          "text": "外套"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "好看"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "穿"
+        },
+        {
+          "text": "穿"
+        },
+        {
+          "text": "看"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vv-kan"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-012",
+      "zh": "你聞聞看，這杯茶很香。",
+      "en": "Smell it; this tea is fragrant.",
+      "targetWordId": "tocfl-0e55d641e7",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "聞"
+        },
+        {
+          "text": "聞"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "這"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "茶"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "香"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vv-kan"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-013",
+      "zh": "我想學學看潛水。",
+      "en": "I'd like to try learning to dive.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "潛水"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vv-kan"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-014",
+      "zh": "這個字你寫寫看。",
+      "en": "Try writing this character.",
+      "targetWordId": "moec-258a0d1886",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "字"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "看"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vv-kan"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-015",
+      "zh": "你問問看林老師吧。",
+      "en": "Try asking Teacher Lin.",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "問"
+        },
+        {
+          "text": "問"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "林"
+        },
+        {
+          "text": "老師"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vv-kan"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-016",
+      "zh": "我喝了一杯茶。",
+      "en": "I drank a cup of tea.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "茶"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-separable-verbs"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-017",
+      "zh": "我上了兩個鐘頭課。",
+      "en": "I attended class for two hours.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "上"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "鐘頭"
+        },
+        {
+          "text": "課"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-separable-verbs"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-018",
+      "zh": "他吃過臺灣菜。",
+      "en": "He has eaten Taiwanese food.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "過"
+        },
+        {
+          "text": "臺灣"
+        },
+        {
+          "text": "菜"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-separable-verbs"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-019",
+      "zh": "我昨天跑了三十分鐘步。",
+      "en": "Yesterday I jogged for thirty minutes.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "昨天"
+        },
+        {
+          "text": "跑"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "三"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "分鐘"
+        },
+        {
+          "text": "步"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-separable-verbs"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-020",
+      "zh": "我們見過一次面。",
+      "en": "We have met once.",
+      "targetWordId": "tocfl-1f6fbc0616",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "見"
+        },
+        {
+          "text": "過"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "次"
+        },
+        {
+          "text": "面"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-separable-verbs"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-021",
+      "zh": "她唱了一個鐘頭歌。",
+      "en": "She sang for an hour.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "唱"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "鐘頭"
+        },
+        {
+          "text": "歌"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-separable-verbs"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-022",
+      "zh": "我生了三天病。",
+      "en": "I was sick for three days.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "生"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "三"
+        },
+        {
+          "text": "天"
+        },
+        {
+          "text": "病"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-separable-verbs"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-023",
+      "zh": "我們昨天吃了一個鐘頭飯。",
+      "en": "We ate for an hour yesterday.",
+      "targetWordId": "tocfl-1f6fbc0616",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "昨天"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "鐘頭"
+        },
+        {
+          "text": "飯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-separable-verbs"
+      ]
+    },
+    {
+      "id": "tb-b3-L05-024",
+      "zh": "他看了兩個鐘頭電視。",
+      "en": "He watched TV for two hours.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "鐘頭"
+        },
+        {
+          "text": "電視"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
+      ],
+      "lesson": 5,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-separable-verbs"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-001",
+      "zh": "我已經吃完早飯了。",
+      "en": "I have already finished breakfast.",
+      "targetWordId": "tocfl-3a17b7902f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "已經"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "完"
+        },
+        {
+          "text": "早飯"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-wan"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-002",
+      "zh": "你做完工作了嗎？",
+      "en": "Have you finished your work?",
+      "targetWordId": "tocfl-3a17b7902f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "做"
+        },
+        {
+          "text": "完"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-wan"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-003",
+      "zh": "這本書我還沒看完。",
+      "en": "I haven't finished reading this book yet.",
+      "targetWordId": "tocfl-3a17b7902f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "本"
+        },
+        {
+          "text": "書"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "沒"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "完"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-wan"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-004",
+      "zh": "他寫完論文就去度假。",
+      "en": "He will go on vacation once he finishes his thesis.",
+      "targetWordId": "tocfl-3a17b7902f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "完"
+        },
+        {
+          "text": "論文"
+        },
+        {
+          "text": "就"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "度假"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-wan"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-005",
+      "zh": "我說完了，謝謝大家。",
+      "en": "I have finished speaking; thank you, everyone.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "完了"
+        },
+        {
+          "text": "謝謝"
+        },
+        {
+          "text": "大家"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-wan"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-006",
+      "zh": "老師說的，我都聽懂了。",
+      "en": "I understood everything the teacher said.",
+      "targetWordId": "tocfl-ee30a1d90a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "老師"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "懂"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dong"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-007",
+      "zh": "我看懂這個字了。",
+      "en": "I understood this character.",
+      "targetWordId": "tocfl-ee30a1d90a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "懂"
+        },
+        {
+          "text": "這個"
+        },
+        {
+          "text": "字"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dong"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-008",
+      "zh": "你聽懂他說的嗎？",
+      "en": "Did you understand what he said?",
+      "targetWordId": "tocfl-ee30a1d90a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "懂"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dong"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-009",
+      "zh": "我學懂了，謝謝老師。",
+      "en": "I've got it now; thank you, teacher.",
+      "targetWordId": "tocfl-ee30a1d90a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "懂"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "謝謝"
+        },
+        {
+          "text": "老師"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dong"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-010",
+      "zh": "我聽不懂這個字。",
+      "en": "I can't make out this word.",
+      "targetWordId": "tb-22622d2fd2",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "聽不懂"
+        },
+        {
+          "text": "這個"
+        },
+        {
+          "text": "字"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-potential-de-bu"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-011",
+      "zh": "你看得懂這個資料嗎？",
+      "en": "Can you understand this material?",
+      "targetWordId": "tocfl-ee30a1d90a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "懂"
+        },
+        {
+          "text": "這個"
+        },
+        {
+          "text": "資料"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-potential-de-bu"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-012",
+      "zh": "這麼多菜，我一個人吃不完。",
+      "en": "With this many dishes, I can't finish them alone.",
+      "targetWordId": "tocfl-3a17b7902f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這麼"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "菜"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "人"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "完"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-potential-de-bu"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-013",
+      "zh": "他說得太快，我聽不懂。",
+      "en": "He speaks too fast; I can't follow.",
+      "targetWordId": "tb-22622d2fd2",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "太"
+        },
+        {
+          "text": "快"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "聽不懂"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-potential-de-bu"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-014",
+      "zh": "我今天做不完，明天再做吧。",
+      "en": "I can't finish today; I'll do the rest tomorrow.",
+      "targetWordId": "tocfl-3a17b7902f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "今天"
+        },
+        {
+          "text": "做"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "完"
+        },
+        {
+          "text": "明天"
+        },
+        {
+          "text": "再"
+        },
+        {
+          "text": "做"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-potential-de-bu"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-015",
+      "zh": "這件事你解決得了嗎？",
+      "en": "Can you solve this matter?",
+      "targetWordId": "tocfl-08a5f12ae9",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "件"
+        },
+        {
+          "text": "事"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "解決"
+        },
+        {
+          "text": "得了"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-potential-de-bu"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-016",
+      "zh": "我的同事有的認真，有的活潑。",
+      "en": "Some of my colleagues are earnest, some are lively.",
+      "targetWordId": "tocfl-8682300860",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "同事"
+        },
+        {
+          "text": "有的"
+        },
+        {
+          "text": "認真"
+        },
+        {
+          "text": "有的"
+        },
+        {
+          "text": "活潑"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-youde-youde"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-017",
+      "zh": "這家店的東西有的貴，有的便宜。",
+      "en": "Some things in this shop are expensive, some are cheap.",
+      "targetWordId": "tocfl-8682300860",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "家"
+        },
+        {
+          "text": "店"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "東西"
+        },
+        {
+          "text": "有的"
+        },
+        {
+          "text": "貴"
+        },
+        {
+          "text": "有的"
+        },
+        {
+          "text": "便宜"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-youde-youde"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-018",
+      "zh": "公司有的人很年輕，有的人有很多經驗。",
+      "en": "In the company some people are young, some have lots of experience.",
+      "targetWordId": "tocfl-8682300860",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "公司"
+        },
+        {
+          "text": "有的"
+        },
+        {
+          "text": "人"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "年輕"
+        },
+        {
+          "text": "有的"
+        },
+        {
+          "text": "人"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "經驗"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-youde-youde"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-019",
+      "zh": "他們有的在公司工作，有的在家工作。",
+      "en": "Some of them work at the company, some work at home.",
+      "targetWordId": "tocfl-8682300860",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他們"
+        },
+        {
+          "text": "有的"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "公司"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "有的"
+        },
+        {
+          "text": "在家"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-youde-youde"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-020",
+      "zh": "有的人喜歡咖啡，有的人喜歡茶。",
+      "en": "Some people like coffee, some like tea.",
+      "targetWordId": "tocfl-8682300860",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "有的"
+        },
+        {
+          "text": "人"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "咖啡"
+        },
+        {
+          "text": "有的"
+        },
+        {
+          "text": "人"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "茶"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-youde-youde"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-021",
+      "zh": "你要好好地照顧自己。",
+      "en": "You must take good care of yourself.",
+      "targetWordId": "tb-1918cf8ff8",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "要"
+        },
+        {
+          "text": "好好地"
+        },
+        {
+          "text": "照顧"
+        },
+        {
+          "text": "自己"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vsvs-de-adverb"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-022",
+      "zh": "請你慢慢地說。",
+      "en": "Please speak slowly.",
+      "targetWordId": "tocfl-eefeda1588",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "慢慢"
+        },
+        {
+          "text": "地"
+        },
+        {
+          "text": "說"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vsvs-de-adverb"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-023",
+      "zh": "我們好好地聊天吧。",
+      "en": "Let's have a good chat.",
+      "targetWordId": "tb-1918cf8ff8",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "好好地"
+        },
+        {
+          "text": "聊天"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vsvs-de-adverb"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-024",
+      "zh": "你慢慢地走，不要快。",
+      "en": "Walk slowly; don't rush.",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "慢慢"
+        },
+        {
+          "text": "地"
+        },
+        {
+          "text": "走"
+        },
+        {
+          "text": "不要"
+        },
+        {
+          "text": "快"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vsvs-de-adverb"
+      ]
+    },
+    {
+      "id": "tb-b3-L06-025",
+      "zh": "他快快地吃完早飯。",
+      "en": "He quickly finishes breakfast.",
+      "targetWordId": "tocfl-3a17b7902f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "快"
+        },
+        {
+          "text": "快"
+        },
+        {
+          "text": "地"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "完"
+        },
+        {
+          "text": "早飯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L06"
+      ],
+      "lesson": 6,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-vsvs-de-adverb",
+        "gram-v-wan"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-001",
+      "zh": "我在公園看到了張家安。",
+      "en": "I saw Joann Zhang in the park.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "公園"
+        },
+        {
+          "text": "看到"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "張家安"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-002",
+      "zh": "我找到了一個好旅館。",
+      "en": "I found a good hotel.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "找到"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "好"
+        },
+        {
+          "text": "旅館"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-003",
+      "zh": "我沒找到我的手機。",
+      "en": "I didn't find my cell phone.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "沒"
+        },
+        {
+          "text": "找到"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "手機"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-004",
+      "zh": "你買到想買的東西了嗎？",
+      "en": "Did you manage to buy what you wanted?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "買"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "買"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "東西"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-005",
+      "zh": "這種東西在這裡買不到。",
+      "en": "You can't buy this kind of thing here.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "種"
+        },
+        {
+          "text": "東西"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "這裡"
+        },
+        {
+          "text": "買"
+        },
+        {
+          "text": "不到"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-006",
+      "zh": "老闆聽到這件事，很高興。",
+      "en": "The boss was happy to hear about this.",
+      "targetWordId": "tocfl-99dbbfef28",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "老闆"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "這"
+        },
+        {
+          "text": "件"
+        },
+        {
+          "text": "事"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "高興"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-007",
+      "zh": "我想不到他會來。",
+      "en": "I never thought he would come.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "想不到"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "會"
+        },
+        {
+          "text": "來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-dao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-008",
+      "zh": "我已經準備好了。",
+      "en": "I am already prepared.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "已經"
+        },
+        {
+          "text": "準備"
+        },
+        {
+          "text": "好了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-hao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-009",
+      "zh": "你的論文寫好了嗎？",
+      "en": "Have you finished writing your thesis?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "論文"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "好了"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-hao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-010",
+      "zh": "我們談好了，明天見面。",
+      "en": "We have settled it; we'll meet tomorrow.",
+      "targetWordId": "tb-926d0d10d5",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "談好了"
+        },
+        {
+          "text": "明天"
+        },
+        {
+          "text": "見面"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-hao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-011",
+      "zh": "菜做好了，大家來吃飯吧。",
+      "en": "The food is ready; everyone come eat.",
+      "targetWordId": "tocfl-4ad14b75ea",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "菜"
+        },
+        {
+          "text": "做"
+        },
+        {
+          "text": "好了"
+        },
+        {
+          "text": "大家"
+        },
+        {
+          "text": "來"
+        },
+        {
+          "text": "吃飯"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-hao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-012",
+      "zh": "我還沒準備好去歐洲。",
+      "en": "I'm not ready to go to Europe yet.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "沒"
+        },
+        {
+          "text": "準備"
+        },
+        {
+          "text": "好"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "歐洲"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-hao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-013",
+      "zh": "他準備好了。",
+      "en": "He is ready.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "準備"
+        },
+        {
+          "text": "好了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-hao-result"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-014",
+      "zh": "天氣越來越冷了。",
+      "en": "The weather is getting colder and colder.",
+      "targetWordId": "tb-ed06520f4f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "天氣"
+        },
+        {
+          "text": "越來越"
+        },
+        {
+          "text": "冷"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yuelaiyue"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-015",
+      "zh": "臺灣的交通越來越方便。",
+      "en": "Transportation in Taiwan is getting more and more convenient.",
+      "targetWordId": "tocfl-082c7c6ad2",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "臺灣"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "交通"
+        },
+        {
+          "text": "越來越"
+        },
+        {
+          "text": "方便"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yuelaiyue"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-016",
+      "zh": "我的中文越來越好。",
+      "en": "My Chinese is getting better and better.",
+      "targetWordId": "tb-ed06520f4f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "越來越"
+        },
+        {
+          "text": "好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yuelaiyue"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-017",
+      "zh": "這裡的人越來越多。",
+      "en": "There are more and more people here.",
+      "targetWordId": "tb-ed06520f4f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這裡"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "人"
+        },
+        {
+          "text": "越來越"
+        },
+        {
+          "text": "多"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yuelaiyue"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-018",
+      "zh": "最近越來越忙。",
+      "en": "Lately I'm getting busier and busier.",
+      "targetWordId": "tb-ed06520f4f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "最近"
+        },
+        {
+          "text": "越來越"
+        },
+        {
+          "text": "忙"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yuelaiyue"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-019",
+      "zh": "他越來越喜歡臺灣的文化。",
+      "en": "He likes Taiwanese culture more and more.",
+      "targetWordId": "tb-ed06520f4f",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "越來越"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "臺灣"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "文化"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yuelaiyue"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-020",
+      "zh": "現在才七點，你怎麼起床了？",
+      "en": "It's only seven; why are you up?",
+      "targetWordId": "tocfl-3c3d83d113",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "現在"
+        },
+        {
+          "text": "才"
+        },
+        {
+          "text": "七"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "怎麼"
+        },
+        {
+          "text": "起床"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cai-little"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-021",
+      "zh": "我才學了三個月中文。",
+      "en": "I have studied Chinese for only three months.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "才學"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "三"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "中文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cai-little"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-022",
+      "zh": "這家店才開一個月。",
+      "en": "This shop has been open only a month.",
+      "targetWordId": "tocfl-3c3d83d113",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "家"
+        },
+        {
+          "text": "店"
+        },
+        {
+          "text": "才"
+        },
+        {
+          "text": "開"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "月"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cai-little"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-023",
+      "zh": "老闆八點才來。",
+      "en": "The boss doesn't come until eight.",
+      "targetWordId": "tocfl-99dbbfef28",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "老闆"
+        },
+        {
+          "text": "八"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "才"
+        },
+        {
+          "text": "來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cai-little"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-024",
+      "zh": "公車十點才來。",
+      "en": "The bus doesn't come until ten.",
+      "targetWordId": "tocfl-5be0e90990",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "公車"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "才"
+        },
+        {
+          "text": "來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cai-little"
+      ]
+    },
+    {
+      "id": "tb-b3-L07-025",
+      "zh": "他才二十歲，很年輕。",
+      "en": "He is only twenty, very young.",
+      "targetWordId": "tocfl-3c3d83d113",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "才"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "歲"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "年輕"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "lesson": 7,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-cai-little"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-001",
+      "zh": "我寫錯了這個字。",
+      "en": "I wrote this character wrong.",
+      "targetWordId": "tocfl-8abea085c6",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "錯"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "這個"
+        },
+        {
+          "text": "字"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-cuo"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-002",
+      "zh": "他說錯了價錢。",
+      "en": "He stated the wrong price.",
+      "targetWordId": "tocfl-8abea085c6",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "錯"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "價錢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-cuo"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-003",
+      "zh": "我做錯了一件事，經理很生氣。",
+      "en": "I did something wrong and the manager is angry.",
+      "targetWordId": "tb-489951ea18",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "做錯了"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "件"
+        },
+        {
+          "text": "事"
+        },
+        {
+          "text": "經理"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "生氣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-cuo"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-004",
+      "zh": "你看錯了，這不是我的合約。",
+      "en": "You misread it; this is not my contract.",
+      "targetWordId": "tocfl-814354e5a0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "看錯"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "這"
+        },
+        {
+          "text": "不是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "合約"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-cuo"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-005",
+      "zh": "我們走錯路了。",
+      "en": "We took the wrong road.",
+      "targetWordId": "tocfl-8abea085c6",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "走"
+        },
+        {
+          "text": "錯"
+        },
+        {
+          "text": "路"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-cuo"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-006",
+      "zh": "她聽錯了，以為你不來。",
+      "en": "She misheard and thought you weren't coming.",
+      "targetWordId": "tocfl-8abea085c6",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "錯"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "以為"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-cuo"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-007",
+      "zh": "我打錯電話了。",
+      "en": "I dialed the wrong number.",
+      "targetWordId": "tocfl-8abea085c6",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "打"
+        },
+        {
+          "text": "錯"
+        },
+        {
+          "text": "電話"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-v-cuo"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-008",
+      "zh": "我被經理罵了。",
+      "en": "I was scolded by the manager.",
+      "targetWordId": "tocfl-9cb986e3f0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "被"
+        },
+        {
+          "text": "經理"
+        },
+        {
+          "text": "罵"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-bei-passive"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-009",
+      "zh": "他被老闆罵了一頓。",
+      "en": "He got a scolding from the boss.",
+      "targetWordId": "tocfl-9cb986e3f0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "被"
+        },
+        {
+          "text": "老闆"
+        },
+        {
+          "text": "罵"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "頓"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-bei-passive"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-010",
+      "zh": "我的合約被他存在電腦裡了。",
+      "en": "My contract was saved by him on the computer.",
+      "targetWordId": "tocfl-814354e5a0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "合約"
+        },
+        {
+          "text": "被"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "存在"
+        },
+        {
+          "text": "電腦"
+        },
+        {
+          "text": "裡"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-bei-passive"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-011",
+      "zh": "我的錢被他用完了。",
+      "en": "My money was used up by him.",
+      "targetWordId": "tocfl-9cb986e3f0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "錢"
+        },
+        {
+          "text": "被"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "用完"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-bei-passive"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-012",
+      "zh": "這杯咖啡被弟弟喝完了。",
+      "en": "This cup of coffee was finished by my younger brother.",
+      "targetWordId": "tocfl-9cb986e3f0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "咖啡"
+        },
+        {
+          "text": "被"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "完了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-bei-passive"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-013",
+      "zh": "他被大家罵，心情很難過。",
+      "en": "He was scolded by everyone and feels very sad.",
+      "targetWordId": "tocfl-9cb986e3f0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "被"
+        },
+        {
+          "text": "大家"
+        },
+        {
+          "text": "罵"
+        },
+        {
+          "text": "心情"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "難過"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-bei-passive"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-014",
+      "zh": "這件事讓我很生氣。",
+      "en": "This matter makes me very angry.",
+      "targetWordId": "tocfl-a3d9777abe",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "件"
+        },
+        {
+          "text": "事"
+        },
+        {
+          "text": "讓"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "生氣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-rang-let"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-015",
+      "zh": "你讓我很難過。",
+      "en": "You make me very sad.",
+      "targetWordId": "tocfl-a3d9777abe",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "讓"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "難過"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-rang-let"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-016",
+      "zh": "老闆讓我翻譯這份合約。",
+      "en": "The boss had me translate this contract.",
+      "targetWordId": "tocfl-a3d9777abe",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "老闆"
+        },
+        {
+          "text": "讓"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "翻譯"
+        },
+        {
+          "text": "這"
+        },
+        {
+          "text": "份"
+        },
+        {
+          "text": "合約"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-rang-let"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-017",
+      "zh": "經理讓我檢查一下價錢。",
+      "en": "The manager had me check the price.",
+      "targetWordId": "tocfl-2e68729384",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "經理"
+        },
+        {
+          "text": "讓"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "檢查"
+        },
+        {
+          "text": "一下"
+        },
+        {
+          "text": "價錢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-rang-let"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-018",
+      "zh": "請你讓我看一下檔案。",
+      "en": "Please let me take a look at the file.",
+      "targetWordId": "tocfl-a3d9777abe",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "讓"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "一下"
+        },
+        {
+          "text": "檔案"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-rang-let"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-019",
+      "zh": "聽音樂讓我很開心。",
+      "en": "Listening to music makes me happy.",
+      "targetWordId": "tocfl-a3d9777abe",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "聽"
+        },
+        {
+          "text": "音樂"
+        },
+        {
+          "text": "讓"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "開心"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-rang-let"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-020",
+      "zh": "我用電腦翻譯。",
+      "en": "I translate with a computer.",
+      "targetWordId": "tocfl-85722b654e",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "用"
+        },
+        {
+          "text": "電腦"
+        },
+        {
+          "text": "翻譯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yong-with"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-021",
+      "zh": "我用中文寫合約。",
+      "en": "I write contracts in Chinese.",
+      "targetWordId": "tocfl-814354e5a0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "用"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "合約"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yong-with"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-022",
+      "zh": "請你用中文說一次。",
+      "en": "Please say it once in Chinese.",
+      "targetWordId": "tocfl-eefeda1588",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "用"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "次"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yong-with"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-023",
+      "zh": "他用手機打電話。",
+      "en": "He makes calls with his cell phone.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "用"
+        },
+        {
+          "text": "手機"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yong-with"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-024",
+      "zh": "我用電腦存檔案。",
+      "en": "I save files on the computer.",
+      "targetWordId": "tocfl-803a0a6df8",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "用"
+        },
+        {
+          "text": "電腦"
+        },
+        {
+          "text": "存"
+        },
+        {
+          "text": "檔案"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yong-with"
+      ]
+    },
+    {
+      "id": "tb-b3-L08-025",
+      "zh": "你可以用信用卡買。",
+      "en": "You can buy it with a credit card.",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "可以"
+        },
+        {
+          "text": "用"
+        },
+        {
+          "text": "信用卡"
+        },
+        {
+          "text": "買"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "lesson": 8,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-yong-with"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-001",
+      "zh": "你上來吧，我在樓上。",
+      "en": "Come on up; I'm upstairs.",
+      "targetWordId": "moec-f56affda33",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "上來"
+        },
+        {
+          "text": "吧"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "樓上"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-directional-lai-qu"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-002",
+      "zh": "他下來了，我們出去吧。",
+      "en": "He has come down; let's go out.",
+      "targetWordId": "tocfl-1c613832c0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "下來"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "我們"
+        },
+        {
+          "text": "出去"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-directional-lai-qu"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-003",
+      "zh": "請進來，客廳在左邊。",
+      "en": "Please come in; the living room is on the left.",
+      "targetWordId": "tb-b80a81cfdb",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請進"
+        },
+        {
+          "text": "來"
+        },
+        {
+          "text": "客廳"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "左邊"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-directional-lai-qu"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-004",
+      "zh": "我哥哥已經回來了。",
+      "en": "My older brother has already come back.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "已經"
+        },
+        {
+          "text": "回來"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-directional-lai-qu"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-005",
+      "zh": "他出去了，一個鐘頭以後回來。",
+      "en": "He went out and will be back in an hour.",
+      "targetWordId": "moec-1d7da4e465",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "出去"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "鐘頭"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "回來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-directional-lai-qu"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-006",
+      "zh": "老師過來了。",
+      "en": "The teacher has come over.",
+      "targetWordId": "tocfl-e6e5696c01",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "老師"
+        },
+        {
+          "text": "過來"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-directional-lai-qu"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-007",
+      "zh": "他從樓上走下來。",
+      "en": "He walks down from upstairs.",
+      "targetWordId": "tb-018dcc20a0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "從"
+        },
+        {
+          "text": "樓上"
+        },
+        {
+          "text": "走下來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-008",
+      "zh": "狗跑進來了。",
+      "en": "The dog ran in.",
+      "targetWordId": "tocfl-abed89ec81",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "狗"
+        },
+        {
+          "text": "跑"
+        },
+        {
+          "text": "進來"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-009",
+      "zh": "我們爬上去看看吧。",
+      "en": "Let's climb up and have a look.",
+      "targetWordId": "tb-f7267b5cff",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "爬上去"
+        },
+        {
+          "text": "看看"
+        },
+        {
+          "text": "吧"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-010",
+      "zh": "他拿出去的是垃圾。",
+      "en": "What he took out is the trash.",
+      "targetWordId": "tb-fc696c7f12",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "拿出去"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "垃圾"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-011",
+      "zh": "他從山上走下來。",
+      "en": "He walks down from the mountain.",
+      "targetWordId": "tocfl-2793864f45",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "從"
+        },
+        {
+          "text": "山"
+        },
+        {
+          "text": "上"
+        },
+        {
+          "text": "走下來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-012",
+      "zh": "她帶一些水果過來。",
+      "en": "She brings some fruit over.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "帶"
+        },
+        {
+          "text": "一些"
+        },
+        {
+          "text": "水果"
+        },
+        {
+          "text": "過來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-013",
+      "zh": "這些椅子我都擦完了。",
+      "en": "I have wiped all these chairs.",
+      "targetWordId": "tocfl-4bce9229a0",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這些"
+        },
+        {
+          "text": "椅子"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "擦"
+        },
+        {
+          "text": "完了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-topic-sentence"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-014",
+      "zh": "那張桌子我們都不要。",
+      "en": "We don't want that table.",
+      "targetWordId": "tocfl-27b09c2861",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "那"
+        },
+        {
+          "text": "張"
+        },
+        {
+          "text": "桌子"
+        },
+        {
+          "text": "我們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "不要"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-topic-sentence"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-015",
+      "zh": "這個院子，我每天都打掃。",
+      "en": "This yard, I sweep every day.",
+      "targetWordId": "tocfl-e6e8f2eca6",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "院子"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "每天"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "打掃"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-topic-sentence"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-016",
+      "zh": "這些垃圾他都拿出去了。",
+      "en": "He took all this trash out.",
+      "targetWordId": "tb-fc696c7f12",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這些"
+        },
+        {
+          "text": "垃圾"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "拿出去"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-topic-sentence",
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-017",
+      "zh": "那些菜我都沒吃。",
+      "en": "I didn't eat any of those dishes.",
+      "targetWordId": "tocfl-7519a18970",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "那些"
+        },
+        {
+          "text": "菜"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "沒"
+        },
+        {
+          "text": "吃"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-topic-sentence"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-018",
+      "zh": "這種活動大家都喜歡。",
+      "en": "Everyone likes this kind of activity.",
+      "targetWordId": "tocfl-c3c3aaa09a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "種"
+        },
+        {
+          "text": "活動"
+        },
+        {
+          "text": "大家"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "喜歡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-topic-sentence"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-019",
+      "zh": "請你把椅子拿出去。",
+      "en": "Please take the chairs outside.",
+      "targetWordId": "tocfl-ac2e037098",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "椅子"
+        },
+        {
+          "text": "拿出去"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-directional",
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-020",
+      "zh": "我把垃圾拿出去。",
+      "en": "I take the trash out.",
+      "targetWordId": "tocfl-ac2e037098",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "垃圾"
+        },
+        {
+          "text": "拿出去"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-directional",
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-021",
+      "zh": "他把桌子搬進來。",
+      "en": "He carries the table in.",
+      "targetWordId": "tocfl-ac2e037098",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "桌子"
+        },
+        {
+          "text": "搬"
+        },
+        {
+          "text": "進來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-directional",
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-022",
+      "zh": "請把書房的椅子拿過來。",
+      "en": "Please bring the chair from the study over.",
+      "targetWordId": "tocfl-ac2e037098",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "書房"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "椅子"
+        },
+        {
+          "text": "拿"
+        },
+        {
+          "text": "過來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-directional",
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-023",
+      "zh": "我把狗帶出去散步。",
+      "en": "I take the dog out for a walk.",
+      "targetWordId": "tocfl-ac2e037098",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "狗"
+        },
+        {
+          "text": "帶"
+        },
+        {
+          "text": "出去"
+        },
+        {
+          "text": "散步"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-directional",
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L09-024",
+      "zh": "她把水果拿上來了。",
+      "en": "She brought the fruit up.",
+      "targetWordId": "tocfl-ac2e037098",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "水果"
+        },
+        {
+          "text": "拿"
+        },
+        {
+          "text": "上來"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "lesson": 9,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-directional",
+        "gram-action-directional"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-001",
+      "zh": "我把考卷交給老師了。",
+      "en": "I handed my test paper to the teacher.",
+      "targetWordId": "tocfl-336ffd499a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "考卷"
+        },
+        {
+          "text": "交給"
+        },
+        {
+          "text": "老師"
+        },
+        {
+          "text": "了"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-gei-dao-zai"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-002",
+      "zh": "請你把作業給我。",
+      "en": "Please give me the homework.",
+      "targetWordId": "tocfl-7ae0fa610e",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "作業"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "我"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-gei-dao-zai"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-003",
+      "zh": "老師把考卷還給大家。",
+      "en": "The teacher returns the test papers to everyone.",
+      "targetWordId": "tocfl-336ffd499a",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "老師"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "考卷"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "大家"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-gei-dao-zai"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-004",
+      "zh": "她把書放在桌子上。",
+      "en": "She puts the book on the table.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "書"
+        },
+        {
+          "text": "放"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "桌子"
+        },
+        {
+          "text": "上"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-gei-dao-zai"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-005",
+      "zh": "我把檔案存在電腦裡。",
+      "en": "I save the file on the computer.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "檔案"
+        },
+        {
+          "text": "存在"
+        },
+        {
+          "text": "電腦"
+        },
+        {
+          "text": "裡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-gei-dao-zai"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-006",
+      "zh": "他把車開到公司。",
+      "en": "He drives the car to the company.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "車"
+        },
+        {
+          "text": "開"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "公司"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-gei-dao-zai"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-007",
+      "zh": "請把這份合約送到我的辦公室。",
+      "en": "Please deliver this contract to my office.",
+      "targetWordId": "tocfl-eefeda1588",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "把"
+        },
+        {
+          "text": "這"
+        },
+        {
+          "text": "份"
+        },
+        {
+          "text": "合約"
+        },
+        {
+          "text": "送"
+        },
+        {
+          "text": "到"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "辦公室"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-ba-gei-dao-zai"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-008",
+      "zh": "我不知道他是誰。",
+      "en": "I don't know who he is.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "知道"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "誰"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-buzhidao-clause"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-009",
+      "zh": "我不知道怎麼去。",
+      "en": "I don't know how to get there.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "知道"
+        },
+        {
+          "text": "怎麼"
+        },
+        {
+          "text": "去"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-buzhidao-clause"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-010",
+      "zh": "他不知道這個字怎麼寫。",
+      "en": "He doesn't know how to write this character.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "知道"
+        },
+        {
+          "text": "這個"
+        },
+        {
+          "text": "字"
+        },
+        {
+          "text": "怎麼"
+        },
+        {
+          "text": "寫"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-buzhidao-clause"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-011",
+      "zh": "我不知道老師什麼時候回來。",
+      "en": "I don't know when the teacher will be back.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "知道"
+        },
+        {
+          "text": "老師"
+        },
+        {
+          "text": "什麼時候"
+        },
+        {
+          "text": "回來"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-buzhidao-clause"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-012",
+      "zh": "我不知道考試的成績。",
+      "en": "I don't know the exam results.",
+      "targetWordId": "tocfl-cc96248dae",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "知道"
+        },
+        {
+          "text": "考試"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "成績"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-buzhidao-clause"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-013",
+      "zh": "我不知道你是不是同意。",
+      "en": "I don't know whether you agree.",
+      "targetWordId": "tocfl-91c345d104",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "知道"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "是不是"
+        },
+        {
+          "text": "同意"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-buzhidao-clause"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-014",
+      "zh": "他的中文比我更流利。",
+      "en": "His Chinese is even more fluent than mine.",
+      "targetWordId": "tocfl-961c698dde",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "比"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "更"
+        },
+        {
+          "text": "流利"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-geng-more"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-015",
+      "zh": "這個句子更難。",
+      "en": "This sentence is even harder.",
+      "targetWordId": "tocfl-1d9f255585",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "句子"
+        },
+        {
+          "text": "更"
+        },
+        {
+          "text": "難"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-geng-more"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-016",
+      "zh": "我更喜歡臺灣的小吃。",
+      "en": "I like Taiwanese snacks even more.",
+      "targetWordId": "tocfl-961c698dde",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "更"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "臺灣"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "小吃"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-geng-more"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-017",
+      "zh": "今天比昨天更冷。",
+      "en": "Today is even colder than yesterday.",
+      "targetWordId": "tocfl-961c698dde",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "比"
+        },
+        {
+          "text": "昨天"
+        },
+        {
+          "text": "更"
+        },
+        {
+          "text": "冷"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-geng-more"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-018",
+      "zh": "我們需要更努力學習。",
+      "en": "We need to study even harder.",
+      "targetWordId": "tocfl-961c698dde",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "需要"
+        },
+        {
+          "text": "更"
+        },
+        {
+          "text": "努力"
+        },
+        {
+          "text": "學習"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-geng-more"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-019",
+      "zh": "請你更仔細一點。",
+      "en": "Please be even more careful.",
+      "targetWordId": "tocfl-961c698dde",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "請"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "更"
+        },
+        {
+          "text": "仔細"
+        },
+        {
+          "text": "一點"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-geng-more"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-020",
+      "zh": "他不但很用功，而且很努力。",
+      "en": "He is not only diligent but also hard-working.",
+      "targetWordId": "tocfl-6eb5b4cd70",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "不但"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "用功"
+        },
+        {
+          "text": "而且"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "努力"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-budan-erqie"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-021",
+      "zh": "這家店的小吃不但便宜，而且好吃。",
+      "en": "The snacks at this shop are not only cheap but also tasty.",
+      "targetWordId": "tocfl-bb87c8ed73",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "家"
+        },
+        {
+          "text": "店"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "小吃"
+        },
+        {
+          "text": "不但"
+        },
+        {
+          "text": "便宜"
+        },
+        {
+          "text": "而且"
+        },
+        {
+          "text": "好吃"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-budan-erqie"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-022",
+      "zh": "她不但會說中文，而且寫得很好。",
+      "en": "Not only can she speak Chinese, she also writes it well.",
+      "targetWordId": "tocfl-6eb5b4cd70",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "不但"
+        },
+        {
+          "text": "會"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "而且"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-budan-erqie"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-023",
+      "zh": "老師不但很友善，而且很認真。",
+      "en": "The teacher is not only friendly but also earnest.",
+      "targetWordId": "tocfl-6eb5b4cd70",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "老師"
+        },
+        {
+          "text": "不但"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "友善"
+        },
+        {
+          "text": "而且"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "認真"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-budan-erqie"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-024",
+      "zh": "我的同事不但年輕，而且很有經驗。",
+      "en": "My colleague is not only young but also experienced.",
+      "targetWordId": "tocfl-6eb5b4cd70",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "同事"
+        },
+        {
+          "text": "不但"
+        },
+        {
+          "text": "年輕"
+        },
+        {
+          "text": "而且"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "經驗"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-budan-erqie"
+      ]
+    },
+    {
+      "id": "tb-b3-L10-025",
+      "zh": "他不但聽力進步了，而且聲調也更正確。",
+      "en": "Not only has his listening improved, his tones are also more accurate.",
+      "targetWordId": "tocfl-6eb5b4cd70",
+      "level": "L2",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "不但"
+        },
+        {
+          "text": "聽力"
+        },
+        {
+          "text": "進步"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "而且"
+        },
+        {
+          "text": "聲調"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "更"
+        },
+        {
+          "text": "正確"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L10"
+      ],
+      "lesson": 10,
+      "textbookId": "laixue-3",
+      "grammarIds": [
+        "gram-budan-erqie",
+        "gram-geng-more"
+      ]
+    }
+  ]
+}

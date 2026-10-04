@@ -1,0 +1,56 @@
+lesson: 9
+sentences:
+  - { zh: 你上來吧，我在樓上。, en: "Come on up; I'm upstairs.", grammar: [gram-directional-lai-qu] }
+  - { zh: 他下來了，我們出去吧。, en: "He has come down; let's go out.", grammar: [gram-directional-lai-qu] }
+  - { zh: 請進來，客廳在左邊。, en: "Please come in; the living room is on the left.", grammar: [gram-directional-lai-qu] }
+  - { zh: 我哥哥已經回來了。, en: "My older brother has already come back.", grammar: [gram-directional-lai-qu] }
+  - { zh: 他出去了，一個鐘頭以後回來。, en: "He went out and will be back in an hour.", grammar: [gram-directional-lai-qu] }
+  - { zh: 老師過來了。, en: "The teacher has come over.", grammar: [gram-directional-lai-qu] }
+  - { zh: 他從樓上走下來。, en: "He walks down from upstairs.", grammar: [gram-action-directional] }
+  - { zh: 狗跑進來了。, en: "The dog ran in.", grammar: [gram-action-directional] }
+  - { zh: 我們爬上去看看吧。, en: "Let's climb up and have a look.", grammar: [gram-action-directional] }
+  - { zh: 他拿出去的是垃圾。, en: "What he took out is the trash.", grammar: [gram-action-directional] }
+  - { zh: 他從山上走下來。, en: "He walks down from the mountain.", grammar: [gram-action-directional] }
+  - { zh: 她帶一些水果過來。, en: "She brings some fruit over.", grammar: [gram-action-directional] }
+  - { zh: 這些椅子我都擦完了。, en: "I have wiped all these chairs.", grammar: [gram-topic-sentence] }
+  - { zh: 那張桌子我們都不要。, en: "We don't want that table.", grammar: [gram-topic-sentence] }
+  - { zh: 這個院子，我每天都打掃。, en: "This yard, I sweep every day.", grammar: [gram-topic-sentence] }
+  - { zh: 這些垃圾他都拿出去了。, en: "He took all this trash out.", grammar: [gram-topic-sentence, gram-action-directional] }
+  - { zh: 那些菜我都沒吃。, en: "I didn't eat any of those dishes.", grammar: [gram-topic-sentence] }
+  - { zh: 這種活動大家都喜歡。, en: "Everyone likes this kind of activity.", grammar: [gram-topic-sentence] }
+  - { zh: 請你把椅子拿出去。, en: "Please take the chairs outside.", grammar: [gram-ba-directional, gram-action-directional] }
+  - { zh: 我把垃圾拿出去。, en: "I take the trash out.", grammar: [gram-ba-directional, gram-action-directional] }
+  - { zh: 他把桌子搬進來。, en: "He carries the table in.", grammar: [gram-ba-directional, gram-action-directional] }
+  - { zh: 請把書房的椅子拿過來。, en: "Please bring the chair from the study over.", grammar: [gram-ba-directional, gram-action-directional] }
+  - { zh: 我把狗帶出去散步。, en: "I take the dog out for a walk.", grammar: [gram-ba-directional, gram-action-directional] }
+  - { zh: 她把水果拿上來了。, en: "She brought the fruit up.", grammar: [gram-ba-directional, gram-action-directional] }
+scenarios:
+  - slug: weekend-plans
+    title: "Jose asks how you arrange the weekend"
+    npc:
+      id: jose
+      name: 何希
+      personality: >
+        Gloria's husband, who loves cooking, swimming and grilling. He enjoys planning
+        a weekend with a list of chores and one fun outing.
+      speechStyle: >
+        Relaxed short sentences with words from books 1 to 3 (up to book 3 lesson 9).
+        Gives small commands with 把 (把……拿出去) and asks what the learner will do.
+      particles: []
+    setting: >
+      Jose and the learner plan Saturday and Sunday: first the housework at home,
+      then something fun outside, perhaps a hike or a barbecue.
+    goalSteps:
+      - { id: usual, description: "Say what you usually do on weekends.", keywordHints: ["週末", "活動", "通常", "平常"] }
+      - { id: housework, description: "Name some housework (打掃, 整理, 擦).", keywordHints: ["打掃", "整理", "擦", "割草"] }
+      - { id: carry, description: "Say you take something out or bring it up/down (把……拿出去).", keywordHints: ["把", "拿", "出去", "上來", "下來"] }
+      - { id: topic, description: "Say something about a group of things (這些……我都……).", keywordHints: ["這些", "都"] }
+      - { id: outing, description: "Choose an outing (爬山, 烤肉, 棒球比賽).", keywordHints: ["爬山", "烤肉", "棒球", "比賽", "山"] }
+      - { id: arrange, description: "Arrange the order of the weekend.", keywordHints: ["安排", "先", "然後"] }
+    vocabExtras: [活動, 書房, 下來, 整理, 上來, 打掃, 割草, 畫, 拿, 擦, 院子, 烤肉, 把, 出去, 無聊, 山, 爬, 上去, 大概, 棒球, 比賽, 下山, 安排, 拿下來, 拿出去, 爬上去, 走下來, 紐約, 垃圾, 桌子, 椅子]
+    opener: { zh: 你好！這個週末你有什麼活動？, en: "Hello! What activities do you have this weekend?" }
+    successLine: { zh: 好，我們星期六先打掃院子，然後去爬山。, en: "Good. On Saturday we'll first clean the yard and then go hiking." }
+journalPrompts:
+  - { en: "Write a paragraph about the housework you do at the weekend and who carries things up, down, in or out (……上來 / 下去 / 出去).", zh: 我把垃圾拿出去。, words: [打掃, 整理, 擦, 院子], grammar: [gram-directional-lai-qu, gram-action-directional] }
+  - { en: "Write a paragraph about what you do with the things in your home (把……拿出去 / 搬進來).", words: [拿, 書房, 安排, 出去], grammar: [gram-ba-directional, gram-action-directional] }
+  - { en: "Write a paragraph about weekend activities, using a topic first (這些……我都……).", words: [活動, 爬, 烤肉, 棒球, 比賽], grammar: [gram-topic-sentence, gram-ba-directional] }

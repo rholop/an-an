@@ -1,0 +1,308 @@
+# 來學華語 第三冊: the 40 grammar points. The book numbers 39 sections; its lesson-1
+# section "以前 / 以後" teaches two patterns (and cites two earlier volumes for them),
+# so they are listed as two points here: 40 = the book's stated count.
+# 以後 and 從…到… are taught again here after an earlier volume: `reteaches: true`
+# keeps ONE course item that now carries this lesson's tag too.
+# Patterns follow the book; explanations are written for this app, not copied.
+
+# ---- Lesson 1
+- id: gram-di-ordinal
+  lesson: 1
+  n: 1
+  pattern: "第 + number (+ MW / N)"
+  explanationEn: "第 in front of a number makes it an ordinal: 第一天, 第三個星期. The measure word or noun follows. For floors and some fixed uses (一樓, 二樓) you do not need 第."
+  matcher: "第[一二三四五六七八九十0-9幾]"
+  focus: ["第"]
+- id: gram-jiu-indeed
+  lesson: 1
+  n: 2
+  pattern: "S + 就 + 是 / 在 + …"
+  explanationEn: "就 adds 'indeed, precisely' to what follows: 我就是高莉亞 (I'm the one), 他家就在對面 (it's right across the street). It confirms or points out exactly who or where."
+  matcher: "就(是|在)"
+  focus: ["就"]
+- id: gram-yiqian-before
+  lesson: 1
+  n: 3
+  pattern: "以前 + …  /  event + 以前"
+  explanationEn: "以前 means 'before, in the past'. On its own it says something used to be so (我以前學過華語); after an event it means before that event (上班以前，先洗澡)."
+  matcher: "以前"
+  focus: ["以前"]
+- id: gram-yihou
+  lesson: 1
+  n: 3
+  reteaches: true
+  pattern: "event 1 + 以後 + event 2"
+  explanationEn: "以後 after the first event means 'after that…'. In this lesson it also stands alone for 'later, from now on': 我希望以後有機會去日本旅行."
+  matcher: "以後"
+  focus: ["以後"]
+- id: gram-number-duo
+  lesson: 1
+  n: 4
+  pattern: "Num + MW + 多  ；  Num(十, 百…) + 多 + MW + N"
+  explanationEn: "多 after a number means 'and a bit more': 兩年多 is more than two years, 五塊多 is a little over five dollars. With round numbers it comes before the measure word: 一百多個學生."
+  matcher: "[一二兩三四五六七八九十百千0-9]+(個|塊|年|天|分鐘|歲|公里|人|次|星期|月|小時|鐘頭|元)多|[十百]多|[二三四五六七八九]十多"
+  focus: ["多"]
+
+# ---- Lesson 2
+- id: gram-qilai-judgement
+  lesson: 2
+  n: 1
+  pattern: "N + V 起來 + (怎麼樣)"
+  explanationEn: "A verb plus 起來 gives your impression of something: 看起來好吃, 聽起來很有意思, 穿起來很舒服 (looks, sounds, feels … when you do it)."
+  matcher: "[看聽吃喝穿寫說做用][起]來"
+  focus: ["起來"]
+- id: gram-yibian-yibian
+  lesson: 2
+  n: 2
+  pattern: "S + 一邊 + V，一邊 + V"
+  explanationEn: "一邊…一邊… means doing two things at the same time: 他一邊走路，一邊聽音樂."
+  matcher: "一邊.+一邊"
+  focus: ["一邊"]
+- id: gram-zenme-how
+  lesson: 2
+  n: 3
+  pattern: "怎麼 + V ？"
+  explanationEn: "怎麼 before a verb asks HOW to do something: 這個字怎麼寫？ 到公園怎麼走？ It is different from 怎麼樣 (how is it?)."
+  matcher: "怎麼[^樣了]"
+  focus: ["怎麼"]
+- id: gram-shi-de-focus
+  lesson: 2
+  n: 4
+  pattern: "S + 是 + (who / when / where / how) + V + 的"
+  explanationEn: "是…的 puts the spotlight on a detail of something that already happened: 我是昨天來的 (it was yesterday that I came). 是 goes before the detail, 的 at the end; negate with 不是."
+  matcher: "是[^，。？！]{1,14}的[。？！]?$"
+  focus: ["是"]
+
+# ---- Lesson 3
+- id: gram-cong-dao
+  lesson: 3
+  n: 1
+  reteaches: true
+  pattern: "從 + time + 到 + time，……"
+  explanationEn: "從…到… also marks a stretch of time: 從星期一到星期五, 從現在到感恩節. It is the same pattern as for places in book 2."
+  matcher: "從.+到"
+  focus: ["從", "到"]
+- id: gram-zao-wan-yidian
+  lesson: 3
+  n: 2
+  pattern: "早 / 晚 + 一點 + V"
+  explanationEn: "早一點 and 晚一點 before a verb mean 'a little earlier / later': 我想晚一點去. It is how you adjust a time politely."
+  matcher: "[早晚]一點"
+  focus: ["早", "晚"]
+- id: gram-vs-yidian
+  lesson: 3
+  n: 3
+  pattern: "Vs + 一點"
+  explanationEn: "A state verb plus 一點 means 'a bit more …' (compared with what is usual or with another thing): 便宜一點, 快一點, 輕鬆一點."
+  matcher: "(貴|便宜|大|小|多|少|快|慢|好|高|低|長|短|近|遠|冷|熱|輕鬆|甜|辣|淡|濃|清楚|方便|舒服|簡單)一點"
+  focus: ["一點"]
+
+# ---- Lesson 4
+- id: gram-hai-still
+  lesson: 4
+  n: 1
+  pattern: "S + 還 + V / Vs ；S + 還沒 / 還不 + V"
+  explanationEn: "還 before a verb means the action or state continues: 我還想喝咖啡, 天氣還很冷. 還沒… says it has not happened yet; do not mix it up with 還是 (or) or 還 meaning 'also'."
+  matcher: "還[^是]"
+  focus: ["還"]
+- id: gram-dui-to
+  lesson: 4
+  n: 2
+  pattern: "S + 對 + someone + V"
+  explanationEn: "對 marks the person something is directed at: 他對我很好, 老闆對我說. It means 'to, towards'."
+  matcher: "對[^，。？！]{1,6}(說|很好|不好|笑|客氣|友善|好|有|很)"
+  focus: ["對"]
+- id: gram-v-dao-arrive
+  lesson: 4
+  n: 3
+  pattern: "V + 到 + place"
+  explanationEn: "到 right after a verb shows where the action ends up: 飛到臺灣, 走到公園, 寄到美國."
+  matcher: "[飛走跑搬寄送帶開坐拿回]到"
+  focus: ["到"]
+- id: gram-dui-you-noun
+  lesson: 4
+  n: 4
+  pattern: "S + 對 + topic + (很) 有 + N"
+  explanationEn: "對…有+N makes an attitude or relation into a state: 對華語有興趣, 對身體有好處. The noun is usually abstract (興趣, 幫助, 經驗, 好處)."
+  matcher: "對.+有(興趣|幫助|經驗|好處|信心|意見)"
+  focus: ["對", "有"]
+
+# ---- Lesson 5
+- id: gram-meiyou-nameme
+  lesson: 5
+  n: 1
+  pattern: "A + 沒有 + B + 那麼 / 這麼 + Vs"
+  explanationEn: "This is the 'not as … as' pattern: 這裡的海邊沒有那裡的漂亮 / 沒有那麼漂亮. 那麼 points to something further away, 這麼 to something close."
+  matcher: "沒有.+(那麼|這麼)"
+  focus: ["沒有", "那麼", "這麼"]
+- id: gram-vv-kan
+  lesson: 5
+  n: 2
+  pattern: "V V 看"
+  explanationEn: "A one-syllable verb doubled and followed by 看 means 'try doing it and see': 吃吃看, 喝喝看, 試試看. It is a friendly way to suggest trying something."
+  matcher: "(吃吃|喝喝|做做|聽聽|學學|寫寫|穿穿|逛逛|打打|試試|問問|想想|玩玩|找找|說說|聞聞|看看)看"
+  focus: ["看"]
+- id: gram-separable-verbs
+  lesson: 5
+  n: 3
+  pattern: "V + (了 / 過 / number …) + O"
+  explanationEn: "Verbs such as 吃飯, 上課, 唱歌, 睡覺 are 'verb + object' units that can be split: 上了三個小時課, 吃過飯了. Put 了, 過 or the length of time between the two parts."
+  matcher: "(吃|做|喝|上|唱|跑|看|學|照|見|寫|買|生|請|游|洗|開|打|睡)(了|過|著)[^，。？！]{0,8}(飯|茶|課|網|歌|步|電視|班|相|面|字|菜|病|假|澡|泳|氣|球|覺)"
+  focus: []
+
+# ---- Lesson 6
+- id: gram-v-wan
+  lesson: 6
+  n: 1
+  pattern: "V + 完 (+ 了)；沒 + V + 完"
+  explanationEn: "完 after a verb means the action is finished: 吃完, 做完, 寫完. Add 了 to say it is done, or 沒…完 for 'not finished yet'."
+  matcher: "[吃喝做寫看讀說聽洗用買]完"
+  focus: ["完"]
+- id: gram-v-dong
+  lesson: 6
+  n: 2
+  pattern: "V + 懂"
+  explanationEn: "懂 after 聽, 看 or 讀 means you understood what you heard, saw or read: 聽懂, 看懂. Negate with 沒: 我沒聽懂."
+  matcher: "[聽看讀學]懂"
+  focus: ["懂"]
+- id: gram-potential-de-bu
+  lesson: 6
+  n: 3
+  pattern: "V + 得 / 不 + complement"
+  explanationEn: "Put 得 or 不 between a verb and its result to say whether it is possible: 聽得懂 (can understand by listening), 看不懂 (can't make out), 吃不完 (can't finish)."
+  matcher: "[看聽說寫吃做找買學拿帶睡決辦完]得(懂|到|完|見|好|清楚|出來|了|下|起)|[看聽說寫吃做找買學拿帶睡決辦完]不(懂|到|完|見|好|清楚|出來|了|下|起)"
+  focus: ["得", "不"]
+- id: gram-youde-youde
+  lesson: 6
+  n: 4
+  pattern: "有的 + …，有的 + …"
+  explanationEn: "有的…有的… splits a group into parts: 'some … and some …'. 有的人喜歡咖啡，有的人喜歡茶."
+  matcher: "有的.+有的"
+  focus: ["有的"]
+- id: gram-vsvs-de-adverb
+  lesson: 6
+  n: 5
+  pattern: "VsVs + 地 + V"
+  explanationEn: "Doubling a state verb and adding 地 turns it into a manner word before the verb: 好好地休息 (rest well), 慢慢地走. 地 is often dropped in speech."
+  matcher: "(好好|慢慢|快快|輕輕|早早|多多|少少|仔細仔細)地?[^，。？！]"
+  focus: ["地"]
+
+# ---- Lesson 7
+- id: gram-v-dao-result
+  lesson: 7
+  n: 1
+  pattern: "V + 到 (了)；沒 + V + 到；V + 得 / 不 + 到"
+  explanationEn: "到 after a verb shows the goal was reached: 找到, 買到, 看到. 沒買到 means you did not manage; 買不到 means it can't be bought."
+  matcher: "[找看買聽見遇碰學吃想]到|[找看買聽見遇碰學吃想][得不]到"
+  focus: ["到"]
+- id: gram-v-hao-result
+  lesson: 7
+  n: 2
+  pattern: "V + 好 (了)"
+  explanationEn: "好 after a verb means it has been done properly and is ready: 做好, 準備好, 寫好. 還沒…好 means not ready yet."
+  matcher: "[做寫準備安排整理訂洗穿吃約定談]好"
+  focus: ["好"]
+- id: gram-yuelaiyue
+  lesson: 7
+  n: 3
+  pattern: "越來越 + Vs"
+  explanationEn: "越來越 means 'more and more': 天氣越來越冷, 她的華語越來越好. The state verb comes right after it."
+  matcher: "越來越"
+  focus: ["越來越"]
+- id: gram-cai-little
+  lesson: 7
+  n: 4
+  pattern: "S + 才 + V / number"
+  explanationEn: "才 says an amount or time is smaller or later than expected: 現在才三點, 我才學了一個月. Compare 就, which suggests 'already, so early'."
+  matcher: "才"
+  focus: ["才"]
+
+# ---- Lesson 8
+- id: gram-v-cuo
+  lesson: 8
+  n: 1
+  pattern: "V + 錯 (了)"
+  explanationEn: "錯 after a verb says the action was done wrongly: 寫錯, 說錯, 做錯事, 走錯路. Add 了 for a completed mistake."
+  matcher: "[說寫做看聽走買拿打]錯"
+  focus: ["錯"]
+- id: gram-bei-passive
+  lesson: 8
+  n: 2
+  pattern: "Receiver + 被 + Doer + V"
+  explanationEn: "被 turns the sentence around so the thing affected comes first: 我的手機被他拿走了. It is mostly used for things that happen to someone, often unwelcome."
+  matcher: "被"
+  focus: ["被"]
+- id: gram-rang-let
+  lesson: 8
+  n: 3
+  pattern: "S + 讓 + someone + V"
+  explanationEn: "讓 means 'let' or 'make' someone do something: 老師讓我用華語介紹自己, 這件事讓我很高興."
+  matcher: "讓"
+  focus: ["讓"]
+- id: gram-yong-with
+  lesson: 8
+  n: 4
+  pattern: "S + 用 + tool / language + V"
+  explanationEn: "用 introduces the tool or language you use: 用筷子吃飯, 用華語說. It comes before the verb."
+  matcher: "用[^，。？！]{1,8}[說寫做吃看打買開翻存交檢查寄]"
+  focus: ["用"]
+
+# ---- Lesson 9
+- id: gram-directional-lai-qu
+  lesson: 9
+  n: 1
+  pattern: "上 / 下 / 進 / 出 / 回 / 過 + 來 / 去"
+  explanationEn: "A direction verb plus 來 or 去 shows which way something moves: 進來 (in, towards me), 出去 (out, away from me), 回來, 上去. 來 moves towards the speaker and 去 away."
+  matcher: "[上下進出回過起][來去]"
+  focus: ["來", "去"]
+- id: gram-action-directional
+  lesson: 9
+  n: 2
+  pattern: "V + 上 / 下 / 進 / 出 / 回 / 過 + 來 / 去"
+  explanationEn: "Put an action verb first and the direction after it: 跑進來, 走出去, 拿回來, 帶過去. A place goes between the direction and 來/去: 走進教室來."
+  matcher: "[走跑拿爬帶搬開送寄飛跳].{0,6}[上下進出回過][來去]"
+  focus: ["來", "去"]
+- id: gram-topic-sentence
+  lesson: 9
+  n: 3
+  pattern: "Topic + S + 都 / 也 / 不 + V"
+  explanationEn: "Put the thing you are talking about first, then comment on it: 這些菜我都喜歡. If the topic is plural, 都 completes the sentence."
+  matcher: "[這那些個].{0,6}(我|你|他|她|們|大家).{0,3}[都也不]"
+  focus: ["都"]
+- id: gram-ba-directional
+  lesson: 9
+  n: 4
+  pattern: "S + 把 + O + V + 上 / 下 / 進 / 出 / 回 / 過 + 來 / 去"
+  explanationEn: "把 puts the object before the verb to say what you do with it, and the direction word shows where it goes: 把車開回來, 把椅子搬出去."
+  matcher: "把.+[上下進出回過][來去]"
+  focus: ["把"]
+
+# ---- Lesson 10
+- id: gram-ba-gei-dao-zai
+  lesson: 10
+  n: 1
+  pattern: "S + 把 + O + V 給 / V 到 / V 在 + N"
+  explanationEn: "把 with 給, 到 or 在 says to whom, to where or at where the object ends up: 把書送給他, 把車開到公司, 把杯子放在桌子上."
+  matcher: "把.+(給|到|在)"
+  focus: ["把"]
+- id: gram-buzhidao-clause
+  lesson: 10
+  n: 2
+  pattern: "S + 不知道 + clause / question word"
+  explanationEn: "不知道 can introduce a whole clause or a question: 我不知道他是誰, 不知道怎麼去. Put the question word where it would sit in a plain question."
+  matcher: "不知道"
+  focus: ["不知道"]
+- id: gram-geng-more
+  lesson: 10
+  n: 3
+  pattern: "更 + Vs / V"
+  explanationEn: "更 means 'even more': 這個比那個更貴, 我更喜歡臺灣茶. Use it for comparisons already in sight."
+  matcher: "更"
+  focus: ["更"]
+- id: gram-budan-erqie
+  lesson: 10
+  n: 4
+  pattern: "不但 + Clause 1，而且 + Clause 2"
+  explanationEn: "不但…而且… means 'not only … but also …': 他不但會說華語，而且寫得很好. The second part adds something stronger."
+  matcher: "不但.+(而且|也|還)"
+  focus: ["不但", "而且"]

@@ -1,0 +1,59 @@
+lesson: 10
+sentences:
+  - { zh: 他在看電視。, en: "He is watching TV.", grammar: [gram-zai-progressive] }
+  - { zh: 高莉亞在做晚飯呢。, en: "Gloria is cooking dinner.", grammar: [gram-zai-progressive] }
+  - { zh: 我在寫論文，不能出去。, en: "I'm writing my thesis and can't go out.", grammar: [gram-zai-progressive] }
+  - { zh: 他們在找機會去亞洲。, en: "They are looking for a chance to go to Asia.", grammar: [gram-zai-progressive] }
+  - { zh: 你們在做什麼？, en: "What are you all doing?", grammar: [gram-zai-progressive] }
+  - { zh: 我在練習說英文。, en: "I'm practising speaking English.", grammar: [gram-zai-progressive] }
+  - { zh: 媽媽在準備早飯。, en: "Mom is preparing breakfast.", grammar: [gram-zai-progressive] }
+  - { zh: 他在洗澡，你等一下吧。, en: "He is taking a shower; wait a moment.", grammar: [gram-zai-progressive] }
+  - { zh: 我快要畢業了。, en: "I am about to graduate.", grammar: [gram-kuaiyao-le] }
+  - { zh: 他快要回臺灣了。, en: "He is about to return to Taiwan.", grammar: [gram-kuaiyao-le] }
+  - { zh: 假期快要到了。, en: "The vacation is almost here.", grammar: [gram-kuaiyao-le] }
+  - { zh: 我的論文快要寫好了。, en: "My thesis is almost finished.", grammar: [gram-kuaiyao-le] }
+  - { zh: 天氣快要冷了。, en: "The weather is about to turn cold.", grammar: [gram-kuaiyao-le] }
+  - { zh: 我們快要放假了。, en: "We are about to go on vacation.", grammar: [gram-kuaiyao-le] }
+  - { zh: 我一下班就回家。, en: "As soon as I get off work I go home.", grammar: [gram-yi-jiu] }
+  - { zh: 王先生一到家，王太太就出去買東西了。, en: "As soon as Mr. Wang got home, Mrs. Wang went out shopping.", grammar: [gram-yi-jiu] }
+  - { zh: 他一有空就去游泳。, en: "He goes swimming whenever he has time.", grammar: [gram-yi-jiu] }
+  - { zh: 我一起床就洗澡。, en: "I take a shower as soon as I get up.", grammar: [gram-yi-jiu] }
+  - { zh: 媽媽一回來，我們就吃飯。, en: "As soon as Mom comes back, we eat.", grammar: [gram-yi-jiu] }
+  - { zh: 她一看電視就想吃東西。, en: "She wants to eat as soon as she watches TV.", grammar: [gram-yi-jiu] }
+  - { zh: 我去過臺灣。, en: "I have been to Taiwan.", grammar: [gram-guo-experience] }
+  - { zh: 我沒去過日本。, en: "I have never been to Japan.", grammar: [gram-guo-experience] }
+  - { zh: 你看過那個電影嗎？, en: "Have you seen that movie?", grammar: [gram-guo-experience] }
+  - { zh: 她吃過臺灣的牛肉麵。, en: "She has eaten Taiwanese beef noodle soup.", grammar: [gram-guo-experience] }
+  - { zh: 我哥哥去過亞洲的很多地方。, en: "My older brother has been to many places in Asia.", grammar: [gram-guo-experience] }
+  - { zh: 我沒學過英文。, en: "I have never studied English.", grammar: [gram-guo-experience] }
+  - { zh: 你玩過電腦遊戲嗎？, en: "Have you ever played computer games?", grammar: [gram-guo-experience] }
+scenarios:
+  - slug: plan-taiwan-trip
+    title: "Mingwen asks about your Taiwan plans"
+    npc:
+      id: mingwen
+      name: 明文
+      personality: >
+        A kind, friendly graduate student who helps the learner practise Mandarin. He
+        is excited about travel and asks follow-up questions about plans.
+      speechStyle: >
+        Short friendly sentences with words from books 1 and 2 (up to lesson 10).
+        Likes 快要……了, 一……就…… and asking whether you have ever been somewhere.
+      particles: []
+    setting: >
+      Mingwen and the learner are chatting about the learner's holiday plans and
+      whether the learner has ever been to Taiwan or Asia.
+    goalSteps:
+      - { id: now, description: "Say what you are doing right now (在……).", keywordHints: ["在"] }
+      - { id: plan, description: "Say you plan to take a vacation or go abroad (休假, 出國, 計畫).", keywordHints: ["休假", "出國", "計畫", "假期"] }
+      - { id: soon, description: "Say something is about to happen (快要……了).", keywordHints: ["快要", "了"] }
+      - { id: asap, description: "Say what you will do as soon as you arrive (一……就……).", keywordHints: ["一", "就"] }
+      - { id: been, description: "Say whether you have been to Taiwan or Asia (去過 / 沒去過).", keywordHints: ["過", "亞洲", "臺灣"] }
+      - { id: chance, description: "Say you hope to find a chance to go (機會).", keywordHints: ["機會", "找", "希望"] }
+    vocabExtras: [在, 快, 論文, 計畫, 找, 休假, 出國, 過, 亞洲, 有意思, 機會, 假期, 長, 短, 找到, 一些, 上課, 英文]
+    opener: { zh: 你好！你現在在做什麼？, en: "Hello! What are you doing right now?" }
+    successLine: { zh: 你快要去臺灣了，太好了！你一到臺灣就給我打電話吧。, en: "You are about to go to Taiwan, great! Call me as soon as you arrive." }
+journalPrompts:
+  - { en: "Write what you are doing right now, using 在.", zh: 我在寫論文。, words: [在, 論文, 計畫, 找], grammar: [gram-zai-progressive] }
+  - { en: "Write what you will do as soon as something happens (一……就……) and what is about to happen (快要……了).", words: [快, 休假, 假期, 出國], grammar: [gram-kuaiyao-le, gram-yi-jiu] }
+  - { en: "Write about places you have been and places you have never been (過 / 沒……過).", words: [過, 亞洲, 機會], grammar: [gram-guo-experience] }

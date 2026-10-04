@@ -1,0 +1,57 @@
+lesson: 10
+sentences:
+  - { zh: 學中文給我帶來更多機會。, en: "Studying Chinese brings me more opportunities.", grammar: [gram-gei-dailai] }
+  - { zh: 這段經驗給我帶來很多回憶。, en: "This experience has brought me many memories.", grammar: [gram-gei-dailai] }
+  - { zh: 夜市給人們帶來很多快樂。, en: "Night markets bring people a lot of joy.", grammar: [gram-gei-dailai] }
+  - { zh: 這個工作給我帶來很大的壓力。, en: "This job brings me a lot of pressure.", grammar: [gram-gei-dailai] }
+  - { zh: 他給大家帶來好消息。, en: "He brought everyone good news.", grammar: [gram-gei-dailai] }
+  - { zh: 臺灣的生活給我帶來深刻的印象。, en: "Life in Taiwan left a deep impression on me.", grammar: [gram-gei-dailai] }
+  - { zh: 運動給身體帶來好處。, en: "Exercise brings benefits to the body.", grammar: [gram-gei-dailai] }
+  - { zh: 這個朋友給我帶來很多幫助。, en: "This friend has brought me a lot of help.", grammar: [gram-gei-dailai] }
+  - { zh: 這個行李箱裝得下所有的東西。, en: "This suitcase can hold everything.", grammar: [gram-v-xia] }
+  - { zh: 這個房間住得下三個人。, en: "This room can accommodate three people.", grammar: [gram-v-xia] }
+  - { zh: 我吃不下了，太飽了。, en: "I can't eat any more; I'm too full.", grammar: [gram-v-xia] }
+  - { zh: 這個冰箱放不下那麼多菜。, en: "This refrigerator can't hold that many dishes.", grammar: [gram-v-xia] }
+  - { zh: 這個行李箱裝不下所有的紀念品。, en: "This suitcase can't hold all the souvenirs.", grammar: [gram-v-xia] }
+  - { zh: 這間公寓住得下一家人。, en: "This apartment can hold a family.", grammar: [gram-v-xia] }
+  - { zh: 這個桌子坐得下八個人。, en: "This table can seat eight people.", grammar: [gram-v-xia] }
+  - { zh: 我今天吃不下早飯。, en: "I can't eat breakfast today.", grammar: [gram-v-xia] }
+  - { zh: 一般來說，臺灣人七點上班。, en: "Generally speaking, Taiwanese people start work at seven.", grammar: [gram-yiban-laishuo] }
+  - { zh: 一般來說，夜市下午才開始營業。, en: "Generally, night markets open only in the afternoon.", grammar: [gram-yiban-laishuo] }
+  - { zh: 一般來說，鳳梨酥是很好的紀念品。, en: "Generally, pineapple cakes make good souvenirs.", grammar: [gram-yiban-laishuo] }
+  - { zh: 一般來說，外國人覺得臺灣人很熱情。, en: "Generally, foreigners find Taiwanese people warm.", grammar: [gram-yiban-laishuo] }
+  - { zh: 一般來說，租金包括水費和電費。, en: "Generally, the rent includes water and electricity bills.", grammar: [gram-yiban-laishuo] }
+  - { zh: 一般來說，現代的人比以前忙。, en: "Generally, modern people are busier than before.", grammar: [gram-yiban-laishuo] }
+  - { zh: 一般來說，我週末都在家休息。, en: "Generally, I rest at home on weekends.", grammar: [gram-yiban-laishuo] }
+  - { zh: 一般來說，道地的小吃比較便宜。, en: "Generally, authentic snacks are cheaper.", grammar: [gram-yiban-laishuo] }
+scenarios:
+  - slug: taiwan-experience
+    title: "Mingwen asks about your life in Taiwan"
+    npc:
+      id: mingwen
+      name: 明文
+      personality: >
+        A kind, friendly graduate student and close friend who is sad that the
+        learner will soon leave Taiwan and wants to hear the best memories.
+      speechStyle: >
+        Warm sentences with words from books 1 to 4 (up to book 4 lesson 10).
+        Talks about memories with 給……帶來 and general facts with 一般來說.
+      particles: []
+    setting: >
+      The last weekend before the learner flies home. Mingwen helps pack the suitcase
+      and asks about the learner's feelings about the months in Taiwan.
+    goalSteps:
+      - { id: time, description: "Say that time flew by (一轉眼).", keywordHints: ["一轉眼", "半年", "已經"] }
+      - { id: feeling, description: "Say what you felt living in Taiwan (感受, 熱情).", keywordHints: ["感受", "熱情", "深刻"] }
+      - { id: bring, description: "Say what Taiwan brought you (給……帶來……).", keywordHints: ["給", "帶來", "回憶"] }
+      - { id: souvenir, description: "Talk about souvenirs (鳳梨酥, 紀念品).", keywordHints: ["鳳梨酥", "紀念品", "道地"] }
+      - { id: suitcase, description: "Say what fits or does not fit in the suitcase (裝得下 / 裝不下).", keywordHints: ["行李箱", "裝", "得下", "不下"] }
+      - { id: general, description: "Say how things usually are in Taiwan (一般來說).", keywordHints: ["一般來說"] }
+      - { id: try, description: "Say what you tried and found rare (嘗試, 難得).", keywordHints: ["嘗試", "難得", "許多", "人生"] }
+    vocabExtras: [一轉眼, 感受, 熱情, 原因, 現代化, 國際化, 營業, 食物, 深刻, 利用, 嘗試, 許多, 人生, 難得, 帶來, 回憶, 紀念品, 道地, 鳳梨酥, 原來, 行李箱, 裝, 恐怕, 最好, 段, 道理, 別人, 當初, 意外, 比方說, 一般來說]
+    opener: { zh: 一轉眼，你在臺灣已經住了半年了！你有什麼感受？, en: "In the blink of an eye you have lived in Taiwan for half a year! How do you feel?" }
+    successLine: { zh: 這段經驗給你帶來很多回憶，回國以後別忘記我們！, en: "This experience has brought you many memories; don't forget us after you go home!" }
+journalPrompts:
+  - { en: "Write a paragraph about how living abroad brought you something (給……帶來……).", zh: 學中文給我帶來更多機會。, words: [感受, 熱情, 深刻, 回憶, 帶來], grammar: [gram-gei-dailai, gram-yiban-laishuo] }
+  - { en: "Write a paragraph about packing and souvenirs: what fits and what does not (V得 / 不下).", words: [紀念品, 鳳梨酥, 行李箱, 裝, 道地], grammar: [gram-v-xia, gram-gei-dailai] }
+  - { en: "Write a paragraph about how things usually are in a place you know (一般來說).", words: [營業, 食物, 現代化, 國際化, 許多], grammar: [gram-yiban-laishuo, gram-v-xia] }

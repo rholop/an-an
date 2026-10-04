@@ -6,6 +6,8 @@ import { LAIXUE1_GRAMMAR } from './grammar-points.js';
 import { linkBookWord, linkVariantForms, pinyinOptions, tonelessPinyin } from './link.js';
 import { parseLessonFront, parseToc } from './objectives.js';
 import { entryToWord, parseVocabBlock } from './vocab-parse.js';
+import { parseVocabIndex } from './index-parse.js';
+import { draftPlan, parsePlan } from './lesson-plan.js';
 
 describe('cleaning extracted headwords (fixtures for the PDF quirks)', () => {
   it('ruby duplicate: 名字子 → 名字', () => {
@@ -273,5 +275,134 @@ describe('the 34 hand-transcribed grammar points', () => {
       expect(g.explanationEn.length, g.id).toBeGreaterThan(30);
       expect(g.pattern, g.id).toBeTruthy();
     }
+  });
+});
+
+
+describe('series layouts (books 2–4)', () => {
+  const furniture = { titleZh: '今天天氣很好', titleEn: 'The Weather Is Nice Today' };
+  const entry = (n: number, head: string, py: string, extra: string[]) => [`${n}.`, head, py, ...extra];
+
+  it('book 2 running header (page no. / Lesson / title / 01) is dropped', () => {
+    const page = ['002', 'Lesson', '今天天氣很好', '01', ...entry(11, '冬天', 'dōngtiān', ['N', 'winter'])].join('\n');
+    const raw = parseVocabBlock([page], furniture, { sections: 'order' });
+    expect(raw).toHaveLength(1);
+    expect(raw[0]!.lines.join('|')).not.toContain('Lesson');
+  });
+
+  it('books 3–4 header "Lesson01 <title>" and the odd-page English title are dropped', () => {
+    const p1 = ['004', 'Lesson01 我要到臺灣去', ...entry(1, '午安', 'wǔān', ['V', 'Good afternoon'])].join('\n');
+    const p2 = ['005', 'The Weather Is Nice Today', ...entry(2, '遲到', 'chídào', ['V', 'arrive late'])].join('\n');
+    const raw = parseVocabBlock([p1, p2], furniture, { sections: 'order' });
+    expect(raw.map((e) => e.n)).toEqual([1, 2]);
+    expect(raw.flatMap((e) => e.lines).join('|')).not.toMatch(/Lesson|Weather/);
+  });
+
+  it("'order' mode sections: POS → core, no POS → phrase / proper (capitalised), POS afterwards → supplementary", () => {
+    const text = [
+      ...entry(1, '天氣', 'tiānqì', ['N', 'weather']),
+      ...entry(2, '太……了', 'tài…le', ['too, so']),
+      ...entry(3, '下雪', 'xià xuě', ['to snow']),
+      ...entry(4, '林', 'Lín', ['an example of a surname']),
+      ...entry(5, '昨天', 'zuótiān', ['N', 'yesterday']),
+      '短語Phrases', // headings are not trusted in this mode
+    ].join('\n');
+    const raw = parseVocabBlock([text], furniture, { sections: 'order' });
+    expect(raw.map((e) => e.section)).toEqual(['core', 'phrase', 'phrase', 'proper', 'supplementary']);
+  });
+
+  it('a part of speech glued to the reading line ("chāojí shìchǎng N") still makes the entry core', () => {
+    const text = [
+      ...entry(1, '離', 'lí', ['Prep', 'away from']),
+      '2.', '超級市場', 'chāojí shìchǎng N', 'supermarket',
+      ...entry(3, '搬家', 'bān jiā', ['to move (home)']),
+    ].join('\n');
+    const raw = parseVocabBlock([text], furniture, { sections: 'order' });
+    const w = raw.map((e) => entryToWord(2, e));
+    expect(w[1]).toMatchObject({ headword: '超級市場', pinyin: 'chāojí shìchǎng', pos: ['N'], glossEn: 'supermarket' });
+    expect(raw.map((e) => e.section)).toEqual(['core', 'core', 'phrase']);
+  });
+
+  it('headword + reading glued, a wrapped headword, and gloss pollution from the next lines', () => {
+    const glued = entryToWord(4, {
+      n: 24,
+      section: 'phrase',
+      lines: ['雞肉三明治jīròu sānmíngzhì (chicken sandwich)'],
+    });
+    expect(glued).toMatchObject({ headword: '雞肉三明治', pinyin: 'jīròu sānmíngzhì', glossEn: 'chicken sandwich' });
+    const wrapped = entryToWord(5, {
+      n: 23,
+      section: 'core',
+      lines: ['東方美人', '茶', 'dōngfāng', 'měirénchá', 'N', 'oolong tea'],
+    });
+    expect(wrapped).toMatchObject({ headword: '東方美人茶', pinyin: 'dōngfāng měirénchá', pos: ['N'] });
+    const polluted = entryToWord(9, {
+      n: 8,
+      section: 'core',
+      lines: ['畫', 'huà', 'N', 'painting', '好啊！上午去附近的小山玩玩。', 'Hǎo a! Shàngwǔ qù fùjìn'],
+    });
+    expect(polluted.glossEn).toBe('painting');
+  });
+
+  it('keeps an English gloss with an accent ("Tasty Café")', () => {
+    const w = entryToWord(9, { n: 23, section: 'proper', lines: ['美味餐廳', 'Měiwèi Cāntīng', 'Tasty Café'] });
+    expect(w.glossEn).toBe('Tasty Café');
+  });
+
+  it('a pattern entry that begins with …… is still an entry', () => {
+    const text = [...entry(25, '天氣預報', 'tiānqì yùbào', ['weather forecast']), ...entry(26, '……的時候', '…de shíhòu', ['when…'])].join('\n');
+    const raw = parseVocabBlock([text], furniture, { sections: 'order' });
+    expect(raw.map((e) => e.n)).toEqual([25, 26]);
+    expect(raw[0]!.lines.join(' ')).not.toContain('時候');
+  });
+
+  it('dialogue: a speaker written with an ideographic space (杜　翔：) and narrative-only texts', () => {
+    const d = parseDialogue('1. Read aloud\n杜　翔：我們公司最忙。\n高莉亞：你好辛苦啊！\n綜合活動');
+    expect(d.lines.map((l) => l.speaker)).toEqual(['杜翔', '高莉亞']);
+    const n = parseDialogue('1. Read aloud\n　　高莉亞在公司工作，公司有三十個人。\n她有幾個同事。\n　　早上六點起床。\n2. Fill in the Blanks');
+    expect(n.lines).toHaveLength(2);
+    expect(n.lines[0]).toMatchObject({ speaker: '' });
+  });
+
+  it('examples: a worked example without pinyin keeps its English line', () => {
+    const ex = parseExamples('(1) 你有空的話，我們去吃飯。\nIf you have time, let us eat.\n(2) 他不來。\nTā bù lái.\nHe is not coming.');
+    expect(ex[0]).toMatchObject({ pinyin: '', en: 'If you have time, let us eat.' });
+    expect(ex[1]).toMatchObject({ pinyin: 'Tā bù lái.', en: 'He is not coming.' });
+  });
+
+  it('objectives pages that open "By the end of this lesson" (books 3–4)', () => {
+    const f = parseLessonFront('By the end of this lesson, you will be able to use Mandarin to\n1. Ask others.\n2. Describe things.\nLearning Objectives\nTopic: Weather');
+    expect(f.objectives).toEqual(['Ask others.', 'Describe things.']);
+    expect(f.topic).toBe('Weather');
+  });
+});
+
+describe('appendix vocabulary index', () => {
+  it('reads pinyin, headword and the lesson-n locator, ignoring headings and letter dividers', () => {
+    const page = ['162', 'Vocabulary Index', '生詞', '索引', 'a', '啊', '啊', '[exclamatory particle]', '1-9', 'B', 'bǐ', '比', '比', 'comparison marker, (more) than', '1-6', 'sentence-final particle for suggestion 10-9'].join('\n');
+    const e = parseVocabIndex([page]);
+    expect(e.map((x) => `${x.lesson}-${x.n}:${x.headword}`)).toEqual(['1-9:啊', '1-6:比', '10-9:']);
+  });
+});
+
+describe('lesson plan', () => {
+  const book = {
+    id: 'laixue-2',
+    titleZh: '來學華語 第二冊',
+    titleEn: "Let's Learn Mandarin 2",
+    lessons: [
+      { id: 'laixue-2-L01', n: 1, titleZh: '', titleEn: 'The Weather Is Nice Today', topic: 'Weather', objectives: ['List the four seasons', 'Discuss the forecast', 'Compare places'] },
+    ],
+  } as never;
+
+  it('the draft parses back into scenarios with NPCs and three prompts, and the edited file is the source of truth', () => {
+    const md = draftPlan(book, () => 'L1');
+    const plan = parsePlan(md);
+    expect(plan).toHaveLength(1);
+    expect(plan[0]!.scenarios.length).toBe(2);
+    expect(plan[0]!.scenarios[0]).toMatchObject({ npcId: 'mingwen' });
+    expect(plan[0]!.prompts).toHaveLength(3);
+    const edited = md.replace('NPC: mingwen —', 'NPC: waiter —');
+    expect(parsePlan(edited)[0]!.scenarios[0]!.npcId).toBe('waiter');
   });
 });

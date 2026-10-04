@@ -3,6 +3,7 @@ import { LEVEL_IDS } from '../levels.config.js';
 import { LevelSchema } from './level-schema.js';
 import type { Lexicon } from '../lexicon.js';
 import type { Level } from '../levels.config.js';
+import { courseOrdinal, LAIXUE_COURSE } from '../textbook/course.js';
 
 export const ScenarioGoalStepSchema = z.object({
   id: z.string(),
@@ -94,8 +95,14 @@ export function isTextbookScenarioUnlocked(
   myClass: { enabled: boolean; textbookId: string; currentLesson: number } | undefined,
 ): boolean {
   if (!scenario.textbook || !myClass?.enabled) return false;
-  return (
-    scenario.textbook.textbookId === myClass.textbookId &&
-    myClass.currentLesson >= scenario.textbook.lesson
-  );
+  // Course order: a lesson of an earlier book counts as covered too.
+  const at = courseOrdinal(LAIXUE_COURSE, myClass.textbookId, myClass.currentLesson);
+  const of = courseOrdinal(LAIXUE_COURSE, scenario.textbook.textbookId, scenario.textbook.lesson);
+  if (at === undefined || of === undefined) {
+    return (
+      scenario.textbook.textbookId === myClass.textbookId &&
+      myClass.currentLesson >= scenario.textbook.lesson
+    );
+  }
+  return at >= of;
 }

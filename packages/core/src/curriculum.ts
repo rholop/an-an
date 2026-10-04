@@ -2,7 +2,7 @@ import { computeCharStats, transparency, type SkillCard } from './learner/index.
 import type { Lexicon } from './lexicon.js';
 import type { Level, Word } from './types.js';
 import { LEVEL_IDS } from './levels.config.js';
-import { firstLessonOfTags, tagsInScope, type ClassScope } from './textbook/scope.js';
+import { homeLessonOfTags, tagsInScope, type ClassScope } from './textbook/scope.js';
 
 const LEVEL_ORDER = LEVEL_IDS;
 
@@ -123,7 +123,7 @@ export function nextNewItems(
 
   const scope = context.classScope?.enabled ? context.classScope : undefined;
   const inScope = (w: Word) => !scope || tagsInScope(w.tags, scope);
-  const lessonOf = (w: Word) => (scope ? firstLessonOfTags(w.tags, scope.textbookId) : undefined);
+  const lessonOf = (w: Word) => (scope ? homeLessonOfTags(w.tags, scope.course)?.ordinal : undefined);
 
   const mainPool = words.filter(
     (w) => (w.level === frontier || w.level === null) && notIntroduced(w) && inScope(w),

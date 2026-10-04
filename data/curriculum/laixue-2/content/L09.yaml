@@ -1,0 +1,56 @@
+lesson: 9
+sentences:
+  - { zh: 你應該多休息。, en: "You should rest more.", grammar: [gram-duo-shao] }
+  - { zh: 你要多喝水，少喝咖啡。, en: "You should drink more water and less coffee.", grammar: [gram-duo-shao] }
+  - { zh: 感冒的時候，要多喝水。, en: "When you have a cold, drink more water.", grammar: [gram-duo-shao] }
+  - { zh: 你應該少吃冰淇淋。, en: "You should eat less ice cream.", grammar: [gram-duo-shao] }
+  - { zh: 醫生說我要多運動。, en: "The doctor says I should exercise more.", grammar: [gram-duo-shao] }
+  - { zh: 你的身體不太好，應該多運動。, en: "Your health is not great; you should exercise more.", grammar: [gram-duo-shao] }
+  - { zh: 我應該少看電視，多看書。, en: "I should watch less TV and read more.", grammar: [gram-duo-shao] }
+  - { zh: 他需要多吃水果。, en: "He needs to eat more fruit.", grammar: [gram-duo-shao] }
+  - { zh: 最近太忙了，你要多注意身體。, en: "You've been too busy lately; pay more attention to your health.", grammar: [gram-duo-shao] }
+  - { zh: 昨天我沒上班。, en: "I didn't go to work yesterday.", grammar: [gram-mei-negation] }
+  - { zh: 她今天沒來學校。, en: "She didn't come to school today.", grammar: [gram-mei-negation] }
+  - { zh: 我早上沒吃早飯。, en: "I didn't eat breakfast this morning.", grammar: [gram-mei-negation] }
+  - { zh: 弟弟沒去醫院，他在家休息。, en: "My younger brother didn't go to the hospital; he's resting at home.", grammar: [gram-mei-negation] }
+  - { zh: 他昨天沒有發燒。, en: "He didn't have a fever yesterday.", grammar: [gram-mei-negation] }
+  - { zh: 我沒有咳嗽，可是頭很痛。, en: "I don't have a cough, but my head hurts a lot.", grammar: [gram-mei-negation] }
+  - { zh: 我今天沒有時間看醫生。, en: "I don't have time to see a doctor today.", grammar: [gram-mei-negation] }
+  - { zh: 她沒買藥，因為她已經好多了。, en: "She didn't buy medicine because she is already much better.", grammar: [gram-mei-negation] }
+  - { zh: 昨天我沒洗澡。, en: "I didn't take a shower yesterday.", grammar: [gram-mei-negation] }
+  - { zh: 他又感冒了。, en: "He has caught a cold again.", grammar: [gram-you-again] }
+  - { zh: 她又生病了。, en: "She has gotten sick again.", grammar: [gram-you-again] }
+  - { zh: 你怎麼又來了？, en: "How come you are here again?", grammar: [gram-you-again] }
+  - { zh: 弟弟又發燒了。, en: "My younger brother has a fever again.", grammar: [gram-you-again] }
+  - { zh: 我今天又沒吃早飯了。, en: "Once again I didn't eat breakfast today.", grammar: [gram-you-again, gram-mei-negation] }
+  - { zh: 他又流鼻水了。, en: "His nose is running again.", grammar: [gram-you-again] }
+  - { zh: 媽媽又去醫院了。, en: "Mom has gone to the hospital again.", grammar: [gram-you-again] }
+scenarios:
+  - slug: doctor-visit
+    title: "Tell the doctor you caught a cold"
+    npc:
+      id: doctor
+      name: 醫生
+      personality: >
+        A calm, caring doctor at a hospital who asks short questions about symptoms
+        and gives simple, clear advice.
+      speechStyle: >
+        Short calm sentences with words from books 1 and 2 (up to lesson 9).
+        Asks 哪裡不舒服, 怎麼了 and gives advice with 應該 and 多 / 少.
+      particles: []
+    setting: >
+      A hospital consulting room. The learner is not feeling well and the doctor
+      asks what is wrong, since when, and gives advice.
+    goalSteps:
+      - { id: problem, description: "Say you caught a cold or what hurts (頭痛, 肚子痛).", keywordHints: ["感冒", "頭", "痛", "肚子"] }
+      - { id: symptoms, description: "Name another symptom (咳嗽, 流鼻水, 發燒).", keywordHints: ["咳嗽", "鼻水", "發燒"] }
+      - { id: since, description: "Say what you did not do because of it (沒……).", keywordHints: ["沒"] }
+      - { id: again, description: "Say you got sick again (又……了).", keywordHints: ["又", "了"] }
+      - { id: advice, description: "Repeat the doctor's advice with 多 or 少.", keywordHints: ["多", "少", "應該"] }
+    vocabExtras: [感冒, 醫院, 醫生, 頭, 痛, 肚子, 流, 鼻水, 咳嗽, 但是, 發燒, 多, 需要, 藥, 怎麼, 又, 生病, 已經, 健康, 重要, 以後, 注意, 身體, 應該, 打算, 開始, 怎麼了, 流鼻水, 好多了]
+    opener: { zh: 你好！你怎麼了？哪裡不舒服？, en: "Hello! What's wrong? Where do you feel unwell?" }
+    successLine: { zh: 你感冒了，要多喝水，多休息，我給你藥。, en: "You have a cold: drink more water, rest more, and I'll give you medicine." }
+journalPrompts:
+  - { en: "Write what you should do more or less of when you are sick (多……, 少……).", zh: 感冒的時候，你應該多休息。, words: [感冒, 身體, 應該, 健康], grammar: [gram-duo-shao] }
+  - { en: "Describe a day you did not do something (沒……) because you were not well.", words: [發燒, 咳嗽, 頭, 痛], grammar: [gram-mei-negation] }
+  - { en: "Write about something that happened again (又……了).", words: [生病, 醫院, 藥], grammar: [gram-you-again] }

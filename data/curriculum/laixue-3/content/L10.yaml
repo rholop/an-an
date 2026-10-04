@@ -1,0 +1,57 @@
+lesson: 10
+sentences:
+  - { zh: 我把考卷交給老師了。, en: "I handed my test paper to the teacher.", grammar: [gram-ba-gei-dao-zai] }
+  - { zh: 請你把作業給我。, en: "Please give me the homework.", grammar: [gram-ba-gei-dao-zai] }
+  - { zh: 老師把考卷還給大家。, en: "The teacher returns the test papers to everyone.", grammar: [gram-ba-gei-dao-zai] }
+  - { zh: 她把書放在桌子上。, en: "She puts the book on the table.", grammar: [gram-ba-gei-dao-zai] }
+  - { zh: 我把檔案存在電腦裡。, en: "I save the file on the computer.", grammar: [gram-ba-gei-dao-zai] }
+  - { zh: 他把車開到公司。, en: "He drives the car to the company.", grammar: [gram-ba-gei-dao-zai] }
+  - { zh: 請把這份合約送到我的辦公室。, en: "Please deliver this contract to my office.", grammar: [gram-ba-gei-dao-zai] }
+  - { zh: 我不知道他是誰。, en: "I don't know who he is.", grammar: [gram-buzhidao-clause] }
+  - { zh: 我不知道怎麼去。, en: "I don't know how to get there.", grammar: [gram-buzhidao-clause] }
+  - { zh: 他不知道這個字怎麼寫。, en: "He doesn't know how to write this character.", grammar: [gram-buzhidao-clause] }
+  - { zh: 我不知道老師什麼時候回來。, en: "I don't know when the teacher will be back.", grammar: [gram-buzhidao-clause] }
+  - { zh: 我不知道考試的成績。, en: "I don't know the exam results.", grammar: [gram-buzhidao-clause] }
+  - { zh: 我不知道你是不是同意。, en: "I don't know whether you agree.", grammar: [gram-buzhidao-clause] }
+  - { zh: 他的中文比我更流利。, en: "His Chinese is even more fluent than mine.", grammar: [gram-geng-more] }
+  - { zh: 這個句子更難。, en: "This sentence is even harder.", grammar: [gram-geng-more] }
+  - { zh: 我更喜歡臺灣的小吃。, en: "I like Taiwanese snacks even more.", grammar: [gram-geng-more] }
+  - { zh: 今天比昨天更冷。, en: "Today is even colder than yesterday.", grammar: [gram-geng-more] }
+  - { zh: 我們需要更努力學習。, en: "We need to study even harder.", grammar: [gram-geng-more] }
+  - { zh: 請你更仔細一點。, en: "Please be even more careful.", grammar: [gram-geng-more] }
+  - { zh: 他不但很用功，而且很努力。, en: "He is not only diligent but also hard-working.", grammar: [gram-budan-erqie] }
+  - { zh: 這家店的小吃不但便宜，而且好吃。, en: "The snacks at this shop are not only cheap but also tasty.", grammar: [gram-budan-erqie] }
+  - { zh: 她不但會說中文，而且寫得很好。, en: "Not only can she speak Chinese, she also writes it well.", grammar: [gram-budan-erqie] }
+  - { zh: 老師不但很友善，而且很認真。, en: "The teacher is not only friendly but also earnest.", grammar: [gram-budan-erqie] }
+  - { zh: 我的同事不但年輕，而且很有經驗。, en: "My colleague is not only young but also experienced.", grammar: [gram-budan-erqie] }
+  - { zh: 他不但聽力進步了，而且聲調也更正確。, en: "Not only has his listening improved, his tones are also more accurate.", grammar: [gram-budan-erqie, gram-geng-more] }
+scenarios:
+  - slug: progress-chat
+    title: "Teacher Lin asks how your Chinese is improving"
+    npc:
+      id: teacher-lin
+      name: 林老師
+      personality: >
+        A warm, patient Mandarin teacher who notices each student's progress and
+        gives specific, kind feedback.
+      speechStyle: >
+        Clear, encouraging sentences with words from books 1 to 3 (up to book 3 lesson 10).
+        Likes 不但……而且…… and 更 when she praises progress.
+      particles: []
+    setting: >
+      The end of the term. Teacher Lin has just handed back the exam papers and asks
+      the learner how they think their Chinese has improved.
+    goalSteps:
+      - { id: exam, description: "Say how you felt about the exam and your grade.", keywordHints: ["考試", "成績", "緊張"] }
+      - { id: progress, description: "Say what has improved (聽力, 聲調, 漢字).", keywordHints: ["進步", "聽力", "聲調", "漢字", "更"] }
+      - { id: both, description: "Say two good things with 不但……而且…….", keywordHints: ["不但", "而且"] }
+      - { id: ba, description: "Say what you handed in or put somewhere (把……交給 / 放在).", keywordHints: ["把", "交給", "放在"] }
+      - { id: dontknow, description: "Say something you do not know yet (不知道).", keywordHints: ["不知道"] }
+      - { id: plan, description: "Say how you will study harder (努力, 用功).", keywordHints: ["努力", "用功", "學習"] }
+    vocabExtras: [進步, 結束, 最後, 考試, 考卷, 還, 仔細, 緊張, 用功, 聽力, 能力, 漢字, 流利, 更, 句子, 作業, 聲調, 正確, 成績, 學習, 不但, 而且, 努力, 同意, 想法, 主管, 適合, 小吃, 友善, 沒錯, 外國人, 放]
+    opener: { zh: 你好！這個學期快結束了，你覺得你的中文進步了嗎？, en: "Hello! The term is almost over. Do you think your Chinese has improved?" }
+    successLine: { zh: 你不但很用功，而且進步了很多，我很高興。, en: "You are not only diligent but have also improved a lot; I'm very happy." }
+journalPrompts:
+  - { en: "Write a paragraph about your progress in Chinese: what is better now (更, 不但……而且……).", zh: 我的中文進步了。, words: [進步, 聽力, 聲調, 流利, 正確], grammar: [gram-geng-more, gram-budan-erqie] }
+  - { en: "Write a paragraph about what you handed in, gave back or put somewhere (把……給 / 到 / 在).", words: [考卷, 作業, 還, 仔細], grammar: [gram-ba-gei-dao-zai, gram-geng-more] }
+  - { en: "Write a paragraph about something you do not know yet and what you will do to find out (不知道, 不但……而且……).", words: [努力, 用功, 學習, 想法], grammar: [gram-buzhidao-clause, gram-budan-erqie] }

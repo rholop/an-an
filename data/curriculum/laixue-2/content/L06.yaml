@@ -1,0 +1,59 @@
+lesson: 6
+sentences:
+  - { zh: 我家離公園很近。, en: "My home is very close to the park.", grammar: [gram-li-distance] }
+  - { zh: 我家離學校很遠。, en: "My home is far from the school.", grammar: [gram-li-distance] }
+  - { zh: 超級市場離我家不遠。, en: "The supermarket is not far from my home.", grammar: [gram-li-distance] }
+  - { zh: 這家百貨公司離我的公司很近。, en: "This department store is very close to my company.", grammar: [gram-li-distance] }
+  - { zh: 我的學校離銀行很近。, en: "My school is very close to the bank.", grammar: [gram-li-distance] }
+  - { zh: 你家離游泳池遠不遠？, en: "Is your home far from the swimming pool?", grammar: [gram-li-distance] }
+  - { zh: 那個社區離東區不太遠。, en: "That neighborhood is not very far from the eastern district.", grammar: [gram-li-distance] }
+  - { zh: 從我家到學校，開車要二十分鐘。, en: "From my home to school it takes twenty minutes by car.", grammar: [gram-cong-dao] }
+  - { zh: 從這裡到公園，走路只要五分鐘。, en: "From here to the park it's only a five-minute walk.", grammar: [gram-cong-dao] }
+  - { zh: 從我家到超級市場很近。, en: "From my home to the supermarket is close.", grammar: [gram-cong-dao] }
+  - { zh: 從南區到東區，開車要多久？, en: "How long does it take to drive from the southern district to the eastern district?", grammar: [gram-cong-dao] }
+  - { zh: 從公司到我家，走路要一個鐘頭。, en: "From the company to my home it takes an hour on foot.", grammar: [gram-cong-dao] }
+  - { zh: 從我家到那個地方，開車要三十分鐘。, en: "From my home to that place is thirty minutes by car.", grammar: [gram-cong-dao] }
+  - { zh: 從學校到銀行，走路要十分鐘。, en: "From the school to the bank it's ten minutes on foot.", grammar: [gram-cong-dao] }
+  - { zh: 從這個城市到那個城市，開車要多久？, en: "How long is the drive from this city to that city?", grammar: [gram-cong-dao] }
+  - { zh: 他每天學中文，學兩個鐘頭。, en: "He studies Chinese for two hours every day.", grammar: [gram-duration] }
+  - { zh: 我每天走路，走三十分鐘。, en: "I walk thirty minutes every day.", grammar: [gram-duration] }
+  - { zh: 她每天看電視，看一個鐘頭。, en: "She watches TV for an hour every day.", grammar: [gram-duration] }
+  - { zh: 我哥哥每天游泳，游一個鐘頭。, en: "My older brother swims for an hour every day.", grammar: [gram-duration] }
+  - { zh: 我每天開車去公司，開二十分鐘。, en: "I drive to the company every day, for twenty minutes.", grammar: [gram-duration] }
+  - { zh: 我在臺灣住了一年。, en: "I lived in Taiwan for a year.", grammar: [gram-duration] }
+  - { zh: 他們每天練習說話，練習四十分鐘。, en: "They practise speaking for forty minutes every day.", grammar: [gram-duration] }
+  - { zh: 我住的地方離公園很近。, en: "The place where I live is very close to the park.", grammar: [gram-de-modifier, gram-li-distance] }
+  - { zh: 我太太做的蛋糕很好吃。, en: "The cake my wife made is delicious.", grammar: [gram-de-modifier] }
+  - { zh: 我喜歡買菜的地方。, en: "I like the place where I buy vegetables.", grammar: [gram-de-modifier] }
+  - { zh: 他現在住的地方很小。, en: "The place he lives in now is small.", grammar: [gram-de-modifier] }
+  - { zh: 這是我哥哥買的蘋果。, en: "These are the apples my older brother bought.", grammar: [gram-de-modifier] }
+  - { zh: 在銀行工作的人是我哥哥。, en: "The person who works at the bank is my older brother.", grammar: [gram-de-modifier] }
+scenarios:
+  - slug: moving-house
+    title: "Jose asks about your new home"
+    npc:
+      id: jose
+      name: 何希
+      personality: >
+        Gloria's husband, who loves cooking and swimming. He is relaxed and curious
+        and always asks how far things are from the new place.
+      speechStyle: >
+        Short friendly sentences with words from books 1 and 2 (up to lesson 6).
+        Asks about distance (離……遠不遠) and travel time (開車要多久).
+      particles: []
+    setting: >
+      Jose and the learner are chatting about the learner's move next month: how
+      far the new home is, how long the drive is and what is nearby.
+    goalSteps:
+      - { id: when, description: "Say when you are moving (下個月搬家).", keywordHints: ["搬家", "下個月"] }
+      - { id: distance, description: "Say how far the new home is from the park, school or office (離).", keywordHints: ["離", "遠", "近"] }
+      - { id: time, description: "Say how long the drive or walk takes (從……到……).", keywordHints: ["從", "到", "分鐘", "鐘頭"] }
+      - { id: nearby, description: "Say what is near the new home (超級市場, 游泳池, 公園).", keywordHints: ["超級市場", "游泳池", "附近"] }
+      - { id: place, description: "Describe the kind of place you want to live (住的地方).", keywordHints: ["住的地方", "地方"] }
+    vocabExtras: [南區, 離, 遠, 從, 東區, 城市, 附近, 那裡, 近, 到, 分鐘, 超級市場, 社區, 游泳池, 天天, 地方, 搬家, 搬到, 開車, 多久, 買菜, 游泳, 走路, 鐘頭, 日本, 蘋果]
+    opener: { zh: 你好！你們下個月搬家嗎？離這裡遠不遠？, en: "Hello! Are you moving next month? Is it far from here?" }
+    successLine: { zh: 從你家到公司開車只要二十分鐘，太好了！, en: "From your home to the office is only a twenty-minute drive. Great!" }
+journalPrompts:
+  - { en: "Describe where you live now and how far it is from your school or office.", zh: 我家離公園很近。, words: [離, 遠, 近, 附近], grammar: [gram-li-distance] }
+  - { en: "Write how long it takes to get from your home to a place you often go.", words: [分鐘, 開車, 多久], grammar: [gram-cong-dao, gram-duration] }
+  - { en: "Describe the kind of place you want to live in (住的地方……).", words: [地方, 城市, 社區], grammar: [gram-de-modifier] }

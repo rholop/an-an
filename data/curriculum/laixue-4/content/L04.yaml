@@ -1,0 +1,58 @@
+lesson: 4
+sentences:
+  - { zh: 雞腿便當賣完了，王小姐才買雞肉三明治。, en: "The chicken-leg boxed meals sold out, and only then did Miss Wang buy a chicken sandwich.", grammar: [gram-cai-condition] }
+  - { zh: 你先寫完作業，才可以看電視。, en: "You can watch TV only after you finish your homework.", grammar: [gram-cai-condition] }
+  - { zh: 要有悠遊卡，才能坐捷運。, en: "You need an EasyCard in order to ride the MRT.", grammar: [gram-cai-condition] }
+  - { zh: 他說了三次，我才聽懂。, en: "He said it three times before I understood.", grammar: [gram-cai-condition] }
+  - { zh: 你告訴我，我才知道。, en: "I know only because you told me.", grammar: [gram-cai-condition] }
+  - { zh: 公車十點才來，所以我晚一點才到。, en: "The bus only comes at ten, so I will arrive a bit later.", grammar: [gram-cai-condition] }
+  - { zh: 一定要準時，才可以參加。, en: "You must be on time to be allowed to join.", grammar: [gram-cai-condition] }
+  - { zh: 他買了車票，才上火車。, en: "He bought a ticket and only then got on the train.", grammar: [gram-cai-condition] }
+  - { zh: 你先吃藥，才會好。, en: "You will get better only after you take medicine.", grammar: [gram-cai-condition] }
+  - { zh: 他在臺灣住了十年，難怪中文說得這麼好。, en: "He lived in Taiwan for ten years; no wonder his Chinese is so good.", grammar: [gram-nanguai] }
+  - { zh: 難怪你這麼累，你昨天工作到很晚。, en: "No wonder you're so tired; you worked until late yesterday.", grammar: [gram-nanguai] }
+  - { zh: 今天塞車，難怪你遲到了。, en: "There is a traffic jam today; no wonder you're late.", grammar: [gram-nanguai] }
+  - { zh: 他是主管，難怪這麼忙。, en: "He is a supervisor; no wonder he is so busy.", grammar: [gram-nanguai] }
+  - { zh: 這家店的便當很便宜，難怪人很多。, en: "The boxed meals at this shop are cheap; no wonder there are so many people.", grammar: [gram-nanguai] }
+  - { zh: 天氣這麼冷，難怪你感冒了。, en: "It is so cold; no wonder you caught a cold.", grammar: [gram-nanguai] }
+  - { zh: 難怪他不來，他生病了。, en: "No wonder he isn't coming; he is sick.", grammar: [gram-nanguai] }
+  - { zh: 他每天都用功，難怪成績這麼好。, en: "He studies hard every day; no wonder his grades are so good.", grammar: [gram-nanguai] }
+  - { zh: 你想吃什麼，就吃什麼。, en: "Eat whatever you want.", grammar: [gram-qpr-same-reference] }
+  - { zh: 他想去哪裡，就去哪裡。, en: "He goes wherever he wants.", grammar: [gram-qpr-same-reference] }
+  - { zh: 我想買什麼，就買什麼。, en: "I buy whatever I want.", grammar: [gram-qpr-same-reference] }
+  - { zh: 你想怎麼走，就怎麼走。, en: "Go whichever way you like.", grammar: [gram-qpr-same-reference] }
+  - { zh: 誰想去，誰就去。, en: "Whoever wants to go, goes.", grammar: [gram-qpr-same-reference] }
+  - { zh: 你喜歡哪一個，就選哪一個。, en: "Choose whichever one you like.", grammar: [gram-qpr-same-reference] }
+  - { zh: 想喝什麼，就點什麼。, en: "Order whatever you want to drink.", grammar: [gram-qpr-same-reference] }
+  - { zh: 你要幾個，我就給你幾個。, en: "However many you want, I'll give you that many.", grammar: [gram-qpr-same-reference] }
+scenarios:
+  - slug: commute-choices
+    title: "Kevin asks how you get to work"
+    npc:
+      id: kevin
+      name: 凱文
+      personality: >
+        Gloria's easy-going coworker who knows every way to get around Taipei and
+        likes to share small tips about tickets and routes.
+      speechStyle: >
+        Relaxed short sentences with words from books 1 to 4 (up to book 4 lesson 4).
+        Says 難怪 when he is surprised and gives choices with 想……就……
+      particles: []
+    setting: >
+      Kevin and the learner are walking to the office on Monday morning and talk
+      about the best way to commute in Taipei.
+    goalSteps:
+      - { id: how, description: "Say how you get to work (捷運, 公車, 計程車, 腳踏車, 機車).", keywordHints: ["捷運", "公車", "計程車", "腳踏車", "機車", "騎"] }
+      - { id: ticket, description: "Talk about tickets or the EasyCard (車票, 悠遊卡).", keywordHints: ["車票", "悠遊卡", "站"] }
+      - { id: good, description: "Say a good point of your choice (又快又方便).", keywordHints: ["快", "方便", "又"] }
+      - { id: bad, description: "Say a bad point of another means (危險, 塞車, 班次).", keywordHints: ["危險", "塞車", "班次"] }
+      - { id: nowonder, description: "React with 難怪 to something he says.", keywordHints: ["難怪"] }
+      - { id: only, description: "Say you can go only if a condition is met (……才……).", keywordHints: ["才"] }
+      - { id: free, description: "Say you can go however you like (想……就……).", keywordHints: ["想", "就"] }
+    vocabExtras: [豆漿, 蛋餅, 午餐, 夠, 雞腿, 便當, 豐富, 改天, 才, 計程車, 條, 路線, 站, 不必, 班次, 車票, 認為, 騎, 自行車, 黃色, 難怪, 奇怪, 悠遊卡, 汽車, 危險, 完全, 普遍, 為了, 轉車, 綠線, 受歡迎, 大部分, 腳踏車, 機車]
+    opener: { zh: 早！你每天怎麼上班？坐捷運還是坐公車？, en: "Morning! How do you go to work every day? MRT or bus?" }
+    successLine: { zh: 你想怎麼去就怎麼去，不過坐捷運又快又方便。, en: "Go however you like; but the MRT is both fast and convenient." }
+journalPrompts:
+  - { en: "Write a paragraph about how you go to work or school and why you chose it (才, 難怪).", zh: 我坐捷運上班。, words: [車票, 站, 路線, 班次, 認為], grammar: [gram-cai-condition, gram-nanguai] }
+  - { en: "Write a paragraph about the good and bad points of two means of transport (難怪, 才).", words: [危險, 計程車, 自行車, 認為, 奇怪], grammar: [gram-nanguai, gram-cai-condition] }
+  - { en: "Write a paragraph about something you can freely choose, using a question word twice (想……什麼就……什麼).", words: [便當, 豐富, 夠, 改天], grammar: [gram-qpr-same-reference, gram-cai-condition] }

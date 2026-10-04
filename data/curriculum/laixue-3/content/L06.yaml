@@ -1,0 +1,57 @@
+lesson: 6
+sentences:
+  - { zh: 我已經吃完早飯了。, en: "I have already finished breakfast.", grammar: [gram-v-wan] }
+  - { zh: 你做完工作了嗎？, en: "Have you finished your work?", grammar: [gram-v-wan] }
+  - { zh: 這本書我還沒看完。, en: "I haven't finished reading this book yet.", grammar: [gram-v-wan] }
+  - { zh: 他寫完論文就去度假。, en: "He will go on vacation once he finishes his thesis.", grammar: [gram-v-wan] }
+  - { zh: 我說完了，謝謝大家。, en: "I have finished speaking; thank you, everyone.", grammar: [gram-v-wan] }
+  - { zh: 老師說的，我都聽懂了。, en: "I understood everything the teacher said.", grammar: [gram-v-dong] }
+  - { zh: 我看懂這個字了。, en: "I understood this character.", grammar: [gram-v-dong] }
+  - { zh: 你聽懂他說的嗎？, en: "Did you understand what he said?", grammar: [gram-v-dong] }
+  - { zh: 我學懂了，謝謝老師。, en: "I've got it now; thank you, teacher.", grammar: [gram-v-dong] }
+  - { zh: 我聽不懂這個字。, en: "I can't make out this word.", grammar: [gram-potential-de-bu] }
+  - { zh: 你看得懂這個資料嗎？, en: "Can you understand this material?", grammar: [gram-potential-de-bu] }
+  - { zh: 這麼多菜，我一個人吃不完。, en: "With this many dishes, I can't finish them alone.", grammar: [gram-potential-de-bu] }
+  - { zh: 他說得太快，我聽不懂。, en: "He speaks too fast; I can't follow.", grammar: [gram-potential-de-bu] }
+  - { zh: 我今天做不完，明天再做吧。, en: "I can't finish today; I'll do the rest tomorrow.", grammar: [gram-potential-de-bu] }
+  - { zh: 這件事你解決得了嗎？, en: "Can you solve this matter?", grammar: [gram-potential-de-bu] }
+  - { zh: 我的同事有的認真，有的活潑。, en: "Some of my colleagues are earnest, some are lively.", grammar: [gram-youde-youde] }
+  - { zh: 這家店的東西有的貴，有的便宜。, en: "Some things in this shop are expensive, some are cheap.", grammar: [gram-youde-youde] }
+  - { zh: 公司有的人很年輕，有的人有很多經驗。, en: "In the company some people are young, some have lots of experience.", grammar: [gram-youde-youde] }
+  - { zh: 他們有的在公司工作，有的在家工作。, en: "Some of them work at the company, some work at home.", grammar: [gram-youde-youde] }
+  - { zh: 有的人喜歡咖啡，有的人喜歡茶。, en: "Some people like coffee, some like tea.", grammar: [gram-youde-youde] }
+  - { zh: 你要好好地照顧自己。, en: "You must take good care of yourself.", grammar: [gram-vsvs-de-adverb] }
+  - { zh: 請你慢慢地說。, en: "Please speak slowly.", grammar: [gram-vsvs-de-adverb] }
+  - { zh: 我們好好地聊天吧。, en: "Let's have a good chat.", grammar: [gram-vsvs-de-adverb] }
+  - { zh: 你慢慢地走，不要快。, en: "Walk slowly; don't rush.", grammar: [gram-vsvs-de-adverb] }
+  - { zh: 他快快地吃完早飯。, en: "He quickly finishes breakfast.", grammar: [gram-vsvs-de-adverb, gram-v-wan] }
+scenarios:
+  - slug: new-colleagues
+    title: "Joann asks how you are getting along at work"
+    npc:
+      id: joann
+      name: 張家安
+      personality: >
+        A thoughtful trade-company manager who cares about her colleagues and always
+        asks whether the new person is under pressure.
+      speechStyle: >
+        Kind, careful sentences with words from books 1 to 3 (up to book 3 lesson 6).
+        Often reassures with 放心 and gives advice with 好好地 / 慢慢地.
+      particles: []
+    setting: >
+      Joann invites the learner to a quiet corner of the office to ask how the first
+      weeks are going: work, colleagues, pressure and what is hard to understand.
+    goalSteps:
+      - { id: work, description: "Say what you have finished and what you have not finished (V完).", keywordHints: ["完", "沒做完"] }
+      - { id: pressure, description: "Say whether you feel pressure and how you are adapting.", keywordHints: ["壓力", "適應", "還好"] }
+      - { id: colleagues, description: "Describe your colleagues (有的……有的……).", keywordHints: ["有的", "熱心", "親切", "活潑"] }
+      - { id: understand, description: "Say what you can or cannot understand (聽不懂, 看得懂).", keywordHints: ["聽不懂", "看不懂", "看得懂", "聽得懂", "懂"] }
+      - { id: help, description: "Ask for help or say someone helped you solve a problem.", keywordHints: ["解決", "幫助", "資料", "願意"] }
+      - { id: care, description: "Thank her and say you will take care of yourself (好好地).", keywordHints: ["好好地", "照顧", "放心"] }
+    vocabExtras: [一切, 完, 不過, 適應, 壓力, 還好, 熱心, 願意, 懂, 資料, 解決, 部門, 年輕, 個性, 活潑, 親切, 相處, 滿意, 環境, 認真, 互相, 得到, 相信, 好處, 告訴, 照顧, 放心, 沒做完, 聽不懂, 看不懂, 有的, 好好地, 本, 慢]
+    opener: { zh: 你好！你在新公司工作得怎麼樣？同事對你好嗎？, en: "Hello! How is work at the new company? Are your colleagues good to you?" }
+    successLine: { zh: 放心，同事都很熱心，你好好地休息，慢慢地適應吧。, en: "Don't worry, the colleagues are all warm; rest well and adapt slowly." }
+journalPrompts:
+  - { en: "Write a paragraph about your work: what you have finished and what you did not finish (V完, 沒……完).", zh: 我今天沒做完。, words: [一切, 完, 不過, 壓力, 解決], grammar: [gram-v-wan, gram-potential-de-bu] }
+  - { en: "Write a paragraph about your colleagues: some are lively, some are hard-working (有的……有的……).", words: [熱心, 活潑, 親切, 認真, 個性], grammar: [gram-youde-youde, gram-vsvs-de-adverb] }
+  - { en: "Write a paragraph about something you can or cannot understand, and how you take care of yourself (V得 / V不 + complement, 好好地).", words: [適應, 放心, 照顧, 懂, 資料], grammar: [gram-potential-de-bu, gram-vsvs-de-adverb] }

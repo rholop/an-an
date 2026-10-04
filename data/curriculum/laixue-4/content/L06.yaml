@@ -1,0 +1,61 @@
+lesson: 6
+sentences:
+  - { zh: 我在臺灣住了兩個月了。, en: "I have lived in Taiwan for two months now.", grammar: [gram-double-le-duration] }
+  - { zh: 他已經學了一年中文了。, en: "He has already been studying Chinese for a year.", grammar: [gram-double-le-duration] }
+  - { zh: 我已經等了二十分鐘了。, en: "I've already been waiting for twenty minutes.", grammar: [gram-double-le-duration] }
+  - { zh: 她在這家公司工作了三年了。, en: "She has worked at this company for three years now.", grammar: [gram-double-le-duration] }
+  - { zh: 他們已經看了兩個鐘頭電視了。, en: "They have already watched TV for two hours.", grammar: [gram-double-le-duration] }
+  - { zh: 我已經休息了三天了。, en: "I have already rested for three days.", grammar: [gram-double-le-duration] }
+  - { zh: 蛋糕的味道跟水果的品質有關係。, en: "The flavor of the cake is related to the quality of the fruit.", grammar: [gram-gen-guanxi] }
+  - { zh: 身體健康跟運動有關係。, en: "Good health is related to exercise.", grammar: [gram-gen-guanxi] }
+  - { zh: 這件事跟我沒有關係。, en: "This matter has nothing to do with me.", grammar: [gram-gen-guanxi] }
+  - { zh: 個性跟天氣有關係嗎？, en: "Is personality related to the weather?", grammar: [gram-gen-guanxi] }
+  - { zh: 學習成績跟用功有關。, en: "Grades are related to hard work.", grammar: [gram-gen-guanxi] }
+  - { zh: 臺灣小吃受歡迎跟夜市有關係。, en: "The popularity of Taiwanese snacks has to do with night markets.", grammar: [gram-gen-guanxi] }
+  - { zh: 他們在捷運站排著隊。, en: "They are queuing at the MRT station.", grammar: [gram-zhe-continuing] }
+  - { zh: 她穿著白色的外套。, en: "She is wearing a white coat.", grammar: [gram-zhe-continuing] }
+  - { zh: 他拿著一杯珍珠奶茶。, en: "He is holding a cup of pearl milk tea.", grammar: [gram-zhe-continuing] }
+  - { zh: 我們站著等車。, en: "We stand waiting for the bus.", grammar: [gram-zhe-continuing] }
+  - { zh: 他看著電視吃飯。, en: "He eats while watching TV.", grammar: [gram-zhe-continuing] }
+  - { zh: 媽媽聽著音樂做飯。, en: "Mom cooks while listening to music.", grammar: [gram-zhe-continuing] }
+  - { zh: 跟臺北比起來，這個城市比較安靜。, en: "Compared with Taipei, this city is quieter.", grammar: [gram-bi-qilai] }
+  - { zh: 跟走路比起來，坐捷運快多了。, en: "Compared with walking, the MRT is much faster.", grammar: [gram-bi-qilai] }
+  - { zh: 跟夏天比起來，我比較喜歡冬天。, en: "Compared with summer, I prefer winter.", grammar: [gram-bi-qilai] }
+  - { zh: 跟去餐廳吃飯比起來，自己做飯比較便宜。, en: "Compared with eating out, cooking yourself is cheaper.", grammar: [gram-bi-qilai] }
+  - { zh: 跟爬山比起來，我更喜歡游泳。, en: "Compared with hiking, I like swimming even more.", grammar: [gram-bi-qilai] }
+  - { zh: 我等了半個鐘頭才上車。, en: "I waited half an hour before I got on.", grammar: [gram-cai-later] }
+  - { zh: 他寫了三天才寫完。, en: "It took him three days to finish writing.", grammar: [gram-cai-later] }
+  - { zh: 我們走了二十分鐘才到。, en: "It took us twenty minutes to get there on foot.", grammar: [gram-cai-later] }
+  - { zh: 他學了兩年才說得流利。, en: "It took him two years to speak fluently.", grammar: [gram-cai-later] }
+  - { zh: 我找了很久才找到。, en: "I searched for a long time before I found it.", grammar: [gram-cai-later] }
+scenarios:
+  - slug: taipei-features
+    title: "Kevin asks what you think of Taipei"
+    npc:
+      id: kevin
+      name: 凱文
+      personality: >
+        Gloria's easy-going coworker who knows Taipei well and is proud of its
+        mix of old temples, modern towers and street food.
+      speechStyle: >
+        Relaxed sentences with words from books 1 to 4 (up to book 4 lesson 6).
+        Compares places with 跟……比起來 and asks how long the learner has been in Taipei.
+      particles: []
+    setting: >
+      Kevin and the learner are on a bench near Taipei 101 after work, looking at the
+      lights and talking about what makes Taipei special.
+    goalSteps:
+      - { id: howlong, description: "Say how long you have lived in Taipei (……了……了).", keywordHints: ["住了", "多久", "了"] }
+      - { id: first, description: "Say what you noticed first (首先, 建築, 臺北101).", keywordHints: ["首先", "建築", "101", "大樓"] }
+      - { id: oldnew, description: "Compare the traditional and modern sides (傳統, 現代, 寺廟).", keywordHints: ["傳統", "現代", "寺廟", "博物館"] }
+      - { id: queue, description: "Describe a scene with 著 (排著隊, 拿著……).", keywordHints: ["著", "排隊", "外帶"] }
+      - { id: related, description: "Say something is related to history or religion (跟……有關係).", keywordHints: ["有關係", "有關", "歷史", "宗教"] }
+      - { id: compare, description: "Compare Taipei with another city (跟……比起來).", keywordHints: ["比起來"] }
+      - { id: late, description: "Say how long it took you to find something (……才……).", keywordHints: ["才"] }
+    vocabExtras: [特色, 首先, 建築, 中式, 日式, 西式, 歷史, 關係, 傳統, 現代, 觀光客, 高, 層, 燈光, 變, 值得, 參觀, 博物館, 寺廟, 古物, 欣賞, 宗教, 信仰, 現象, 總是, 排隊, 著, 外帶, 美食, 安全, 半夜, 亂, 居住, 大樓, 五顏六色, 飲料店, 比起來]
+    opener: { zh: 你來臺北多久了？你覺得臺北怎麼樣？, en: "How long have you been in Taipei? What do you think of it?" }
+    successLine: { zh: 跟別的城市比起來，臺北的夜市和美食真的很有特色。, en: "Compared with other cities, Taipei's night markets and food really have character." }
+journalPrompts:
+  - { en: "Write a paragraph about how long you have been somewhere and what you are doing now (……了……了, V著).", zh: 我在這裡住了三個月了。, words: [居住, 排隊, 觀光客, 外帶, 總是], grammar: [gram-double-le-duration, gram-zhe-continuing] }
+  - { en: "Write a paragraph about what a city is connected to: history, religion, weather (跟……有關係).", words: [歷史, 宗教, 信仰, 傳統, 現代, 關係], grammar: [gram-gen-guanxi, gram-bi-qilai] }
+  - { en: "Write a paragraph comparing two cities (跟……比起來) and say how long something took you (……才……).", words: [特色, 建築, 美食, 安全, 值得], grammar: [gram-bi-qilai, gram-cai-later] }

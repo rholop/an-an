@@ -1,0 +1,57 @@
+lesson: 4
+sentences:
+  - { zh: 你要熱的還是冰的？, en: "Do you want the hot one or the iced one?", grammar: [gram-de-omit-noun] }
+  - { zh: 我要冰的。, en: "I'd like the iced one.", grammar: [gram-de-omit-noun] }
+  - { zh: 這件衣服太小了，我要大的。, en: "This piece of clothing is too small; I want a big one.", grammar: [gram-de-omit-noun] }
+  - { zh: 我喜歡甜的，不喜歡鹹的。, en: "I like sweet ones and don't like salty ones.", grammar: [gram-de-omit-noun] }
+  - { zh: 這兩個包子，你要甜的還是鹹的？, en: "Of these two buns, do you want the sweet one or the salty one?", grammar: [gram-de-omit-noun] }
+  - { zh: 我不要大的，我要小的。, en: "I don't want the big one; I want the small one.", grammar: [gram-de-omit-noun] }
+  - { zh: 咖啡我要熱的，牛奶我要冰的。, en: "I'd like my coffee hot and my milk cold.", grammar: [gram-de-omit-noun] }
+  - { zh: 這杯是熱的，那杯是冰的。, en: "This cup is hot and that one is iced.", grammar: [gram-de-omit-noun] }
+  - { zh: 你要小杯的還是大杯的？, en: "Do you want a small cup or a large cup?", grammar: [gram-de-omit-noun] }
+  - { zh: 如果你有空，我們就去喝咖啡。, en: "If you are free, we'll go have coffee.", grammar: [gram-ruguo-jiu] }
+  - { zh: 如果明天下雨，我就不去跑步。, en: "If it rains tomorrow, I won't go running.", grammar: [gram-ruguo-jiu] }
+  - { zh: 如果你太累，就休息一下吧。, en: "If you are too tired, just take a short rest.", grammar: [gram-ruguo-jiu] }
+  - { zh: 如果天氣太熱，我就喝冰水。, en: "If the weather is too hot, I drink iced water.", grammar: [gram-ruguo-jiu] }
+  - { zh: 如果你想喝咖啡，就點一杯熱的。, en: "If you want coffee, order a hot one.", grammar: [gram-ruguo-jiu, gram-de-omit-noun] }
+  - { zh: 如果你喜歡甜的，就點巧克力蛋糕。, en: "If you like sweet things, order the chocolate cake.", grammar: [gram-ruguo-jiu, gram-de-omit-noun] }
+  - { zh: 如果我去臺灣，就給你買禮物。, en: "If I go to Taiwan, I'll buy you a gift.", grammar: [gram-ruguo-jiu] }
+  - { zh: 如果你要加糖，就說一下。, en: "If you want sugar added, just say so.", grammar: [gram-ruguo-jiu] }
+  - { zh: 他的背包跟我的一樣。, en: "His backpack is the same as mine.", grammar: [gram-gen-yiyang] }
+  - { zh: 中文跟法文一樣難。, en: "Mandarin is just as hard as French.", grammar: [gram-gen-yiyang] }
+  - { zh: 我的咖啡跟你的一樣。, en: "My coffee is the same as yours.", grammar: [gram-gen-yiyang] }
+  - { zh: 這杯紅茶跟那杯紅茶一樣好喝。, en: "This cup of black tea tastes just as good as that one.", grammar: [gram-gen-yiyang] }
+  - { zh: 這家店的蛋糕跟那家店的一樣貴。, en: "The cakes at this shop are as expensive as those at that shop.", grammar: [gram-gen-yiyang] }
+  - { zh: 我的生日跟我哥哥的一樣，都是五月二十號。, en: "My birthday is the same as my older brother's: May 20th.", grammar: [gram-gen-yiyang] }
+  - { zh: 她跟我一樣，都喜歡喝熱的。, en: "She is like me; we both like to drink hot ones.", grammar: [gram-gen-yiyang, gram-de-omit-noun] }
+  - { zh: 臺灣的夏天跟這裡的夏天一樣熱。, en: "Summer in Taiwan is as hot as summer here.", grammar: [gram-gen-yiyang] }
+scenarios:
+  - slug: coffee-shop
+    title: "Order at the coffee shop"
+    npc:
+      id: barista
+      name: 店員
+      personality: >
+        A friendly young coffee shop clerk who is quick and cheerful and likes to
+        ask whether you want it hot or iced.
+      speechStyle: >
+        Very short polite sentences using words from books 1 and 2 (up to lesson 4).
+        Asks 熱的還是冰的 and offers 如果……就…… suggestions.
+      particles: []
+    setting: >
+      A small coffee shop. The clerk takes the learner's order for a drink and
+      something to eat, then asks about milk and sugar.
+    goalSteps:
+      - { id: drink, description: "Order a drink (一杯……).", keywordHints: ["咖啡", "紅茶", "一杯"] }
+      - { id: hotice, description: "Say whether you want it hot or iced (熱的 / 冰的).", keywordHints: ["熱的", "冰的"] }
+      - { id: milk, description: "Say whether you want milk or sugar added (加).", keywordHints: ["加", "牛奶", "糖"] }
+      - { id: food, description: "Order something to eat, such as a cake or a sandwich.", keywordHints: ["蛋糕", "三明治"] }
+      - { id: same, description: "Say you want the same as a friend (跟……一樣).", keywordHints: ["一樣"] }
+      - { id: if, description: "Say what you will do if the shop is busy or the food is sweet (如果……就……).", keywordHints: ["如果", "就"] }
+    vocabExtras: [加, 牛奶, 糖, 冰, 中, 小, 紅茶, 別的, 塊, 蛋糕, 甜, 鹹, 雞, 肉, 三明治, 如果, 就, 飲料, 一樣, 水, 等, 馬上, 咖啡店, 雞肉三明治, 冰水]
+    opener: { zh: 您好！您要點什麼？熱咖啡還是冰咖啡？, en: "Hello! What would you like? Hot coffee or iced coffee?" }
+    successLine: { zh: 好的，一杯熱咖啡，一個雞肉三明治，馬上來。, en: "Alright: one hot coffee and one chicken sandwich, coming right up." }
+journalPrompts:
+  - { en: "Write what you usually order at a coffee shop and whether you prefer hot or iced.", zh: 我喜歡喝熱的咖啡。, words: [咖啡店, 冰, 甜, 牛奶], grammar: [gram-de-omit-noun] }
+  - { en: "Say what you will do if the weather is hot or cold (如果……就……).", words: [如果, 就, 水, 飲料], grammar: [gram-ruguo-jiu] }
+  - { en: "Compare two things that are the same (跟……一樣), for example two drinks or two friends.", words: [一樣, 紅茶, 蛋糕], grammar: [gram-gen-yiyang] }

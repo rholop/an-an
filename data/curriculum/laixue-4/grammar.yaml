@@ -1,0 +1,288 @@
+# 來學華語 第四冊: the 38 grammar points, read from the book's 語法 pages.
+# Patterns follow the book; explanations are written for this app, not copied.
+
+# ---- Lesson 1
+- id: gram-de-hua-if
+  lesson: 1
+  n: 1
+  pattern: "(如果 / 要是) + clause + 的話，……"
+  explanationEn: "的話 at the end of a clause means 'if …': 你有空的話，我們去吃飯. It can be used alone or together with 如果 / 要是 at the start; leaving out 如果 sounds more casual."
+  matcher: "的話"
+  focus: ["的話"]
+- id: gram-chule-hai
+  lesson: 1
+  n: 2
+  pattern: "除了 + A，還 / 也 + B"
+  explanationEn: "除了…還/也… means 'besides A, also B': 哥哥除了喜歡潛水，還喜歡爬山. It adds to what the listener already knows rather than replacing it."
+  matcher: "除了.+(還|也)"
+  focus: ["除了", "還", "也"]
+- id: gram-ba-reduplicated-request
+  lesson: 1
+  n: 3
+  pattern: "請 + 你 + 把 + O + V (一) V"
+  explanationEn: "A doubled verb after 把 makes a polite request or suggestion: 請你把房間整理整理, 把這件衣服洗(一)洗. With a two-syllable verb repeat the whole verb (整理整理)."
+  matcher: "把.+(洗一洗|看一看|試一試|想一想|整理整理|檢查檢查|看看|洗洗|想想|整理整理|聽聽|問問|擦擦|寫寫|做做|收拾收拾|烤一烤|打掃打掃)"
+  focus: ["把"]
+
+# ---- Lesson 2
+- id: gram-bu-deliao
+  lesson: 2
+  n: 1
+  pattern: "S + Vs + 得 + 不得了"
+  explanationEn: "不得了 after Vs+得 means 'extremely' with a slight exaggeration: 夏天的天氣熱得不得了, 他高興得不得了."
+  matcher: "得不得了"
+  focus: ["不得了"]
+- id: gram-xian-zai
+  lesson: 2
+  n: 2
+  pattern: "S + 先 + VP1，再 + VP2"
+  explanationEn: "先…再… orders two actions: first one, then the other. It is the book 4 version of 先…然後…, and you can combine them: 先…然後再…."
+  matcher: "先.+再"
+  focus: ["先", "再"]
+- id: gram-yidian-dou-bu
+  lesson: 2
+  n: 3
+  pattern: "S + 一點 + (O) + 都 / 也 + 不 / 沒 + V"
+  explanationEn: "一點都不 / 一點也沒 is a strong 'not at all': 我一點都不餓, 他一點也沒生氣. An object goes after 一點 and before 都 or 也."
+  matcher: "一點.*[都也][不沒]"
+  focus: ["一點", "都"]
+- id: gram-cong-wang
+  lesson: 2
+  n: 4
+  pattern: "(從 + place) + 往 + direction + V"
+  explanationEn: "往 points in a direction of travel: 往前走, 往右轉. 從 names the starting point and can be left out when it is obvious."
+  matcher: "往[前後左右東西南北上下]"
+  focus: ["往"]
+
+# ---- Lesson 3
+- id: gram-lingwai
+  lesson: 3
+  n: 1
+  pattern: "…… 。另外，……"
+  explanationEn: "另外 introduces an additional point or action, roughly 'in addition, besides that': 我訂好了旅館，另外也租好了車."
+  matcher: "另外"
+  focus: ["另外"]
+- id: gram-suanshi
+  lesson: 3
+  n: 2
+  pattern: "A + 算是 + B ；A + 不算 + B"
+  explanationEn: "算是 gives a judgement that something 'counts as' or 'can be considered' something: 這家旅館算是便宜的. The negative is 不算."
+  matcher: "算是|不算"
+  focus: ["算是", "不算"]
+- id: gram-zai-jia-shang
+  lesson: 3
+  n: 3
+  pattern: "A，再加上 + B，……"
+  explanationEn: "再加上 piles one more factor on top, usually the decisive one: 位置好，再加上價錢便宜，所以很多人住這裡."
+  matcher: "再加上"
+  focus: ["再加上"]
+- id: gram-deng-zai
+  lesson: 3
+  n: 4
+  pattern: "等 + A + (以後)，再 + B"
+  explanationEn: "等…再… means 'wait until A is done, then B': 等朋友都來了，我們再開始. The second action waits for the first."
+  matcher: "等.+再"
+  focus: ["等", "再"]
+
+# ---- Lesson 4
+- id: gram-cai-condition
+  lesson: 4
+  n: 1
+  pattern: "Condition clause，S + 才 + V"
+  explanationEn: "才 in the second clause says the result happens ONLY after the first clause is satisfied, and often later or harder than hoped: 雞腿便當賣完了，他才買烤肉便當."
+  matcher: "才"
+  focus: ["才"]
+- id: gram-nanguai
+  lesson: 4
+  n: 2
+  pattern: "難怪 + conclusion"
+  explanationEn: "難怪 marks 'no wonder': once you learn the reason, a result makes sense. 他在臺灣住了十年，難怪華語說得這麼好."
+  matcher: "難怪"
+  focus: ["難怪"]
+- id: gram-qpr-same-reference
+  lesson: 4
+  n: 3
+  pattern: "S + 想 / 要 + V + 什麼 / 哪裡 / 誰 …，就 + V + 什麼 / 哪裡 / 誰"
+  explanationEn: "A question word used twice in a row means 'whatever / wherever / whoever': 你想吃什麼就吃什麼. Both appearances refer to the same thing, and the answer is up to the person."
+  matcher: "(什麼|哪裡|哪兒|誰|哪個|哪一個|怎麼|幾).*(什麼|哪裡|哪兒|誰|哪個|哪一個|怎麼|幾)"
+  focus: ["就"]
+
+# ---- Lesson 5
+- id: gram-zaojiu-le
+  lesson: 5
+  n: 1
+  pattern: "S + 早就 + …… + 了"
+  explanationEn: "早就…了 says something happened long ago, earlier than expected: 公寓我們早就租好了. 早就 comes before the verb and 了 closes the sentence."
+  matcher: "早就.+了"
+  focus: ["早就"]
+- id: gram-hui-de-assure
+  lesson: 5
+  n: 2
+  pattern: "S + 會 + V + 的"
+  explanationEn: "會…的 gives an assurance about the future: 放心，一定會很好的. 的 at the end softens it into a reassuring statement."
+  matcher: "會[^，。？！]*的[。！]"
+  focus: ["會", "的"]
+- id: gram-dui-laishuo
+  lesson: 5
+  n: 3
+  pattern: "對 + someone + 來說，……"
+  explanationEn: "對…來說 means 'for …, from … point of view': 對學生來說，夜市很有意思."
+  matcher: "對.+來說"
+  focus: ["對", "來說"]
+- id: gram-buguan-dou
+  lesson: 5
+  n: 4
+  pattern: "不管 + question / choice，都 + ……"
+  explanationEn: "不管…都… means 'no matter …, still …': 不管天氣怎麼樣，我都去. The first part is a question word or an A-not-A choice."
+  matcher: "不管.+都"
+  focus: ["不管", "都"]
+- id: gram-vsvs-de-modifier
+  lesson: 5
+  n: 5
+  pattern: "VsVs 的 + N"
+  explanationEn: "A doubled state verb plus 的 before a noun makes the description warmer and more vivid: 熱熱的茶, 甜甜的蛋糕, 小小的房間."
+  matcher: '([\u4e00-\u9fff])\1的'
+  focus: ["的"]
+
+# ---- Lesson 6
+- id: gram-double-le-duration
+  lesson: 6
+  n: 1
+  pattern: "S + (已經) + V + 了 + length of time + 了"
+  explanationEn: "Two 了 around a time length mean the action has gone on for that long and is STILL going: 我在臺灣住了兩個月了 (and I'm still here). With one 了 it is over."
+  matcher: "了.*了"
+  focus: ["了"]
+- id: gram-gen-guanxi
+  lesson: 6
+  n: 2
+  pattern: "A + 跟 + B + (沒) 有關係"
+  explanationEn: "跟…有關係 says A is connected to B, and B influences A. The negative is 沒有關係; 有關alone also works."
+  matcher: "有關"
+  focus: ["跟", "關係"]
+- id: gram-zhe-continuing
+  lesson: 6
+  n: 3
+  pattern: "V + 著 ；V 著 + VP"
+  explanationEn: "著 after a verb shows a continuing state (門開著) and, before another verb, the way or situation in which the action happens: 站著等車, 聽著音樂做飯."
+  matcher: "[坐站躺看聽拿穿帶開關掛排]著"
+  focus: ["著"]
+- id: gram-bi-qilai
+  lesson: 6
+  n: 4
+  pattern: "A + 跟 + B + 比起來，……"
+  explanationEn: "跟…比起來 compares two things and then gives the result: 跟臺北比起來，臺中安靜多了. The comparison may favour either A or B."
+  matcher: "比起來"
+  focus: ["比起來"]
+- id: gram-cai-later
+  lesson: 6
+  n: 5
+  pattern: "S + V + 了 + length of time + 才 + V"
+  explanationEn: "才 after a time length says it took long or happened late: 我等了半個小時才上車. With 就 instead (一個小時就到了) the same time feels short."
+  matcher: "[年月天週鐘頭小時分久]才|才[^，。？！]*了"
+  focus: ["才"]
+
+# ---- Lesson 7
+- id: gram-conglai
+  lesson: 7
+  n: 1
+  pattern: "S + 從來 + 沒 / 不 + V"
+  explanationEn: "從來沒/不 means 'never': 他從來沒喝過酒 (never has), 我從來不吃肉 (never do). 從來沒 pairs with 過."
+  matcher: "從來[沒不]"
+  focus: ["從來"]
+- id: gram-benlai-houlai
+  lesson: 7
+  n: 2
+  pattern: "本來 ……，後來 / 現在 ……"
+  explanationEn: "本來…後來/現在… contrasts the original situation with what changed: 本來我不喜歡跑步，後來愛上了."
+  matcher: "本來.+(後來|現在)"
+  focus: ["本來", "後來"]
+- id: gram-zhiyao-jiu
+  lesson: 7
+  n: 3
+  pattern: "只要 + condition，就 + result"
+  explanationEn: "只要…就… means 'as long as …, then …': 只要有手機，就不會迷路. The condition is easy to meet."
+  matcher: "只要.+就"
+  focus: ["只要", "就"]
+- id: gram-zai-shang
+  lesson: 7
+  n: 4
+  pattern: "(在) + abstract N + 上，……"
+  explanationEn: "在…上 narrows the claim to one aspect: 在生活上, 在價錢上, 在個性上 mean 'as far as life / price / character is concerned'. The noun is abstract."
+  matcher: "(生活|價錢|個性|習慣|文化|品質|工作|學習|健康)上"
+  focus: ["上"]
+
+# ---- Lesson 8
+- id: gram-cong-qi
+  lesson: 8
+  n: 1
+  pattern: "從 + time + 起 / 開始"
+  explanationEn: "從…起/開始 gives the starting point of something: 從下個月起, 從小就. 起 is written; 開始 is the everyday form."
+  matcher: "從.+(起|開始)"
+  focus: ["從"]
+- id: gram-youqi
+  lesson: 8
+  n: 2
+  pattern: "…，尤其 (是) + ……"
+  explanationEn: "尤其(是) picks out what stands out among several things: 夜市小吃很受歡迎，尤其是炸雞排."
+  matcher: "尤其"
+  focus: ["尤其"]
+- id: gram-lian-dou
+  lesson: 8
+  n: 3
+  pattern: "連 + X + 都 / 也 + ……"
+  explanationEn: "連…都/也… means 'even …': 他連中文都不會說. X is the surprising extreme."
+  matcher: "連.+[都也]"
+  focus: ["連", "都"]
+- id: gram-v-chulai
+  lesson: 8
+  n: 4
+  pattern: "V + (得 / 不) + 出來"
+  explanationEn: "出來 after a verb means you manage to pick out or work something out: 看得出來 (can tell), 聽不出來 (can't make out), 想出來."
+  matcher: "[看聽想猜認說做找吃][得不]出來|[看聽想猜認說做找吃]出來"
+  focus: ["出來"]
+
+# ---- Lesson 9
+- id: gram-ge-v-ge-de
+  lesson: 9
+  n: 1
+  pattern: "各 + V + 各的 (+ N)"
+  explanationEn: "各V各的 means everyone does their own thing: 我們各付各的 (we each pay for our own), 各有各的味道 (each has its own flavour)."
+  matcher: "各.各的"
+  focus: ["各"]
+- id: gram-deng-and-so-on
+  lesson: 9
+  n: 2
+  pattern: "A、B、C 等"
+  explanationEn: "等 at the end of a list means 'and so on': 像雞排、臭豆腐、小籠包等. It signals there are more items without naming them."
+  matcher: "[、，]\\S{1,6}等"
+  focus: ["等"]
+- id: gram-fei-buke
+  lesson: 9
+  n: 3
+  pattern: "S + 非 + V / VP + 不可"
+  explanationEn: "非…不可 stresses that something absolutely must be done: 你非去不可 (you have to go). It is stronger than 一定要."
+  matcher: "非.+不可"
+  focus: ["非", "不可"]
+
+# ---- Lesson 10
+- id: gram-gei-dailai
+  lesson: 10
+  n: 1
+  pattern: "S + 給 + someone + 帶來 + N"
+  explanationEn: "給…帶來… means 'bring … to …': 學華語給我帶來更多機會. Use it for results or benefits that something causes."
+  matcher: "給.+帶來"
+  focus: ["給", "帶來"]
+- id: gram-v-xia
+  lesson: 10
+  n: 2
+  pattern: "V + 得 / 不 + 下"
+  explanationEn: "得下/不下 says whether there is room or capacity for something: 坐得下十個人 (seats ten), 吃不下了 (can't eat more)."
+  matcher: "[坐吃住放裝睡][得不]下"
+  focus: ["下"]
+- id: gram-yiban-laishuo
+  lesson: 10
+  n: 3
+  pattern: "一般來說，……"
+  explanationEn: "一般來說 introduces a general rule or the usual situation: 一般來說，臺灣人七點上班."
+  matcher: "一般來說"
+  focus: ["一般來說"]

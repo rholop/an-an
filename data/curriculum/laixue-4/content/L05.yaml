@@ -1,0 +1,62 @@
+lesson: 5
+sentences:
+  - { zh: 夜市的小吃，我早就吃過了。, en: "The night market snacks, I tried them long ago.", grammar: [gram-zaojiu-le] }
+  - { zh: 房子我們早就租好了。, en: "We rented the house a long time ago.", grammar: [gram-zaojiu-le] }
+  - { zh: 他早就到了，你怎麼還沒來？, en: "He arrived long ago; why haven't you come yet?", grammar: [gram-zaojiu-le] }
+  - { zh: 這個消息，我早就知道了。, en: "This news, I knew it long ago.", grammar: [gram-zaojiu-le] }
+  - { zh: 我早就說過了，你不聽。, en: "I said so long ago and you didn't listen.", grammar: [gram-zaojiu-le] }
+  - { zh: 他早就回家了。, en: "He went home long ago.", grammar: [gram-zaojiu-le] }
+  - { zh: 放心，他一定會準時來的。, en: "Don't worry, he will surely come on time.", grammar: [gram-hui-de-assure] }
+  - { zh: 你不用擔心，一切都會好的。, en: "You don't need to worry; everything will be fine.", grammar: [gram-hui-de-assure] }
+  - { zh: 明天不會下雨的。, en: "It won't rain tomorrow.", grammar: [gram-hui-de-assure] }
+  - { zh: 這家店的臭豆腐，你一定會喜歡的。, en: "You will definitely like the stinky tofu at this shop.", grammar: [gram-hui-de-assure] }
+  - { zh: 他會幫你的。, en: "He will help you.", grammar: [gram-hui-de-assure] }
+  - { zh: 我會好好學的。, en: "I will study properly.", grammar: [gram-hui-de-assure] }
+  - { zh: 對學生來說，夜市很有意思。, en: "For students, night markets are interesting.", grammar: [gram-dui-laishuo] }
+  - { zh: 對我來說，臭豆腐太臭了。, en: "For me, stinky tofu is too smelly.", grammar: [gram-dui-laishuo] }
+  - { zh: 對老闆來說，時間很重要。, en: "For a boss, time is important.", grammar: [gram-dui-laishuo] }
+  - { zh: 對外國人來說，漢字不容易。, en: "For foreigners, Chinese characters are not easy.", grammar: [gram-dui-laishuo] }
+  - { zh: 對他來說，這個工作很容易。, en: "For him, this job is easy.", grammar: [gram-dui-laishuo] }
+  - { zh: 對很多人來說，夜市是休閒的地方。, en: "For many people, night markets are a place to relax.", grammar: [gram-dui-laishuo] }
+  - { zh: 不管天氣怎麼樣，夜市都很熱鬧。, en: "No matter the weather, the night market is lively.", grammar: [gram-buguan-dou] }
+  - { zh: 不管你想吃什麼，這裡都有。, en: "No matter what you want to eat, they have it here.", grammar: [gram-buguan-dou] }
+  - { zh: 不管多忙，他都準時下班。, en: "No matter how busy, he gets off work on time.", grammar: [gram-buguan-dou] }
+  - { zh: 不管你去不去，我都要去。, en: "Whether you go or not, I'm going.", grammar: [gram-buguan-dou] }
+  - { zh: 不管是臭豆腐還是雞排，我都敢吃。, en: "Whether it's stinky tofu or chicken cutlet, I dare to eat it.", grammar: [gram-buguan-dou] }
+  - { zh: 夜市的雞排酥酥脆脆的，真好吃。, en: "The chicken cutlets at the night market are crispy and delicious.", grammar: [gram-vsvs-de-modifier] }
+  - { zh: 熱熱的珍珠奶茶最好喝。, en: "Hot pearl milk tea is the tastiest.", grammar: [gram-vsvs-de-modifier] }
+  - { zh: 這杯木瓜牛奶甜甜的。, en: "This papaya milk is sweet.", grammar: [gram-vsvs-de-modifier] }
+  - { zh: 臭豆腐臭臭的，可是很香。, en: "Stinky tofu smells strong but is fragrant.", grammar: [gram-vsvs-de-modifier] }
+  - { zh: 他給我一杯冰冰的飲料。, en: "He gave me an ice-cold drink.", grammar: [gram-vsvs-de-modifier] }
+  - { zh: 房間小小的，很乾淨。, en: "The room is small and very clean.", grammar: [gram-vsvs-de-modifier] }
+scenarios:
+  - slug: night-market-tour
+    title: "Lisa takes you to a night market"
+    npc:
+      id: lisa
+      name: 麗莎
+      personality: >
+        Gloria's sweet, warm-hearted coworker who knows the night markets well and
+        enjoys watching a friend try something new.
+      speechStyle: >
+        Warm, lively sentences with words from books 1 to 4 (up to book 4 lesson 5).
+        Describes food with doubled words (熱熱的, 酥酥脆脆的) and encourages with 不管……都……
+      particles: []
+    setting: >
+      Lisa meets the learner at the Zhongshan station exit and walks them through
+      the stalls of a busy night market.
+    goalSteps:
+      - { id: time, description: "Say you arrived on time or late (準時).", keywordHints: ["準時", "遲到"] }
+      - { id: choose, description: "Choose something to eat or drink (雞排, 臭豆腐, 珍珠奶茶, 木瓜牛奶).", keywordHints: ["雞排", "臭豆腐", "珍珠奶茶", "木瓜牛奶"] }
+      - { id: taste, description: "Describe the taste with a doubled word (甜甜的, 酥酥脆脆的).", keywordHints: ["脆", "酥", "甜甜的", "熱熱的"] }
+      - { id: dare, description: "Say you dare (or do not dare) to try stinky tofu (敢, 嚐, 臭).", keywordHints: ["敢", "嚐", "臭"] }
+      - { id: why, description: "Say why night markets are popular (對……來說).", keywordHints: ["對", "來說", "吸引", "受歡迎"] }
+      - { id: nomatter, description: "Say what you do no matter what (不管……都……).", keywordHints: ["不管", "都"] }
+      - { id: already, description: "Say what you already did long ago (早就……了).", keywordHints: ["早就", "了"] }
+    vocabExtras: [夜市, 提到, 準時, 攤販, 休閒, 吸引, 日用品, 消夜, 不管, 雞排, 臉, 酥, 脆, 咦, 聞到, 臭豆腐, 臭, 敢, 嚐, 木瓜牛奶, 它, 珍珠奶茶, 幾乎, 各式各樣, 中山站]
+    opener: { zh: 歡迎來夜市！你想先吃什麼？, en: "Welcome to the night market! What would you like to eat first?" }
+    successLine: { zh: 不管你想吃什麼，這裡都有，我們一起嚐嚐吧。, en: "Whatever you want to eat, they have it here; let's taste it together." }
+journalPrompts:
+  - { en: "Write a paragraph about a food you tried or want to try at a night market (早就……了, 會……的).", zh: 臭豆腐我早就吃過了。, words: [夜市, 雞排, 臭豆腐, 嚐, 敢], grammar: [gram-zaojiu-le, gram-hui-de-assure] }
+  - { en: "Write a paragraph about why night markets are popular and what they mean to you or to tourists (對……來說, 不管……都……).", words: [吸引, 休閒, 準時, 幾乎, 攤販], grammar: [gram-dui-laishuo, gram-buguan-dou] }
+  - { en: "Describe the taste and look of a food with doubled words such as 熱熱的、酥酥脆脆的 (VsVs的).", words: [酥, 脆, 臭, 聞到, 珍珠奶茶], grammar: [gram-vsvs-de-modifier, gram-dui-laishuo] }

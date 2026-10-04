@@ -1,5 +1,6 @@
 // Phase 12: class textbook curriculum (來學華語 第一冊). Shapes are the
 // contract between the importer (data-pipeline), the proxy and the web app.
+import type { Level } from '../levels.config.js';
 
 export interface JournalPrompt {
   id: string;
@@ -10,12 +11,14 @@ export interface JournalPrompt {
   useWords: string[];
   /** Grammar item ids. */
   useGrammar: string[];
+  /** Phase 13: app level of the prompt (from its book/lesson). */
+  level?: Level;
 }
 
 export interface Lesson {
   /** 'laixue-1-L03' */
   id: string;
-  /** 1–10 */
+  /** 1–10 (position inside its book) */
   n: number;
   titleZh: string;
   titleEn: string;
@@ -64,7 +67,7 @@ export interface TextbookWordNote {
 export interface MyClassSetting {
   enabled: boolean;
   textbookId: string;
-  /** 1–10: the lesson the class is currently on. */
+  /** Position inside `textbookId` (1–10): the lesson the class is currently on. */
   currentLesson: number;
 }
 

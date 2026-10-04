@@ -4735,10 +4735,10 @@
           "text": "喜歡"
         },
         {
-          "text": "打網"
+          "text": "打"
         },
         {
-          "text": "球"
+          "text": "網球"
         },
         {
           "text": "還"
@@ -4913,10 +4913,10 @@
           "text": "喜歡"
         },
         {
-          "text": "打網"
+          "text": "打"
         },
         {
-          "text": "球"
+          "text": "網球"
         }
       ],
       "source": "generated",
@@ -5456,7 +5456,7 @@
       "id": "tb-L06-023",
       "zh": "我弟弟也不喜歡打網球。",
       "en": "My younger brother does not like tennis either.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-28f89db477",
       "level": "N1",
       "tokens": [
         {
@@ -5475,10 +5475,10 @@
           "text": "喜歡"
         },
         {
-          "text": "打網"
+          "text": "打"
         },
         {
-          "text": "球"
+          "text": "網球"
         }
       ],
       "source": "generated",
@@ -7703,10 +7703,10 @@
           "text": "星期五"
         },
         {
-          "text": "有時"
+          "text": "有"
         },
         {
-          "text": "間"
+          "text": "時間"
         }
       ],
       "source": "generated",
@@ -7734,10 +7734,10 @@
           "text": "星期五"
         },
         {
-          "text": "有時"
+          "text": "有"
         },
         {
-          "text": "間"
+          "text": "時間"
         },
         {
           "text": "嗎"
@@ -8702,10 +8702,10 @@
           "text": "牛肉麵"
         },
         {
-          "text": "最好"
+          "text": "最"
         },
         {
-          "text": "吃"
+          "text": "好吃"
         }
       ],
       "source": "generated",
@@ -9075,10 +9075,10 @@
           "text": "他"
         },
         {
-          "text": "打網"
+          "text": "打"
         },
         {
-          "text": "球"
+          "text": "網球"
         },
         {
           "text": "打"
@@ -9421,10 +9421,10 @@
           "text": "不會"
         },
         {
-          "text": "打網"
+          "text": "打"
         },
         {
-          "text": "球"
+          "text": "網球"
         }
       ],
       "source": "generated",

@@ -32,6 +32,8 @@ export const SentenceBankEntrySchema = z.object({
    * lesson they were written for and the grammar items they exercise. */
   tags: z.array(z.string()).optional(),
   lesson: z.number().int().optional(),
+  /** Phase 13: the book `lesson` counts in (absent = 'laixue-1', the Phase 12 files). */
+  textbookId: z.string().optional(),
   grammarIds: z.array(z.string()).optional(),
 });
 export type SentenceBankEntry = z.infer<typeof SentenceBankEntrySchema>;

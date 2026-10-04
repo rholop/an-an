@@ -1,0 +1,59 @@
+lesson: 1
+sentences:
+  - { zh: 今天是我學中文的第一天。, en: "Today is my first day of studying Chinese.", grammar: [gram-di-ordinal] }
+  - { zh: 這是這個學期的第一天。, en: "This is the first day of this term.", grammar: [gram-di-ordinal] }
+  - { zh: 我是第一個來教室的人。, en: "I am the first person to come to the classroom.", grammar: [gram-di-ordinal] }
+  - { zh: 這個星期是六月的第二個星期。, en: "This week is the second week of June.", grammar: [gram-di-ordinal] }
+  - { zh: 第二杯咖啡比第一杯好喝。, en: "The second cup of coffee is tastier than the first.", grammar: [gram-di-ordinal] }
+  - { zh: 今天是第幾天？, en: "Which day is today (of the course)?", grammar: [gram-di-ordinal] }
+  - { zh: 他是第一個到公司的人。, en: "He is the first person to arrive at the company.", grammar: [gram-di-ordinal] }
+  - { zh: 我就是張家安。, en: "I am Joann Zhang.", grammar: [gram-jiu-indeed] }
+  - { zh: 他家就在公園旁邊。, en: "His home is right next to the park.", grammar: [gram-jiu-indeed] }
+  - { zh: 這裡就是我的公司。, en: "This is my company.", grammar: [gram-jiu-indeed] }
+  - { zh: 林老師就在教室裡面。, en: "Teacher Lin is right inside the classroom.", grammar: [gram-jiu-indeed] }
+  - { zh: 銀行就在學校對面。, en: "The bank is right across from the school.", grammar: [gram-jiu-indeed] }
+  - { zh: 他就是我的新同學。, en: "He is my new classmate.", grammar: [gram-jiu-indeed] }
+  - { zh: 我以前學過中文。, en: "I have studied Chinese before.", grammar: [gram-yiqian-before] }
+  - { zh: 我以前住在臺灣。, en: "I used to live in Taiwan.", grammar: [gram-yiqian-before] }
+  - { zh: 上班以前，我先洗澡。, en: "Before work, I take a shower first.", grammar: [gram-yiqian-before] }
+  - { zh: 我以前不喜歡喝咖啡，現在很喜歡。, en: "I didn't like coffee before; now I like it a lot.", grammar: [gram-yiqian-before] }
+  - { zh: 你以前在哪裡工作？, en: "Where did you work before?", grammar: [gram-yiqian-before] }
+  - { zh: 下課以後，我們一起去吃飯。, en: "After class, let's go eat together.", grammar: [gram-yihou] }
+  - { zh: 以後我想去臺灣工作。, en: "In the future I want to work in Taiwan.", grammar: [gram-yihou] }
+  - { zh: 我吃了早飯以後，就去上班。, en: "After eating breakfast, I go to work.", grammar: [gram-yihou] }
+  - { zh: 我希望以後有機會去墨西哥度假。, en: "I hope to have a chance to vacation in Mexico someday.", grammar: [gram-yihou] }
+  - { zh: 我學了兩年多中文。, en: "I have studied Chinese for over two years.", grammar: [gram-number-duo] }
+  - { zh: 這件外套五百多塊。, en: "This coat costs over five hundred dollars.", grammar: [gram-number-duo] }
+  - { zh: 我們公司有一百多個人。, en: "Our company has over a hundred people.", grammar: [gram-number-duo] }
+  - { zh: 我等了二十多分鐘。, en: "I waited more than twenty minutes.", grammar: [gram-number-duo] }
+  - { zh: 她在這裡住了三個多月。, en: "She has lived here for over three months.", grammar: [gram-number-duo] }
+scenarios:
+  - slug: first-day-class
+    title: "First day of class with Teacher Lin"
+    npc:
+      id: teacher-lin
+      name: 林老師
+      personality: >
+        A warm, patient Mandarin teacher who welcomes every new classmate and asks
+        gentle follow-up questions about their work and interests.
+      speechStyle: >
+        Clear, kind sentences using words from books 1 to 3 (up to book 3 lesson 1).
+        One question at a time; repeats the learner's answer with a short comment.
+      particles: []
+    setting: >
+      The classroom on the first day of the new term. Teacher Lin has just
+      welcomed the learner as a new classmate and asks the learner to introduce themself.
+    goalSteps:
+      - { id: name, description: "Say your surname and name.", keywordHints: ["姓", "叫"] }
+      - { id: job, description: "Say where you work and what your company does.", keywordHints: ["在", "公司", "工作"] }
+      - { id: before, description: "Say what you did or where you lived before (以前).", keywordHints: ["以前"] }
+      - { id: howlong, description: "Say how long you have studied Chinese or worked (……多).", keywordHints: ["多", "年", "個月"] }
+      - { id: hobby, description: "Say your hobby and what you collect.", keywordHints: ["興趣", "收集"] }
+      - { id: later, description: "Say what you hope to do later (以後).", keywordHints: ["以後", "希望"] }
+    vocabExtras: [同學, 大家, 學期, 第, 度假, 加班, 好, 辛苦, 啊, 教室, 事, 就, 以前, 換, 東部, 繼續, 平安, 貿易, 興趣, 收集, 鳥, 貓, 照片, 敲門, 照相, 林, 墨西哥, 張家安]
+    opener: { zh: 大家好！歡迎你來上課。請問你叫什麼名字？, en: "Hello everyone! Welcome to class. May I ask your name?" }
+    successLine: { zh: 非常歡迎新同學！現在我們開始上課吧。, en: "A warm welcome to our new classmate! Now let's begin class." }
+journalPrompts:
+  - { en: "Write a short paragraph introducing yourself: your name, your job, and which day or week was your first at work (use 第 and 多).", zh: 今天是我學中文的第一天。, words: [同學, 學期, 貿易, 興趣], grammar: [gram-di-ordinal, gram-number-duo] }
+  - { en: "Write a paragraph about your hobby: what you did before (以前) and what you hope to do later (以後).", words: [興趣, 收集, 照片, 貓], grammar: [gram-yiqian-before, gram-yihou] }
+  - { en: "Write a paragraph saying where someone or something is exactly (就在 / 就是) and how long you have studied Mandarin (……多).", words: [教室, 繼續, 換, 平安], grammar: [gram-jiu-indeed, gram-number-duo] }

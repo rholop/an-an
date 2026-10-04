@@ -1,0 +1,57 @@
+lesson: 9
+sentences:
+  - { zh: 我們吃完飯，各付各的。, en: "After the meal, we each pay for ourselves.", grammar: [gram-ge-v-ge-de] }
+  - { zh: 這些族群的語言不同，各有各的風俗。, en: "The languages of these groups differ; each has its own customs.", grammar: [gram-ge-v-ge-de] }
+  - { zh: 烏龍茶有很多種，各有各的味道。, en: "Oolong tea comes in many kinds, each with its own flavor.", grammar: [gram-ge-v-ge-de] }
+  - { zh: 我跟哥哥生活習慣不同，所以各住各的。, en: "My older brother and I have different living habits, so we each live on our own.", grammar: [gram-ge-v-ge-de] }
+  - { zh: 大家喜歡吃的不一樣，各吃各的。, en: "Everyone likes different foods, so we each eat our own.", grammar: [gram-ge-v-ge-de] }
+  - { zh: 這幾個部落各有各的祭典。, en: "These villages each have their own festival.", grammar: [gram-ge-v-ge-de] }
+  - { zh: 同事下班以後，大家各走各的。, en: "After work, the colleagues each go their own way.", grammar: [gram-ge-v-ge-de] }
+  - { zh: 兩個人的想法不同，各做各的。, en: "The two have different ideas, so each does their own thing.", grammar: [gram-ge-v-ge-de] }
+  - { zh: 臺灣小吃很多，像雞排、臭豆腐、珍珠奶茶等，都很受歡迎。, en: "Taiwan has many snacks, like chicken cutlets, stinky tofu and pearl milk tea, all popular.", grammar: [gram-deng-and-so-on] }
+  - { zh: 他喜歡的運動有足球、籃球、棒球等。, en: "The sports he likes include soccer, basketball, baseball and so on.", grammar: [gram-deng-and-so-on] }
+  - { zh: 這裡的景點有阿里山、日月潭、墾丁等。, en: "The scenic spots here include Alishan, Sun Moon Lake, Kenting and others.", grammar: [gram-deng-and-so-on] }
+  - { zh: 花蓮、臺東、屏東等地方，有很多原住民族。, en: "In Hualien, Taitung, Pingtung and other places there are many indigenous peoples.", grammar: [gram-deng-and-so-on] }
+  - { zh: 我學過中文、德文、英文等。, en: "I have studied Chinese, German, English and so on.", grammar: [gram-deng-and-so-on] }
+  - { zh: 夜市有雞排、臭豆腐、木瓜牛奶等。, en: "The night market has chicken cutlets, stinky tofu, papaya milk and more.", grammar: [gram-deng-and-so-on] }
+  - { zh: 他的朋友有老師、醫生、經理等。, en: "His friends include teachers, doctors, managers and so on.", grammar: [gram-deng-and-so-on] }
+  - { zh: 公司在美國、德國、日本等地方都有分公司。, en: "The company has branches in the U.S., Germany, Japan and other places.", grammar: [gram-deng-and-so-on] }
+  - { zh: 你生病了，非去醫院不可。, en: "You are sick; you absolutely must go to the hospital.", grammar: [gram-fei-buke] }
+  - { zh: 明天的考試，我非準備好不可。, en: "For tomorrow's test, I absolutely have to be prepared.", grammar: [gram-fei-buke] }
+  - { zh: 要學好中文，非多練習不可。, en: "To learn Chinese well, you must practise a lot.", grammar: [gram-fei-buke] }
+  - { zh: 他非去花蓮不可。, en: "He insists on going to Hualien.", grammar: [gram-fei-buke] }
+  - { zh: 這個景點很有名，我們非去看看不可。, en: "This spot is famous; we must go and see it.", grammar: [gram-fei-buke] }
+  - { zh: 想要成績好，非用功不可。, en: "To get good grades, you must work hard.", grammar: [gram-fei-buke] }
+  - { zh: 這件事非告訴老闆不可。, en: "We must tell the boss about this.", grammar: [gram-fei-buke] }
+  - { zh: 來臺灣，非吃夜市的小吃不可。, en: "If you come to Taiwan, you must eat night market snacks.", grammar: [gram-fei-buke] }
+scenarios:
+  - slug: island-trip
+    title: "Jiawen plans a trip around the island"
+    npc:
+      id: jiawen
+      name: 家文
+      personality: >
+        A lively, cheerful Taiwanese student who loves travelling and is proud of the
+        culture of the eastern coast and its indigenous peoples.
+      speechStyle: >
+        Cheerful sentences with words from books 1 to 4 (up to book 4 lesson 9).
+        Lists places with 等 and insists on must-see spots with 非……不可.
+      particles: []
+    setting: >
+      Jiawen and the learner are looking at a map during the holiday and planning a
+      trip around the island, with stops on the eastern coast.
+    goalSteps:
+      - { id: where, description: "Say where you want to go (花蓮, 臺東, 阿里山, 日月潭, 墾丁).", keywordHints: ["花蓮", "臺東", "阿里山", "日月潭", "墾丁", "蘭嶼"] }
+      - { id: list, description: "List places or foods and end with 等.", keywordHints: ["等", "、"] }
+      - { id: culture, description: "Ask about the indigenous peoples' festival or dance (祭典, 舞蹈, 部落).", keywordHints: ["祭典", "舞蹈", "部落", "原住民族", "阿美族"] }
+      - { id: differ, description: "Say how groups differ in language or customs (語言, 風俗, 差別).", keywordHints: ["語言", "風俗", "差別", "族群"] }
+      - { id: each, description: "Say you will each do your own thing (各V各的).", keywordHints: ["各", "各的"] }
+      - { id: must, description: "Say what you must see (非……不可).", keywordHints: ["非", "不可"] }
+      - { id: choose, description: "Choose a way to travel around the island (環島, 選擇).", keywordHints: ["環島", "選擇", "趟"] }
+    vocabExtras: [原住民族, 中秋節, 放假, 美麗, 海岸, 族群, 差別, 語言, 風俗, 選擇, 展覽, 手工藝, 收穫, 趟, 環島, 像, 等, 景點, 部落, 祭典, 島, 影片, 東邊, 海洋, 舞蹈, 太平洋, 阿美族, 花蓮, 臺東, 屏東, 臺灣原住民, 阿里山, 日月潭, 墾丁, 蘭嶼]
+    opener: { zh: 你好！這個假期你想去哪裡玩？去環島怎麼樣？, en: "Hello! Where do you want to go this holiday? How about a trip around the island?" }
+    successLine: { zh: 好，我們非去看看阿美族的祭典不可！, en: "Great, we absolutely must see the Amis festival!" }
+journalPrompts:
+  - { en: "Write a paragraph about the places you want to visit and list them (A、B、C 等).", zh: 我想去阿里山、日月潭、墾丁等地方。, words: [景點, 環島, 海岸, 美麗, 島], grammar: [gram-deng-and-so-on, gram-fei-buke] }
+  - { en: "Write a paragraph about how two groups or people do things differently (各V各的).", words: [族群, 語言, 風俗, 差別, 選擇], grammar: [gram-ge-v-ge-de, gram-deng-and-so-on] }
+  - { en: "Write a paragraph about something you absolutely must do on a trip (非……不可).", words: [祭典, 舞蹈, 部落, 展覽, 手工藝], grammar: [gram-fei-buke, gram-ge-v-ge-de] }

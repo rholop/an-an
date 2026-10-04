@@ -115,3 +115,99 @@
 - 24777 words (7898 TOCFL, 16831 supplement).
 - Content hash: `52f71f85269db8a9`.
 - 43 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25178 words (7898 TOCFL, 17116 supplement).
+- Content hash: `9930104d8c3bae33`.
+- 60 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25178 words (7898 TOCFL, 17116 supplement).
+- Content hash: `fe94609d0897afdd`.
+- 60 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25178 words (7898 TOCFL, 17116 supplement).
+- Content hash: `ddf15f8ea676d030`.
+- 60 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25178 words (7898 TOCFL, 17116 supplement).
+- Content hash: `90731e93e887561d`.
+- 60 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25176 words (7898 TOCFL, 17116 supplement).
+- Content hash: `35aebc597bc61d1a`.
+- 56 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25185 words (7898 TOCFL, 17120 supplement).
+- Content hash: `b47ab5255e3c70ba`.
+- 56 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25185 words (7898 TOCFL, 17120 supplement).
+- Content hash: `1f31dcfafaff231d`.
+- 56 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25194 words (7898 TOCFL, 17128 supplement).
+- Content hash: `ef63f9cd653c4b92`.
+- 56 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25194 words (7898 TOCFL, 17128 supplement).
+- Content hash: `f197b3f2c5bd70cb`.
+- 56 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25195 words (7898 TOCFL, 17128 supplement).
+- Content hash: `552651f982c6a29f`.
+- 56 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25195 words (7898 TOCFL, 17128 supplement).
+- Content hash: `1338df5689c4893b`.
+- 56 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25195 words (7898 TOCFL, 17128 supplement).
+- Content hash: `1a1ae5c4f7c566fe`.
+- 56 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25195 words (7898 TOCFL, 17128 supplement).
+- Content hash: `cb3632c5cfd592c4`.
+- 55 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25195 words (7898 TOCFL, 17128 supplement).
+- Content hash: `7b1a95517c53ab42`.
+- 55 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25195 words (7898 TOCFL, 17128 supplement).
+- Content hash: `740c18d90a699aaa`.
+- 55 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-04
+
+- 25195 words (7898 TOCFL, 17128 supplement).
+- Content hash: `1e1acd626243d8e7`.
+- 55 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.

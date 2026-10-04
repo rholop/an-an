@@ -1,0 +1,56 @@
+lesson: 5
+sentences:
+  - { zh: 烏龍茶沒有咖啡那麼濃。, en: "Oolong tea is not as strong as coffee.", grammar: [gram-meiyou-nameme] }
+  - { zh: 這杯茶沒有那杯那麼香。, en: "This cup of tea is not as fragrant as that one.", grammar: [gram-meiyou-nameme] }
+  - { zh: 臺灣的冬天沒有這裡這麼冷。, en: "Winter in Taiwan is not as cold as it is here.", grammar: [gram-meiyou-nameme] }
+  - { zh: 我的中文沒有你那麼好。, en: "My Chinese is not as good as yours.", grammar: [gram-meiyou-nameme] }
+  - { zh: 這家店的東西沒有那家那麼貴。, en: "The things in this shop are not as expensive as at that one.", grammar: [gram-meiyou-nameme] }
+  - { zh: 今天沒有昨天那麼熱。, en: "Today is not as hot as yesterday.", grammar: [gram-meiyou-nameme] }
+  - { zh: 弟弟沒有哥哥那麼高。, en: "My younger brother is not as tall as my older brother.", grammar: [gram-meiyou-nameme] }
+  - { zh: 這個工作沒有那個工作那麼麻煩。, en: "This job is not as troublesome as that one.", grammar: [gram-meiyou-nameme] }
+  - { zh: 你喝喝看這杯烏龍茶。, en: "Try this cup of oolong tea.", grammar: [gram-vv-kan] }
+  - { zh: 這個甜點很好吃，你吃吃看。, en: "This dessert is delicious; try it.", grammar: [gram-vv-kan] }
+  - { zh: 這件外套很好看，你穿穿看。, en: "This coat looks nice; try it on.", grammar: [gram-vv-kan] }
+  - { zh: 你聞聞看，這杯茶很香。, en: "Smell it; this tea is fragrant.", grammar: [gram-vv-kan] }
+  - { zh: 我想學學看潛水。, en: "I'd like to try learning to dive.", grammar: [gram-vv-kan] }
+  - { zh: 這個字你寫寫看。, en: "Try writing this character.", grammar: [gram-vv-kan] }
+  - { zh: 你問問看林老師吧。, en: "Try asking Teacher Lin.", grammar: [gram-vv-kan] }
+  - { zh: 我喝了一杯茶。, en: "I drank a cup of tea.", grammar: [gram-separable-verbs] }
+  - { zh: 我上了兩個鐘頭課。, en: "I attended class for two hours.", grammar: [gram-separable-verbs] }
+  - { zh: 他吃過臺灣菜。, en: "He has eaten Taiwanese food.", grammar: [gram-separable-verbs] }
+  - { zh: 我昨天跑了三十分鐘步。, en: "Yesterday I jogged for thirty minutes.", grammar: [gram-separable-verbs] }
+  - { zh: 我們見過一次面。, en: "We have met once.", grammar: [gram-separable-verbs] }
+  - { zh: 她唱了一個鐘頭歌。, en: "She sang for an hour.", grammar: [gram-separable-verbs] }
+  - { zh: 我生了三天病。, en: "I was sick for three days.", grammar: [gram-separable-verbs] }
+  - { zh: 我們昨天吃了一個鐘頭飯。, en: "We ate for an hour yesterday.", grammar: [gram-separable-verbs] }
+  - { zh: 他看了兩個鐘頭電視。, en: "He watched TV for two hours.", grammar: [gram-separable-verbs] }
+scenarios:
+  - slug: tea-shop
+    title: "Buy oolong tea at the tea shop"
+    npc:
+      id: tea-seller
+      name: 老闆
+      personality: >
+        A friendly tea shop owner who loves to explain tea and always lets customers
+        smell and taste before buying.
+      speechStyle: >
+        Warm short sentences with words from books 1 to 3 (up to book 3 lesson 5).
+        Invites the customer with 聞聞看 and 喝喝看 and explains taste.
+      particles: []
+    setting: >
+      A small tea shop. The learner wants to buy oolong tea as a gift and the owner
+      lets them smell and taste different teas.
+    goalSteps:
+      - { id: choose, description: "Say which tea you want to look at (烏龍茶, 紅茶).", keywordHints: ["烏龍茶", "紅茶", "茶"] }
+      - { id: smell, description: "Smell or taste the tea and say how it is (香, 濃, 淡).", keywordHints: ["香", "濃", "淡", "聞聞看", "喝喝看"] }
+      - { id: compare, description: "Compare two teas with 沒有……那麼……", keywordHints: ["沒有", "那麼", "這麼"] }
+      - { id: taste, description: "Say whether it is bitter or sweet or special.", keywordHints: ["苦", "甜", "特別"] }
+      - { id: custom, description: "Ask or say how to steep tea (泡).", keywordHints: ["泡", "習慣"] }
+      - { id: buy, description: "Say how much you will buy and thank the owner.", keywordHints: ["盒", "要", "謝謝"] }
+    vocabExtras: [烏龍茶, 香, 後天, 聞, 麻煩, 味道, 不同, 濃, 淡, 選, 泡, 華人, 習慣, 不用, 說明, 有趣, 品質, 嗯, 苦, 甜, 特別, 要是, 東方美人茶, 喝茶]
+    opener: { zh: 歡迎！您想喝烏龍茶還是紅茶？, en: "Welcome! Would you like oolong tea or black tea?" }
+    successLine: { zh: 好，一盒烏龍茶，謝謝您。, en: "Alright, one box of oolong tea. Thank you." }
+journalPrompts:
+  - { en: "Describe a tea or drink you like: its smell, taste and how it differs from another (沒有……那麼……, 聞聞看).", zh: 烏龍茶沒有咖啡那麼濃。, words: [烏龍茶, 香, 味道, 濃, 淡], grammar: [gram-meiyou-nameme, gram-vv-kan] }
+  - { en: "Write a paragraph about tea or coffee habits in your family or country, using verbs like 喝了、泡過 (verb–object verbs).", words: [華人, 習慣, 泡, 說明], grammar: [gram-separable-verbs, gram-vv-kan] }
+  - { en: "Write a paragraph comparing two drinks or foods and suggest trying one (……看, 沒有……那麼……).", words: [品質, 特別, 有趣, 苦, 甜], grammar: [gram-meiyou-nameme, gram-separable-verbs] }

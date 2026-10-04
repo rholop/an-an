@@ -2,9 +2,9 @@
 
 Words whose gloss a human should check. Put corrections in `data/supplement/gloss-overrides.yaml` (overrides always win and survive rebuilds).
 
-- 7966 words: 46 override, 0 ai, 7878 heuristic, 42 authored, 0 none.
-- N1–L2 words with a cited source: 98.4% of 1395.
-- 232 flagged.
+- 8087 words: 46 override, 0 ai, 7947 heuristic, 94 authored, 0 none.
+- N1–L2 words with a cited source: 95.6% of 1484.
+- 285 flagged.
 
 | level | word | reading | shown gloss | origin | flags | other candidates |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -40,12 +40,55 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | N2 | 別 | bié | don't ...! | heuristic | close-call | to leave; to part (from) · to differentiate; to distinguish · (bound form) other; another; different |
 | L1 | 願意 | yuàn yì | willing | heuristic | close-call | to wish · to want · ready |
 | L1 | 離 | lí | from | heuristic | close-call | to leave · to part from · to be away from |
+| L1 | 高莉亞 | gāo lì yǎ | Gloria Lee | authored | no-source |  |
+| L1 | 莉亞 | lì yǎ | Liya, Gloria | authored | no-source |  |
+| L1 | 麗莎 | lì shā | Lisa | authored | no-source |  |
+| L1 | 何希 | hé xī | Jose | authored | no-source |  |
+| L1 | 凱文 | kǎi wén | Kevin | authored | no-source |  |
+| L1 | 紅燒魚 | hóng shāo yú | braised fish | authored | no-source |  |
+| L1 | 炸豆腐 | zhá dòu fǔ | fried tofu | authored | no-source |  |
+| L1 | 炒青菜 | chǎo qīng cài | stir-fried green vegetables | authored | no-source |  |
+| L1 | 雞肉三明治 | jī ròu sā míng zhì | chicken sandwich | authored | no-source |  |
+| L1 | 南區 | ná qū | southern district | authored | no-source |  |
+| L1 | 搬到 | bān dào | to move to | authored | no-source |  |
+| L1 | 請進 | qǐng jìn | Please come in. | authored | no-source |  |
+| L1 | 洗頭髮 | xǐ tóu fǎ | to wash hair | authored | no-source |  |
+| L1 | 怎麼了 | zě me le | What’s wrong? What’s the matter? | authored | no-source |  |
+| L1 | 好多了 | hǎo duō le | to feel much better | authored | no-source |  |
 | L2 | 報告 | bào gào | report; speech | heuristic | close-call | to inform · to report · to make known |
 | L2 | 夢 | mèng | dream | heuristic | close-call | dream · (bound form) to dream · dream |
 | L2 | 回信 | huí xìn | to reply | heuristic | close-call | to reply · to write back · letter written in reply |
 | L2 | 出門 | chū mén | to go out | heuristic | close-call | to go out · to leave home · to go on a journey |
 | L2 | 救命 | jiù mìng | Help! | heuristic | close-call | to save sb's life · (interj.) Help! · Save me! |
 | L2 | 須 | xū | must | heuristic | close-call | must · to have to · to wait |
+| L2 | 張家安 | zhāng jiā ān | Joann Zhang | authored | no-source |  |
+| L2 | 杜翔 | dù xiáng | Dushyant | authored | no-source |  |
+| L2 | 海裡 | hǎi lǐ | in the sea | authored | no-source |  |
+| L2 | 南瓜派 | ná guā pài | pumpkin pie | authored | no-source |  |
+| L2 | 早一點 | zǎo yī diǎn | a bit early | authored | no-source |  |
+| L2 | 烤火雞 | kǎo huǒ jī | roast turkey | authored | no-source |  |
+| L2 | 東方美人茶 | dōng fāng měi rén chá | dongfang meiren tea | authored | no-source |  |
+| L2 | 沒做完 | méi zuò wán | not [yet] ﬁnished, not completed | authored | no-source |  |
+| L2 | 好好地 | hǎo hǎo de | properly, thoroughly, really | authored | no-source |  |
+| L2 | 沒看到 | méi kàn dào | did not see | authored | no-source |  |
+| L2 | 談好了 | tán hǎo le | ﬁnished discussing | authored | no-source |  |
+| L2 | 做錯了 | zuò cuò le | made a mistake | authored | no-source |  |
+| L2 | 看清楚 | kàn qīng chǔ | see clearly, discern | authored | no-source |  |
+| L2 | 有一次 | yǒu yī cì | there was one time [when]… | authored | no-source |  |
+| L2 | 拿下來 | ná xià lái | bring down [from above] | authored | no-source |  |
+| L2 | 拿出去 | ná chū qù | take outside | authored | no-source |  |
+| L2 | 爬上去 | pá shàng qù | climb up | authored | no-source |  |
+| L2 | 走下來 | zǒu xià lái | go down | authored | no-source |  |
+| L2 | 所有的 | suǒ yǒu de | all | authored | no-source |  |
+| L2 | 開過來 | kāi guò lái | drive over [to some place] | authored | no-source |  |
+| L2 | 哈 | hā | sentence-final particle softening the request; husky | heuristic | close-call | (interj.) ha! · (onom. for laughter) · to be infatuated with; to adore |
+| L2 | 巷子口 | xiàng zi kǒu | alley entrance | authored | no-source |  |
+| L2 | 再加上 | zài jiā shàng | plus…, in addition to this/ that… | authored | no-source |  |
+| L2 | 網路費 | wǎng lù fèi | broadband bill | authored | no-source |  |
+| L2 | 捷運站 | jié yùn zhàn | Mass Rapid Transit stop/station | authored | no-source |  |
+| L2 | 綠線 | lǜ xiàn | the Green Line | authored | no-source |  |
+| L2 | 木瓜牛奶 | mù guā niú nǎi | papaya milk | authored | no-source |  |
+| L2 | 中山站 | zhōng shān zhàn | Zhongshan station | authored | no-source |  |
 | L3 | 安排 | ān pái | arrangements; plans | heuristic | close-call | to arrange · to plan · to set up |
 | L3 | 白白 | bái bái | in vain; for nothing; white | heuristic | close-call | in vain · to no purpose · for nothing |
 | L3 | 表現 | biǎo xiàn | expression; manifestation; show; display | heuristic | close-call | to show · to show off · to display |
@@ -88,6 +131,16 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L3 | 孝順 | xiào shùn | to show filial piety towards | heuristic | close-call | filial · dutiful · devoted to one's parents (and grandparents etc) |
 | L3 | 祝福 | zhù fú | new year's sacrifice; blessings | heuristic | close-call | blessings · to wish sb well · to wish well; to bless; to wish happiness to (to express good wishes for someone) |
 | L3 | 組 | zǔ | classifier for sets; group | heuristic | close-call | to form · to organize · group |
+| L3 | 臺北101 大樓 | Táiběi 101 dàlóu | Taipei 101 Building | authored | no-source |  |
+| L3 | 飲料店 | yǐn liào diàn | beverage shop | authored | no-source |  |
+| L3 | 比起來 | bǐ qǐ lái | compared to, compare with | authored | no-source |  |
+| L3 | 從來沒 | cóng lái méi | never [do/have done something] | authored | no-source |  |
+| L3 | 棒球迷 | bàng qiú mí | baseball fan | authored | no-source |  |
+| L3 | 世界上 | shì jiè shàng | in [terms of] the world | authored | no-source |  |
+| L3 | 怎麼這麼 | zě me zhè me | how could it be this... | authored | no-source |  |
+| L3 | 穿上 | chuān shàng | put on [clothing], be wearing [clothing] | authored | no-source |  |
+| L3 | 喝喜酒 | hē xǐ jiǔ | attend a wedding banquet | authored | no-source |  |
+| L3 | 臺灣原住民 | tái wān yuán zhù mín | Táiwān | authored | no-source |  |
 | L4 | 拜拜 | bài bai | to pay one's respects by bowing | heuristic | close-call | to pay one's respects by bowing with hands in front of one's chest clasping joss sticks, or with palms pressed together · religious ceremony in which offerings are made to a deity |
 | L4 | 包裝 | bāo zhuāng | packaging | heuristic | close-call | to pack · to package · to wrap |
 | L4 | 把握 | bǎ wò | assurance; certainty | heuristic | close-call | to grasp (also fig.) · to seize · to hold |

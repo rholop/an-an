@@ -1,0 +1,57 @@
+lesson: 4
+sentences:
+  - { zh: 我還想喝咖啡。, en: "I still want to drink coffee.", grammar: [gram-hai-still] }
+  - { zh: 天氣還很冷。, en: "The weather is still very cold.", grammar: [gram-hai-still] }
+  - { zh: 他還沒回家。, en: "He hasn't gone home yet.", grammar: [gram-hai-still] }
+  - { zh: 你還記得我嗎？, en: "Do you still remember me?", grammar: [gram-hai-still] }
+  - { zh: 我還在公司，你先走吧。, en: "I'm still at the company; you go ahead.", grammar: [gram-hai-still] }
+  - { zh: 我還不知道他的名字。, en: "I still don't know his name.", grammar: [gram-hai-still] }
+  - { zh: 朋友對我很好。, en: "My friend is very good to me.", grammar: [gram-dui-to] }
+  - { zh: 林老師對學生很客氣。, en: "Teacher Lin is very polite to students.", grammar: [gram-dui-to] }
+  - { zh: 他對我說，明天有空。, en: "He told me he is free tomorrow.", grammar: [gram-dui-to] }
+  - { zh: 她對每個人都很客氣。, en: "She is polite to everyone.", grammar: [gram-dui-to] }
+  - { zh: 公司對我不太好。, en: "The company is not very good to me.", grammar: [gram-dui-to] }
+  - { zh: 我對他說了很多次。, en: "I told him many times.", grammar: [gram-dui-to] }
+  - { zh: 我們坐飛機飛到臺灣。, en: "We fly to Taiwan by plane.", grammar: [gram-v-dao-arrive] }
+  - { zh: 他搬到東區了。, en: "He has moved to the eastern district.", grammar: [gram-v-dao-arrive] }
+  - { zh: 請你送到我的公司。, en: "Please deliver it to my company.", grammar: [gram-v-dao-arrive] }
+  - { zh: 我們開車開到海邊。, en: "We drove all the way to the beach.", grammar: [gram-v-dao-arrive] }
+  - { zh: 我走到公園，坐一下。, en: "I walked to the park and sat for a bit.", grammar: [gram-v-dao-arrive] }
+  - { zh: 我們送到你家，好不好？, en: "We'll deliver it to your home, okay?", grammar: [gram-v-dao-arrive] }
+  - { zh: 我對中文很有興趣。, en: "I am very interested in Chinese.", grammar: [gram-dui-you-noun] }
+  - { zh: 他對科技產品很有興趣。, en: "He is very interested in technology products.", grammar: [gram-dui-you-noun] }
+  - { zh: 多喝水對身體有好處。, en: "Drinking more water is good for your health.", grammar: [gram-dui-you-noun] }
+  - { zh: 這個工作對我很有幫助。, en: "This job is very helpful to me.", grammar: [gram-dui-you-noun] }
+  - { zh: 你對這個工作有經驗嗎？, en: "Do you have experience with this job?", grammar: [gram-dui-you-noun] }
+  - { zh: 她對世界很有興趣。, en: "She is very interested in the world.", grammar: [gram-dui-you-noun] }
+  - { zh: 學中文對未來有幫助。, en: "Learning Chinese helps your future.", grammar: [gram-dui-you-noun] }
+scenarios:
+  - slug: new-branch-office
+    title: "Mingwen asks about your new job"
+    npc:
+      id: mingwen
+      name: 明文
+      personality: >
+        A kind, friendly graduate student who helps Gloria practise Mandarin. He is
+        curious about work abroad and encourages the learner.
+      speechStyle: >
+        Friendly short sentences with words from books 1 to 3 (up to book 3 lesson 4).
+        Asks about the company, experience and the future.
+      particles: []
+    setting: >
+      Mingwen runs into the learner, who has just started at the company's branch in
+      Taiwan. They talk about the new job and make a plan to meet up.
+    goalSteps:
+      - { id: why, description: "Say why you are here (公司派我……).", keywordHints: ["派", "公司", "工作"] }
+      - { id: still, description: "Say what you still do or do not yet know (還).", keywordHints: ["還"] }
+      - { id: company, description: "Describe your company (分公司, 科技, 產品).", keywordHints: ["分公司", "科技", "產品", "有名"] }
+      - { id: interest, description: "Say what you are interested in (對……有興趣).", keywordHints: ["對", "興趣"] }
+      - { id: experience, description: "Say what experience you have or what helps you (經驗, 幫助).", keywordHints: ["經驗", "幫助"] }
+      - { id: meet, description: "Make a plan to meet (約, 見面).", keywordHints: ["約", "見面"] }
+    vocabExtras: [派, 還, 記得, 哇, 當然, 分公司, 科技, 對, 情形, 了解, 至少, 知道, 方面, 發展, 相當, 有名, 合作, 產品, 世界, 以為, 一直, 經驗, 未來, 幫助, 剛, 約, 見面]
+    opener: { zh: 哇，好久不見！你還記得我嗎？, en: "Wow, long time no see! Do you still remember me?" }
+    successLine: { zh: 你的工作聽起來很不錯，我們下個星期約個時間見面吧。, en: "Your job sounds great; let's set a time to meet next week." }
+journalPrompts:
+  - { en: "Write a paragraph about your work situation: what your company sent you to do and how it is going so far (還, 到).", zh: 公司派我到這裡工作。, words: [派, 分公司, 科技, 情形], grammar: [gram-hai-still, gram-v-dao-arrive] }
+  - { en: "Write a paragraph about what you are interested in and what experience you have (對……有……).", words: [經驗, 幫助, 產品, 世界], grammar: [gram-dui-you-noun, gram-hai-still] }
+  - { en: "Write a paragraph about how people at your company treat you and what you think about your future (對, 還).", words: [未來, 合作, 發展, 當然], grammar: [gram-dui-to, gram-dui-you-noun] }

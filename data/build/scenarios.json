@@ -2,7 +2,7 @@
   "meta": {
     "version": "v1",
     "buildDate": "2026-10-04",
-    "contentHash": "02a1e41aee89ec44837b8417d14946af7bdfb13d0c783e700c300cc7c6f64fb9"
+    "contentHash": "a8aeecac715fc47e9ce5d2da70c91b2a7eb79df880fc4275db65d70906164c83"
   },
   "scenarios": [
     {
@@ -1097,6 +1097,3478 @@
       },
       "textbook": {
         "textbookId": "laixue-1",
+        "lesson": 10
+      }
+    },
+    {
+      "id": "laixue-2-L01-park-weather",
+      "title": "Mingwen meets you in the park",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "明文",
+        "personality": "A kind, friendly graduate student who jogs in the park and likes to chat about the weather. He is patient and asks one easy question at a time.\n",
+        "speechStyle": "Short friendly sentences using only words from books 1 and 2, lesson 1. Repeats the learner's idea back with a small comparison (比).\n",
+        "particles": []
+      },
+      "setting": "A sunny morning in the park. Mingwen is jogging and stops to talk with the learner about the weather, the seasons and tomorrow's forecast.\n",
+      "goalSteps": [
+        {
+          "id": "today",
+          "description": "Say what the weather is like today.",
+          "keywordHints": [
+            "今天",
+            "天氣"
+          ]
+        },
+        {
+          "id": "compare",
+          "description": "Compare the weather of two places or two days with 比.",
+          "keywordHints": [
+            "比"
+          ]
+        },
+        {
+          "id": "toohot",
+          "description": "Say a season is too hot or too cold with 太……了.",
+          "keywordHints": [
+            "太",
+            "了"
+          ]
+        },
+        {
+          "id": "cannot",
+          "description": "Say what you cannot do when it rains.",
+          "keywordHints": [
+            "不能",
+            "下雨"
+          ]
+        },
+        {
+          "id": "forecast",
+          "description": "Talk about tomorrow's forecast and say what you hope for.",
+          "keywordHints": [
+            "明天",
+            "希望"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "天氣",
+        "這裡",
+        "真",
+        "舒服",
+        "夏天",
+        "比",
+        "春天",
+        "秋天",
+        "冷",
+        "熱",
+        "冬天",
+        "太",
+        "時候",
+        "麻煩",
+        "能",
+        "出來",
+        "可能",
+        "會",
+        "希望",
+        "晴天",
+        "下雨",
+        "下雪",
+        "天氣預報",
+        "昨天",
+        "大"
+      ],
+      "opener": {
+        "zh": "你好！今天天氣很好，你來跑步嗎？",
+        "en": "Hello! The weather is nice today. Are you here to run?"
+      },
+      "successLine": {
+        "zh": "天氣預報說明天可能會下雨，我希望明天是晴天。",
+        "en": "The forecast says it may rain tomorrow; I hope it will be sunny."
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 1
+      }
+    },
+    {
+      "id": "laixue-2-L02-gift-shopping",
+      "title": "Lisa asks about gifts for your family",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "lisa",
+        "name": "麗莎",
+        "personality": "Gloria's sweet, warm-hearted coworker. She loves finding the perfect gift and always asks a friendly follow-up question.\n",
+        "speechStyle": "Short kind sentences with words from books 1 and 2 (up to lesson 2). One question at a time; likes to say 又……又…… about nice things.\n",
+        "particles": []
+      },
+      "setting": "Lisa and the learner are chatting at the office at lunchtime about what gifts to buy for their families and whether shopping online is better.\n",
+      "goalSteps": [
+        {
+          "id": "who",
+          "description": "Say who you want to buy a gift for and what (給……買).",
+          "keywordHints": [
+            "給",
+            "買"
+          ]
+        },
+        {
+          "id": "when",
+          "description": "Say when you will go shopping (下個星期, 這個月……).",
+          "keywordHints": [
+            "下星期",
+            "下個月",
+            "這個星期",
+            "明年"
+          ]
+        },
+        {
+          "id": "why",
+          "description": "Explain why you shop online with 因為……所以…….",
+          "keywordHints": [
+            "因為",
+            "所以"
+          ]
+        },
+        {
+          "id": "quality",
+          "description": "Describe something that is both cheap and good (又……又……).",
+          "keywordHints": [
+            "又"
+          ]
+        },
+        {
+          "id": "compare",
+          "description": "Say whether the department store or the online store is more convenient.",
+          "keywordHints": [
+            "方便",
+            "比較"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "家人",
+        "回",
+        "帽子",
+        "件",
+        "衣服",
+        "盒",
+        "巧克力",
+        "網路",
+        "商店",
+        "東西",
+        "比較",
+        "方便",
+        "又",
+        "便宜",
+        "因為",
+        "所以",
+        "百貨公司",
+        "背包",
+        "旅行",
+        "有用",
+        "太陽眼鏡",
+        "上網",
+        "逛街",
+        "有空",
+        "出門",
+        "下星期",
+        "去年",
+        "明年",
+        "為什麼",
+        "上星期"
+      ],
+      "opener": {
+        "zh": "你好！你想給家人買什麼禮物？",
+        "en": "Hello! What gifts do you want to buy for your family?"
+      },
+      "successLine": {
+        "zh": "網路商店的東西又便宜又方便，我們都常常上網買東西。",
+        "en": "Things in online stores are cheap and convenient; we both often shop online."
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 2
+      }
+    },
+    {
+      "id": "laixue-2-L03-restaurant-order",
+      "title": "Order a meal from the waiter",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "waiter",
+        "name": "服務員",
+        "personality": "A polite, quick waiter in a Chinese restaurant. He is proud of the braised fish and always offers one more choice between two dishes.\n",
+        "speechStyle": "Very short polite sentences with words from books 1 and 2 (up to lesson 3). Offers two choices with 還是 and makes suggestions with 吧.\n",
+        "particles": []
+      },
+      "setting": "A busy Chinese restaurant at dinner time. The waiter takes the learner's order: dishes, soup, vegetables, rice and drinks.\n",
+      "goalSteps": [
+        {
+          "id": "dish",
+          "description": "Order a main dish (點).",
+          "keywordHints": [
+            "點",
+            "紅燒魚",
+            "炒青菜",
+            "炸豆腐"
+          ]
+        },
+        {
+          "id": "choose",
+          "description": "Choose between two things when the waiter asks 還是.",
+          "keywordHints": [
+            "還是",
+            "白飯",
+            "包子"
+          ]
+        },
+        {
+          "id": "taste",
+          "description": "Say what you like to eat or that you eat everything (什麼都……).",
+          "keywordHints": [
+            "什麼",
+            "都",
+            "愛"
+          ]
+        },
+        {
+          "id": "drink",
+          "description": "Order a drink or soup.",
+          "keywordHints": [
+            "啤酒",
+            "湯",
+            "咖啡"
+          ]
+        },
+        {
+          "id": "suggest",
+          "description": "Make a suggestion to the waiter or a friend with 吧.",
+          "keywordHints": [
+            "吧"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "紅燒魚",
+        "魚",
+        "非常",
+        "愛",
+        "豆腐",
+        "還是",
+        "青菜",
+        "點",
+        "炸",
+        "盤",
+        "炒",
+        "碗",
+        "白飯",
+        "酸",
+        "辣",
+        "湯",
+        "好喝",
+        "瓶",
+        "啤酒",
+        "包子",
+        "豆沙包",
+        "服務員",
+        "酸辣湯",
+        "炸豆腐",
+        "炒青菜",
+        "聽說",
+        "點菜"
+      ],
+      "opener": {
+        "zh": "您好！請問您要點什麼？我們的紅燒魚非常好吃。",
+        "en": "Hello! What would you like to order? Our braised fish is very delicious."
+      },
+      "successLine": {
+        "zh": "好的，一盤紅燒魚，一碗白飯，謝謝您。",
+        "en": "Alright: a plate of braised fish and a bowl of rice. Thank you."
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 3
+      }
+    },
+    {
+      "id": "laixue-2-L04-coffee-shop",
+      "title": "Order at the coffee shop",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "barista",
+        "name": "店員",
+        "personality": "A friendly young coffee shop clerk who is quick and cheerful and likes to ask whether you want it hot or iced.\n",
+        "speechStyle": "Very short polite sentences using words from books 1 and 2 (up to lesson 4). Asks 熱的還是冰的 and offers 如果……就…… suggestions.\n",
+        "particles": []
+      },
+      "setting": "A small coffee shop. The clerk takes the learner's order for a drink and something to eat, then asks about milk and sugar.\n",
+      "goalSteps": [
+        {
+          "id": "drink",
+          "description": "Order a drink (一杯……).",
+          "keywordHints": [
+            "咖啡",
+            "紅茶",
+            "一杯"
+          ]
+        },
+        {
+          "id": "hotice",
+          "description": "Say whether you want it hot or iced (熱的 / 冰的).",
+          "keywordHints": [
+            "熱的",
+            "冰的"
+          ]
+        },
+        {
+          "id": "milk",
+          "description": "Say whether you want milk or sugar added (加).",
+          "keywordHints": [
+            "加",
+            "牛奶",
+            "糖"
+          ]
+        },
+        {
+          "id": "food",
+          "description": "Order something to eat, such as a cake or a sandwich.",
+          "keywordHints": [
+            "蛋糕",
+            "三明治"
+          ]
+        },
+        {
+          "id": "same",
+          "description": "Say you want the same as a friend (跟……一樣).",
+          "keywordHints": [
+            "一樣"
+          ]
+        },
+        {
+          "id": "if",
+          "description": "Say what you will do if the shop is busy or the food is sweet (如果……就……).",
+          "keywordHints": [
+            "如果",
+            "就"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "加",
+        "牛奶",
+        "糖",
+        "冰",
+        "中",
+        "小",
+        "紅茶",
+        "別的",
+        "塊",
+        "蛋糕",
+        "甜",
+        "鹹",
+        "雞",
+        "肉",
+        "三明治",
+        "如果",
+        "就",
+        "飲料",
+        "一樣",
+        "水",
+        "等",
+        "馬上",
+        "咖啡店",
+        "雞肉三明治",
+        "冰水"
+      ],
+      "opener": {
+        "zh": "您好！您要點什麼？熱咖啡還是冰咖啡？",
+        "en": "Hello! What would you like? Hot coffee or iced coffee?"
+      },
+      "successLine": {
+        "zh": "好的，一杯熱咖啡，一個雞肉三明治，馬上來。",
+        "en": "Alright: one hot coffee and one chicken sandwich, coming right up."
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 4
+      }
+    },
+    {
+      "id": "laixue-2-L05-clothes-shop",
+      "title": "Buy a coat from the clerk",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "clerk",
+        "name": "店員",
+        "personality": "A polite clothing-store clerk who is patient and helpful, comments kindly on colors and styles, and always tells the price clearly.\n",
+        "speechStyle": "Short polite sentences with words from books 1 and 2 (up to lesson 5). Says prices in 塊 / 毛 / 分 and uses 雖然……可是…… when giving an honest comment.\n",
+        "particles": []
+      },
+      "setting": "A clothing store. The learner wants a coat or a skirt and asks about color, size, price and how to pay.\n",
+      "goalSteps": [
+        {
+          "id": "item",
+          "description": "Say what you want to look at (外套, 裙子, 長褲……).",
+          "keywordHints": [
+            "外套",
+            "裙子",
+            "長褲",
+            "運動衫"
+          ]
+        },
+        {
+          "id": "color",
+          "description": "Say which color or size you want.",
+          "keywordHints": [
+            "藍色",
+            "黑色",
+            "白色",
+            "中號",
+            "大號"
+          ]
+        },
+        {
+          "id": "try",
+          "description": "Ask to try it on (試).",
+          "keywordHints": [
+            "試",
+            "穿"
+          ]
+        },
+        {
+          "id": "comment",
+          "description": "Say something nice about it but also a problem (雖然……可是……).",
+          "keywordHints": [
+            "雖然",
+            "可是"
+          ]
+        },
+        {
+          "id": "price",
+          "description": "Ask how much it costs and say if it is too expensive.",
+          "keywordHints": [
+            "多少錢",
+            "太貴了",
+            "塊"
+          ]
+        },
+        {
+          "id": "pay",
+          "description": "Say how you will pay (現金 or 信用卡).",
+          "keywordHints": [
+            "現金",
+            "信用卡",
+            "刷卡"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "外套",
+        "看",
+        "樣子",
+        "顏色",
+        "好看",
+        "藍色",
+        "黑色",
+        "穿",
+        "最近",
+        "胖",
+        "了",
+        "條",
+        "裙子",
+        "白色",
+        "試",
+        "雖然",
+        "塊",
+        "錢",
+        "長褲",
+        "一共",
+        "運動衫",
+        "毛",
+        "付",
+        "現金",
+        "信用卡",
+        "再",
+        "付錢",
+        "中號",
+        "大號",
+        "刷卡",
+        "分"
+      ],
+      "opener": {
+        "zh": "您好！您想看外套還是長褲？",
+        "en": "Hello! Would you like to look at coats or pants?"
+      },
+      "successLine": {
+        "zh": "好的，一共三百五十塊，謝謝您！",
+        "en": "Alright, that's 350 dollars altogether. Thank you!"
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 5
+      }
+    },
+    {
+      "id": "laixue-2-L06-moving-house",
+      "title": "Jose asks about your new home",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "jose",
+        "name": "何希",
+        "personality": "Gloria's husband, who loves cooking and swimming. He is relaxed and curious and always asks how far things are from the new place.\n",
+        "speechStyle": "Short friendly sentences with words from books 1 and 2 (up to lesson 6). Asks about distance (離……遠不遠) and travel time (開車要多久).\n",
+        "particles": []
+      },
+      "setting": "Jose and the learner are chatting about the learner's move next month: how far the new home is, how long the drive is and what is nearby.\n",
+      "goalSteps": [
+        {
+          "id": "when",
+          "description": "Say when you are moving (下個月搬家).",
+          "keywordHints": [
+            "搬家",
+            "下個月"
+          ]
+        },
+        {
+          "id": "distance",
+          "description": "Say how far the new home is from the park, school or office (離).",
+          "keywordHints": [
+            "離",
+            "遠",
+            "近"
+          ]
+        },
+        {
+          "id": "time",
+          "description": "Say how long the drive or walk takes (從……到……).",
+          "keywordHints": [
+            "從",
+            "到",
+            "分鐘",
+            "鐘頭"
+          ]
+        },
+        {
+          "id": "nearby",
+          "description": "Say what is near the new home (超級市場, 游泳池, 公園).",
+          "keywordHints": [
+            "超級市場",
+            "游泳池",
+            "附近"
+          ]
+        },
+        {
+          "id": "place",
+          "description": "Describe the kind of place you want to live (住的地方).",
+          "keywordHints": [
+            "住的地方",
+            "地方"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "南區",
+        "離",
+        "遠",
+        "從",
+        "東區",
+        "城市",
+        "附近",
+        "那裡",
+        "近",
+        "到",
+        "分鐘",
+        "超級市場",
+        "社區",
+        "游泳池",
+        "天天",
+        "地方",
+        "搬家",
+        "搬到",
+        "開車",
+        "多久",
+        "買菜",
+        "游泳",
+        "走路",
+        "鐘頭",
+        "日本",
+        "蘋果"
+      ],
+      "opener": {
+        "zh": "你好！你們下個月搬家嗎？離這裡遠不遠？",
+        "en": "Hello! Are you moving next month? Is it far from here?"
+      },
+      "successLine": {
+        "zh": "從你家到公司開車只要二十分鐘，太好了！",
+        "en": "From your home to the office is only a twenty-minute drive. Great!"
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 6
+      }
+    },
+    {
+      "id": "laixue-2-L07-find-supermarket",
+      "title": "Jiawen is looking for the supermarket",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "jiawen",
+        "name": "家文",
+        "personality": "A lively, cheerful high-school student who is visiting the city and gets lost easily. He is grateful and repeats the directions back to check.\n",
+        "speechStyle": "Short cheerful sentences with words from books 1 and 2 (up to lesson 7). Asks 在哪裡 and repeats positional words (旁邊, 對面, 左邊, 右邊).\n",
+        "particles": []
+      },
+      "setting": "A street in a new neighborhood. Jiawen needs the supermarket and the swimming pool and asks the learner for directions.\n",
+      "goalSteps": [
+        {
+          "id": "where",
+          "description": "Say where the supermarket is (在……旁邊 / 對面).",
+          "keywordHints": [
+            "在",
+            "旁邊",
+            "對面"
+          ]
+        },
+        {
+          "id": "pool",
+          "description": "Say where the swimming pool is.",
+          "keywordHints": [
+            "游泳池",
+            "後面",
+            "前面"
+          ]
+        },
+        {
+          "id": "leftright",
+          "description": "Give a direction with 左邊 or 右邊.",
+          "keywordHints": [
+            "左邊",
+            "右邊"
+          ]
+        },
+        {
+          "id": "howmany",
+          "description": "Say how many shops or people there are (幾).",
+          "keywordHints": [
+            "幾",
+            "十幾",
+            "二十幾"
+          ]
+        },
+        {
+          "id": "home",
+          "description": "Say where your own home is and how many rooms it has.",
+          "keywordHints": [
+            "我家",
+            "房間",
+            "在"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "旁邊",
+        "恭喜",
+        "新",
+        "客氣",
+        "客廳",
+        "水果",
+        "點心",
+        "漂亮",
+        "介紹",
+        "房子",
+        "樓下",
+        "廚房",
+        "樓上",
+        "房間",
+        "間",
+        "浴室",
+        "後面",
+        "對面",
+        "外面",
+        "請進",
+        "散步",
+        "前面",
+        "裡面",
+        "左邊",
+        "右邊",
+        "上面",
+        "下面"
+      ],
+      "opener": {
+        "zh": "你好！請問，超級市場在哪裡？",
+        "en": "Hello! Excuse me, where is the supermarket?"
+      },
+      "successLine": {
+        "zh": "謝謝！超級市場在游泳池旁邊，我現在就去。",
+        "en": "Thanks! The supermarket is next to the swimming pool; I'll go right now."
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 7
+      }
+    },
+    {
+      "id": "laixue-2-L08-daily-routine",
+      "title": "Kevin asks about your typical day",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "kevin",
+        "name": "凱文",
+        "personality": "Gloria's easy-going coworker. He loves to compare daily routines and is always curious about what people eat for breakfast.\n",
+        "speechStyle": "Short relaxed sentences with words from books 1 and 2 (up to lesson 8). Uses 先……然後…… when he tells his own day.\n",
+        "particles": []
+      },
+      "setting": "Kevin and the learner are at the office coffee corner on a Monday morning, comparing how they spend a typical day.\n",
+      "goalSteps": [
+        {
+          "id": "getup",
+          "description": "Say when you get up and what you do first.",
+          "keywordHints": [
+            "起床",
+            "早上",
+            "先"
+          ]
+        },
+        {
+          "id": "breakfast",
+          "description": "Say what you eat or drink for breakfast.",
+          "keywordHints": [
+            "早飯",
+            "果汁",
+            "蛋",
+            "咖啡"
+          ]
+        },
+        {
+          "id": "work",
+          "description": "Say when you go to work and finish work.",
+          "keywordHints": [
+            "上班",
+            "下班"
+          ]
+        },
+        {
+          "id": "order",
+          "description": "Tell two things in order with 先……然後…….",
+          "keywordHints": [
+            "先",
+            "然後"
+          ]
+        },
+        {
+          "id": "done",
+          "description": "Say what you already did today (……了).",
+          "keywordHints": [
+            "了"
+          ]
+        },
+        {
+          "id": "evening",
+          "description": "Say what you like to do in the evening (聽聽音樂, 看看書).",
+          "keywordHints": [
+            "聽聽",
+            "看看",
+            "音樂",
+            "看書"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "賣",
+        "早上",
+        "起床",
+        "先",
+        "洗",
+        "頭髮",
+        "然後",
+        "早飯",
+        "蛋",
+        "果汁",
+        "上班",
+        "樓",
+        "漢堡",
+        "可樂",
+        "冰淇淋",
+        "下班",
+        "離開",
+        "帶",
+        "狗",
+        "電影",
+        "遊戲",
+        "準備",
+        "一天",
+        "洗澡",
+        "洗頭髮",
+        "一樓",
+        "有時候",
+        "看書"
+      ],
+      "opener": {
+        "zh": "你好！你每天早上幾點起床？",
+        "en": "Hello! What time do you get up every morning?"
+      },
+      "successLine": {
+        "zh": "你的一天真不錯，我每天也先洗澡，然後吃早飯。",
+        "en": "Your day sounds great; I also shower first and then eat breakfast every day."
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 8
+      }
+    },
+    {
+      "id": "laixue-2-L09-doctor-visit",
+      "title": "Tell the doctor you caught a cold",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "doctor",
+        "name": "醫生",
+        "personality": "A calm, caring doctor at a hospital who asks short questions about symptoms and gives simple, clear advice.\n",
+        "speechStyle": "Short calm sentences with words from books 1 and 2 (up to lesson 9). Asks 哪裡不舒服, 怎麼了 and gives advice with 應該 and 多 / 少.\n",
+        "particles": []
+      },
+      "setting": "A hospital consulting room. The learner is not feeling well and the doctor asks what is wrong, since when, and gives advice.\n",
+      "goalSteps": [
+        {
+          "id": "problem",
+          "description": "Say you caught a cold or what hurts (頭痛, 肚子痛).",
+          "keywordHints": [
+            "感冒",
+            "頭",
+            "痛",
+            "肚子"
+          ]
+        },
+        {
+          "id": "symptoms",
+          "description": "Name another symptom (咳嗽, 流鼻水, 發燒).",
+          "keywordHints": [
+            "咳嗽",
+            "鼻水",
+            "發燒"
+          ]
+        },
+        {
+          "id": "since",
+          "description": "Say what you did not do because of it (沒……).",
+          "keywordHints": [
+            "沒"
+          ]
+        },
+        {
+          "id": "again",
+          "description": "Say you got sick again (又……了).",
+          "keywordHints": [
+            "又",
+            "了"
+          ]
+        },
+        {
+          "id": "advice",
+          "description": "Repeat the doctor's advice with 多 or 少.",
+          "keywordHints": [
+            "多",
+            "少",
+            "應該"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "感冒",
+        "醫院",
+        "醫生",
+        "頭",
+        "痛",
+        "肚子",
+        "流",
+        "鼻水",
+        "咳嗽",
+        "但是",
+        "發燒",
+        "多",
+        "需要",
+        "藥",
+        "怎麼",
+        "又",
+        "生病",
+        "已經",
+        "健康",
+        "重要",
+        "以後",
+        "注意",
+        "身體",
+        "應該",
+        "打算",
+        "開始",
+        "怎麼了",
+        "流鼻水",
+        "好多了"
+      ],
+      "opener": {
+        "zh": "你好！你怎麼了？哪裡不舒服？",
+        "en": "Hello! What's wrong? Where do you feel unwell?"
+      },
+      "successLine": {
+        "zh": "你感冒了，要多喝水，多休息，我給你藥。",
+        "en": "You have a cold: drink more water, rest more, and I'll give you medicine."
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 9
+      }
+    },
+    {
+      "id": "laixue-2-L10-plan-taiwan-trip",
+      "title": "Mingwen asks about your Taiwan plans",
+      "levelRange": {
+        "min": "L1",
+        "max": "L1"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "明文",
+        "personality": "A kind, friendly graduate student who helps the learner practise Mandarin. He is excited about travel and asks follow-up questions about plans.\n",
+        "speechStyle": "Short friendly sentences with words from books 1 and 2 (up to lesson 10). Likes 快要……了, 一……就…… and asking whether you have ever been somewhere.\n",
+        "particles": []
+      },
+      "setting": "Mingwen and the learner are chatting about the learner's holiday plans and whether the learner has ever been to Taiwan or Asia.\n",
+      "goalSteps": [
+        {
+          "id": "now",
+          "description": "Say what you are doing right now (在……).",
+          "keywordHints": [
+            "在"
+          ]
+        },
+        {
+          "id": "plan",
+          "description": "Say you plan to take a vacation or go abroad (休假, 出國, 計畫).",
+          "keywordHints": [
+            "休假",
+            "出國",
+            "計畫",
+            "假期"
+          ]
+        },
+        {
+          "id": "soon",
+          "description": "Say something is about to happen (快要……了).",
+          "keywordHints": [
+            "快要",
+            "了"
+          ]
+        },
+        {
+          "id": "asap",
+          "description": "Say what you will do as soon as you arrive (一……就……).",
+          "keywordHints": [
+            "一",
+            "就"
+          ]
+        },
+        {
+          "id": "been",
+          "description": "Say whether you have been to Taiwan or Asia (去過 / 沒去過).",
+          "keywordHints": [
+            "過",
+            "亞洲",
+            "臺灣"
+          ]
+        },
+        {
+          "id": "chance",
+          "description": "Say you hope to find a chance to go (機會).",
+          "keywordHints": [
+            "機會",
+            "找",
+            "希望"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "在",
+        "快",
+        "論文",
+        "計畫",
+        "找",
+        "休假",
+        "出國",
+        "過",
+        "亞洲",
+        "有意思",
+        "機會",
+        "假期",
+        "長",
+        "短",
+        "找到",
+        "一些",
+        "上課",
+        "英文"
+      ],
+      "opener": {
+        "zh": "你好！你現在在做什麼？",
+        "en": "Hello! What are you doing right now?"
+      },
+      "successLine": {
+        "zh": "你快要去臺灣了，太好了！你一到臺灣就給我打電話吧。",
+        "en": "You are about to go to Taiwan, great! Call me as soon as you arrive."
+      },
+      "textbook": {
+        "textbookId": "laixue-2",
+        "lesson": 10
+      }
+    },
+    {
+      "id": "laixue-3-L01-first-day-class",
+      "title": "First day of class with Teacher Lin",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "teacher-lin",
+        "name": "林老師",
+        "personality": "A warm, patient Mandarin teacher who welcomes every new classmate and asks gentle follow-up questions about their work and interests.\n",
+        "speechStyle": "Clear, kind sentences using words from books 1 to 3 (up to book 3 lesson 1). One question at a time; repeats the learner's answer with a short comment.\n",
+        "particles": []
+      },
+      "setting": "The classroom on the first day of the new term. Teacher Lin has just welcomed the learner as a new classmate and asks the learner to introduce themself.\n",
+      "goalSteps": [
+        {
+          "id": "name",
+          "description": "Say your surname and name.",
+          "keywordHints": [
+            "姓",
+            "叫"
+          ]
+        },
+        {
+          "id": "job",
+          "description": "Say where you work and what your company does.",
+          "keywordHints": [
+            "在",
+            "公司",
+            "工作"
+          ]
+        },
+        {
+          "id": "before",
+          "description": "Say what you did or where you lived before (以前).",
+          "keywordHints": [
+            "以前"
+          ]
+        },
+        {
+          "id": "howlong",
+          "description": "Say how long you have studied Chinese or worked (……多).",
+          "keywordHints": [
+            "多",
+            "年",
+            "個月"
+          ]
+        },
+        {
+          "id": "hobby",
+          "description": "Say your hobby and what you collect.",
+          "keywordHints": [
+            "興趣",
+            "收集"
+          ]
+        },
+        {
+          "id": "later",
+          "description": "Say what you hope to do later (以後).",
+          "keywordHints": [
+            "以後",
+            "希望"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "同學",
+        "大家",
+        "學期",
+        "第",
+        "度假",
+        "加班",
+        "好",
+        "辛苦",
+        "啊",
+        "教室",
+        "事",
+        "就",
+        "以前",
+        "換",
+        "東部",
+        "繼續",
+        "平安",
+        "貿易",
+        "興趣",
+        "收集",
+        "鳥",
+        "貓",
+        "照片",
+        "敲門",
+        "照相",
+        "林",
+        "墨西哥",
+        "張家安"
+      ],
+      "opener": {
+        "zh": "大家好！歡迎你來上課。請問你叫什麼名字？",
+        "en": "Hello everyone! Welcome to class. May I ask your name?"
+      },
+      "successLine": {
+        "zh": "非常歡迎新同學！現在我們開始上課吧。",
+        "en": "A warm welcome to our new classmate! Now let's begin class."
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 1
+      }
+    },
+    {
+      "id": "laixue-3-L02-beach-vacation",
+      "title": "Dushyant asks about your beach vacation",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "dushyant",
+        "name": "杜翔",
+        "personality": "A hard-working, friendly engineer who has not had a holiday for a long time and loves to hear about other people's trips.\n",
+        "speechStyle": "Short friendly sentences with words from books 1 to 3 (up to book 3 lesson 2). Asks 你是怎麼去的 and repeats the learner's answer with a comment (聽起來……).\n",
+        "particles": []
+      },
+      "setting": "Dushyant and the learner are having coffee after class. He heard the learner just came back from a beach vacation and wants to hear all about it.\n",
+      "goalSteps": [
+        {
+          "id": "where",
+          "description": "Say where you went on vacation.",
+          "keywordHints": [
+            "海邊",
+            "度假",
+            "去"
+          ]
+        },
+        {
+          "id": "how",
+          "description": "Say how you got there (搭飛機 / 坐船).",
+          "keywordHints": [
+            "飛機",
+            "船",
+            "搭",
+            "坐"
+          ]
+        },
+        {
+          "id": "whenwho",
+          "description": "Say when you went or who you went with (是……的).",
+          "keywordHints": [
+            "是",
+            "的"
+          ]
+        },
+        {
+          "id": "did",
+          "description": "Say what you did there (潛水, 晒太陽) or learned.",
+          "keywordHints": [
+            "潛水",
+            "教練",
+            "晒"
+          ]
+        },
+        {
+          "id": "scenery",
+          "description": "Describe the scenery or hotel with ……起來.",
+          "keywordHints": [
+            "風景",
+            "起來",
+            "旅館"
+          ]
+        },
+        {
+          "id": "feeling",
+          "description": "Say how the vacation felt or how your mood was.",
+          "keywordHints": [
+            "心情",
+            "輕鬆"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "海邊",
+        "風景",
+        "次",
+        "輕鬆",
+        "坐",
+        "船",
+        "潛水",
+        "各",
+        "種",
+        "容易",
+        "教練",
+        "到處",
+        "晒",
+        "旅館",
+        "美",
+        "一邊",
+        "天上",
+        "星星",
+        "心情",
+        "怎麼",
+        "搭",
+        "飛機",
+        "租",
+        "決定",
+        "有一天",
+        "海裡",
+        "聽起來",
+        "看到"
+      ],
+      "opener": {
+        "zh": "你好！聽說你上個星期去度假了，你是去哪裡度假的？",
+        "en": "Hello! I hear you went on vacation last week. Where did you go?"
+      },
+      "successLine": {
+        "zh": "聽起來你的假期很輕鬆，我也想去海邊潛水！",
+        "en": "Your vacation sounds relaxing; I want to go diving at the beach too!"
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 2
+      }
+    },
+    {
+      "id": "laixue-3-L03-thanksgiving-plans",
+      "title": "Gloria plans a Thanksgiving dinner",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "gloria",
+        "name": "高莉亞",
+        "personality": "An outgoing coworker who loves hosting friends and always makes a plan with a list of dishes. She is cheerful and a little bit worried about being late.\n",
+        "speechStyle": "Cheerful short sentences with words from books 1 to 3 (up to book 3 lesson 3). Often says 早一點 / 晚一點 and asks for help (幫忙).\n",
+        "particles": []
+      },
+      "setting": "Gloria and the learner are making plans for Thanksgiving at the office. She wants to invite friends from other countries and needs help with the dishes.\n",
+      "goalSteps": [
+        {
+          "id": "greet",
+          "description": "Say how you usually spend Thanksgiving or a holiday (過節).",
+          "keywordHints": [
+            "感恩節",
+            "過節",
+            "回家"
+          ]
+        },
+        {
+          "id": "dates",
+          "description": "Say which days you are free (從……到……).",
+          "keywordHints": [
+            "從",
+            "到"
+          ]
+        },
+        {
+          "id": "dishes",
+          "description": "Suggest some dishes for the dinner (火雞, 沙拉, 麵包, 甜點).",
+          "keywordHints": [
+            "火雞",
+            "沙拉",
+            "麵包",
+            "甜點",
+            "建議"
+          ]
+        },
+        {
+          "id": "bigger",
+          "description": "Say a dish should be bigger, sweeter or cheaper (……一點).",
+          "keywordHints": [
+            "一點"
+          ]
+        },
+        {
+          "id": "earlier",
+          "description": "Say what you will prepare earlier or later (早一點 / 晚一點).",
+          "keywordHints": [
+            "早一點",
+            "晚一點"
+          ]
+        },
+        {
+          "id": "invite",
+          "description": "Offer to help and invite a friend (幫忙, 參加).",
+          "keywordHints": [
+            "幫忙",
+            "參加",
+            "外國朋友"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "感恩節",
+        "嗨",
+        "過",
+        "趕快",
+        "外國",
+        "熱鬧",
+        "可以",
+        "參加",
+        "菜",
+        "怕",
+        "來不及",
+        "早",
+        "一點",
+        "幫忙",
+        "這樣",
+        "建議",
+        "烤",
+        "火雞",
+        "馬鈴薯泥",
+        "沙拉",
+        "麵包",
+        "甜點",
+        "南瓜派",
+        "好像",
+        "或是",
+        "開心",
+        "晚",
+        "回家",
+        "過節",
+        "早一點",
+        "烤火雞"
+      ],
+      "opener": {
+        "zh": "嗨！感恩節你想怎麼過？",
+        "en": "Hi! How would you like to spend Thanksgiving?"
+      },
+      "successLine": {
+        "zh": "太好了！感恩節我們一起過，一定很熱鬧。",
+        "en": "Great! We'll spend Thanksgiving together; it will surely be lively."
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 3
+      }
+    },
+    {
+      "id": "laixue-3-L04-new-branch-office",
+      "title": "Mingwen asks about your new job",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "明文",
+        "personality": "A kind, friendly graduate student who helps Gloria practise Mandarin. He is curious about work abroad and encourages the learner.\n",
+        "speechStyle": "Friendly short sentences with words from books 1 to 3 (up to book 3 lesson 4). Asks about the company, experience and the future.\n",
+        "particles": []
+      },
+      "setting": "Mingwen runs into the learner, who has just started at the company's branch in Taiwan. They talk about the new job and make a plan to meet up.\n",
+      "goalSteps": [
+        {
+          "id": "why",
+          "description": "Say why you are here (公司派我……).",
+          "keywordHints": [
+            "派",
+            "公司",
+            "工作"
+          ]
+        },
+        {
+          "id": "still",
+          "description": "Say what you still do or do not yet know (還).",
+          "keywordHints": [
+            "還"
+          ]
+        },
+        {
+          "id": "company",
+          "description": "Describe your company (分公司, 科技, 產品).",
+          "keywordHints": [
+            "分公司",
+            "科技",
+            "產品",
+            "有名"
+          ]
+        },
+        {
+          "id": "interest",
+          "description": "Say what you are interested in (對……有興趣).",
+          "keywordHints": [
+            "對",
+            "興趣"
+          ]
+        },
+        {
+          "id": "experience",
+          "description": "Say what experience you have or what helps you (經驗, 幫助).",
+          "keywordHints": [
+            "經驗",
+            "幫助"
+          ]
+        },
+        {
+          "id": "meet",
+          "description": "Make a plan to meet (約, 見面).",
+          "keywordHints": [
+            "約",
+            "見面"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "派",
+        "還",
+        "記得",
+        "哇",
+        "當然",
+        "分公司",
+        "科技",
+        "對",
+        "情形",
+        "了解",
+        "至少",
+        "知道",
+        "方面",
+        "發展",
+        "相當",
+        "有名",
+        "合作",
+        "產品",
+        "世界",
+        "以為",
+        "一直",
+        "經驗",
+        "未來",
+        "幫助",
+        "剛",
+        "約",
+        "見面"
+      ],
+      "opener": {
+        "zh": "哇，好久不見！你還記得我嗎？",
+        "en": "Wow, long time no see! Do you still remember me?"
+      },
+      "successLine": {
+        "zh": "你的工作聽起來很不錯，我們下個星期約個時間見面吧。",
+        "en": "Your job sounds great; let's set a time to meet next week."
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 4
+      }
+    },
+    {
+      "id": "laixue-3-L05-tea-shop",
+      "title": "Buy oolong tea at the tea shop",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "tea-seller",
+        "name": "老闆",
+        "personality": "A friendly tea shop owner who loves to explain tea and always lets customers smell and taste before buying.\n",
+        "speechStyle": "Warm short sentences with words from books 1 to 3 (up to book 3 lesson 5). Invites the customer with 聞聞看 and 喝喝看 and explains taste.\n",
+        "particles": []
+      },
+      "setting": "A small tea shop. The learner wants to buy oolong tea as a gift and the owner lets them smell and taste different teas.\n",
+      "goalSteps": [
+        {
+          "id": "choose",
+          "description": "Say which tea you want to look at (烏龍茶, 紅茶).",
+          "keywordHints": [
+            "烏龍茶",
+            "紅茶",
+            "茶"
+          ]
+        },
+        {
+          "id": "smell",
+          "description": "Smell or taste the tea and say how it is (香, 濃, 淡).",
+          "keywordHints": [
+            "香",
+            "濃",
+            "淡",
+            "聞聞看",
+            "喝喝看"
+          ]
+        },
+        {
+          "id": "compare",
+          "description": "Compare two teas with 沒有……那麼……",
+          "keywordHints": [
+            "沒有",
+            "那麼",
+            "這麼"
+          ]
+        },
+        {
+          "id": "taste",
+          "description": "Say whether it is bitter or sweet or special.",
+          "keywordHints": [
+            "苦",
+            "甜",
+            "特別"
+          ]
+        },
+        {
+          "id": "custom",
+          "description": "Ask or say how to steep tea (泡).",
+          "keywordHints": [
+            "泡",
+            "習慣"
+          ]
+        },
+        {
+          "id": "buy",
+          "description": "Say how much you will buy and thank the owner.",
+          "keywordHints": [
+            "盒",
+            "要",
+            "謝謝"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "烏龍茶",
+        "香",
+        "後天",
+        "聞",
+        "麻煩",
+        "味道",
+        "不同",
+        "濃",
+        "淡",
+        "選",
+        "泡",
+        "華人",
+        "習慣",
+        "不用",
+        "說明",
+        "有趣",
+        "品質",
+        "嗯",
+        "苦",
+        "甜",
+        "特別",
+        "要是",
+        "東方美人茶",
+        "喝茶"
+      ],
+      "opener": {
+        "zh": "歡迎！您想喝烏龍茶還是紅茶？",
+        "en": "Welcome! Would you like oolong tea or black tea?"
+      },
+      "successLine": {
+        "zh": "好，一盒烏龍茶，謝謝您。",
+        "en": "Alright, one box of oolong tea. Thank you."
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 5
+      }
+    },
+    {
+      "id": "laixue-3-L06-new-colleagues",
+      "title": "Joann asks how you are getting along at work",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "joann",
+        "name": "張家安",
+        "personality": "A thoughtful trade-company manager who cares about her colleagues and always asks whether the new person is under pressure.\n",
+        "speechStyle": "Kind, careful sentences with words from books 1 to 3 (up to book 3 lesson 6). Often reassures with 放心 and gives advice with 好好地 / 慢慢地.\n",
+        "particles": []
+      },
+      "setting": "Joann invites the learner to a quiet corner of the office to ask how the first weeks are going: work, colleagues, pressure and what is hard to understand.\n",
+      "goalSteps": [
+        {
+          "id": "work",
+          "description": "Say what you have finished and what you have not finished (V完).",
+          "keywordHints": [
+            "完",
+            "沒做完"
+          ]
+        },
+        {
+          "id": "pressure",
+          "description": "Say whether you feel pressure and how you are adapting.",
+          "keywordHints": [
+            "壓力",
+            "適應",
+            "還好"
+          ]
+        },
+        {
+          "id": "colleagues",
+          "description": "Describe your colleagues (有的……有的……).",
+          "keywordHints": [
+            "有的",
+            "熱心",
+            "親切",
+            "活潑"
+          ]
+        },
+        {
+          "id": "understand",
+          "description": "Say what you can or cannot understand (聽不懂, 看得懂).",
+          "keywordHints": [
+            "聽不懂",
+            "看不懂",
+            "看得懂",
+            "聽得懂",
+            "懂"
+          ]
+        },
+        {
+          "id": "help",
+          "description": "Ask for help or say someone helped you solve a problem.",
+          "keywordHints": [
+            "解決",
+            "幫助",
+            "資料",
+            "願意"
+          ]
+        },
+        {
+          "id": "care",
+          "description": "Thank her and say you will take care of yourself (好好地).",
+          "keywordHints": [
+            "好好地",
+            "照顧",
+            "放心"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "一切",
+        "完",
+        "不過",
+        "適應",
+        "壓力",
+        "還好",
+        "熱心",
+        "願意",
+        "懂",
+        "資料",
+        "解決",
+        "部門",
+        "年輕",
+        "個性",
+        "活潑",
+        "親切",
+        "相處",
+        "滿意",
+        "環境",
+        "認真",
+        "互相",
+        "得到",
+        "相信",
+        "好處",
+        "告訴",
+        "照顧",
+        "放心",
+        "沒做完",
+        "聽不懂",
+        "看不懂",
+        "有的",
+        "好好地",
+        "本",
+        "慢"
+      ],
+      "opener": {
+        "zh": "你好！你在新公司工作得怎麼樣？同事對你好嗎？",
+        "en": "Hello! How is work at the new company? Are your colleagues good to you?"
+      },
+      "successLine": {
+        "zh": "放心，同事都很熱心，你好好地休息，慢慢地適應吧。",
+        "en": "Don't worry, the colleagues are all warm; rest well and adapt slowly."
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 6
+      }
+    },
+    {
+      "id": "laixue-3-L07-europe-business-trip",
+      "title": "Dushyant asks about your trip to Europe",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "dushyant",
+        "name": "杜翔",
+        "personality": "A hard-working, friendly engineer who travels for work and enjoys comparing transport and food in different countries.\n",
+        "speechStyle": "Friendly short sentences with words from books 1 to 3 (up to book 3 lesson 7). Likes to say 越來越 and asks follow-up questions about the trip.\n",
+        "particles": []
+      },
+      "setting": "Dushyant and the learner meet at lunch. The learner is about to leave for Germany and a few other places in Europe on a business trip.\n",
+      "goalSteps": [
+        {
+          "id": "purpose",
+          "description": "Say why you are going to Europe (出差).",
+          "keywordHints": [
+            "出差",
+            "歐洲",
+            "德國"
+          ]
+        },
+        {
+          "id": "result",
+          "description": "Say what you managed to arrange or find (V到 / V好).",
+          "keywordHints": [
+            "談好",
+            "找到",
+            "準備好"
+          ]
+        },
+        {
+          "id": "relatives",
+          "description": "Say if you will visit relatives or take the chance (順便, 親戚).",
+          "keywordHints": [
+            "順便",
+            "親戚",
+            "阿姨",
+            "表妹"
+          ]
+        },
+        {
+          "id": "transport",
+          "description": "Say how you will get around (火車, 公車).",
+          "keywordHints": [
+            "火車",
+            "公車",
+            "交通"
+          ]
+        },
+        {
+          "id": "language",
+          "description": "Say how you will communicate (德文, 溝通).",
+          "keywordHints": [
+            "德文",
+            "溝通",
+            "用"
+          ]
+        },
+        {
+          "id": "change",
+          "description": "Say how something is getting better or busier (越來越).",
+          "keywordHints": [
+            "越來越"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "出差",
+        "順便",
+        "親戚",
+        "談",
+        "順利",
+        "老闆",
+        "投資",
+        "開",
+        "句",
+        "用",
+        "溝通",
+        "阿姨",
+        "表妹",
+        "火車",
+        "才",
+        "交通",
+        "公車",
+        "其他",
+        "文化",
+        "請教",
+        "好玩",
+        "沒看到",
+        "談好了",
+        "越來越",
+        "歐洲",
+        "德國",
+        "德文"
+      ],
+      "opener": {
+        "zh": "你好！聽說你要去歐洲出差，什麼時候去？",
+        "en": "Hello! I hear you are going to Europe on business. When do you leave?"
+      },
+      "successLine": {
+        "zh": "祝你出差順利，回來以後告訴我德國怎麼樣。",
+        "en": "Have a smooth trip, and tell me how Germany was when you get back."
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 7
+      }
+    },
+    {
+      "id": "laixue-3-L08-mistake-at-work",
+      "title": "The manager asks about the mistake in the contract",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "manager",
+        "name": "經理",
+        "personality": "A fair but strict manager who values careful work. He asks calm, direct questions and wants to hear how the learner will fix the problem.\n",
+        "speechStyle": "Direct, polite sentences with words from books 1 to 3 (up to book 3 lesson 8). Uses 小心 and 別 for warnings and asks the learner to check and hand in files.\n",
+        "particles": []
+      },
+      "setting": "The manager's office. A price in a contract is wrong and the manager asks the learner what happened and how to fix it.\n",
+      "goalSteps": [
+        {
+          "id": "mistake",
+          "description": "Say what you did wrong (V錯).",
+          "keywordHints": [
+            "錯",
+            "做錯了",
+            "寫錯"
+          ]
+        },
+        {
+          "id": "what",
+          "description": "Explain what happened with the price or the file.",
+          "keywordHints": [
+            "價錢",
+            "合約",
+            "發生",
+            "問題"
+          ]
+        },
+        {
+          "id": "scolded",
+          "description": "Say you were scolded or the file was lost (被).",
+          "keywordHints": [
+            "被",
+            "罵",
+            "不見了"
+          ]
+        },
+        {
+          "id": "feel",
+          "description": "Say how this makes you feel (讓).",
+          "keywordHints": [
+            "讓",
+            "難過",
+            "生氣",
+            "心情"
+          ]
+        },
+        {
+          "id": "fix",
+          "description": "Say how you will fix it (用, 檢查, 翻譯, 交).",
+          "keywordHints": [
+            "用",
+            "檢查",
+            "翻譯",
+            "交",
+            "存"
+          ]
+        },
+        {
+          "id": "promise",
+          "description": "Promise to be careful next time (小心).",
+          "keywordHints": [
+            "小心",
+            "別"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "錯",
+        "心情",
+        "被",
+        "經理",
+        "罵",
+        "發生",
+        "唉",
+        "清楚",
+        "合約",
+        "價錢",
+        "問題",
+        "嚴重",
+        "發現",
+        "零",
+        "生氣",
+        "頓",
+        "感覺",
+        "讓",
+        "難過",
+        "小心",
+        "別",
+        "翻譯",
+        "份",
+        "交",
+        "存",
+        "檔案",
+        "檢查",
+        "要不然",
+        "做錯了",
+        "看清楚",
+        "有一次",
+        "不見了",
+        "打"
+      ],
+      "opener": {
+        "zh": "你好！合約的價錢有問題，你知道發生了什麼事嗎？",
+        "en": "Hello! There is a problem with the price in the contract. Do you know what happened?"
+      },
+      "successLine": {
+        "zh": "好，下次小心一點，請你再檢查一下，然後交給我。",
+        "en": "Alright. Be more careful next time; check it again and then hand it to me."
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 8
+      }
+    },
+    {
+      "id": "laixue-3-L09-weekend-plans",
+      "title": "Jose asks how you arrange the weekend",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "jose",
+        "name": "何希",
+        "personality": "Gloria's husband, who loves cooking, swimming and grilling. He enjoys planning a weekend with a list of chores and one fun outing.\n",
+        "speechStyle": "Relaxed short sentences with words from books 1 to 3 (up to book 3 lesson 9). Gives small commands with 把 (把……拿出去) and asks what the learner will do.\n",
+        "particles": []
+      },
+      "setting": "Jose and the learner plan Saturday and Sunday: first the housework at home, then something fun outside, perhaps a hike or a barbecue.\n",
+      "goalSteps": [
+        {
+          "id": "usual",
+          "description": "Say what you usually do on weekends.",
+          "keywordHints": [
+            "週末",
+            "活動",
+            "通常",
+            "平常"
+          ]
+        },
+        {
+          "id": "housework",
+          "description": "Name some housework (打掃, 整理, 擦).",
+          "keywordHints": [
+            "打掃",
+            "整理",
+            "擦",
+            "割草"
+          ]
+        },
+        {
+          "id": "carry",
+          "description": "Say you take something out or bring it up/down (把……拿出去).",
+          "keywordHints": [
+            "把",
+            "拿",
+            "出去",
+            "上來",
+            "下來"
+          ]
+        },
+        {
+          "id": "topic",
+          "description": "Say something about a group of things (這些……我都……).",
+          "keywordHints": [
+            "這些",
+            "都"
+          ]
+        },
+        {
+          "id": "outing",
+          "description": "Choose an outing (爬山, 烤肉, 棒球比賽).",
+          "keywordHints": [
+            "爬山",
+            "烤肉",
+            "棒球",
+            "比賽",
+            "山"
+          ]
+        },
+        {
+          "id": "arrange",
+          "description": "Arrange the order of the weekend.",
+          "keywordHints": [
+            "安排",
+            "先",
+            "然後"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "活動",
+        "書房",
+        "下來",
+        "整理",
+        "上來",
+        "打掃",
+        "割草",
+        "畫",
+        "拿",
+        "擦",
+        "院子",
+        "烤肉",
+        "把",
+        "出去",
+        "無聊",
+        "山",
+        "爬",
+        "上去",
+        "大概",
+        "棒球",
+        "比賽",
+        "下山",
+        "安排",
+        "拿下來",
+        "拿出去",
+        "爬上去",
+        "走下來",
+        "紐約",
+        "垃圾",
+        "桌子",
+        "椅子"
+      ],
+      "opener": {
+        "zh": "你好！這個週末你有什麼活動？",
+        "en": "Hello! What activities do you have this weekend?"
+      },
+      "successLine": {
+        "zh": "好，我們星期六先打掃院子，然後去爬山。",
+        "en": "Good. On Saturday we'll first clean the yard and then go hiking."
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 9
+      }
+    },
+    {
+      "id": "laixue-3-L10-progress-chat",
+      "title": "Teacher Lin asks how your Chinese is improving",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "teacher-lin",
+        "name": "林老師",
+        "personality": "A warm, patient Mandarin teacher who notices each student's progress and gives specific, kind feedback.\n",
+        "speechStyle": "Clear, encouraging sentences with words from books 1 to 3 (up to book 3 lesson 10). Likes 不但……而且…… and 更 when she praises progress.\n",
+        "particles": []
+      },
+      "setting": "The end of the term. Teacher Lin has just handed back the exam papers and asks the learner how they think their Chinese has improved.\n",
+      "goalSteps": [
+        {
+          "id": "exam",
+          "description": "Say how you felt about the exam and your grade.",
+          "keywordHints": [
+            "考試",
+            "成績",
+            "緊張"
+          ]
+        },
+        {
+          "id": "progress",
+          "description": "Say what has improved (聽力, 聲調, 漢字).",
+          "keywordHints": [
+            "進步",
+            "聽力",
+            "聲調",
+            "漢字",
+            "更"
+          ]
+        },
+        {
+          "id": "both",
+          "description": "Say two good things with 不但……而且…….",
+          "keywordHints": [
+            "不但",
+            "而且"
+          ]
+        },
+        {
+          "id": "ba",
+          "description": "Say what you handed in or put somewhere (把……交給 / 放在).",
+          "keywordHints": [
+            "把",
+            "交給",
+            "放在"
+          ]
+        },
+        {
+          "id": "dontknow",
+          "description": "Say something you do not know yet (不知道).",
+          "keywordHints": [
+            "不知道"
+          ]
+        },
+        {
+          "id": "plan",
+          "description": "Say how you will study harder (努力, 用功).",
+          "keywordHints": [
+            "努力",
+            "用功",
+            "學習"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "進步",
+        "結束",
+        "最後",
+        "考試",
+        "考卷",
+        "還",
+        "仔細",
+        "緊張",
+        "用功",
+        "聽力",
+        "能力",
+        "漢字",
+        "流利",
+        "更",
+        "句子",
+        "作業",
+        "聲調",
+        "正確",
+        "成績",
+        "學習",
+        "不但",
+        "而且",
+        "努力",
+        "同意",
+        "想法",
+        "主管",
+        "適合",
+        "小吃",
+        "友善",
+        "沒錯",
+        "外國人",
+        "放"
+      ],
+      "opener": {
+        "zh": "你好！這個學期快結束了，你覺得你的中文進步了嗎？",
+        "en": "Hello! The term is almost over. Do you think your Chinese has improved?"
+      },
+      "successLine": {
+        "zh": "你不但很用功，而且進步了很多，我很高興。",
+        "en": "You are not only diligent but have also improved a lot; I'm very happy."
+      },
+      "textbook": {
+        "textbookId": "laixue-3",
+        "lesson": 10
+      }
+    },
+    {
+      "id": "laixue-4-L01-job-change-news",
+      "title": "Mingwen hears your news about the job in Taiwan",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "明文",
+        "personality": "A kind, friendly graduate student who helps the learner practise Mandarin. He is happy about good news and asks gentle questions about plans and worries.\n",
+        "speechStyle": "Friendly short sentences with words from books 1 to 4 (up to book 4 lesson 1). Says 如果……的話 and 除了……還…… when he gives suggestions.\n",
+        "particles": []
+      },
+      "setting": "Mingwen and the learner are at a coffee shop. The learner has just heard the company wants to send them to work in Taiwan, and they talk about it.\n",
+      "goalSteps": [
+        {
+          "id": "news",
+          "description": "Share the news: the company wants to send you to Taiwan.",
+          "keywordHints": [
+            "消息",
+            "派",
+            "臺灣",
+            "工作"
+          ]
+        },
+        {
+          "id": "feeling",
+          "description": "Say how you feel (興奮, 擔心).",
+          "keywordHints": [
+            "興奮",
+            "擔心",
+            "緊張"
+          ]
+        },
+        {
+          "id": "ifthen",
+          "description": "Say what you will do if something happens (……的話).",
+          "keywordHints": [
+            "的話"
+          ]
+        },
+        {
+          "id": "besides",
+          "description": "Say what you want to do besides working (除了……還 / 也……).",
+          "keywordHints": [
+            "除了",
+            "還",
+            "也"
+          ]
+        },
+        {
+          "id": "request",
+          "description": "Ask the friend to do something (請你把……V一V).",
+          "keywordHints": [
+            "請你",
+            "把"
+          ]
+        },
+        {
+          "id": "pickup",
+          "description": "Talk about getting picked up at the airport (接, 機場).",
+          "keywordHints": [
+            "機場",
+            "接"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "午安",
+        "遲到",
+        "事情",
+        "消息",
+        "終於",
+        "興奮",
+        "生活",
+        "機場",
+        "接",
+        "擔心",
+        "迷路",
+        "半年",
+        "留",
+        "除了",
+        "試試看",
+        "像",
+        "打聽",
+        "課",
+        "替",
+        "留下",
+        "美好",
+        "印象",
+        "對不起",
+        "沒關係"
+      ],
+      "opener": {
+        "zh": "莉亞，午安。你終於有好消息了嗎？",
+        "en": "Liya, good afternoon. Do you finally have good news?"
+      },
+      "successLine": {
+        "zh": "放心，我弟弟會去機場接你，你一定會喜歡臺灣的。",
+        "en": "Don't worry, my younger brother will pick you up at the airport; you will surely like Taiwan."
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
+        "lesson": 1
+      }
+    },
+    {
+      "id": "laixue-4-L02-airport-pickup",
+      "title": "Jiawen meets you at the airport",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "jiawen",
+        "name": "家文",
+        "personality": "A lively, cheerful Taiwanese high-school student who is happy to welcome a guest and keeps asking whether the guest is tired or hungry.\n",
+        "speechStyle": "Cheerful short sentences with words from books 1 to 4 (up to book 4 lesson 2). Gives directions with 先……再…… and 往.\n",
+        "particles": []
+      },
+      "setting": "Taoyuan airport arrivals hall. Jiawen has come to pick up the learner, helps with the luggage and explains how to get to the city.\n",
+      "goalSteps": [
+        {
+          "id": "flight",
+          "description": "Say how the flight was (時差, 累).",
+          "keywordHints": [
+            "飛機",
+            "時差",
+            "累"
+          ]
+        },
+        {
+          "id": "hungry",
+          "description": "Say if you are hungry, thirsty or tired (餓, 渴, 得不得了).",
+          "keywordHints": [
+            "餓",
+            "渴",
+            "不得了"
+          ]
+        },
+        {
+          "id": "luggage",
+          "description": "Talk about the luggage and push cart (行李, 推車, 重).",
+          "keywordHints": [
+            "行李",
+            "推車",
+            "重"
+          ]
+        },
+        {
+          "id": "notatall",
+          "description": "Say something is not a problem at all (一點都不……).",
+          "keywordHints": [
+            "一點",
+            "都不",
+            "也不"
+          ]
+        },
+        {
+          "id": "directions",
+          "description": "Follow or give directions (往前走, 右轉, 出口).",
+          "keywordHints": [
+            "往",
+            "右轉",
+            "出口",
+            "停車場"
+          ]
+        },
+        {
+          "id": "order",
+          "description": "Say what you will do first and then (先……再……).",
+          "keywordHints": [
+            "先",
+            "再"
+          ]
+        },
+        {
+          "id": "transport",
+          "description": "Choose transport (捷運, 巴士) or talk about traffic (塞車).",
+          "keywordHints": [
+            "捷運",
+            "巴士",
+            "塞車"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "這麼",
+        "行李",
+        "推車",
+        "重",
+        "推",
+        "時差",
+        "餓",
+        "飽",
+        "渴",
+        "臺幣",
+        "往",
+        "轉",
+        "出口",
+        "停車場",
+        "北部",
+        "塞車",
+        "左右",
+        "巴士",
+        "捷運",
+        "工具",
+        "幫",
+        "訂",
+        "省",
+        "細心",
+        "接待",
+        "不好意思",
+        "所有的",
+        "不得了",
+        "換錢",
+        "右轉",
+        "開過來",
+        "沒想到",
+        "桃園"
+      ],
+      "opener": {
+        "zh": "歡迎來臺灣！飛機上的時間長不長？你累不累？",
+        "en": "Welcome to Taiwan! Was the flight long? Are you tired?"
+      },
+      "successLine": {
+        "zh": "謝謝你來接我，我們先換錢，再去坐捷運吧。",
+        "en": "Thank you for picking me up. Let's exchange money first and then take the MRT."
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
+        "lesson": 2
+      }
+    },
+    {
+      "id": "laixue-4-L03-renting-apartment",
+      "title": "The landlord shows you an apartment",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "landlord",
+        "name": "房東",
+        "personality": "A friendly, businesslike landlord who knows the neighborhood well and is honest about both the advantages and the weak points of the apartment.\n",
+        "speechStyle": "Polite, clear sentences with words from books 1 to 4 (up to book 4 lesson 3). Describes the place with 算是 / 不算 and adds reasons with 另外 and 再加上.\n",
+        "particles": []
+      },
+      "setting": "In front of an apartment building near an MRT station. The landlord shows the learner the apartment and explains the rent, bills and furniture.\n",
+      "goalSteps": [
+        {
+          "id": "need",
+          "description": "Say what kind of place you need (安靜, 乾淨).",
+          "keywordHints": [
+            "公寓",
+            "安靜",
+            "乾淨",
+            "需要"
+          ]
+        },
+        {
+          "id": "around",
+          "description": "Ask about the surroundings (捷運站, 超市, 便利商店).",
+          "keywordHints": [
+            "捷運站",
+            "超市",
+            "便利商店",
+            "巷子"
+          ]
+        },
+        {
+          "id": "rent",
+          "description": "Ask about the rent and bills (房租, 水費, 電費).",
+          "keywordHints": [
+            "房租",
+            "租金",
+            "水費",
+            "電費",
+            "包括"
+          ]
+        },
+        {
+          "id": "furniture",
+          "description": "Ask about furniture (家具, 冰箱, 電視).",
+          "keywordHints": [
+            "家具",
+            "冰箱",
+            "電視",
+            "電梯"
+          ]
+        },
+        {
+          "id": "judge",
+          "description": "Give your judgement with 算是 / 不算.",
+          "keywordHints": [
+            "算是",
+            "不算"
+          ]
+        },
+        {
+          "id": "also",
+          "description": "Add another point with 另外 or 再加上.",
+          "keywordHints": [
+            "另外",
+            "再加上"
+          ]
+        },
+        {
+          "id": "decide",
+          "description": "Say you will decide after something (等……再……).",
+          "keywordHints": [
+            "等",
+            "再"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "公寓",
+        "棟",
+        "大樓",
+        "舊",
+        "乾淨",
+        "剛好",
+        "電梯",
+        "壞",
+        "樓梯",
+        "哈",
+        "巷子",
+        "安靜",
+        "另外",
+        "馬路",
+        "巷子口",
+        "步",
+        "便利商店",
+        "超市",
+        "房租",
+        "家具",
+        "再加上",
+        "電視",
+        "冰箱",
+        "租金",
+        "萬",
+        "千",
+        "包括",
+        "水費",
+        "電費",
+        "房東",
+        "裝",
+        "網路費",
+        "關心",
+        "壞了",
+        "不算",
+        "捷運站"
+      ],
+      "opener": {
+        "zh": "您好！您想租什麼樣的公寓？",
+        "en": "Hello! What kind of apartment would you like to rent?"
+      },
+      "successLine": {
+        "zh": "好，這間公寓很不錯，您決定了再告訴我。",
+        "en": "Good, this apartment is pretty nice; tell me once you have decided."
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
+        "lesson": 3
+      }
+    },
+    {
+      "id": "laixue-4-L04-commute-choices",
+      "title": "Kevin asks how you get to work",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "kevin",
+        "name": "凱文",
+        "personality": "Gloria's easy-going coworker who knows every way to get around Taipei and likes to share small tips about tickets and routes.\n",
+        "speechStyle": "Relaxed short sentences with words from books 1 to 4 (up to book 4 lesson 4). Says 難怪 when he is surprised and gives choices with 想……就……\n",
+        "particles": []
+      },
+      "setting": "Kevin and the learner are walking to the office on Monday morning and talk about the best way to commute in Taipei.\n",
+      "goalSteps": [
+        {
+          "id": "how",
+          "description": "Say how you get to work (捷運, 公車, 計程車, 腳踏車, 機車).",
+          "keywordHints": [
+            "捷運",
+            "公車",
+            "計程車",
+            "腳踏車",
+            "機車",
+            "騎"
+          ]
+        },
+        {
+          "id": "ticket",
+          "description": "Talk about tickets or the EasyCard (車票, 悠遊卡).",
+          "keywordHints": [
+            "車票",
+            "悠遊卡",
+            "站"
+          ]
+        },
+        {
+          "id": "good",
+          "description": "Say a good point of your choice (又快又方便).",
+          "keywordHints": [
+            "快",
+            "方便",
+            "又"
+          ]
+        },
+        {
+          "id": "bad",
+          "description": "Say a bad point of another means (危險, 塞車, 班次).",
+          "keywordHints": [
+            "危險",
+            "塞車",
+            "班次"
+          ]
+        },
+        {
+          "id": "nowonder",
+          "description": "React with 難怪 to something he says.",
+          "keywordHints": [
+            "難怪"
+          ]
+        },
+        {
+          "id": "only",
+          "description": "Say you can go only if a condition is met (……才……).",
+          "keywordHints": [
+            "才"
+          ]
+        },
+        {
+          "id": "free",
+          "description": "Say you can go however you like (想……就……).",
+          "keywordHints": [
+            "想",
+            "就"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "豆漿",
+        "蛋餅",
+        "午餐",
+        "夠",
+        "雞腿",
+        "便當",
+        "豐富",
+        "改天",
+        "才",
+        "計程車",
+        "條",
+        "路線",
+        "站",
+        "不必",
+        "班次",
+        "車票",
+        "認為",
+        "騎",
+        "自行車",
+        "黃色",
+        "難怪",
+        "奇怪",
+        "悠遊卡",
+        "汽車",
+        "危險",
+        "完全",
+        "普遍",
+        "為了",
+        "轉車",
+        "綠線",
+        "受歡迎",
+        "大部分",
+        "腳踏車",
+        "機車"
+      ],
+      "opener": {
+        "zh": "早！你每天怎麼上班？坐捷運還是坐公車？",
+        "en": "Morning! How do you go to work every day? MRT or bus?"
+      },
+      "successLine": {
+        "zh": "你想怎麼去就怎麼去，不過坐捷運又快又方便。",
+        "en": "Go however you like; but the MRT is both fast and convenient."
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
+        "lesson": 4
+      }
+    },
+    {
+      "id": "laixue-4-L05-night-market-tour",
+      "title": "Lisa takes you to a night market",
+      "levelRange": {
+        "min": "L2",
+        "max": "L2"
+      },
+      "npc": {
+        "id": "lisa",
+        "name": "麗莎",
+        "personality": "Gloria's sweet, warm-hearted coworker who knows the night markets well and enjoys watching a friend try something new.\n",
+        "speechStyle": "Warm, lively sentences with words from books 1 to 4 (up to book 4 lesson 5). Describes food with doubled words (熱熱的, 酥酥脆脆的) and encourages with 不管……都……\n",
+        "particles": []
+      },
+      "setting": "Lisa meets the learner at the Zhongshan station exit and walks them through the stalls of a busy night market.\n",
+      "goalSteps": [
+        {
+          "id": "time",
+          "description": "Say you arrived on time or late (準時).",
+          "keywordHints": [
+            "準時",
+            "遲到"
+          ]
+        },
+        {
+          "id": "choose",
+          "description": "Choose something to eat or drink (雞排, 臭豆腐, 珍珠奶茶, 木瓜牛奶).",
+          "keywordHints": [
+            "雞排",
+            "臭豆腐",
+            "珍珠奶茶",
+            "木瓜牛奶"
+          ]
+        },
+        {
+          "id": "taste",
+          "description": "Describe the taste with a doubled word (甜甜的, 酥酥脆脆的).",
+          "keywordHints": [
+            "脆",
+            "酥",
+            "甜甜的",
+            "熱熱的"
+          ]
+        },
+        {
+          "id": "dare",
+          "description": "Say you dare (or do not dare) to try stinky tofu (敢, 嚐, 臭).",
+          "keywordHints": [
+            "敢",
+            "嚐",
+            "臭"
+          ]
+        },
+        {
+          "id": "why",
+          "description": "Say why night markets are popular (對……來說).",
+          "keywordHints": [
+            "對",
+            "來說",
+            "吸引",
+            "受歡迎"
+          ]
+        },
+        {
+          "id": "nomatter",
+          "description": "Say what you do no matter what (不管……都……).",
+          "keywordHints": [
+            "不管",
+            "都"
+          ]
+        },
+        {
+          "id": "already",
+          "description": "Say what you already did long ago (早就……了).",
+          "keywordHints": [
+            "早就",
+            "了"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "夜市",
+        "提到",
+        "準時",
+        "攤販",
+        "休閒",
+        "吸引",
+        "日用品",
+        "消夜",
+        "不管",
+        "雞排",
+        "臉",
+        "酥",
+        "脆",
+        "咦",
+        "聞到",
+        "臭豆腐",
+        "臭",
+        "敢",
+        "嚐",
+        "木瓜牛奶",
+        "它",
+        "珍珠奶茶",
+        "幾乎",
+        "各式各樣",
+        "中山站"
+      ],
+      "opener": {
+        "zh": "歡迎來夜市！你想先吃什麼？",
+        "en": "Welcome to the night market! What would you like to eat first?"
+      },
+      "successLine": {
+        "zh": "不管你想吃什麼，這裡都有，我們一起嚐嚐吧。",
+        "en": "Whatever you want to eat, they have it here; let's taste it together."
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
+        "lesson": 5
+      }
+    },
+    {
+      "id": "laixue-4-L06-taipei-features",
+      "title": "Kevin asks what you think of Taipei",
+      "levelRange": {
+        "min": "L3",
+        "max": "L3"
+      },
+      "npc": {
+        "id": "kevin",
+        "name": "凱文",
+        "personality": "Gloria's easy-going coworker who knows Taipei well and is proud of its mix of old temples, modern towers and street food.\n",
+        "speechStyle": "Relaxed sentences with words from books 1 to 4 (up to book 4 lesson 6). Compares places with 跟……比起來 and asks how long the learner has been in Taipei.\n",
+        "particles": []
+      },
+      "setting": "Kevin and the learner are on a bench near Taipei 101 after work, looking at the lights and talking about what makes Taipei special.\n",
+      "goalSteps": [
+        {
+          "id": "howlong",
+          "description": "Say how long you have lived in Taipei (……了……了).",
+          "keywordHints": [
+            "住了",
+            "多久",
+            "了"
+          ]
+        },
+        {
+          "id": "first",
+          "description": "Say what you noticed first (首先, 建築, 臺北101).",
+          "keywordHints": [
+            "首先",
+            "建築",
+            "101",
+            "大樓"
+          ]
+        },
+        {
+          "id": "oldnew",
+          "description": "Compare the traditional and modern sides (傳統, 現代, 寺廟).",
+          "keywordHints": [
+            "傳統",
+            "現代",
+            "寺廟",
+            "博物館"
+          ]
+        },
+        {
+          "id": "queue",
+          "description": "Describe a scene with 著 (排著隊, 拿著……).",
+          "keywordHints": [
+            "著",
+            "排隊",
+            "外帶"
+          ]
+        },
+        {
+          "id": "related",
+          "description": "Say something is related to history or religion (跟……有關係).",
+          "keywordHints": [
+            "有關係",
+            "有關",
+            "歷史",
+            "宗教"
+          ]
+        },
+        {
+          "id": "compare",
+          "description": "Compare Taipei with another city (跟……比起來).",
+          "keywordHints": [
+            "比起來"
+          ]
+        },
+        {
+          "id": "late",
+          "description": "Say how long it took you to find something (……才……).",
+          "keywordHints": [
+            "才"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "特色",
+        "首先",
+        "建築",
+        "中式",
+        "日式",
+        "西式",
+        "歷史",
+        "關係",
+        "傳統",
+        "現代",
+        "觀光客",
+        "高",
+        "層",
+        "燈光",
+        "變",
+        "值得",
+        "參觀",
+        "博物館",
+        "寺廟",
+        "古物",
+        "欣賞",
+        "宗教",
+        "信仰",
+        "現象",
+        "總是",
+        "排隊",
+        "著",
+        "外帶",
+        "美食",
+        "安全",
+        "半夜",
+        "亂",
+        "居住",
+        "大樓",
+        "五顏六色",
+        "飲料店",
+        "比起來"
+      ],
+      "opener": {
+        "zh": "你來臺北多久了？你覺得臺北怎麼樣？",
+        "en": "How long have you been in Taipei? What do you think of it?"
+      },
+      "successLine": {
+        "zh": "跟別的城市比起來，臺北的夜市和美食真的很有特色。",
+        "en": "Compared with other cities, Taipei's night markets and food really have character."
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
+        "lesson": 6
+      }
+    },
+    {
+      "id": "laixue-4-L07-leisure-talk",
+      "title": "Mingwen chats about leisure and ball games",
+      "levelRange": {
+        "min": "L3",
+        "max": "L3"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "明文",
+        "personality": "A kind, friendly graduate student who loves baseball and often cheers for his team. He enjoys telling how he became a fan.\n",
+        "speechStyle": "Friendly sentences with words from books 1 to 4 (up to book 4 lesson 7). Uses 本來……後來…… when he tells a story and 只要……就…… for encouragement.\n",
+        "particles": []
+      },
+      "setting": "Mingwen and the learner are walking past a sports ground on a Saturday and talk about leisure activities, ball games and a KTV night.\n",
+      "goalSteps": [
+        {
+          "id": "favorite",
+          "description": "Say your favourite leisure activity (足球, 籃球, 棒球, KTV).",
+          "keywordHints": [
+            "足球",
+            "籃球",
+            "棒球",
+            "KTV",
+            "喜歡"
+          ]
+        },
+        {
+          "id": "never",
+          "description": "Say something you have never done (從來沒……).",
+          "keywordHints": [
+            "從來沒",
+            "從來不"
+          ]
+        },
+        {
+          "id": "change",
+          "description": "Tell how your interest changed (本來……後來……).",
+          "keywordHints": [
+            "本來",
+            "後來",
+            "現在"
+          ]
+        },
+        {
+          "id": "cheer",
+          "description": "Talk about shouting for a team and winning or losing (加油, 贏, 輸).",
+          "keywordHints": [
+            "加油",
+            "贏",
+            "輸",
+            "球隊",
+            "球賽"
+          ]
+        },
+        {
+          "id": "aslong",
+          "description": "Say what you can do as long as you have time (只要……就……).",
+          "keywordHints": [
+            "只要",
+            "就"
+          ]
+        },
+        {
+          "id": "enjoy",
+          "description": "Say how you enjoy it and forget your work (享受, 忘記, 過癮).",
+          "keywordHints": [
+            "享受",
+            "忘記",
+            "過癮",
+            "暫時"
+          ]
+        },
+        {
+          "id": "differ",
+          "description": "Say how two people differ (在……上).",
+          "keywordHints": [
+            "上",
+            "個性",
+            "習慣"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "本來",
+        "男朋友",
+        "迷",
+        "只要",
+        "後來",
+        "美式足球",
+        "足球",
+        "籃球",
+        "經過",
+        "運動場",
+        "聽見",
+        "喊",
+        "加油",
+        "叫",
+        "過癮",
+        "球隊",
+        "贏",
+        "輸",
+        "球賽",
+        "酒吧",
+        "暫時",
+        "忘記",
+        "KTV",
+        "流行",
+        "歌曲",
+        "享受",
+        "可惜",
+        "從來沒",
+        "棒球迷",
+        "世界上",
+        "前幾天",
+        "大聲",
+        "怎麼這麼"
+      ],
+      "opener": {
+        "zh": "你好！你喜歡什麼休閒活動？看球賽還是唱KTV？",
+        "en": "Hello! What leisure activity do you like? Watching ball games or singing at KTV?"
+      },
+      "successLine": {
+        "zh": "只要有時間，我們就一起去看球賽，為球隊加油吧！",
+        "en": "Whenever we have time, let's watch a game together and cheer for the team!"
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
+        "lesson": 7
+      }
+    },
+    {
+      "id": "laixue-4-L08-wedding-invitation",
+      "title": "Mingwen invites you to a wedding",
+      "levelRange": {
+        "min": "L3",
+        "max": "L3"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "明文",
+        "personality": "A kind, friendly graduate student who knows Taiwanese customs well and explains them patiently, with a smile.\n",
+        "speechStyle": "Friendly sentences with words from books 1 to 4 (up to book 4 lesson 8). Explains customs with 尤其是 and 連……都……\n",
+        "particles": []
+      },
+      "setting": "Mingwen has just invited the learner to the wedding of a friend. They talk about the invitation, red envelopes, what to wear and what happens at the ceremony.\n",
+      "goalSteps": [
+        {
+          "id": "invite",
+          "description": "Say that you received the wedding invitation (收到喜帖).",
+          "keywordHints": [
+            "喜帖",
+            "收到",
+            "參加",
+            "結婚典禮"
+          ]
+        },
+        {
+          "id": "clothes",
+          "description": "Ask or say what to wear (禮服, 打扮, 正式).",
+          "keywordHints": [
+            "禮服",
+            "打扮",
+            "正式",
+            "穿"
+          ]
+        },
+        {
+          "id": "redenvelope",
+          "description": "Ask about the red envelope and the number (紅包, 雙數, 幸運).",
+          "keywordHints": [
+            "紅包",
+            "雙數",
+            "數字",
+            "幸運"
+          ]
+        },
+        {
+          "id": "ceremony",
+          "description": "Talk about the bride, groom or toast (新娘, 新郎, 敬酒).",
+          "keywordHints": [
+            "新娘",
+            "新郎",
+            "敬酒",
+            "客人"
+          ]
+        },
+        {
+          "id": "especially",
+          "description": "Say what you like especially (尤其是).",
+          "keywordHints": [
+            "尤其"
+          ]
+        },
+        {
+          "id": "evenor",
+          "description": "Say something extreme with 連……都…….",
+          "keywordHints": [
+            "連",
+            "都",
+            "也"
+          ]
+        },
+        {
+          "id": "recognize",
+          "description": "Say what you can or cannot recognise (看得出來 / 認不出來).",
+          "keywordHints": [
+            "出來",
+            "認"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "參加",
+        "典禮",
+        "收到",
+        "喜帖",
+        "紅包",
+        "數字",
+        "包",
+        "雙數",
+        "幸運",
+        "習俗",
+        "古代",
+        "複雜",
+        "詳細",
+        "禮服",
+        "家庭",
+        "重視",
+        "時代",
+        "簡單",
+        "尤其",
+        "在乎",
+        "穿上",
+        "新娘",
+        "新郎",
+        "帥",
+        "連",
+        "認",
+        "隨便",
+        "打扮",
+        "正式",
+        "雙方",
+        "敬酒",
+        "主人",
+        "表示",
+        "感謝",
+        "客人",
+        "祝福",
+        "喝喜酒",
+        "百年好合",
+        "早生貴子"
+      ],
+      "opener": {
+        "zh": "你收到喜帖了嗎？你要參加我朋友的結婚典禮嗎？",
+        "en": "Did you receive the wedding invitation? Will you attend my friend's wedding?"
+      },
+      "successLine": {
+        "zh": "謝謝你來參加，祝福新娘和新郎百年好合！",
+        "en": "Thank you for coming; we wish the bride and groom a happy life together!"
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
+        "lesson": 8
+      }
+    },
+    {
+      "id": "laixue-4-L09-island-trip",
+      "title": "Jiawen plans a trip around the island",
+      "levelRange": {
+        "min": "L3",
+        "max": "L3"
+      },
+      "npc": {
+        "id": "jiawen",
+        "name": "家文",
+        "personality": "A lively, cheerful Taiwanese student who loves travelling and is proud of the culture of the eastern coast and its indigenous peoples.\n",
+        "speechStyle": "Cheerful sentences with words from books 1 to 4 (up to book 4 lesson 9). Lists places with 等 and insists on must-see spots with 非……不可.\n",
+        "particles": []
+      },
+      "setting": "Jiawen and the learner are looking at a map during the holiday and planning a trip around the island, with stops on the eastern coast.\n",
+      "goalSteps": [
+        {
+          "id": "where",
+          "description": "Say where you want to go (花蓮, 臺東, 阿里山, 日月潭, 墾丁).",
+          "keywordHints": [
+            "花蓮",
+            "臺東",
+            "阿里山",
+            "日月潭",
+            "墾丁",
+            "蘭嶼"
+          ]
+        },
+        {
+          "id": "list",
+          "description": "List places or foods and end with 等.",
+          "keywordHints": [
+            "等",
+            "、"
+          ]
+        },
+        {
+          "id": "culture",
+          "description": "Ask about the indigenous peoples' festival or dance (祭典, 舞蹈, 部落).",
+          "keywordHints": [
+            "祭典",
+            "舞蹈",
+            "部落",
+            "原住民族",
+            "阿美族"
+          ]
+        },
+        {
+          "id": "differ",
+          "description": "Say how groups differ in language or customs (語言, 風俗, 差別).",
+          "keywordHints": [
+            "語言",
+            "風俗",
+            "差別",
+            "族群"
+          ]
+        },
+        {
+          "id": "each",
+          "description": "Say you will each do your own thing (各V各的).",
+          "keywordHints": [
+            "各",
+            "各的"
+          ]
+        },
+        {
+          "id": "must",
+          "description": "Say what you must see (非……不可).",
+          "keywordHints": [
+            "非",
+            "不可"
+          ]
+        },
+        {
+          "id": "choose",
+          "description": "Choose a way to travel around the island (環島, 選擇).",
+          "keywordHints": [
+            "環島",
+            "選擇",
+            "趟"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "原住民族",
+        "中秋節",
+        "放假",
+        "美麗",
+        "海岸",
+        "族群",
+        "差別",
+        "語言",
+        "風俗",
+        "選擇",
+        "展覽",
+        "手工藝",
+        "收穫",
+        "趟",
+        "環島",
+        "像",
+        "等",
+        "景點",
+        "部落",
+        "祭典",
+        "島",
+        "影片",
+        "東邊",
+        "海洋",
+        "舞蹈",
+        "太平洋",
+        "阿美族",
+        "花蓮",
+        "臺東",
+        "屏東",
+        "臺灣原住民",
+        "阿里山",
+        "日月潭",
+        "墾丁",
+        "蘭嶼"
+      ],
+      "opener": {
+        "zh": "你好！這個假期你想去哪裡玩？去環島怎麼樣？",
+        "en": "Hello! Where do you want to go this holiday? How about a trip around the island?"
+      },
+      "successLine": {
+        "zh": "好，我們非去看看阿美族的祭典不可！",
+        "en": "Great, we absolutely must see the Amis festival!"
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
+        "lesson": 9
+      }
+    },
+    {
+      "id": "laixue-4-L10-taiwan-experience",
+      "title": "Mingwen asks about your life in Taiwan",
+      "levelRange": {
+        "min": "L3",
+        "max": "L3"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "明文",
+        "personality": "A kind, friendly graduate student and close friend who is sad that the learner will soon leave Taiwan and wants to hear the best memories.\n",
+        "speechStyle": "Warm sentences with words from books 1 to 4 (up to book 4 lesson 10). Talks about memories with 給……帶來 and general facts with 一般來說.\n",
+        "particles": []
+      },
+      "setting": "The last weekend before the learner flies home. Mingwen helps pack the suitcase and asks about the learner's feelings about the months in Taiwan.\n",
+      "goalSteps": [
+        {
+          "id": "time",
+          "description": "Say that time flew by (一轉眼).",
+          "keywordHints": [
+            "一轉眼",
+            "半年",
+            "已經"
+          ]
+        },
+        {
+          "id": "feeling",
+          "description": "Say what you felt living in Taiwan (感受, 熱情).",
+          "keywordHints": [
+            "感受",
+            "熱情",
+            "深刻"
+          ]
+        },
+        {
+          "id": "bring",
+          "description": "Say what Taiwan brought you (給……帶來……).",
+          "keywordHints": [
+            "給",
+            "帶來",
+            "回憶"
+          ]
+        },
+        {
+          "id": "souvenir",
+          "description": "Talk about souvenirs (鳳梨酥, 紀念品).",
+          "keywordHints": [
+            "鳳梨酥",
+            "紀念品",
+            "道地"
+          ]
+        },
+        {
+          "id": "suitcase",
+          "description": "Say what fits or does not fit in the suitcase (裝得下 / 裝不下).",
+          "keywordHints": [
+            "行李箱",
+            "裝",
+            "得下",
+            "不下"
+          ]
+        },
+        {
+          "id": "general",
+          "description": "Say how things usually are in Taiwan (一般來說).",
+          "keywordHints": [
+            "一般來說"
+          ]
+        },
+        {
+          "id": "try",
+          "description": "Say what you tried and found rare (嘗試, 難得).",
+          "keywordHints": [
+            "嘗試",
+            "難得",
+            "許多",
+            "人生"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "一轉眼",
+        "感受",
+        "熱情",
+        "原因",
+        "現代化",
+        "國際化",
+        "營業",
+        "食物",
+        "深刻",
+        "利用",
+        "嘗試",
+        "許多",
+        "人生",
+        "難得",
+        "帶來",
+        "回憶",
+        "紀念品",
+        "道地",
+        "鳳梨酥",
+        "原來",
+        "行李箱",
+        "裝",
+        "恐怕",
+        "最好",
+        "段",
+        "道理",
+        "別人",
+        "當初",
+        "意外",
+        "比方說",
+        "一般來說"
+      ],
+      "opener": {
+        "zh": "一轉眼，你在臺灣已經住了半年了！你有什麼感受？",
+        "en": "In the blink of an eye you have lived in Taiwan for half a year! How do you feel?"
+      },
+      "successLine": {
+        "zh": "這段經驗給你帶來很多回憶，回國以後別忘記我們！",
+        "en": "This experience has brought you many memories; don't forget us after you go home!"
+      },
+      "textbook": {
+        "textbookId": "laixue-4",
         "lesson": 10
       }
     },
