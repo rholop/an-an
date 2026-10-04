@@ -16,10 +16,10 @@
   font-size: 0.85rem;
 }
 .journal-ok {
-  color: #2e7d32;
+  color: var(--c-good);
 }
 .journal-error {
-  color: #c62828;
+  color: var(--c-bad);
 }
 
 .journal-prompt {
@@ -33,7 +33,7 @@
   gap: 0.5rem 1.25rem;
 }
 .journal-word--used {
-  color: #2e7d32;
+  color: var(--c-good);
 }
 
 .journal-textarea {
@@ -56,7 +56,7 @@
 }
 .journal-hl--error {
   background: rgba(198, 40, 40, 0.28);
-  box-shadow: inset 0 -2px 0 #c62828;
+  box-shadow: inset 0 -2px 0 var(--c-bad);
 }
 .journal-hl--unnatural {
   background: rgba(239, 160, 0, 0.3);
@@ -64,7 +64,7 @@
 }
 .journal-hl--mainland_style {
   background: rgba(21, 101, 192, 0.28);
-  box-shadow: inset 0 -2px 0 #1565c0;
+  box-shadow: inset 0 -2px 0 var(--c-info);
 }
 .journal-legend {
   font-size: 0.8rem;
@@ -120,5 +120,5 @@
 .journal-chart {
   width: 100%;
   max-width: 420px;
-  color: #1565c0;
+  color: var(--c-info);
 }

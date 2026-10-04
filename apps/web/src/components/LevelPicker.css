@@ -23,7 +23,7 @@
 }
 .level-chip--on {
   background: rgba(21, 101, 192, 0.2);
-  border-color: #1565c0;
+  border-color: var(--c-info);
   font-weight: bold;
 }
 .level-up-prompt {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { levelLabel, levelUpSuggestion, type Level } from '@anan/core';
 import { LevelPicker } from './components/LevelPicker.js';
+import { ThemeToggle } from './components/ThemeToggle.js';
 import { useProfile } from './components/ProfileGate.js';
 import { PROFILES } from './profiles.js';
 import { db } from './db/instance.js';
@@ -71,6 +72,7 @@ function LevelHeader({ route }: { route: Route }) {
     <header className="app-header">
       <ProfileChip />
       <LevelPicker value={level} onChange={(l) => void setLevel(l)} />
+      <ThemeToggle />
       {suggestion && dismissed !== suggestion && (
         <div className="level-up-prompt" role="status">
           <span>Ready to try {levelLabel(suggestion)}?</span>

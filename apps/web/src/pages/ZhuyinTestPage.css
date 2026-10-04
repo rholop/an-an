@@ -41,5 +41,5 @@
   font-size: 0.35em;
   line-height: 1;
   margin-left: 2px;
-  color: #666;
+  color: var(--c-muted);
 }

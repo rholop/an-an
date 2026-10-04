@@ -1,5 +1,43 @@
 :root {
+  /* "Auto" follows the device; the header toggle sets data-theme to force one. */
   color-scheme: light dark;
+
+  /* Semantic colours. Light values are the originals; dark values are lighter
+     variants so text in these colours stays readable on a dark background. */
+  --c-good: #2e7d32;
+  --c-info: #1565c0;
+  --c-purple: #6a1b9a;
+  --c-warn: #ef6c00;
+  --c-bad: #c62828;
+  --c-brown: #4e342e;
+  --c-gold: #b8860b;
+  --c-muted: #666;
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --c-good: #81c784;
+  --c-info: #64b5f6;
+  --c-purple: #ce93d8;
+  --c-warn: #ffb74d;
+  --c-bad: #ff8a80;
+  --c-brown: #bcaaa4;
+  --c-gold: #f0c24b;
+  --c-muted: #aaa;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --c-good: #81c784;
+    --c-info: #64b5f6;
+    --c-purple: #ce93d8;
+    --c-warn: #ffb74d;
+    --c-bad: #ff8a80;
+    --c-brown: #bcaaa4;
+    --c-gold: #f0c24b;
+    --c-muted: #aaa;
+  }
 }
 body {
   margin: 0;
@@ -26,6 +64,9 @@ body {
 .app-nav button:disabled {
   font-weight: bold;
   cursor: default;
+  /* the current page's tab: keep it readable in both themes (default disabled grey is not) */
+  color: CanvasText;
+  opacity: 0.75;
 }
 
 .reader-meta {
@@ -56,10 +97,10 @@ body {
   padding: 0.25rem 0;
 }
 .warning--simplified strong {
-  color: #c62828;
+  color: var(--c-bad);
 }
 .warning--mainland strong {
-  color: #ef6c00;
+  color: var(--c-warn);
 }
 .warning-note {
   opacity: 0.75;
@@ -115,7 +156,7 @@ body {
 .reader-nomatch {
   margin: 0.25rem 0;
   font-size: 0.85rem;
-  color: #ef6c00;
+  color: var(--c-warn);
 }
 .reader-english {
   margin: 0.5rem 0;

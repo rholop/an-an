@@ -7,9 +7,9 @@
 .anki-column-picker select { max-width: 100%; }
 
 .anki-summary { display: flex; gap: 1rem; margin: 1rem 0; font-family: ui-monospace, monospace; }
-.anki-summary-matched { color: #2e7d32; }
-.anki-summary-ambiguous { color: #ef6c00; }
-.anki-summary-unmatched { color: #c62828; }
+.anki-summary-matched { color: var(--c-good); }
+.anki-summary-ambiguous { color: var(--c-warn); }
+.anki-summary-unmatched { color: var(--c-bad); }
 
 .anki-actions { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
 .anki-actions button {
@@ -21,12 +21,12 @@
   cursor: pointer;
 }
 .anki-actions button:disabled { opacity: 0.4; cursor: default; }
-.anki-done { color: #2e7d32; }
+.anki-done { color: var(--c-good); }
 
 .anki-preview { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .anki-preview th, .anki-preview td { text-align: left; padding: 0.3rem 0.5rem; border-bottom: 1px solid rgba(127, 127, 127, 0.2); }
-.anki-row--matched td:nth-child(2) { color: #2e7d32; }
-.anki-row--ambiguous td:nth-child(2) { color: #ef6c00; }
-.anki-row--unmatched td:nth-child(2) { color: #c62828; }
+.anki-row--matched td:nth-child(2) { color: var(--c-good); }
+.anki-row--ambiguous td:nth-child(2) { color: var(--c-warn); }
+.anki-row--unmatched td:nth-child(2) { color: var(--c-bad); }
 .anki-ambiguous-note { opacity: 0.6; font-size: 0.8em; }
 .anki-truncated { opacity: 0.6; font-size: 0.8rem; }

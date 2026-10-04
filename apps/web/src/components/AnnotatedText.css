@@ -17,22 +17,22 @@
 /* Per-token level colour coding (reader page §9) */
 .level-n1,
 .level-n2 {
-  color: #2e7d32;
+  color: var(--c-good);
 }
 .level-l1 {
-  color: #1565c0;
+  color: var(--c-info);
 }
 .level-l2 {
-  color: #6a1b9a;
+  color: var(--c-purple);
 }
 .level-l3 {
-  color: #ef6c00;
+  color: var(--c-warn);
 }
 .level-l4 {
-  color: #c62828;
+  color: var(--c-bad);
 }
 .level-l5 {
-  color: #4e342e;
+  color: var(--c-brown);
 }
 .level-unleveled {
   color: inherit;
@@ -47,7 +47,7 @@
   opacity: 0.7;
 }
 .an-passthrough--unknown {
-  text-decoration: underline wavy #c62828;
+  text-decoration: underline wavy var(--c-bad);
   text-decoration-skip-ink: none;
 }
 
@@ -56,7 +56,7 @@
 .an-word--tone-only rt {
   font-size: 0.55em;
   font-family: ui-monospace, monospace;
-  color: #666;
+  color: var(--c-muted);
   user-select: none;
 }
 
@@ -91,13 +91,13 @@
   font-size: 0.4em;
   line-height: 1;
   margin-left: 1px;
-  color: #666;
+  color: var(--c-muted);
   user-select: none;
   align-self: flex-start;
 }
 
 .an-confidence-low {
-  color: #c62828;
+  color: var(--c-bad);
   font-style: italic;
 }
 

@@ -103,7 +103,7 @@
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   background: rgba(198, 40, 40, 0.12);
-  color: #c62828;
+  color: var(--c-bad);
   margin-bottom: 0.5rem;
 }
 
@@ -159,7 +159,7 @@
 .chat-stars {
   margin-top: 0.25rem;
   letter-spacing: 0.1em;
-  color: #b8860b;
+  color: var(--c-gold);
 }
 .chat-best-time {
   font-size: 0.75rem;

@@ -1,0 +1,21 @@
+.theme-toggle {
+  display: inline-flex;
+  border: 1px solid rgba(127, 127, 127, 0.5);
+  border-radius: 999px;
+  overflow: hidden;
+  font-size: 0.8rem;
+}
+.theme-toggle-btn {
+  padding: 0.25rem 0.7rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.theme-toggle-btn + .theme-toggle-btn {
+  border-left: 1px solid rgba(127, 127, 127, 0.35);
+}
+.theme-toggle-btn--on {
+  background: rgba(127, 127, 127, 0.28);
+  font-weight: 600;
+}

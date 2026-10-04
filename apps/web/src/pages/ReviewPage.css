@@ -29,10 +29,10 @@
   color: inherit;
 }
 .review-buttons { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
-.review-btn--again { border-color: #c62828; }
-.review-btn--hard { border-color: #ef6c00; }
-.review-btn--good { border-color: #2e7d32; }
-.review-btn--easy { border-color: #1565c0; }
+.review-btn--again { border-color: var(--c-bad); }
+.review-btn--hard { border-color: var(--c-warn); }
+.review-btn--good { border-color: var(--c-good); }
+.review-btn--easy { border-color: var(--c-info); }
 
 .review-done { text-align: center; opacity: 0.8; margin-top: 2rem; }
 

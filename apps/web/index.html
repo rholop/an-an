@@ -6,6 +6,13 @@
     <!-- Inline icon so browsers never request /favicon.ico (a 404 that made e2e console-error checks flaky). -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='13'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E" />
     <title>An'an — Reader</title>
+    <!-- Apply a stored light/dark choice before first paint (no flash). Kept in sync by src/lib/theme.ts. -->
+    <script>
+      try {
+        var t = localStorage.getItem('anan.theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

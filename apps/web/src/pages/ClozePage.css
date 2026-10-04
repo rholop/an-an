@@ -36,8 +36,8 @@
   font-size: 1.1rem;
 }
 .cloze-chip:disabled { cursor: default; }
-.cloze-chip--correct { border-color: #2e7d32; color: #2e7d32; font-weight: bold; }
-.cloze-chip--wrong { border-color: #c62828; color: #c62828; }
+.cloze-chip--correct { border-color: var(--c-good); color: var(--c-good); font-weight: bold; }
+.cloze-chip--wrong { border-color: var(--c-bad); color: var(--c-bad); }
 
 .cloze-reorder-answer {
   min-height: 2.5rem;

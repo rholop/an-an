@@ -32,8 +32,8 @@
   background: transparent;
   color: inherit;
 }
-.placement-btn--no { border: 1px solid #c62828; }
-.placement-btn--yes { border: 1px solid #2e7d32; }
+.placement-btn--no { border: 1px solid var(--c-bad); }
+.placement-btn--yes { border: 1px solid var(--c-good); }
 
 .placement-summary { margin-top: 1.5rem; text-align: left; }
 .placement-bulk-note { opacity: 0.7; font-size: 0.85rem; }
