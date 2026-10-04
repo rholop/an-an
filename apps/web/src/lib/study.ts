@@ -104,6 +104,15 @@ export function registerStudyContext(c: { lexicon: Lexicon; books: Textbook[] } 
   markStudyDirty();
 }
 
+/** E2E hook (like anan.sync.disabled): specs written for the plain queues set this to switch the study order off. */
+function testSwitchOff(): boolean {
+  try {
+    return localStorage.getItem('anan.study.disabled') === '1';
+  } catch {
+    return false;
+  }
+}
+
 let cache: { version: number; focus: Promise<StudyFocus | undefined> } | undefined;
 
 /** The study focus for the CURRENT state; undefined when there is no textbook (study order has nothing to order). */
@@ -114,18 +123,21 @@ export function getStudyFocusNow(now: Date = new Date()): Promise<StudyFocus | u
   const version = studyVersion();
   const focus = (async () => {
     await load();
+    // Off: nothing to compute (and no heavy work on every screen).
+    if (!settings.enabled || testSwitchOff()) return disabledFocus();
     const [cards, evidence] = await Promise.all([
       allTouchedCards(db),
       db.evidence.where('kind').anyOf([...PRIORITY_CONFIG.grammarCorrectKinds, ...PRIORITY_CONFIG.grammarWrongKinds]).toArray().catch(() => db.evidence.toArray()),
     ]);
     const my = peekMyClass();
+    const effective = { ...settings, enabled: settings.enabled && !testSwitchOff() };
     return getStudyFocus(
       {
         lexicon: c.lexicon,
         books: c.books,
         cards,
         grammarUses: grammarUsesFromEvidence(evidence),
-        settings,
+        settings: effective,
         myClass: { enabled: my.enabled, textbookId: my.textbookId, currentLesson: my.currentLesson },
       },
       now,
@@ -133,6 +145,24 @@ export function getStudyFocusNow(now: Date = new Date()): Promise<StudyFocus | u
   })();
   cache = { version, focus };
   return focus;
+}
+
+function disabledFocus(): StudyFocus {
+  return {
+    enabled: false,
+    steps: [],
+    activeStep: undefined,
+    reviewLessons: [],
+    focusItems: [],
+    reviewItems: [],
+    newItemsAllowed: [],
+    generalNewItemsAllowed: true,
+    gateStatus: { blocked: false },
+    mastery: undefined,
+    nextStep: undefined,
+    reached: settings.reached,
+    justMastered: [],
+  };
 }
 
 export const getStudyBooks = (): Textbook[] => ctx?.books ?? [];

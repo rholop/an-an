@@ -239,3 +239,19 @@ body {
 .page-loading {
   min-height: 60dvh;
 }
+
+/* Phase 14: lesson labels and goal steps now carry Chinese; Chinese text stays at body size on phones. */
+@media (max-width: 639.98px) {
+  .app .reader-reason,
+  .app .reader-source,
+  .app .chat-goals li,
+  .now-studying .textbook-muted {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 639.98px) {
+  .app .reader-source {
+    font-size: 1.25rem; /* mostly-Chinese label: Chinese body size on phones */
+  }
+}

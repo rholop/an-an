@@ -64,6 +64,9 @@ export interface BuildSessionOptions extends SelectClozeSourceOptions {
   lexicon: Lexicon;
   config?: Partial<SessionConfig>;
   rng?: () => number;
+  /** Phase 14: lower rank = picked first among new / review cards (stable, after the shuffle).
+   * Absent = the pre-Phase-14 session exactly. */
+  rank?: (card: SkillCard) => number;
 }
 
 /**
@@ -85,15 +88,25 @@ export function buildSession(dueCards: SkillCard[], options: BuildSessionOptions
   // Phase 5 gap capture: unreviewed words the learner needed mid-journal go
   // to the front of the new-item allowance, ahead of the shuffled rest.
   const isPriority = (c: SkillCard) => c.flags.priority === true;
+  const byRank = <T extends SkillCard>(cards: T[]): T[] => {
+    const rank = options.rank;
+    if (!rank) return cards;
+    return cards
+      .map((c, i) => ({ c, i, r: rank(c) }))
+      .sort((a, b) => a.r - b.r || a.i - b.i)
+      .map((x) => x.c);
+  };
   const cappedNew = [
     ...shuffle(newCards.filter(isPriority), rng),
-    ...shuffle(
-      newCards.filter((c) => !isPriority(c)),
-      rng,
+    ...byRank(
+      shuffle(
+        newCards.filter((c) => !isPriority(c)),
+        rng,
+      ),
     ),
   ].slice(0, config.maxNewItems);
   const remainingSlots = Math.max(0, config.maxItems - cappedNew.length);
-  const pool = shuffle([...cappedNew, ...shuffle(reviewCards, rng).slice(0, remainingSlots)], rng);
+  const pool = shuffle([...cappedNew, ...byRank(shuffle(reviewCards, rng)).slice(0, remainingSlots)], rng);
 
   const items: SessionItem[] = [];
   for (const card of pool) {

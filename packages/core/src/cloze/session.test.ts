@@ -127,3 +127,21 @@ describe('buildSession', () => {
     expect(fromChat / items.length).toBeGreaterThanOrEqual(0.5);
   });
 });
+
+describe('Phase 14: textbook-first rank', () => {
+  const words = ['a', 'b', 'c', 'd', 'e', 'f'].map((id) => word({ id, headword: `字${id}` }));
+  const lexicon = new Lexicon(words);
+  const cards = words.map((w) => card(w));
+  const opts = { lexicon, knownIds: new Set<string>(), learnerLevel: 'N1' as const, config: { maxItems: 3, maxNewItems: 0, maxErrorItems: 0 } };
+
+  it('with a rank, the lowest-ranked review cards fill the limited slots', () => {
+    const textbook = new Set(['d', 'e', 'f']);
+    const items = buildSession(cards, { ...opts, rank: (c) => (textbook.has(c.item.id) ? 0 : 1) });
+    expect(items.map((i) => i.word.id).sort()).toEqual(['d', 'e', 'f']);
+  });
+
+  it('without a rank nothing is forced', () => {
+    const items = buildSession(cards, opts);
+    expect(items).toHaveLength(3);
+  });
+});

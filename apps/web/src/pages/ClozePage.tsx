@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   classScope,
+  lessonIndex,
+  studyRank,
+  type SkillCard,
   levelIndex,
   buildClozeExercise,
   buildErrorCloze,
@@ -32,6 +35,7 @@ import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
 import { useMyClass } from '../lib/my-class.js';
+import { getStudyBooks, useStudyFocus } from '../lib/study.js';
 import { sentenceOrdinal, useTextbookSentences } from '../lib/textbook-data.js';
 import './ClozePage.css';
 
@@ -111,6 +115,7 @@ export function ClozePage() {
   const sentenceBankState = useSentenceBank(neededLevels);
   // Phase 12: the lesson sentences (lessons up to the class's current one) join the bank while My class is on.
   const myClass = useMyClass();
+  const { focus: studyFocus } = useStudyFocus();
   const textbookSentences = useTextbookSentences(myClass.enabled);
 
   const [session, setSession] = useState<SessionEntry[] | null>(null);
@@ -132,6 +137,8 @@ export function ClozePage() {
     ? selectDueErrorItems(errorItems, new Date(), Infinity).length
     : 0;
 
+  const lessonIdx = useMemo(() => lessonIndex(getStudyBooks()), [studyFocus]);
+
   function startSession() {
     if (!ready || lexiconState.status !== 'ready' || sentenceBankState.status !== 'ready') return;
     const built = buildMixedSession(dueCards!, {
@@ -140,7 +147,21 @@ export function ClozePage() {
       learnerLevel,
       journalSentences: journalSentences!,
       chatLines: chatLines!,
+      // Phase 14: textbook-first picks, and sentences tagged with the active lesson lead the bank.
+      ...(studyFocus?.enabled
+        ? {
+            rank: (c: SkillCard) =>
+              studyRank(studyFocus, (i) => lessonIdx.get(`${i.kind}:${i.id}`), c.item),
+          }
+        : {}),
       bankSentences: [
+        ...(studyFocus?.enabled && studyFocus.activeLesson && textbookSentences.status === 'ready'
+          ? textbookSentences.sentences.filter(
+              (x) =>
+                x.lesson === studyFocus.activeLesson!.n &&
+                (x.textbookId ?? 'laixue-1') === studyFocus.activeLesson!.bookId,
+            )
+          : []),
         ...sentenceBankState.sentences,
         ...(myClass.enabled && textbookSentences.status === 'ready'
           ? textbookSentences.sentences.filter(

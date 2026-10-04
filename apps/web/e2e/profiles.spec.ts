@@ -18,6 +18,7 @@ test.beforeEach(async ({ context }) => {
   await context.addInitScript(() => {
     if (localStorage.getItem('anan.sync.disabled') === null)
       localStorage.setItem('anan.sync.disabled', '1');
+    localStorage.setItem('anan.study.disabled', '1'); // Phase 14: plain queues for these specs
   });
 });
 

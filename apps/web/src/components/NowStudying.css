@@ -5,3 +5,7 @@
 .now-studying-cheer { background: var(--accent-soft, #e6f6ec); padding: 0.4rem 0.6rem; border-radius: 6px; }
 .now-studying-settings { margin-top: 0.5rem; }
 .now-studying-settings label { display: block; margin: 0.25rem 0; }
+.now-studying-settings input[type='number'] { min-height: 44px; min-width: 72px; font-size: 1rem; }
+.now-studying-settings input[type='checkbox'] { width: 24px; height: 24px; }
+.now-studying-settings summary { min-height: 44px; display: flex; align-items: center; }
+.now-studying button { min-height: 44px; }

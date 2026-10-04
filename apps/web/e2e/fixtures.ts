@@ -15,6 +15,9 @@ export const test = base.extend({
       setIfAbsent('anan.siteCode', 'tofu');
       setIfAbsent('anan.profile', 'ron');
       setIfAbsent('anan.sync.disabled', '1');
+      // Phase 14: the study order reorders queues; specs written for the plain queues switch it off
+      // (the study-order specs remove this key).
+      setIfAbsent('anan.study.disabled', '1');
     });
     await use(context);
   },

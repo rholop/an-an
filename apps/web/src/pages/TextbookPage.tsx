@@ -37,6 +37,7 @@ import {
   type PrivateResult,
 } from '../lib/textbook-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
+import { QuickKnownCheck } from '../components/QuickKnownCheck.js';
 import { ChatPage } from './ChatPage.js';
 import { JournalPage } from './JournalPage.js';
 import { ReviewPage } from './ReviewPage.js';
@@ -351,6 +352,7 @@ function LessonDetail({
   onBack: () => void;
   onStudy: () => void;
 }) {
+  const [checking, setChecking] = useState(false);
   const grammar = lesson.grammar
     .map((id) => data.grammarItems.find((g) => g.id === id))
     .filter((g): g is GrammarItem => Boolean(g));
@@ -372,7 +374,19 @@ function LessonDetail({
       {progress && classOn && <ProgressRow p={progress} />}
       <button className="textbook-study-btn" onClick={onStudy} data-testid="study-lesson">
         Study this lesson
+      </button>{' '}
+      <button onClick={() => setChecking((c) => !c)} data-testid="mark-known">
+        I already know this lesson
       </button>
+      {checking && (
+        <QuickKnownCheck
+          lesson={lesson}
+          lexicon={lexicon}
+          grammar={data.grammarItems}
+          sentences={sentences}
+          onClose={() => setChecking(false)}
+        />
+      )}
 
       <h2>By the end you can…</h2>
       <ul>

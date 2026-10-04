@@ -323,7 +323,7 @@ export function ChatPage({
         <p className="chat-level-note">Your level: {learnerLevel}</p>
         <LevelChips selected={levelFilter} onChange={setLevelFilter} current={learnerLevel} />
         {pinnedIds.length > 0 && (
-          <section className="chat-class-section" aria-label="Current lesson" data-testid="pinned-scenarios">
+          <section className="chat-pinned-section" aria-label="Current lesson" data-testid="pinned-scenarios">
             <h2 lang="zh-Hant">
               Current lesson · {studyFocus?.activeLesson ? stepName(studyFocus.activeLesson) : ''}
             </h2>

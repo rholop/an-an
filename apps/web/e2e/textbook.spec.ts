@@ -162,4 +162,29 @@ test.describe('Textbook / My class (phase 12)', () => {
     await expect(page.getByTestId('textbook-badge').first().or(page.getByText('來學華語 2 · L3').first())).toBeVisible();
     await expect(page.getByTestId('study-lesson')).toBeEnabled();
   });
+
+  test.describe('study order (Phase 14)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => localStorage.removeItem('anan.study.disabled'));
+  });
+
+  test('home: the "Now studying" card names the active step and what is left; study order can be switched off (Phase 14)', async ({ page }) => {
+    await page.goto('/?page=garden');
+    const card = page.getByTestId('now-studying');
+    await expect(card).toBeVisible();
+    await expect(page.getByTestId('now-studying-name')).toContainText('Lesson 1');
+    await expect(page.getByTestId('now-studying-left')).toContainText('to go');
+    await card.locator('summary').click();
+    await page.getByTestId('study-order-toggle').uncheck();
+    await expect(card).toContainText('Study order is off');
+    await page.getByTestId('study-order-toggle').check();
+    await expect(page.getByTestId('now-studying-name')).toBeVisible();
+  });
+
+  test('chat pins the active lesson’s scenarios as "Current lesson"', async ({ page }) => {
+    await page.goto('/?page=chat');
+    await expect(page.getByTestId('pinned-scenarios')).toBeVisible();
+    await expect(page.getByTestId('pinned-scenarios')).toContainText('Current lesson');
+  });
+  });
 });

@@ -263,3 +263,44 @@ describe('ReaderService.next — Lesson focus (Phase 12)', () => {
     expect(await reader.next({ focus: 'lesson', level: 'N1', now: NOW })).toBeNull();
   });
 });
+
+describe('ReaderService.next — Lesson focus follows the study order (Phase 14)', () => {
+  const tb = (zh: string, lesson: number, over: Partial<SentenceBankEntry> = {}) =>
+    entry(zh, 'w-wo', { lesson, source: 'generated', level: 'L2', tags: [`textbook:laixue-1:L0${lesson}`], ...over });
+  const sentences = [tb('我去喝咖啡。', 3), tb('我愛你。', 3, { grammarIds: ['g-x'] }), tb('我在家。', 4)];
+  const focusOf = (items: Array<{ kind: 'word' | 'grammar'; id: string }>, review: typeof items = []) =>
+    ({
+      enabled: true,
+      activeStep: { kind: 'lesson', bookId: 'laixue-1', n: 3, lessonId: 'laixue-1-L03', level: 'N1', ordinal: 3 },
+      activeLesson: { kind: 'lesson', bookId: 'laixue-1', n: 3, lessonId: 'laixue-1-L03', level: 'N1', ordinal: 3 },
+      focusItems: items,
+      reviewItems: review,
+    }) as never;
+  const idx = new Map([['word:w-wo', 'laixue-1-L03'], ['grammar:g-x', 'laixue-1-L03'], ['word:w-old', 'laixue-1-L04']]);
+
+  it('builds a sentence around an unmastered item of the active lesson, ignoring the level picker', async () => {
+    const reader = service({
+      studyFocus: async () => focusOf([{ kind: 'word', id: 'w-wo' }]),
+      lessonIndex: idx,
+      textbookSentences: sentences,
+      rand: () => 0.9,
+    });
+    const r = await reader.next({ focus: 'lesson', level: 'N1', now: NOW }); // sentences are L2, picker is N1
+    expect(r).not.toBeNull();
+    expect(sentences.slice(0, 2).map((s) => s.zh)).toContain(r!.pick.sentence.zh);
+    expect(r!.pick.sentence.sourceLabel).toBe('來學華語 1 · L3');
+  });
+
+  it('a grammar point picks a sentence that exercises it; ~30% of the time a review lesson’s item is used', async () => {
+    const grammar = service({ studyFocus: async () => focusOf([{ kind: 'grammar', id: 'g-x' }]), lessonIndex: idx, textbookSentences: sentences, rand: () => 0.9 });
+    expect((await grammar.next({ focus: 'lesson', level: 'L2', now: NOW }))!.pick.sentence.zh).toBe('我愛你。');
+    const review = service({
+      studyFocus: async () => focusOf([{ kind: 'grammar', id: 'g-x' }], [{ kind: 'word', id: 'w-wo' }]),
+      lessonIndex: idx,
+      textbookSentences: sentences,
+      rand: () => 0.1, // < reviewLessonShare
+    });
+    const r = await review.next({ focus: 'lesson', level: 'L2', now: NOW });
+    expect(r!.pick.reason).toContain('(review)');
+  });
+});
