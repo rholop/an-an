@@ -1,0 +1,35 @@
+.speaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+}
+.speaker-btn {
+  font-size: 1.1rem;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  cursor: pointer;
+}
+.speaker-slow,
+.speaker-wrong {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  min-height: 2rem;
+  color: inherit;
+  opacity: 0.75;
+  cursor: pointer;
+}
+.speaker-slow[aria-pressed='true'] {
+  opacity: 1;
+  font-weight: 600;
+  text-decoration: underline;
+}
+.speaker-wrong {
+  text-decoration: underline;
+}
+.speaker-note {
+  opacity: 0.7;
+  font-size: 0.8rem;
+}
