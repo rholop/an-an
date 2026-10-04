@@ -32,3 +32,5 @@ export * from './audio/zhuyin-sapi.js';
 export * from './audio/ssml.js';
 export * from './audio/clips.js';
 export * from './textbook/index.js';
+export * from './study/study-focus.js';
+export * from './curriculum/priority.config.js';
