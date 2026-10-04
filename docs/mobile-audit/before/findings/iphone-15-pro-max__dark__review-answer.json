@@ -1,0 +1,77 @@
+[
+  {
+    "kind": "horizontal-scroll",
+    "where": "page",
+    "detail": "scrollWidth 1232 > clientWidth 430"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button (×9)",
+    "detail": "x 348–434 of 430"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.profile-chip “羅恩▾”",
+    "detail": "72×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Light”",
+    "detail": "60×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Auto”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn.theme-toggle-btn--on “Dark”",
+    "detail": "61×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.speaker-btn “Play 吃”",
+    "detail": "38×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.speaker-slow “slow”",
+    "detail": "42×32px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.speaker-wrong “Sounds wrong”",
+    "detail": "116×32px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.review-btn.review-btn--again “Again”",
+    "detail": "83×43px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.review-btn.review-btn--hard “Hard”",
+    "detail": "77×43px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.review-btn.review-btn--good “Good”",
+    "detail": "81×43px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.review-btn.review-btn--easy “Easy”",
+    "detail": "74×43px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span “羅恩”",
+    "detail": "16px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span.textbook-badge “來學華語 1 · L8”",
+    "detail": "11.52px"
+  }
+]

@@ -134,9 +134,11 @@ export function AnkiImportPage() {
                 <tbody>
                   {results.slice(0, 200).map((r, i) => (
                     <tr key={i} className={`anki-row anki-row--${r.status}`}>
-                      <td>{r.headword}</td>
-                      <td>{r.status}</td>
-                      <td>
+                      <td data-label="Headword" lang="zh-Hant">
+                        {r.headword}
+                      </td>
+                      <td data-label="Status">{r.status}</td>
+                      <td data-label="Matched word">
                         {r.word ? `${r.word.headword} (${r.word.pinyin})` : '—'}
                         {r.candidates && r.candidates.length > 1 && (
                           <span className="anki-ambiguous-note"> +{r.candidates.length - 1} more sense(s)</span>

@@ -1,0 +1,47 @@
+[
+  {
+    "kind": "horizontal-scroll",
+    "where": "page",
+    "detail": "scrollWidth 1232 > clientWidth 430"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button (×9)",
+    "detail": "x 348–434 of 430"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.profile-chip “羅恩▾”",
+    "detail": "72×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Light”",
+    "detail": "60×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Auto”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn.theme-toggle-btn--on “Dark”",
+    "detail": "61×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input",
+    "detail": "12×12px"
+  },
+  {
+    "kind": "small-target",
+    "where": "select “1. Hello!2. I Have Two Y”",
+    "detail": "361×34px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span (×11)",
+    "detail": "16px"
+  }
+]

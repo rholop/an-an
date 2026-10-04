@@ -369,6 +369,12 @@ function ErrorClozeView({
           disabled={answered !== null}
           placeholder="中文…"
           aria-label="Corrected wording"
+          lang="zh-Hant-TW"
+          enterKeyHint="done"
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
         />
         <button onClick={submit} disabled={answered !== null || !typed.trim()}>
           Submit
@@ -459,7 +465,14 @@ function ChoiceExerciseView({
           </button>
         ))}
       </div>
-      {answered && <Feedback outcome={answered} word={item.word} onNext={onNext} sentenceZh={item.source?.zh} />}
+      {answered && (
+        <Feedback
+          outcome={answered}
+          word={item.word}
+          onNext={onNext}
+          sentenceZh={item.source?.zh}
+        />
+      )}
     </div>
   );
 }
@@ -503,7 +516,7 @@ function TypedExerciseView({
             </>
           ) : (
             <>
-              Type the reading of: <strong>{item.word.headword}</strong>
+              Type the reading of: <strong lang="zh-Hant">{item.word.headword}</strong>
             </>
           )}
         </p>
@@ -529,12 +542,27 @@ function TypedExerciseView({
           placeholder={
             mode === 'hanzi' ? '中文…' : mode === 'pinyin' ? 'ni3 hao3 / nǐ hǎo' : 'ㄋㄧˇ ㄏㄠˇ'
           }
+          // iPhone: no auto-capitals / auto-correct on a typed answer, the right
+          // Chinese keyboard, and a "done" key. (inputMode keeps Latin keyboards for pinyin.)
+          lang={mode === 'pinyin' ? 'en' : 'zh-Hant-TW'}
+          enterKeyHint="done"
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
         />
         <button onClick={submit} disabled={Boolean(answered) || !typed.trim()}>
           Submit
         </button>
       </div>
-      {answered && <Feedback outcome={answered} word={item.word} onNext={onNext} sentenceZh={item.source?.zh} />}
+      {answered && (
+        <Feedback
+          outcome={answered}
+          word={item.word}
+          onNext={onNext}
+          sentenceZh={item.source?.zh}
+        />
+      )}
     </div>
   );
 }

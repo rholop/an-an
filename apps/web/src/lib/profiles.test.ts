@@ -254,3 +254,30 @@ describe('v5 upgrade', () => {
     upgraded.close();
   });
 });
+
+describe('first screen is not blocked on sync (phase 11)', () => {
+  it('withDeadline gives up waiting after the deadline but lets a slow promise finish', async () => {
+    const { withDeadline } = await import('./profile-controller.js');
+    let finished = false;
+    const slow = new Promise<void>((resolve) =>
+      setTimeout(() => {
+        finished = true;
+        resolve();
+      }, 120),
+    );
+    const started = Date.now();
+    await withDeadline(slow, 20);
+    expect(Date.now() - started).toBeLessThan(100); // returned at the deadline…
+    expect(finished).toBe(false);
+    await slow;
+    expect(finished).toBe(true); // …and the work still completes in the background
+  });
+
+  it('returns as soon as the promise settles, and swallows a rejection', async () => {
+    const { withDeadline } = await import('./profile-controller.js');
+    const started = Date.now();
+    await withDeadline(Promise.resolve(), 5000);
+    await withDeadline(Promise.reject(new Error('server down')), 5000);
+    expect(Date.now() - started).toBeLessThan(500);
+  });
+});

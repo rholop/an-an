@@ -35,11 +35,13 @@ test.describe('Chat page', () => {
     // Tap-to-lookup on the opener → chat_lookup_gloss evidence + popover.
     await page.locator('.chat-bubble--npc .an-token').first().click();
     await expect(page.locator('.an-popover')).toBeVisible();
-    await page.waitForFunction(
-      async () =>
-        (await window.__anan.db.evidence.toArray()).some((e) => e.kind === 'chat_lookup_gloss'),
-      { timeout: 5000 },
-    );
+    await expect
+      .poll(async () =>
+        (await page.evaluate(() => window.__anan.db.evidence.toArray())).some(
+          (e) => e.kind === 'chat_lookup_gloss',
+        ),
+      )
+      .toBe(true);
 
     // Hover a different token whose reading is already shown → no hover evidence
     // (only clicks count while pinyin/zhuyin is visible).

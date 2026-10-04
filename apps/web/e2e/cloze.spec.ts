@@ -24,12 +24,14 @@ test.describe('Cloze page', () => {
       await page.locator('.an-token').nth(i).click();
       await page.locator('.an-popover-close').click();
     }
-    await page.waitForFunction(
-      async () =>
-        (await window.__anan.db.evidence.toArray()).filter((e) => e.kind === 'chat_lookup_gloss')
-          .length >= 3,
-      { timeout: 5000 },
-    );
+    await expect
+      .poll(
+        async () =>
+          (await page.evaluate(() => window.__anan.db.evidence.toArray())).filter(
+            (e) => e.kind === 'chat_lookup_gloss',
+          ).length,
+      )
+      .toBeGreaterThanOrEqual(3);
 
     await page.goto('/?page=cloze');
     const startButton = page.getByRole('button', { name: /Start session/ });
@@ -45,13 +47,13 @@ test.describe('Cloze page', () => {
     await expect(page.locator('.cloze-feedback')).toBeVisible();
     await page.screenshot({ path: 'screenshots/cloze-answered.png' });
 
-    await page.waitForFunction(
-      async () =>
-        (await window.__anan.db.evidence.toArray()).some(
+    await expect
+      .poll(async () =>
+        (await page.evaluate(() => window.__anan.db.evidence.toArray())).some(
           (e) => e.kind === 'cloze_correct_nohint' || e.kind === 'cloze_wrong',
         ),
-      { timeout: 5000 },
-    );
+      )
+      .toBe(true);
 
     await page.getByRole('button', { name: 'Next' }).click();
     await expect(page.getByText(/Item 2 \//)).toBeVisible();

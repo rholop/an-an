@@ -1,5 +1,6 @@
 .gate {
-  min-height: 100vh;
+  min-height: 100vh; /* fallback */
+  min-height: 100dvh; /* the visible height: iOS Safari's toolbar no longer cuts off the buttons */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -106,4 +107,43 @@
 }
 .profile-menu button:hover {
   background: rgba(127, 127, 127, 0.15);
+}
+
+/* ---- phones ---- */
+@media (max-width: 639.98px) {
+  .gate {
+    padding: calc(1rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px))
+      calc(1rem + env(safe-area-inset-bottom, 0px)) calc(1rem + env(safe-area-inset-left, 0px));
+  }
+  .gate-profiles,
+  .gate-code,
+  .gate-error {
+    width: 100%;
+  }
+  .gate-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.9rem;
+  }
+  .gate-big {
+    width: 100%;
+    min-width: 0;
+    padding: 1.2rem 1rem;
+    font-size: 1.8rem;
+  }
+  /* the code field and its Continue button: big and full width */
+  .gate-input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 52px;
+    font-size: 1.3rem;
+  }
+  .gate-big--small {
+    min-height: 56px;
+    padding: 0.6rem 1rem;
+    font-size: 1.2rem;
+  }
+  .gate-small {
+    min-height: 44px;
+  }
 }

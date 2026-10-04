@@ -141,7 +141,10 @@ function ReviewCard({
           </span>
         )}
       </div>
-      <div className="review-card-front" lang={grammar ? 'zh-Hant' : undefined}>
+      <div
+        className="review-card-front"
+        lang={grammar || card.skill === 'recognition' ? 'zh-Hant' : undefined}
+      >
         {front}
       </div>
 
@@ -150,22 +153,26 @@ function ReviewCard({
           <div className="review-card-back">{back}</div>
           {word && <SpeakerButton kind="word" id={word.id} label={word.headword} />}
           {card.leech && word && <LeechBreakdown card={card} word={word} lexicon={lexicon} />}
-          <div className="review-buttons">
-            {GRADES.map(({ grade, label }) => (
-              <button
-                key={grade}
-                className={`review-btn review-btn--${grade}`}
-                onClick={() => onRate(grade)}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="review-actions">
+            <div className="review-buttons">
+              {GRADES.map(({ grade, label }) => (
+                <button
+                  key={grade}
+                  className={`review-btn review-btn--${grade}`}
+                  onClick={() => onRate(grade)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         </>
       ) : (
-        <button className="review-reveal" onClick={onReveal}>
-          Show answer
-        </button>
+        <div className="review-actions">
+          <button className="review-reveal" onClick={onReveal}>
+            Show answer
+          </button>
+        </div>
       )}
     </div>
   );

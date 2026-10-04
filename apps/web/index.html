@@ -2,10 +2,23 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <!-- Inline icon so browsers never request /favicon.ico (a 404 that made e2e console-error checks flaky). -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='13'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E" />
     <title>An'an — Reader</title>
+    <!-- Start the (large) lexicon download immediately, in parallel with the app's JS. -->
+    <link rel="preload" href="/lexicon/lexicon.v2.json" as="fetch" crossorigin />
+    <!-- Home-screen app on iPhone (Add to Home Screen): own window, own icon, title. -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="An'an" />
+    <!-- 'default' follows the phone's light/dark appearance (white or black bar with matching text). -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="format-detection" content="telephone=no" />
+    <!-- Browser chrome colour per scheme; src/lib/theme.ts overrides both when Light/Dark is forced. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121212" />
     <!-- Apply a stored light/dark choice before first paint (no flash). Kept in sync by src/lib/theme.ts. -->
     <script>
       try {

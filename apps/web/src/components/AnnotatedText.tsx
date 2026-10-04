@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   lessonBadge,
   levelIndex,
@@ -10,6 +11,7 @@ import {
   type Token,
   type Word,
 } from '@anan/core';
+import { CAN_HOVER_QUERY, SHEET_QUERY, useMediaQuery } from '../lib/useMediaQuery.js';
 import { SpeakerButton } from './SpeakerButton.js';
 import './AnnotatedText.css';
 
@@ -137,11 +139,15 @@ function Popover({
   onReport,
   anchor,
   onOverflow,
+  sheet,
 }: {
   at: AnnotatedToken;
   onClose: () => void;
   showMoeZh: boolean;
   onReport?: () => void;
+  /** Phones: a full-width bottom sheet (portalled to <body>) instead of a box
+   * hanging off the word. Tap outside, swipe down, or × closes it. */
+  sheet: boolean;
   /** The text block, and a callback for how far the popover sticks out below
    * its content. The block then pads its bottom by that much, so a
    * definition opened on the last line pushes the content below it down
@@ -150,7 +156,22 @@ function Popover({
   onOverflow: (px: number) => void;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
+  const swipeStart = useRef<number | null>(null);
+  // A sheet is pinned to the screen, so it never needs room reserved in the text.
+  useEffect(() => {
+    if (!sheet) return;
+    onOverflow(0);
+    // tap anywhere else closes it (a tap on a word is handled by the word itself)
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Element | null;
+      if (t?.closest('.an-popover, .an-token')) return;
+      onClose();
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [sheet, onClose, onOverflow]);
   useLayoutEffect(() => {
+    if (sheet) return;
     const measure = () => {
       const pop = ref.current;
       const root = anchor.current;
@@ -168,11 +189,28 @@ function Popover({
       typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
     if (ref.current) observer?.observe(ref.current);
     return () => observer?.disconnect();
-  }, [anchor, onOverflow, at]);
+  }, [anchor, onOverflow, at, sheet]);
   const others = (at.word?.senses ?? []).filter((s) => s.id !== at.sense?.id);
   const moe = at.word?.moeDefZh ?? [];
-  return (
-    <span ref={ref} className="an-popover" onClick={(e) => e.stopPropagation()}>
+  const body = (
+    <span
+      ref={ref}
+      className={`an-popover ${sheet ? 'an-popover--sheet' : ''}`}
+      role={sheet ? 'dialog' : undefined}
+      aria-label={sheet ? `Definition of ${at.token.text}` : undefined}
+      onClick={(e) => e.stopPropagation()}
+      onTouchStart={sheet ? (e) => (swipeStart.current = e.touches[0]?.clientY ?? null) : undefined}
+      onTouchEnd={
+        sheet
+          ? (e) => {
+              const y = e.changedTouches[0]?.clientY;
+              if (swipeStart.current !== null && y !== undefined && y - swipeStart.current > 60) onClose();
+              swipeStart.current = null;
+            }
+          : undefined
+      }
+    >
+      {sheet && <span className="an-sheet-grabber" aria-hidden="true" />}
       <button className="an-popover-close" onClick={onClose} aria-label="Close">
         ×
       </button>
@@ -230,6 +268,7 @@ function Popover({
       )}
     </span>
   );
+  return sheet ? createPortal(body, document.body) : body;
 }
 
 export function AnnotatedText({
@@ -244,6 +283,20 @@ export function AnnotatedText({
   // Phase 7: the MOE Chinese definition is shown to learners at L3 and above.
   const showMoeZh = Boolean(currentLevel && levelIndex(currentLevel) >= levelIndex('L3'));
   const [openId, setOpenId] = useState<string | null>(null);
+  const sheet = useMediaQuery(SHEET_QUERY);
+  const canHover = useMediaQuery(CAN_HOVER_QUERY);
+  // Touch screens have no hover: in the hide-until-hover modes the FIRST tap
+  // reveals the reading (and counts as the reading lookup, as a hover does),
+  // the second opens the definition, and a tap elsewhere hides it again.
+  const [revealId, setRevealId] = useState<string | null>(null);
+  useEffect(() => {
+    if (canHover || revealId === null) return;
+    const onDown = (e: PointerEvent) => {
+      if (!(e.target as Element | null)?.closest('.an-token')) setRevealId(null);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [canHover, revealId]);
   const hoveredIds = useRef(new Set<string>());
   const rootRef = useRef<HTMLElement>(null);
   // Room reserved under the text while a definition is open (see Popover).
@@ -306,10 +359,20 @@ export function AnnotatedText({
                     .filter(Boolean)
                     .join(' · ') || undefined
             }
-            data-visible={hoverLike ? isOpen : showAnnotation}
+            data-visible={hoverLike ? isOpen || revealId === id : showAnnotation}
             onClick={(e) => {
               e.stopPropagation();
+              if (!canHover && hoverLike && !isOpen && revealId !== id) {
+                setOpenId(null);
+                setRevealId(id);
+                if (!hoveredIds.current.has(id)) {
+                  hoveredIds.current.add(id);
+                  onLookup?.(at, 'reading');
+                }
+                return;
+              }
               if (!isOpen) onLookup?.(at, 'gloss');
+              setRevealId(null);
               setOpenId(isOpen ? null : id);
             }}
             onMouseEnter={() => {
@@ -317,7 +380,7 @@ export function AnnotatedText({
               // hover. With pinyin/zhuyin/both already on screen (or off
               // entirely) the pointer just passes over the text, so only an
               // actual click counts as a lookup.
-              if (!hoverLike) return;
+              if (!hoverLike || !canHover) return; // touch: handled by the tap above
               if (hoveredIds.current.has(id)) return;
               hoveredIds.current.add(id);
               onLookup?.(at, 'reading');
@@ -332,6 +395,7 @@ export function AnnotatedText({
                 onReport={onReportGloss ? () => onReportGloss(at) : undefined}
                 anchor={rootRef}
                 onOverflow={setReserve}
+                sheet={sheet}
               />
             )}
           </span>

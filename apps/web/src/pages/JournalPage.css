@@ -122,3 +122,53 @@
   max-width: 420px;
   color: var(--c-info);
 }
+
+/* ---- phones ---- */
+.journal-issue-buttons {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0.75rem 0;
+}
+.journal-issue-buttons button {
+  min-height: 48px;
+  text-align: left;
+  padding: 0.4rem 0.75rem;
+  font-size: 1rem;
+}
+.journal-fixes--sheet {
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 0.5rem;
+}
+@media (max-width: 639.98px) {
+  /* the entry box fills the screen: the visible height (shrinks with the keyboard) minus the page chrome */
+  .journal-textarea {
+    min-height: max(40dvh, calc(var(--vvh, 100dvh) - 420px));
+    font-size: max(1.25rem, 16px);
+  }
+  /* Submit stays above the keyboard / tab bar */
+  .journal-submit {
+    position: sticky;
+    bottom: calc(var(--tabbar-h, 0px) + 8px);
+    z-index: 5;
+    display: block;
+    width: 100%;
+    min-height: 52px;
+    margin-top: 0.75rem;
+    font-size: 1.1rem;
+  }
+  /* highlighted parts are tap targets (they open that part's sheet) */
+  .journal-hl--tap {
+    display: inline-block;
+    min-width: 44px;
+    min-height: 44px;
+    box-sizing: border-box;
+    text-align: center;
+    line-height: 44px;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  .journal-text {
+    line-height: 2;
+  }
+}

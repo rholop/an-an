@@ -1,0 +1,62 @@
+[
+  {
+    "kind": "horizontal-scroll",
+    "where": "page",
+    "detail": "scrollWidth 1231 > clientWidth 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button (×9)",
+    "detail": "x 348–434 of 390"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.profile-chip “羅恩▾”",
+    "detail": "72×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Light”",
+    "detail": "60×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Auto”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn.theme-toggle-btn--on “Dark”",
+    "detail": "61×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "a “CC-CEDICT”",
+    "detail": "123×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "a “Unicode Unihan database”",
+    "detail": "307×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input",
+    "detail": "12×12px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input",
+    "detail": "312×31px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button “Export backup”",
+    "detail": "124×31px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span “羅恩”",
+    "detail": "16px"
+  }
+]

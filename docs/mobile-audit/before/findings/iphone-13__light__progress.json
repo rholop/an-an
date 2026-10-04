@@ -1,0 +1,52 @@
+[
+  {
+    "kind": "horizontal-scroll",
+    "where": "page",
+    "detail": "scrollWidth 1231 > clientWidth 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button (×9)",
+    "detail": "x 348–434 of 390"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.profile-chip “羅恩▾”",
+    "detail": "72×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn.theme-toggle-btn--on “Light”",
+    "detail": "62×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Auto”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Dark”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "summary “Streak settings”",
+    "detail": "358×24px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input",
+    "detail": "12×12px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span (×18)",
+    "detail": "16px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "strong (×7)",
+    "detail": "16px"
+  }
+]

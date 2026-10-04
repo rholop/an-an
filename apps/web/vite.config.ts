@@ -14,8 +14,22 @@ export default defineConfig(({ command }) => ({
         name: "An'an",
         short_name: "An'an",
         description: 'Taiwan Mandarin learning game',
-        theme_color: '#1b1b1b',
-        icons: [],
+        // Opens as its own app (no browser bar) from the home-screen icon. start_url
+        // and scope default to the build base, i.e. /an-an/ in production.
+        display: 'standalone',
+        orientation: 'portrait',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
+        icons: [
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          {
+            src: 'icons/icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
       },
       workbox: {
         // Built data files (lexicon, scenarios, per-level sentence banks —

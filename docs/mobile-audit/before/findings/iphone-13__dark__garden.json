@@ -1,0 +1,87 @@
+[
+  {
+    "kind": "horizontal-scroll",
+    "where": "page",
+    "detail": "scrollWidth 1230 > clientWidth 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button (×9)",
+    "detail": "x 348–436 of 390"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.profile-chip “羅恩▾”",
+    "detail": "72×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Light”",
+    "detail": "60×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Auto”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn.theme-toggle-btn--on “Dark”",
+    "detail": "61×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.level-chip (×7)",
+    "detail": "54×27px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.level-chip.level-chip--on “All”",
+    "detail": "38×27px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input",
+    "detail": "12×12px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-n2 “咖啡kā fēi”",
+    "detail": "32×20px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-n2 “便利商店biàn lì shāng diàn”",
+    "detail": "92×20px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.garden-water (×5)",
+    "detail": "206×37px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-n1 (×3)",
+    "detail": "17×20px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span “羅恩”",
+    "detail": "16px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span “(來學華語)”",
+    "detail": "14.4px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "h2 (×4)",
+    "detail": "16px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "ruby.an-word.an-word--pinyin (×5)",
+    "detail": "15.2px"
+  }
+]

@@ -1,0 +1,67 @@
+[
+  {
+    "kind": "horizontal-scroll",
+    "where": "page",
+    "detail": "scrollWidth 1231 > clientWidth 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button (×9)",
+    "detail": "x 353–438 of 390"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.profile-chip “羅恩▾”",
+    "detail": "72×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn.theme-toggle-btn--on “Light”",
+    "detail": "62×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Auto”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Dark”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input",
+    "detail": "12×12px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input “Your fix for part 1”",
+    "detail": "230×38px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-l5 “健身房jiàn shēn fáng”",
+    "detail": "78×22px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button “Check”",
+    "detail": "61×31px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button “Show corrections”",
+    "detail": "145×31px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span “羅恩”",
+    "detail": "16px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "ruby.an-word.an-word--pinyin “健身房jiàn shēn fáng”",
+    "detail": "16px"
+  }
+]

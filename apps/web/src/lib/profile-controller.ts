@@ -34,6 +34,20 @@ export interface ControllerEvents {
 }
 
 /** Opens a profile (database + sync) and switches between them. UI-agnostic. */
+/** How long opening a profile waits for the first server pull (milliseconds). */
+export const FIRST_PULL_DEADLINE_MS = 1500;
+
+/** Resolves when `promise` settles or after `ms`, whichever is first; never rejects. */
+export function withDeadline(promise: Promise<unknown>, ms: number): Promise<void> {
+  return Promise.race([
+    promise.then(
+      () => undefined,
+      () => undefined,
+    ),
+    new Promise<void>((resolve) => setTimeout(resolve, ms)),
+  ]);
+}
+
 export class ProfileController {
   private sync: SyncManager | null = null;
   private unsubscribeStatus: (() => void) | null = null;
@@ -75,7 +89,11 @@ export class ProfileController {
     // e2e suite so unrelated specs don't share one server copy).
     if (localStorage.getItem('anan.sync.disabled') === '1') return session;
     sync.start();
-    await sync.flush(); // pull if the server moved on, then push anything pending
+    // Pull if the server moved on, then push anything pending. The first screen
+    // waits for this only briefly: on a slow or stalled connection the app opens
+    // on the local copy instead, and when the pull lands later the data-changed
+    // hook (above) refreshes whatever is on screen.
+    await withDeadline(sync.flush(), FIRST_PULL_DEADLINE_MS);
     this.events.onSyncStatus(sync.status);
     return session;
   }

@@ -1,0 +1,107 @@
+[
+  {
+    "kind": "horizontal-scroll",
+    "where": "page",
+    "detail": "scrollWidth 1230 > clientWidth 430"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button (×9)",
+    "detail": "x 351–436 of 430"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.profile-chip “羅恩▾”",
+    "detail": "72×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn.theme-toggle-btn--on “Light”",
+    "detail": "62×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Auto”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Dark”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-n1 (×9)",
+    "detail": "26×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-l1 (×3)",
+    "detail": "50×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-l2 “辦bàn”",
+    "detail": "26×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-l2 “奶茶nǎi chá”",
+    "detail": "57×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-l4 (×3)",
+    "detail": "26×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-n2 (×3)",
+    "detail": "26×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.chat-chip “沒有了，謝謝”",
+    "detail": "108×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.chat-chip “多少錢？”",
+    "detail": "79×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input.chat-input “輸入中文…”",
+    "detail": "245×42px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button “I'm stuck”",
+    "detail": "83×42px"
+  },
+  {
+    "kind": "small-target",
+    "where": "select “highmediumlow”",
+    "detail": "91×34px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input",
+    "detail": "12×12px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span “羅恩”",
+    "detail": "16px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "button.chat-chip “沒有了，謝謝”",
+    "detail": "14.4px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "button.chat-chip “多少錢？”",
+    "detail": "14.4px"
+  }
+]

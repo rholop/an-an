@@ -1,0 +1,207 @@
+[
+  {
+    "kind": "horizontal-scroll",
+    "where": "page",
+    "detail": "scrollWidth 1230 > clientWidth 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button (×9)",
+    "detail": "x 351–437 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "span.an-popover “×wǒ · ㄨㄛˇ🔊slowSounds wr”",
+    "detail": "x 258–521 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button.an-popover-close “Close”",
+    "detail": "x 496–517 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "div.an-popover-reading “wǒ · ㄨㄛˇ”",
+    "detail": "x 270–509 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "div.an-popover-audio “🔊slowSounds wrong”",
+    "detail": "x 270–509 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "span.speaker “🔊slowSounds wrong”",
+    "detail": "x 270–479 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button.speaker-wrong “Sounds wrong”",
+    "detail": "x 363–479 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "div.an-popover-gloss “I; me; my”",
+    "detail": "x 270–509 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "div.an-popover-source “CC-CEDICT”",
+    "detail": "x 270–509 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "details.an-popover-others “1 other meaningI, me tex”",
+    "detail": "x 270–509 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "summary “1 other meaning”",
+    "detail": "x 270–509 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "ul “I, me textbook”",
+    "detail": "x 270–509 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "li “I, me textbook”",
+    "detail": "x 288–509 of 390"
+  },
+  {
+    "kind": "offscreen",
+    "where": "button.an-popover-report “Report this definition”",
+    "detail": "x 386–509 of 390"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.profile-chip “羅恩▾”",
+    "detail": "72×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Light”",
+    "detail": "60×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn “Auto”",
+    "detail": "59×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.theme-toggle-btn.theme-toggle-btn--on “Dark”",
+    "detail": "61×30px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.reader-chip.reader-chip--on “Mixed”",
+    "detail": "78×34px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.reader-chip “Review”",
+    "detail": "83×34px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.reader-chip “New words”",
+    "detail": "114×34px"
+  },
+  {
+    "kind": "small-target",
+    "where": "select “alwayshoverofftone-only”",
+    "detail": "100×34px"
+  },
+  {
+    "kind": "small-target",
+    "where": "select “pinyinzhuyinboth”",
+    "detail": "78×34px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-n1 (×9)",
+    "detail": "50×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-l2 “搭dā”",
+    "detail": "26×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-n2 (×5)",
+    "detail": "57×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-unleveled (×3)",
+    "detail": "65×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-l3 “遇到yù dào”",
+    "detail": "50×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-l1 “還huán”",
+    "detail": "34×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "span.an-token.level-l1 “事情shì qíng”",
+    "detail": "65×33px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.an-popover-close “Close”",
+    "detail": "21×27px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.speaker-btn “Play 我”",
+    "detail": "38×36px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.speaker-slow “slow”",
+    "detail": "42×32px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.speaker-wrong “Sounds wrong”",
+    "detail": "116×32px"
+  },
+  {
+    "kind": "small-target",
+    "where": "summary “1 other meaning”",
+    "detail": "239×19px"
+  },
+  {
+    "kind": "small-target",
+    "where": "button.an-popover-report “Report this definition”",
+    "detail": "123×20px"
+  },
+  {
+    "kind": "small-target",
+    "where": "input",
+    "detail": "12×12px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span “羅恩”",
+    "detail": "16px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "span.textbook-badge “來學華語 1 · L1”",
+    "detail": "11.52px"
+  },
+  {
+    "kind": "small-chinese",
+    "where": "pre “2026-10-04T16:19:58.042Z”",
+    "detail": "12px"
+  }
+]

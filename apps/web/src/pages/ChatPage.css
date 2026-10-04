@@ -172,3 +172,85 @@
   opacity: 0.75;
   margin-top: 0.15rem;
 }
+
+/* ---- phones: the conversation is a full-screen column ----
+   messages scroll; the composer (suggestions, input, I'm stuck) stays pinned
+   above the keyboard. Sized from the VISIBLE viewport (lib/viewport.ts), because
+   iOS does not shrink the layout viewport when the keyboard opens. */
+.chat-scroll {
+  min-width: 0;
+}
+@media (max-width: 639.98px) {
+  .chat-page--convo {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--vv-top, 0px);
+    height: var(--vvh, 100dvh);
+    z-index: 45; /* above the tab bar: a conversation is its own screen */
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    background: Canvas;
+    padding: calc(0.4rem + env(safe-area-inset-top, 0px)) calc(0.9rem + env(safe-area-inset-right, 0px)) 0
+      calc(0.9rem + env(safe-area-inset-left, 0px));
+  }
+  .chat-header {
+    flex: none;
+    gap: 0.5rem;
+  }
+  .chat-header h1 {
+    font-size: 1rem;
+    line-height: 1.25;
+    min-width: 0;
+  }
+  .chat-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .chat-bubble {
+    max-width: 94%;
+  }
+  .chat-composer {
+    flex: none;
+    padding-top: 0.4rem;
+    border-top: 1px solid rgba(127, 127, 127, 0.3);
+    background: Canvas;
+    padding-bottom: calc(0.4rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* with the keyboard up it covers the home bar, so no inset */
+  .kb-open .chat-composer {
+    padding-bottom: 0.4rem;
+  }
+  /* suggested replies: ONE row, scroll sideways */
+  .chat-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+  }
+  .chat-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .chat-input {
+    min-width: 0;
+    font-size: 16px; /* iOS zooms in on anything smaller */
+  }
+  .chat-input-row {
+    gap: 0.4rem;
+  }
+  .chat-controls {
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    margin-top: 0.25rem;
+  }
+  .chat-scenario-card {
+    min-height: 44px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

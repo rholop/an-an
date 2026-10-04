@@ -14,6 +14,7 @@ import {
 } from '@anan/core';
 import { AnnotatedInline, AnnotatedWord, useReadingScript } from '../components/AnnotatedInline.js';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
+import { BottomSheet } from '../components/BottomSheet.js';
 import { JournalProgress } from '../components/JournalProgress.js';
 import { db, gameService, learnerService } from '../db/instance.js';
 import { useCurrentLevel } from '../lib/current-level.js';
@@ -24,6 +25,7 @@ import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useMyClass } from '../lib/my-class.js';
 import { useTextbook } from '../lib/textbook-data.js';
+import { SHEET_QUERY, useMediaQuery } from '../lib/useMediaQuery.js';
 import { useSetting } from '../lib/useSetting.js';
 import './JournalPage.css';
 
@@ -113,7 +115,9 @@ export function JournalPage({
       .where('status')
       .equals('finished')
       .toArray()
-      .then((rows) => setDonePromptIds(new Set(rows.flatMap((r) => (r.promptId ? [r.promptId] : [])))))
+      .then((rows) =>
+        setDonePromptIds(new Set(rows.flatMap((r) => (r.promptId ? [r.promptId] : [])))),
+      )
       .catch(() => undefined);
   }, [progressKey]);
   const chosenClass =
@@ -136,7 +140,9 @@ export function JournalPage({
   const grammarHints = useMemo(
     () =>
       lexiconState.status === 'ready' && chosenClass
-        ? chosenClass.useGrammar.flatMap((id) => lexiconState.lexicon.grammarItemById(id)?.pattern ?? [])
+        ? chosenClass.useGrammar.flatMap(
+            (id) => lexiconState.lexicon.grammarItemById(id)?.pattern ?? [],
+          )
         : [],
     [lexiconState, chosenClass],
   );
@@ -381,17 +387,22 @@ function WriteStage({
         rows={8}
         placeholder="寫下你的想法… 不會寫的字可以用 [English] 先代替。"
         aria-label="Journal entry"
+        enterKeyHint="enter"
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
       />
       <p className="journal-muted">
         Don&apos;t know a word? Write it in English inside brackets, like{' '}
-        <code>今天我去 [gym]</code>, and we&apos;ll translate it and add it to your practice.
+        <code lang="zh-Hant">今天我去 [gym]</code>, and we&apos;ll translate it and add it to your
+        practice.
       </p>
       {error && (
         <p role="alert" className="journal-error">
           {error}
         </p>
       )}
-      <button onClick={submit} disabled={busy || !text.trim()}>
+      <button className="journal-submit" onClick={submit} disabled={busy || !text.trim()}>
         {busy ? 'Checking…' : 'Submit for feedback'}
       </button>
     </section>
@@ -399,7 +410,16 @@ function WriteStage({
 }
 
 /** Splits `text` into plain and highlighted runs for the given issues. */
-function HighlightedText({ text, issues }: { text: string; issues: JournalIssue[] }) {
+function HighlightedText({
+  text,
+  issues,
+  onSelect,
+}: {
+  text: string;
+  issues: JournalIssue[];
+  /** Phones: tapping a highlighted part opens its correction in a sheet. */
+  onSelect?: (index: number) => void;
+}) {
   const parts: React.ReactNode[] = [];
   let cursor = 0;
   issues.forEach((issue, i) => {
@@ -407,9 +427,18 @@ function HighlightedText({ text, issues }: { text: string; issues: JournalIssue[
     parts.push(
       <mark
         key={i}
-        className={`journal-hl journal-hl--${issue.type}`}
+        className={`journal-hl journal-hl--${issue.type} ${onSelect ? 'journal-hl--tap' : ''}`}
         title={TYPE_LABEL[issue.type]}
         data-issue={i}
+        {...(onSelect
+          ? {
+              role: 'button',
+              tabIndex: 0,
+              'aria-label': `${TYPE_LABEL[issue.type]}: part ${i + 1}`,
+              onClick: () => onSelect(i),
+              onKeyDown: (e: React.KeyboardEvent) => e.key === 'Enter' && onSelect(i),
+            }
+          : {})}
       >
         {text.slice(issue.span[0], issue.span[1])}
       </mark>,
@@ -463,6 +492,30 @@ function BracketList({ review }: { review: JournalReviewRow }) {
   );
 }
 
+/** Phones: one 44px button per highlighted part (the marks in the text are small). */
+function IssueButtons({
+  issues,
+  onOpen,
+  hint,
+}: {
+  issues: JournalIssue[];
+  onOpen: (index: number) => void;
+  hint: string;
+}) {
+  if (issues.length === 0) return null;
+  return (
+    <div className="journal-issue-buttons">
+      <p className="journal-muted">{hint}</p>
+      {issues.map((issue, i) => (
+        <button key={i} type="button" onClick={() => onOpen(i)}>
+          <span className={`journal-hl journal-hl--${issue.type}`}>{TYPE_LABEL[issue.type]}</span>{' '}
+          <span>Part {i + 1}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function SelfCorrectStage({
   service,
   entry,
@@ -484,6 +537,8 @@ function SelfCorrectStage({
   );
   const [busy, setBusy] = useState<number | null>(null);
   const [results, setResults] = useState<Record<number, SelfFixRecord | undefined>>(review.selfFix);
+  const sheetMode = useMediaQuery(SHEET_QUERY);
+  const [openPart, setOpenPart] = useState<number | null>(null);
 
   async function check(i: number) {
     setBusy(i);
@@ -500,6 +555,35 @@ function SelfCorrectStage({
     onChange();
   }
 
+  const fixRow = (issue: JournalIssue, i: number) => {
+    const result = results[i];
+    return (
+      <>
+        <span className={`journal-hl journal-hl--${issue.type}`}>{TYPE_LABEL[issue.type]}</span>
+        <input
+          lang="zh-Hant-TW"
+          enterKeyHint="done"
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          value={attempts[i] ?? ''}
+          onChange={(e) => setAttempts((a) => ({ ...a, [i]: e.target.value }))}
+          aria-label={`Your fix for part ${i + 1}`}
+        />
+        <button onClick={() => check(i)} disabled={busy === i}>
+          {busy === i ? 'Checking…' : 'Check'}
+        </button>
+        {result && (
+          <span className={result.fixed ? 'journal-ok' : 'journal-muted'} role="status">
+            {result.fixed ? '✓ Looks good' : 'Not there yet'}
+            {result.note && ` — ${result.note}`}
+          </span>
+        )}
+      </>
+    );
+  };
+
   return (
     <section className="journal-correct">
       <h2>Spot the mistakes</h2>
@@ -509,35 +593,32 @@ function SelfCorrectStage({
         before seeing the answers.
       </p>
       <Legend />
-      <HighlightedText text={entry.text} issues={review.issues} />
+      <HighlightedText
+        text={entry.text}
+        issues={review.issues}
+        onSelect={sheetMode ? setOpenPart : undefined}
+      />
       <BracketList review={review} />
-      <ol className="journal-fixes">
-        {review.issues.map((issue, i) => {
-          const result = results[i];
-          return (
-            <li key={i}>
-              <span className={`journal-hl journal-hl--${issue.type}`}>
-                {TYPE_LABEL[issue.type]}
-              </span>
-              <input
-                lang="zh-Hant"
-                value={attempts[i] ?? ''}
-                onChange={(e) => setAttempts((a) => ({ ...a, [i]: e.target.value }))}
-                aria-label={`Your fix for part ${i + 1}`}
-              />
-              <button onClick={() => check(i)} disabled={busy === i}>
-                {busy === i ? 'Checking…' : 'Check'}
-              </button>
-              {result && (
-                <span className={result.fixed ? 'journal-ok' : 'journal-muted'} role="status">
-                  {result.fixed ? '✓ Looks good' : 'Not there yet'}
-                  {result.note && ` — ${result.note}`}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+      {sheetMode ? (
+        <IssueButtons
+          issues={review.issues}
+          onOpen={setOpenPart}
+          hint="Tap a highlighted part to try fixing it."
+        />
+      ) : (
+        <ol className="journal-fixes">
+          {review.issues.map((issue, i) => (
+            <li key={i}>{fixRow(issue, i)}</li>
+          ))}
+        </ol>
+      )}
+      {openPart !== null && review.issues[openPart] && (
+        <BottomSheet label={`Part ${openPart + 1}`} onClose={() => setOpenPart(null)}>
+          <div className="journal-fixes journal-fixes--sheet">
+            {fixRow(review.issues[openPart]!, openPart)}
+          </div>
+        </BottomSheet>
+      )}
       <button onClick={reveal}>Show corrections</button>
     </section>
   );
@@ -562,6 +643,8 @@ function RevealStage({
 }) {
   const [busy, setBusy] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const sheetMode = useMediaQuery(SHEET_QUERY);
+  const [openPart, setOpenPart] = useState<number | null>(null);
   const inline = useMemo(
     () => new Map(review.brackets.filter((b) => b.zh).map((b) => [b.en, b.zh])),
     [review.brackets],
@@ -597,72 +680,105 @@ function RevealStage({
     onFinished();
   }
 
+  const issueBody = (issue: JournalIssue, i: number) => {
+    const flagged = review.flagged.includes(i);
+    const fixed = review.selfFix[i]?.fixed;
+    const more = review.explainMore[i];
+    return (
+      <>
+        <div>
+          <span className={`journal-hl journal-hl--${issue.type}`}>{TYPE_LABEL[issue.type]}</span>{' '}
+          {fixed && <span className="journal-ok">✓ You fixed this yourself</span>}{' '}
+          <span className="journal-muted">confidence: {issue.confidence}</span>
+        </div>
+        <p lang="zh-Hant">
+          <del>{entry.text.slice(...issue.span)}</del> →{' '}
+          <strong>
+            <Zh text={issue.correction} />
+          </strong>
+        </p>
+        <p>{issue.explanationEn}</p>
+        {review.selfFix[i]?.alternative && review.selfFix[i]?.note && (
+          <p className="journal-muted">Your version: {review.selfFix[i]!.note}</p>
+        )}
+        {more && (
+          <div className="journal-more">
+            <p>{more.explanationEn}</p>
+            <ul>
+              {more.examples.map((e) => (
+                <li key={e.zh}>
+                  <span lang="zh-Hant">
+                    <Zh text={e.zh} />
+                  </span>{' '}
+                  <span className="journal-muted">{e.en}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <div className="journal-actions">
+          {!more && (
+            <button onClick={() => explain(i)} disabled={busy === i}>
+              {busy === i ? 'Asking…' : 'Explain more'}
+            </button>
+          )}
+          <button onClick={() => flag(i)} aria-pressed={flagged}>
+            {flagged ? 'Flagged — won’t be practised (undo)' : 'Flag this correction'}
+          </button>
+        </div>
+      </>
+    );
+  };
+
   return (
     <section className="journal-reveal">
       <h2>Feedback</h2>
-      <HighlightedText text={entry.text} issues={review.issues} />
+      <HighlightedText
+        text={entry.text}
+        issues={review.issues}
+        onSelect={sheetMode ? setOpenPart : undefined}
+      />
       <BracketList review={review} />
       {Object.keys(review.selfFix).length > 0 && (
         <p className="journal-muted">Parts you fixed yourself are marked ✓ — nicely done.</p>
       )}
 
       {review.issues.length === 0 && <p>Nothing stood out to correct. Nice writing!</p>}
-      <ol className="journal-issues">
-        {review.issues.map((issue, i) => {
-          const flagged = review.flagged.includes(i);
-          const fixed = review.selfFix[i]?.fixed;
-          const more = review.explainMore[i];
-          return (
+      {sheetMode ? (
+        <IssueButtons
+          issues={review.issues}
+          onOpen={setOpenPart}
+          hint="Tap a highlighted part to see its correction."
+        />
+      ) : (
+        <ol className="journal-issues">
+          {review.issues.map((issue, i) => (
             <li
               key={i}
-              className={flagged ? 'journal-issue journal-issue--flagged' : 'journal-issue'}
+              className={
+                review.flagged.includes(i)
+                  ? 'journal-issue journal-issue--flagged'
+                  : 'journal-issue'
+              }
             >
-              <div>
-                <span className={`journal-hl journal-hl--${issue.type}`}>
-                  {TYPE_LABEL[issue.type]}
-                </span>{' '}
-                {fixed && <span className="journal-ok">✓ You fixed this yourself</span>}{' '}
-                <span className="journal-muted">confidence: {issue.confidence}</span>
-              </div>
-              <p lang="zh-Hant">
-                <del>{entry.text.slice(...issue.span)}</del> →{' '}
-                <strong>
-                  <Zh text={issue.correction} />
-                </strong>
-              </p>
-              <p>{issue.explanationEn}</p>
-              {review.selfFix[i]?.alternative && review.selfFix[i]?.note && (
-                <p className="journal-muted">Your version: {review.selfFix[i]!.note}</p>
-              )}
-              {more && (
-                <div className="journal-more">
-                  <p>{more.explanationEn}</p>
-                  <ul>
-                    {more.examples.map((e) => (
-                      <li key={e.zh}>
-                        <span lang="zh-Hant">
-                          <Zh text={e.zh} />
-                        </span>{' '}
-                        <span className="journal-muted">{e.en}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <div className="journal-actions">
-                {!more && (
-                  <button onClick={() => explain(i)} disabled={busy === i}>
-                    {busy === i ? 'Asking…' : 'Explain more'}
-                  </button>
-                )}
-                <button onClick={() => flag(i)} aria-pressed={flagged}>
-                  {flagged ? 'Flagged — won’t be practised (undo)' : 'Flag this correction'}
-                </button>
-              </div>
+              {issueBody(issue, i)}
             </li>
-          );
-        })}
-      </ol>
+          ))}
+        </ol>
+      )}
+      {openPart !== null && review.issues[openPart] && (
+        <BottomSheet label={`Correction ${openPart + 1}`} onClose={() => setOpenPart(null)}>
+          <div
+            className={
+              review.flagged.includes(openPart)
+                ? 'journal-issue journal-issue--flagged'
+                : 'journal-issue'
+            }
+          >
+            {issueBody(review.issues[openPart]!, openPart)}
+          </div>
+        </BottomSheet>
+      )}
       {error && (
         <p role="alert" className="journal-error">
           {error}
@@ -727,7 +843,7 @@ function RevealStage({
         )}
         {inline.size > 0 && (
           <p className="journal-muted lang-note">
-            Your gaps: {renderBracketsInline(entry.text, inline)}
+            Your gaps: <span lang="zh-Hant">{renderBracketsInline(entry.text, inline)}</span>
           </p>
         )}
       </div>

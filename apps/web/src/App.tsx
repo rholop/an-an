@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { levelLabel, levelUpSuggestion, type Level } from '@anan/core';
 import { LevelPicker } from './components/LevelPicker.js';
+import { MoreSheet, TabBar } from './components/TabBar.js';
 import { ThemeToggle } from './components/ThemeToggle.js';
 import { useProfile } from './components/ProfileGate.js';
 import { PROFILES } from './profiles.js';
@@ -8,25 +9,54 @@ import { db } from './db/instance.js';
 import { allTouchedCards } from './db/queries.js';
 import { initCurrentLevelIfUnset, useCurrentLevel } from './lib/current-level.js';
 import { useLexicon } from './lib/useLexicon.js';
-import { AudioReviewPage } from './pages/AudioReviewPage.js';
-import { AnkiImportPage } from './pages/AnkiImportPage.js';
-import { ChatPage } from './pages/ChatPage.js';
-import { ClozePage } from './pages/ClozePage.js';
-import { CreditsPage } from './pages/CreditsPage.js';
-import { GardenPage } from './pages/GardenPage.js';
-import { JournalPage } from './pages/JournalPage.js';
-import { PlacementPage } from './pages/PlacementPage.js';
-import { TextbookPage } from './pages/TextbookPage.js';
+import { useMediaQuery } from './lib/useMediaQuery.js';
+import { installViewportTracking } from './lib/viewport.js';
 import { useMyClass } from './lib/my-class.js';
-import { ReaderPage } from './pages/ReaderPage.js';
-import { ProgressPage } from './pages/ProgressPage.js';
-import { ReviewPage } from './pages/ReviewPage.js';
-import { ZhuyinTestPage } from './pages/ZhuyinTestPage.js';
 import './App.css';
 import './components/LevelPicker.css';
 import './components/ProfileGate.css';
+import './mobile.css';
 
-type Route =
+// Each screen is its own chunk: the first load only pays for the screen being opened.
+const AudioReviewPage = lazy(() =>
+  import('./pages/AudioReviewPage.js').then((m) => ({ default: m.AudioReviewPage })),
+);
+const AnkiImportPage = lazy(() =>
+  import('./pages/AnkiImportPage.js').then((m) => ({ default: m.AnkiImportPage })),
+);
+const ChatPage = lazy(() => import('./pages/ChatPage.js').then((m) => ({ default: m.ChatPage })));
+const ClozePage = lazy(() =>
+  import('./pages/ClozePage.js').then((m) => ({ default: m.ClozePage })),
+);
+const CreditsPage = lazy(() =>
+  import('./pages/CreditsPage.js').then((m) => ({ default: m.CreditsPage })),
+);
+const GardenPage = lazy(() =>
+  import('./pages/GardenPage.js').then((m) => ({ default: m.GardenPage })),
+);
+const JournalPage = lazy(() =>
+  import('./pages/JournalPage.js').then((m) => ({ default: m.JournalPage })),
+);
+const PlacementPage = lazy(() =>
+  import('./pages/PlacementPage.js').then((m) => ({ default: m.PlacementPage })),
+);
+const TextbookPage = lazy(() =>
+  import('./pages/TextbookPage.js').then((m) => ({ default: m.TextbookPage })),
+);
+const ReaderPage = lazy(() =>
+  import('./pages/ReaderPage.js').then((m) => ({ default: m.ReaderPage })),
+);
+const ProgressPage = lazy(() =>
+  import('./pages/ProgressPage.js').then((m) => ({ default: m.ProgressPage })),
+);
+const ReviewPage = lazy(() =>
+  import('./pages/ReviewPage.js').then((m) => ({ default: m.ReviewPage })),
+);
+const ZhuyinTestPage = lazy(() =>
+  import('./pages/ZhuyinTestPage.js').then((m) => ({ default: m.ZhuyinTestPage })),
+);
+
+export type Route =
   | 'reader'
   | 'chat'
   | 'cloze'
@@ -77,7 +107,9 @@ function LevelHeader({ route }: { route: Route }) {
     <header className="app-header">
       <ProfileChip />
       <LevelPicker value={level} onChange={(l) => void setLevel(l)} />
-      <ThemeToggle />
+      <div className="header-theme">
+        <ThemeToggle />
+      </div>
       {suggestion && dismissed !== suggestion && (
         <div className="level-up-prompt" role="status">
           <span>Ready to try {levelLabel(suggestion)}?</span>
@@ -150,6 +182,16 @@ export function App() {
     (new URLSearchParams(location.search).get('page') as Route) ?? 'reader',
   );
   const myClass = useMyClass();
+  const [moreOpen, setMoreOpen] = useState(false);
+  // The tab bar only exists on a phone-width screen (the CSS hides it above 640px too,
+  // but then it would still be in the page and duplicate the top nav's labels).
+  const isPhoneWidth = useMediaQuery('(max-width: 639.98px)');
+  useEffect(() => installViewportTracking(), []);
+  const go = (r: Route) => {
+    setMoreOpen(false);
+    setRoute(r);
+    window.scrollTo(0, 0);
+  };
 
   return (
     <div className="app">
@@ -199,19 +241,35 @@ export function App() {
           Zhuyin rendering test
         </button>
       </nav>
-      {route === 'reader' && <ReaderPage />}
-      {route === 'chat' && <ChatPage />}
-      {route === 'cloze' && <ClozePage />}
-      {route === 'journal' && <JournalPage />}
-      {route === 'garden' && <GardenPage />}
-      {route === 'progress' && <ProgressPage />}
-      {route === 'review' && <ReviewPage />}
-      {route === 'textbook' && <TextbookPage />}
-      {route === 'placement' && <PlacementPage />}
-      {route === 'anki-import' && <AnkiImportPage />}
-      {route === 'credits' && <CreditsPage />}
-      {route === 'audio-review' && <AudioReviewPage />}
-      {route === 'zhuyin-test' && <ZhuyinTestPage />}
+      {/* reserved height: the tab bar and footer never jump when a screen finishes loading */}
+      <main className="page-slot">
+        <Suspense fallback={<div className="page-loading" aria-busy="true" />}>
+          {route === 'reader' && <ReaderPage />}
+          {route === 'chat' && <ChatPage />}
+          {route === 'cloze' && <ClozePage />}
+          {route === 'journal' && <JournalPage />}
+          {route === 'garden' && <GardenPage />}
+          {route === 'progress' && <ProgressPage />}
+          {route === 'review' && <ReviewPage />}
+          {route === 'textbook' && <TextbookPage />}
+          {route === 'placement' && <PlacementPage />}
+          {route === 'anki-import' && <AnkiImportPage />}
+          {route === 'credits' && <CreditsPage />}
+          {route === 'audio-review' && <AudioReviewPage />}
+          {route === 'zhuyin-test' && <ZhuyinTestPage />}
+        </Suspense>
+      </main>
+      {isPhoneWidth && (
+        <TabBar route={route} onGo={go} moreOpen={moreOpen} onMore={() => setMoreOpen((o) => !o)} />
+      )}
+      {isPhoneWidth && moreOpen && (
+        <MoreSheet
+          route={route}
+          onGo={go}
+          onClose={() => setMoreOpen(false)}
+          textbookSuffix={myClass.enabled ? ` · L${myClass.currentLesson}` : ''}
+        />
+      )}
     </div>
   );
 }

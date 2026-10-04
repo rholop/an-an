@@ -61,7 +61,10 @@ export function AudioReviewPage() {
   async function play(item: ReviewItem) {
     setError(null);
     try {
-      await playUrl(`${audioBase()}${item.entry.file}?v=${item.entry.hash.slice(0, 10)}`, getSlow());
+      await playUrl(
+        `${audioBase()}${item.entry.file}?v=${item.entry.hash.slice(0, 10)}`,
+        getSlow(),
+      );
     } catch {
       setError("Couldn't load that clip.");
     }
@@ -102,7 +105,7 @@ export function AudioReviewPage() {
             {current.entry.status === 'suspect' && (
               <span className="audio-review-suspect">
                 {' '}
-                · speech-to-text heard “{current.entry.heard ?? ''}”
+                · speech-to-text heard “<span lang="zh-Hant">{current.entry.heard ?? ''}</span>”
               </span>
             )}
           </div>
@@ -118,10 +121,18 @@ export function AudioReviewPage() {
             🔊 Play
           </button>
           <div className="audio-review-actions">
-            <button type="button" className="audio-review-ok" onClick={() => void decide('verified')}>
+            <button
+              type="button"
+              className="audio-review-ok"
+              onClick={() => void decide('verified')}
+            >
               OK
             </button>
-            <button type="button" className="audio-review-wrong" onClick={() => void decide('flagged')}>
+            <button
+              type="button"
+              className="audio-review-wrong"
+              onClick={() => void decide('flagged')}
+            >
               Wrong
             </button>
           </div>
@@ -129,8 +140,8 @@ export function AudioReviewPage() {
         </div>
       )}
       <label className="audio-review-auto">
-        <input type="checkbox" checked={autoPlay} onChange={(e) => setAutoPlay(e.target.checked)} /> Play the next
-        clip automatically after OK / Wrong
+        <input type="checkbox" checked={autoPlay} onChange={(e) => setAutoPlay(e.target.checked)} />{' '}
+        Play the next clip automatically after OK / Wrong
       </label>
       {todo.length > 1 && (
         <button type="button" onClick={() => setPos((p) => (p + 1) % todo.length)}>

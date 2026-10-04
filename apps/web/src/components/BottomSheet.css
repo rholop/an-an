@@ -1,0 +1,42 @@
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0, 0, 0, 0.45);
+}
+.sheet {
+  position: relative;
+  width: 100%;
+  max-height: 85dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  background: Canvas;
+  color: CanvasText;
+  border-radius: 16px 16px 0 0;
+  padding: 0.5rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.35);
+}
+.sheet-grabber {
+  width: 40px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(127, 127, 127, 0.5);
+  margin: 0.25rem auto 0.75rem;
+}
+.sheet-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+}

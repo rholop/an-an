@@ -74,7 +74,7 @@ jobs:
         run: pnpm pipeline:build
 
       - name: Install Playwright browsers
-        run: pnpm --filter @anan/web exec playwright install --with-deps chromium
+        run: pnpm --filter @anan/web exec playwright install --with-deps chromium webkit
 
       - name: Sync lexicon into apps/web/public
         run: pnpm --filter @anan/web sync:lexicon

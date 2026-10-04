@@ -191,3 +191,78 @@
   font-size: inherit;
   line-height: 2.4;
 }
+
+/* ---- phones / touch: the definition is a bottom sheet, words are big enough to tap ---- */
+@media (max-width: 639.98px), (hover: none) {
+  .an-popover--sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    z-index: 70;
+    box-sizing: border-box;
+    max-height: 60dvh;
+    overflow-y: auto;
+    border-radius: 16px 16px 0 0;
+    padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+    font-size: 1rem;
+    white-space: normal;
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.35);
+  }
+  .an-sheet-grabber {
+    display: block;
+    width: 40px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.4);
+    margin: -8px auto 8px;
+  }
+  .an-popover--sheet .an-popover-close {
+    top: 6px;
+    right: 6px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.5rem;
+  }
+  .an-popover--sheet .an-popover-gloss {
+    font-size: 1.15rem;
+    margin: 0.25rem 0;
+    padding-right: 44px;
+  }
+  .an-popover--sheet summary,
+  .an-popover--sheet .an-popover-report {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 639.98px) {
+  /* A word is one tap target (≥44×44) and never breaks across lines, so its
+     reading can't separate from its characters. Room comes from line-height
+     and letter-spacing, not smaller hit areas. */
+  .an-token {
+    display: inline-block;
+    white-space: nowrap;
+    min-width: 44px;
+    min-height: 44px;
+    text-align: center;
+    vertical-align: bottom;
+    letter-spacing: 0.04em;
+  }
+  .an-text {
+    font-size: 1.4rem;
+    line-height: 2.8;
+  }
+  .an-text--inline {
+    line-height: 2.4;
+  }
+}
+
+@media (max-width: 639.98px) {
+  /* zhuyin glyphs must stay legible: 0.4em of a 22px character is only ~9px */
+  .an-zhuyin-col {
+    font-size: max(10.5px, 0.46em);
+  }
+}

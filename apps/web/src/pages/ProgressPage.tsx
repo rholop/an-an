@@ -98,9 +98,9 @@ export function ProgressPage() {
             <tbody>
               {[...byKind.entries()].map(([kind, v]) => (
                 <tr key={kind}>
-                  <td>{REWARD_TABLE[kind as RewardKind]?.label ?? kind}</td>
-                  <td>×{v.count}</td>
-                  <td>{v.points} pts</td>
+                  <td data-label="Activity">{REWARD_TABLE[kind as RewardKind]?.label ?? kind}</td>
+                  <td data-label="Times">×{v.count}</td>
+                  <td data-label="Points">{v.points} pts</td>
                 </tr>
               ))}
             </tbody>

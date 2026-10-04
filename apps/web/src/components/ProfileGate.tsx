@@ -259,6 +259,10 @@ function CodeScreen({ onDone }: { onDone: (offline: boolean) => void }) {
         className="gate-input"
         type="password"
         autoComplete="off"
+        autoCapitalize="off"
+        autoCorrect="off"
+        spellCheck={false}
+        enterKeyHint="go"
         autoFocus
         value={code}
         onChange={(e) => setCode(e.target.value)}

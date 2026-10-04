@@ -110,3 +110,12 @@
   line-height: 2.2;
   white-space: nowrap;
 }
+
+@media (max-width: 639.98px) {
+  .garden-tile .an-text--inline {
+    font-size: 1.25rem; /* Chinese on a tile: 20px */
+  }
+  .garden-tile {
+    min-width: 4.5rem;
+  }
+}

@@ -23,11 +23,13 @@ test.describe('Reader lookup events feed the learner model', () => {
     await page.locator('.an-token').first().click();
     await expect(page.locator('.an-popover')).toBeVisible();
 
-    await page.waitForFunction(
-      async () =>
-        (await window.__anan.db.evidence.toArray()).some((e) => e.kind === 'chat_lookup_gloss'),
-      { timeout: 5000 },
-    );
+    await expect
+      .poll(async () =>
+        (await page.evaluate(() => window.__anan.db.evidence.toArray())).some(
+          (e) => e.kind === 'chat_lookup_gloss',
+        ),
+      )
+      .toBe(true);
 
     const [evidenceRows, itemRows] = await page.evaluate(async () => [
       await window.__anan.db.evidence.toArray(),
@@ -63,11 +65,13 @@ test.describe('Reader lookup events feed the learner model', () => {
     await page.locator('.reader-controls select').nth(0).selectOption('hover');
     await page.locator('.an-token').nth(1).hover();
 
-    await page.waitForFunction(
-      async () =>
-        (await window.__anan.db.evidence.toArray()).some((e) => e.kind === 'chat_hover_reading'),
-      { timeout: 5000 },
-    );
+    await expect
+      .poll(async () =>
+        (await page.evaluate(() => window.__anan.db.evidence.toArray())).some(
+          (e) => e.kind === 'chat_hover_reading',
+        ),
+      )
+      .toBe(true);
     const evidenceRows = await page.evaluate(() => window.__anan.db.evidence.toArray());
     expect(evidenceRows.some((e) => e.kind === 'chat_hover_reading')).toBe(true);
     // A pure hover must never also record a gloss lookup for that interaction.

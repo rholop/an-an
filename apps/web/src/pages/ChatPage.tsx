@@ -21,6 +21,7 @@ import { LevelChips } from '../components/LevelPicker.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
+import { useKeyboardOpen } from '../lib/viewport.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useMyClass, peekMyClass } from '../lib/my-class.js';
 import { useTextbook } from '../lib/textbook-data.js';
@@ -111,6 +112,11 @@ export function ChatPage({
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [conversation, setConversation] = useState<ConversationRow | null>(null);
   const [turns, setTurns] = useState<TurnRow[]>([]);
+  // Phone layout: messages scroll inside the screen with the composer pinned
+  // below. The latest message stays in view when a turn arrives and when the
+  // on-screen keyboard opens (which shrinks the visible area).
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const keyboardOpen = useKeyboardOpen();
   // Phase 8: per profile (stored in the profile's database).
   const [scaffolding, setScaffolding] = useSetting<Scaffolding>('chatScaffolding', 'high');
   const [englishFallback, setEnglishFallback] = useSetting('chatEnglishFallback', false);
@@ -162,7 +168,12 @@ export function ChatPage({
 
   const autoStarted = useRef(false);
   useEffect(() => {
-    if (!initialScenarioId || autoStarted.current || !chatService || scenariosState.status !== 'ready')
+    if (
+      !initialScenarioId ||
+      autoStarted.current ||
+      !chatService ||
+      scenariosState.status !== 'ready'
+    )
       return;
     const s = scenariosState.scenarios.find((x) => x.id === initialScenarioId);
     if (!s) return;
@@ -257,6 +268,26 @@ export function ChatPage({
     setSummary(await chatService.getSummary(conversationId));
   }
 
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [turns.length, keyboardOpen, sending]);
+  // The scroll area shrinks when the keyboard opens (and grows when it closes):
+  // keep the newest message in view through that, as long as the learner hadn't
+  // scrolled up to read older ones.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    let lastHeight = el.clientHeight;
+    const observer = new ResizeObserver(() => {
+      const nearBottom = el.scrollHeight - el.scrollTop - lastHeight < 80;
+      lastHeight = el.clientHeight;
+      if (nearBottom) el.scrollTop = el.scrollHeight;
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [conversationId]);
+
   if (lexiconState.status === 'loading' || scenariosState.status === 'loading')
     return <p>Loading…</p>;
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
@@ -346,12 +377,18 @@ export function ChatPage({
                       className="chat-scenario-card"
                       disabled={!unlocked}
                       onClick={() => startScenario(sc)}
-                      title={unlocked ? undefined : `Unlocks when the class reaches lesson ${sc.textbook!.lesson}`}
+                      title={
+                        unlocked
+                          ? undefined
+                          : `Unlocks when the class reaches lesson ${sc.textbook!.lesson}`
+                      }
                       data-testid={`class-scenario-${sc.id}`}
                     >
                       <div className="chat-scenario-title">{sc.title}</div>
                       <div className="chat-scenario-range">
-                        <span className="textbook-badge" lang="zh-Hant">{lessonBadge(sc.textbook!.lesson)}</span>
+                        <span className="textbook-badge" lang="zh-Hant">
+                          {lessonBadge(sc.textbook!.lesson)}
+                        </span>
                         {!unlocked && ' · 🔒 locked'}
                       </div>
                     </button>
@@ -375,59 +412,63 @@ export function ChatPage({
   }
 
   return (
-    <div className="chat-page">
+    <div className="chat-page chat-page--convo">
       <div className="chat-header">
         <button onClick={backToScenarios}>← Scenarios</button>
         <h1>{scenario.title}</h1>
       </div>
 
-      <GoalChecklist scenario={scenario} conversation={conversation} />
+      <div className="chat-scroll" ref={scrollRef}>
+        <GoalChecklist scenario={scenario} conversation={conversation} />
 
-      <div className="chat-messages">
-        {turns.map((turn) => {
-          const annotated = withReadingDisplay(
-            annotate(
-              turn.zh,
-              lexiconState.lexicon,
-              // Phase 7: the model's per-token sense picks (validated when stored).
-              new Map(
-                (turn.tokens ?? []).flatMap((t) =>
-                  t.sense_id ? [[t.text, t.sense_id] as const] : [],
+        <div className="chat-messages">
+          {turns.map((turn) => {
+            const annotated = withReadingDisplay(
+              annotate(
+                turn.zh,
+                lexiconState.lexicon,
+                // Phase 7: the model's per-token sense picks (validated when stored).
+                new Map(
+                  (turn.tokens ?? []).flatMap((t) =>
+                    t.sense_id ? [[t.text, t.sense_id] as const] : [],
+                  ),
                 ),
+                { textbook: Boolean(scenario.textbook) },
               ),
-              { textbook: Boolean(scenario.textbook) },
-            ),
-            cardsByWordId,
-          );
-          return (
-            <div key={turn.id} className={`chat-bubble chat-bubble--${turn.role}`}>
-              {turn.recastZh && <div className="chat-recast">You could say: {turn.recastZh}</div>}
-              <AnnotatedText
-                tokens={annotated}
-                mode="auto"
-                script="pinyin"
-                onLookup={turn.role === 'npc' ? makeOnLookup(turn.id) : undefined}
-                currentLevel={learnerLevel}
-                onReportGloss={(at) => void reportFromPopover(at, turn.zh)}
-              />
-              {englishFallback && turn.en && <div className="chat-en">{turn.en}</div>}
-              {import.meta.env.DEV && turn.validatorReport && (
-                <div className="chat-debug">
-                  coverage {(turn.validatorReport.coverage * 100).toFixed(0)}% · max{' '}
-                  {turn.validatorReport.maxLevel ?? '—'} · unknown{' '}
-                  {turn.validatorReport.unknownCount} · attempts {turn.validatorReport.attempts} ·{' '}
-                  {turn.validatorReport.pass ? 'passed' : 'FAILED (shown anyway)'}
-                </div>
-              )}
-            </div>
-          );
-        })}
+              cardsByWordId,
+            );
+            return (
+              <div key={turn.id} className={`chat-bubble chat-bubble--${turn.role}`}>
+                {turn.recastZh && <div className="chat-recast">You could say: {turn.recastZh}</div>}
+                <AnnotatedText
+                  tokens={annotated}
+                  mode="auto"
+                  script="pinyin"
+                  onLookup={turn.role === 'npc' ? makeOnLookup(turn.id) : undefined}
+                  currentLevel={learnerLevel}
+                  onReportGloss={(at) => void reportFromPopover(at, turn.zh)}
+                />
+                {englishFallback && turn.en && <div className="chat-en">{turn.en}</div>}
+                {import.meta.env.DEV && turn.validatorReport && (
+                  <div className="chat-debug">
+                    coverage {(turn.validatorReport.coverage * 100).toFixed(0)}% · max{' '}
+                    {turn.validatorReport.maxLevel ?? '—'} · unknown{' '}
+                    {turn.validatorReport.unknownCount} · attempts {turn.validatorReport.attempts} ·{' '}
+                    {turn.validatorReport.pass ? 'passed' : 'FAILED (shown anyway)'}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {error && <div className="chat-error">Couldn't get a reply: {error}</div>}
+
+        {ended && summary && <ChatSummaryPanel scenario={scenario} summary={summary} />}
       </div>
 
-      {error && <div className="chat-error">Couldn't get a reply: {error}</div>}
-
       {!ended && (
-        <>
+        <div className="chat-composer">
           {visibleSuggestions.length > 0 && (
             <div className="chat-chips">
               {visibleSuggestions.map((s, i) => (
@@ -457,6 +498,12 @@ export function ChatPage({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
               placeholder={englishFallback ? '中文 or English…' : '輸入中文…'}
+              lang="zh-Hant-TW"
+              enterKeyHint="send"
+              autoComplete="off"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
               disabled={sending}
             />
             <button onClick={sendMessage} disabled={sending || !input.trim()}>
@@ -500,10 +547,8 @@ export function ChatPage({
             )}
             <button onClick={endNow}>End conversation</button>
           </div>
-        </>
+        </div>
       )}
-
-      {ended && summary && <ChatSummaryPanel scenario={scenario} summary={summary} />}
     </div>
   );
 }

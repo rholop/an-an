@@ -12,7 +12,10 @@ declare global {
           >;
           clear: () => Promise<void>;
         };
-        liveSentences: { bulkPut: (rows: unknown[]) => Promise<unknown>; count: () => Promise<number> };
+        liveSentences: {
+          bulkPut: (rows: unknown[]) => Promise<unknown>;
+          count: () => Promise<number>;
+        };
         readerShown: { count: () => Promise<number> };
         settings: { get: (k: string) => Promise<{ value: unknown } | undefined> };
       };
@@ -102,7 +105,9 @@ const newButton = (page: Page) => page.getByRole('button', { name: /New sentence
 const evidence = (page: Page) => page.evaluate(() => window.__anan.db.evidence.toArray());
 
 test.describe('Reader: New sentence (phase 9)', () => {
-  test('starts on the sample text; the paste box is secondary but still works', async ({ page }) => {
+  test('starts on the sample text; the paste box is secondary but still works', async ({
+    page,
+  }) => {
     await open(page);
     await expect(page.locator('.an-token').first()).toBeVisible();
     await expect(page.getByTestId('reader-reason')).toContainText('Sample text');
@@ -211,7 +216,9 @@ test.describe('Reader: New sentence (phase 9)', () => {
     await newButton(page).click(); // sentence A
     await expect(page.getByTestId('reader-reason')).toContainText('便利商店');
     await newButton(page).click(); // leaving A with no lookup
-    await expect.poll(async () => (await evidence(page)).map((e) => e.kind)).toContain('chat_read_no_lookup');
+    await expect
+      .poll(async () => (await evidence(page)).map((e) => e.kind))
+      .toContain('chat_read_no_lookup');
     let rows = await evidence(page);
     const noLookup = rows.find((e) => e.kind === 'chat_read_no_lookup')!;
     expect(noLookup.item.id).toBe(IDS.便利商店);
@@ -220,12 +227,16 @@ test.describe('Reader: New sentence (phase 9)', () => {
     // sentence B: tap the due word, then leave — a lookup, and NO no-lookup for B
     await page.evaluate(() => window.__anan.db.evidence.clear());
     await page.locator('.an-token', { hasText: '便' }).first().click();
-    await expect.poll(async () => (await evidence(page)).map((e) => e.kind)).toContain('chat_lookup_gloss');
+    await expect
+      .poll(async () => (await evidence(page)).map((e) => e.kind))
+      .toContain('chat_lookup_gloss');
     await newButton(page).click();
     await page.waitForTimeout(300);
     rows = await evidence(page);
     expect(rows.every((e) => e.context?.source === 'reader')).toBe(true);
-    expect(rows.filter((e) => e.kind === 'chat_read_no_lookup' && e.item.id === IDS.便利商店)).toHaveLength(0);
+    expect(
+      rows.filter((e) => e.kind === 'chat_read_no_lookup' && e.item.id === IDS.便利商店),
+    ).toHaveLength(0);
   });
 
   test('the focus chip is remembered per profile across reloads', async ({ page }) => {
@@ -235,22 +246,28 @@ test.describe('Reader: New sentence (phase 9)', () => {
     await chip('Review').click();
     await expect(chip('Review')).toHaveAttribute('aria-checked', 'true');
     await expect
-      .poll(() => page.evaluate(async () => (await window.__anan.db.settings.get('readerFocus'))?.value))
+      .poll(() =>
+        page.evaluate(async () => (await window.__anan.db.settings.get('readerFocus'))?.value),
+      )
       .toBe('review');
     await page.reload();
     await expect(page.getByText(/Lexicon v2/)).toBeVisible({ timeout: 15000 });
     await expect(chip('Review')).toHaveAttribute('aria-checked', 'true');
   });
 
-  test('changing the level picker changes which sentences appear on the next press', async ({ page }) => {
+  test('changing the level picker changes which sentences appear on the next press', async ({
+    page,
+  }) => {
     await open(page);
     await seedLearner(page);
     await seedSentences(page, [live('live-1', '我去便利商店。', 'L3')]);
     await page.getByLabel('My level').selectOption('N1');
     await newButton(page).click();
-    await expect(page.getByRole('status').filter({ hasText: 'No sentence found yet' })).toBeVisible({
-      timeout: 10000,
-    });
+    await expect(page.getByRole('status').filter({ hasText: 'No sentence found yet' })).toBeVisible(
+      {
+        timeout: 10000,
+      },
+    );
 
     await page.getByLabel('My level').selectOption('L3');
     await newButton(page).click();
@@ -265,7 +282,8 @@ test.describe('Reader: New sentence (phase 9)', () => {
     await page.evaluate(() => void 0);
     // 我們 / 你 / 嗎 are used by the fake generator's sentences
     const lex = await (await page.request.get('/lexicon/lexicon.v2.json')).json();
-    const idOf = (hw: string) => lex.words.find((w: { headword: string }) => w.headword === hw).id as string;
+    const idOf = (hw: string) =>
+      lex.words.find((w: { headword: string }) => w.headword === hw).id as string;
     await seedLearner(page, {
       dueState: 'learning',
       known: [idOf('我們'), IDS.去, idOf('你'), IDS.喜歡, idOf('嗎')],
@@ -304,12 +322,18 @@ test.describe('Reader: New sentence (phase 9)', () => {
     // the content moved down to make room, rather than being overlapped
     expect(after[0]).toBeGreaterThan(before[0]!);
 
-    // expanding more of the definition keeps it clear too
+    // expanding more of the definition keeps it clear too (the space is re-measured
+    // when the popover grows, so give that a moment instead of reading mid-update)
     const others = page.locator('.an-popover-others summary');
     if (await others.count()) {
       await others.first().click();
-      const grown = (await popover.boundingBox())!;
-      for (const l of below) expect(grown.y + grown.height).toBeLessThanOrEqual((await l.boundingBox())!.y + 1);
+      await expect
+        .poll(async () => {
+          const grown = (await popover.boundingBox())!;
+          const tops = await Promise.all(below.map(async (l) => (await l.boundingBox())!.y));
+          return Math.max(...tops.map((top) => grown.y + grown.height - top));
+        })
+        .toBeLessThanOrEqual(1);
     }
 
     // closing it gives the space back
