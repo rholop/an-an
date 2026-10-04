@@ -314,3 +314,34 @@ describe('ChatService.maybeCompleteConversation', () => {
     expect(turns.filter((t) => t.zh === scenario.successLine.zh)).toHaveLength(1);
   });
 });
+
+describe('ChatService targets follow the study order (Phase 14)', () => {
+  const opts = { learnerLevel: 'N2' as const, scaffolding: 'high' as const, englishFallback: false };
+  const focus = (ids: string[]) =>
+    ({ enabled: true, focusItems: ids.map((id) => ({ kind: 'word', id })), reviewItems: [] }) as never;
+
+  async function targetsFor(studyFocus: (() => Promise<never>) | undefined): Promise<string[]> {
+    await seedKnownAndDue();
+    let seen: string[] = [];
+    const llm = new FakeTutorLLM((req) => {
+      seen = req.vocab.targets as string[];
+      return cleanResponse;
+    });
+    const chat = new ChatService(db, lexicon, learnerService, llm, undefined, undefined, undefined, undefined, studyFocus);
+    const id = await chat.startConversation(scenario);
+    await chat.sendLearnerTurn(id, scenario, '我要一杯珍珠奶茶', opts);
+    return seen;
+  }
+
+  it('in ANY scenario, unmastered textbook items are the targets first', async () => {
+    const targets = await targetsFor(async () => focus(['k0', 'k1']));
+    expect(targets.slice(0, 2)).toEqual(['好的', '還']);
+  });
+
+  it('study order off or absent: the targets are the usual new words', async () => {
+    const usual = await targetsFor(undefined);
+    const off = await targetsFor(async () => ({ enabled: false, focusItems: [{ kind: 'word', id: 'k0' }], reviewItems: [] }) as never);
+    expect(off).toEqual(usual);
+    expect(usual).not.toContain('好的');
+  });
+});

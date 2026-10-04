@@ -20,6 +20,7 @@ import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
+import { useStudyFocus } from '../lib/study.js';
 import { NowStudying } from '../components/NowStudying.js';
 import { ReviewPage } from './ReviewPage.js';
 import './GardenPage.css';
@@ -57,6 +58,11 @@ export function GardenPage() {
   // Phase 12: only words from the class textbook (offered once any exist in the garden).
   const [textbookOnly, setTextbookOnly] = useState(false);
   const [focus, setFocus] = useState<SkillCard[] | null>(null);
+  // Phase 14: tiles that belong to the active study step are highlighted.
+  const { focus: studyFocus } = useStudyFocus();
+  const activeIds = new Set(
+    studyFocus?.enabled ? studyFocus.focusItems.filter((i) => i.kind === 'word').map((i) => i.id) : [],
+  );
   const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
@@ -159,6 +165,7 @@ export function GardenPage() {
             lexicon={lexicon}
             script={script}
             onWater={() => setFocus(wiltingCards(plot))}
+            activeIds={activeIds}
           />
         ))}
       </div>
@@ -171,21 +178,26 @@ function PlotView({
   lexicon,
   script,
   onWater,
+  activeIds,
 }: {
+  activeIds: ReadonlySet<string>;
   plot: Plot;
   lexicon: Lexicon | null;
   script: AnnotationScript;
   onWater: () => void;
 }) {
   return (
-    <section className={`garden-plot garden-plot--${plot.wiltingCount > 0 ? 'thirsty' : 'ok'}`}>
+    <section
+      className={`garden-plot garden-plot--${plot.wiltingCount > 0 ? 'thirsty' : 'ok'}${plot.plants.some((p) => activeIds.has(p.wordId)) ? ' garden-plot--active' : ''}`}
+      data-testid={plot.plants.some((p) => activeIds.has(p.wordId)) ? 'plot-active' : undefined}
+    >
       <header>
         <h2>{plot.title}</h2>
         <span className="garden-plot-count">{plot.kind === 'scenario' ? 'scenario' : 'level'}</span>
       </header>
       <div className="garden-tiles">
         {plot.plants.map((p) => (
-          <Tile key={p.wordId} plant={p} word={lexicon?.byId(p.wordId)} script={script} />
+          <Tile key={p.wordId} plant={p} word={lexicon?.byId(p.wordId)} script={script} active={activeIds.has(p.wordId)} />
         ))}
       </div>
       {plot.wiltingCount > 0 ? (
@@ -203,7 +215,9 @@ function Tile({
   plant,
   word,
   script,
+  active,
 }: {
+  active?: boolean;
   plant: Plant;
   word: Word | undefined;
   script: AnnotationScript;
@@ -211,7 +225,7 @@ function Tile({
   const pct = plant.retrievability === null ? null : Math.round(plant.retrievability * 100);
   return (
     <div
-      className={`garden-tile garden-tile--${plant.wilt}`}
+      className={`garden-tile garden-tile--${plant.wilt}${active ? ' garden-tile--active' : ''}`}
       role="group"
       aria-label={`${plant.headword}: ${STAGE_LABEL[plant.stage]}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : `, ${pct}% remembered`}`}
       title={`${plant.headword} — ${STAGE_LABEL[plant.stage]}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : ` (${pct}%)`}`}
