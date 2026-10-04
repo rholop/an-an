@@ -1,0 +1,61 @@
+lesson: 10
+sentences:
+  - { zh: 他說中文，說得很好。, en: "He speaks Mandarin very well.", grammar: [gram-de-complement] }
+  - { zh: 我學中文，學得不錯。, en: "I am learning Mandarin quite well.", grammar: [gram-de-complement] }
+  - { zh: 她唱歌，唱得很好。, en: "She sings very well.", grammar: [gram-de-complement] }
+  - { zh: 我弟弟跳舞，跳得不好。, en: "My younger brother does not dance well.", grammar: [gram-de-complement] }
+  - { zh: 李老師寫字，寫得很快。, en: "Teacher Li writes characters fast.", grammar: [gram-de-complement] }
+  - { zh: 你說中文，說得怎麼樣？, en: "How well do you speak Mandarin?", grammar: [gram-de-complement] }
+  - { zh: 你學中文，學得怎麼樣？, en: "How are you doing at learning Mandarin?", grammar: [gram-de-complement] }
+  - { zh: 我哥哥跑步，跑得很快。, en: "My older brother runs very fast.", grammar: [gram-de-complement] }
+  - { zh: 我姐姐做飯，做得很好。, en: "My older sister cooks very well.", grammar: [gram-de-complement] }
+  - { zh: 他打網球，打得不錯。, en: "He plays tennis quite well.", grammar: [gram-de-complement] }
+  - { zh: 我說得不好，可是我常常練習。, en: "I don't speak well, but I practise often.", grammar: [gram-de-complement] }
+  - { zh: 我說中文有一點難。, en: "Speaking Mandarin is a little difficult for me.", grammar: [gram-youyidian] }
+  - { zh: 寫字有一點難。, en: "Writing characters is a bit hard.", grammar: [gram-youyidian] }
+  - { zh: 我今天有一點累。, en: "I am a little tired today.", grammar: [gram-youyidian] }
+  - { zh: 我今天有點忙。, en: "I am a little busy today.", grammar: [gram-youyidian] }
+  - { zh: 這家餐廳有一點貴。, en: "This restaurant is a little expensive.", grammar: [gram-youyidian] }
+  - { zh: 我覺得聊天不難，可是寫字有一點難。, en: "I think chatting isn't hard, but writing characters is a little hard.", grammar: [gram-youyidian] }
+  - { zh: 我會說中文。, en: "I can speak Mandarin.", grammar: [gram-hui-can] }
+  - { zh: 我會寫字。, en: "I can write characters.", grammar: [gram-hui-can] }
+  - { zh: 我不會打網球。, en: "I can't play tennis.", grammar: [gram-hui-can] }
+  - { zh: 我不會跳舞，可是我會唱歌。, en: "I can't dance, but I can sing.", grammar: [gram-hui-can] }
+  - { zh: 你會說中文嗎？, en: "Can you speak Mandarin?", grammar: [gram-hui-can] }
+  - { zh: 你會做飯嗎？, en: "Can you cook?", grammar: [gram-hui-can] }
+  - { zh: 他會寫多少字？, en: "How many characters can he write?", grammar: [gram-hui-can, gram-duoshao-ji] }
+  - { zh: 你有多少個學生？, en: "How many students do you have?", grammar: [gram-duoshao-ji] }
+  - { zh: 這個學校有多少學生？, en: "How many students does this school have?", grammar: [gram-duoshao-ji] }
+  - { zh: 你有幾個孩子？, en: "How many children do you have?", grammar: [gram-duoshao-ji] }
+  - { zh: 你有幾個弟弟？, en: "How many younger brothers do you have?", grammar: [gram-duoshao-ji] }
+  - { zh: 他喝幾杯咖啡？, en: "How many cups of coffee does he drink?", grammar: [gram-duoshao-ji] }
+  - { zh: 我每天喝兩杯咖啡。, en: "I drink two cups of coffee every day.", grammar: [gram-number-measure] }
+scenarios:
+  - slug: coffee-break
+    title: "Coffee break with 明文: learning Mandarin"
+    npc:
+      id: mingwen
+      name: 王明文
+      personality: >
+        A kind, friendly Taiwanese graduate student who helps the learner
+        practise Mandarin. Encouraging; he asks how learning is going and which
+        parts are hard.
+      speechStyle: >
+        Short sentences using only words from lessons 1–10. One question at a
+        time, often "…得怎麼樣？", "…難不難？" or "你會…嗎？".
+      particles: []
+    setting: >
+      A coffee shop near campus. 明文 and the learner take a break and talk
+      about learning Mandarin: what is hard, speaking versus writing.
+    goalSteps:
+      - { id: how-learning, description: "Say how your Mandarin is going (學得…).", keywordHints: ["學得", "不錯"] }
+      - { id: hard, description: "Say what is hard for you (…有一點難).", keywordHints: ["難", "有一點"] }
+      - { id: can-do, description: "Say what you can do (我會…).", keywordHints: ["我會", "不會"] }
+      - { id: how-many, description: "Say roughly how many characters you can write.", keywordHints: ["多少", "差不多", "字"] }
+    vocabExtras: [學, 中文, 難, 休息, 一下, 喝, 杯, 咖啡, 吧, 得, 覺得, 自己, 不錯, 會, 多少, 差不多, 字, 練習, 說話, 寫字, 有一點, 聊天, 做飯, 快, 貴]
+    opener: { zh: 你好！我們去喝杯咖啡吧。你學中文，學得怎麼樣？, en: "Hi! Let's go and have a cup of coffee. How is your Mandarin coming along?" }
+    successLine: { zh: 你說得不錯！我們常常聊天，你的中文會很好。, en: "You speak well! If we chat often, your Mandarin will get very good." }
+journalPrompts:
+  - { en: "Is Chinese hard for you? Say what is hard and what is easy.", zh: 寫字有一點難。, words: [難, 學, 覺得], grammar: [gram-youyidian] }
+  - { en: "What do you practise, and who do you practise with?", words: [練習, 說話, 聊天], grammar: [gram-de-complement] }
+  - { en: "Write about something you can do well and something you can't do yet.", words: [會, 寫字, 不錯], grammar: [gram-hui-can] }

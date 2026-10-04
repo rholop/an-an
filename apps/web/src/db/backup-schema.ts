@@ -64,6 +64,7 @@ const EvidenceKindSchema = z.enum([
   'anki_import_seen',
   'placement_known',
   'placement_unknown',
+  'textbook_lesson_covered',
 ]);
 
 export const EvidenceSchema = z.object({
@@ -74,7 +75,7 @@ export const EvidenceSchema = z.object({
   at: z.coerce.date(),
   context: z
     .object({
-      source: z.enum(['chat', 'journal', 'cloze', 'review', 'placement', 'reader']),
+      source: z.enum(['chat', 'journal', 'cloze', 'review', 'placement', 'reader', 'textbook']),
       refId: z.string().optional(),
       selfFixed: z.boolean().optional(),
     })
@@ -87,7 +88,7 @@ const WordSchema = z.object({
   variants: z.array(z.string()),
   pos: z.array(z.string()),
   level: LevelSchema.nullable(),
-  source: z.enum(['tocfl', 'supplement', 'custom']),
+  source: z.enum(['tocfl', 'supplement', 'custom', 'textbook']),
   pinyin: z.string(),
   pinyinNumeric: z.string(),
   zhuyin: z.string(),

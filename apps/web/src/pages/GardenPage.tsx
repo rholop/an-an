@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   groupPlots,
+  isTextbookTagged,
   wiltingCards,
   type GrowthStage,
   type Level,
@@ -52,6 +53,8 @@ export function GardenPage() {
   // Phase 7 per-screen filter: defaults to My level, changes here never touch it.
   const [levelFilter, setLevelFilter] = useState<Level[]>([level]);
   useEffect(() => setLevelFilter([level]), [level]);
+  // Phase 12: only words from the class textbook (offered once any exist in the garden).
+  const [textbookOnly, setTextbookOnly] = useState(false);
   const [focus, setFocus] = useState<SkillCard[] | null>(null);
   const [refresh, setRefresh] = useState(0);
 
@@ -94,10 +97,15 @@ export function GardenPage() {
 
   const lexicon = lexiconState.status === 'ready' ? lexiconState.lexicon : null;
   const inFilter = (p: Plant) => {
-    if (levelFilter.length === 0 || !lexicon) return true;
-    const lvl = lexicon.byId(p.wordId)?.level;
-    return lvl ? levelFilter.includes(lvl) : false;
+    if (!lexicon) return true;
+    const word = lexicon.byId(p.wordId);
+    // "Textbook only" replaces the level filter: the book's words span levels.
+    if (textbookOnly) return word ? isTextbookTagged(word.tags) : false;
+    if (levelFilter.length === 0) return true;
+    return word?.level ? levelFilter.includes(word.level) : false;
   };
+  const hasTextbookWords =
+    !!lexicon && snapshot.plants.some((p) => isTextbookTagged(lexicon.byId(p.wordId)?.tags ?? []));
   const shownPlants = snapshot.plants.filter(inFilter);
   const plots =
     lexicon && scenariosState.status === 'ready'
@@ -125,6 +133,16 @@ export function GardenPage() {
         · faded and drooping = memory fading below your target
       </p>
       <LevelChips selected={levelFilter} onChange={setLevelFilter} current={level} />
+      {(hasTextbookWords || textbookOnly) && (
+        <label className="garden-textbook-filter">
+          <input
+            type="checkbox"
+            checked={textbookOnly}
+            onChange={(e) => setTextbookOnly(e.target.checked)}
+          />{' '}
+          Textbook only <span lang="zh-Hant">(來學華語)</span>
+        </label>
+      )}
       {hiddenWilting > 0 && (
         <p className="garden-meta">
           {hiddenWilting} wilting {hiddenWilting === 1 ? 'word' : 'words'} at other levels — pick

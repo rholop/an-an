@@ -222,6 +222,19 @@ function applyPlacement(
   };
 }
 
+/** textbook_lesson_covered: the class has done this item's lesson. Creates an
+ * `introduced` card (no FSRS rating consumed, never "known") so it gets
+ * scheduled for real review; existing cards are left exactly as they are. */
+function applyTextbookCovered(
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+): ModelUpdate {
+  if (current) return { card: undefined, appliedEffect: 'ignored:already-introduced' };
+  const base = blankSkillCard(evidence, emptyCard(now), now);
+  return { card: { ...base, state: 'introduced' }, appliedEffect: 'introduce (textbook lesson)' };
+}
+
 export type EvidenceHandler = (
   current: SkillCard | undefined,
   evidence: Evidence,
@@ -256,6 +269,7 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   anki_import_seen: (_c, e, n, cfg) => applyAnkiImportSeen(e, n, cfg),
   placement_known: (_c, e, n, cfg) => applyPlacement(e, n, cfg, true),
   placement_unknown: (_c, e, n, cfg) => applyPlacement(e, n, cfg, false),
+  textbook_lesson_covered: (c, e, n) => applyTextbookCovered(c, e, n),
 };
 
 /**

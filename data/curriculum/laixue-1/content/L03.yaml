@@ -1,0 +1,60 @@
+lesson: 3
+sentences:
+  - { zh: 我哥哥不是學生。, en: "My older brother is not a student.", grammar: [gram-bu-negation] }
+  - { zh: 我不是美國人。, en: "I am not American.", grammar: [gram-bu-negation] }
+  - { zh: 我不姓王。, en: "My surname is not Wang.", grammar: [gram-bu-negation] }
+  - { zh: 我不叫明文。, en: "My name is not Mingwen.", grammar: [gram-bu-negation] }
+  - { zh: 他不是學生。, en: "He is not a student.", grammar: [gram-bu-negation] }
+  - { zh: 他不工作。, en: "He does not work.", grammar: [gram-bu-negation] }
+  - { zh: 我不是臺灣人，我是美國人。, en: "I am not Taiwanese, I am American.", grammar: [gram-bu-negation] }
+  - { zh: 我哥哥不工作。, en: "My older brother does not work.", grammar: [gram-bu-negation] }
+  - { zh: 我在銀行工作。, en: "I work at a bank.", grammar: [gram-zai-place] }
+  - { zh: 我弟弟在電腦公司工作。, en: "My younger brother works at a computer company.", grammar: [gram-zai-place] }
+  - { zh: 他在小學工作。, en: "He works at an elementary school.", grammar: [gram-zai-place] }
+  - { zh: 你在哪裡工作？, en: "Where do you work?", grammar: [gram-zai-place] }
+  - { zh: 他在哪裡工作？, en: "Where does he work?", grammar: [gram-zai-place] }
+  - { zh: 我哥哥在電腦公司工作。, en: "My older brother works at a computer company.", grammar: [gram-zai-place] }
+  - { zh: 我姐姐在銀行工作。, en: "My older sister works at a bank.", grammar: [gram-zai-place] }
+  - { zh: 她先生在大學工作。, en: "Her husband works at a university.", grammar: [gram-zai-place] }
+  - { zh: 他不在銀行工作。, en: "He does not work at a bank.", grammar: [gram-bu-negation, gram-zai-place] }
+  - { zh: 我弟弟在小學念書。, en: "My younger brother studies at an elementary school.", grammar: [gram-zai-place] }
+  - { zh: 我們都是學生。, en: "We are all students.", grammar: [gram-dou-all] }
+  - { zh: 他們都是美國人。, en: "They are all American.", grammar: [gram-dou-all] }
+  - { zh: 我們都不是學生。, en: "None of us is a student.", grammar: [gram-dou-all, gram-bu-negation] }
+  - { zh: 他們都姓王。, en: "They are all surnamed Wang.", grammar: [gram-dou-all] }
+  - { zh: 他們都不姓張。, en: "None of them is surnamed Zhang.", grammar: [gram-dou-all, gram-bu-negation] }
+  - { zh: 我和我哥哥都是學生。, en: "My older brother and I are both students.", grammar: [gram-dou-all] }
+  - { zh: 我姐姐和我哥哥都在銀行工作。, en: "My older sister and my older brother both work at a bank.", grammar: [gram-dou-all, gram-zai-place] }
+  - { zh: 他們都在小學念書。, en: "They all study at an elementary school.", grammar: [gram-dou-all, gram-zai-place] }
+  - { zh: 他們都不在大學工作。, en: "None of them works at a university.", grammar: [gram-dou-all, gram-bu-negation, gram-zai-place] }
+  - { zh: 她有兩個孩子，一個兒子，一個女兒。, en: "She has two children, a son and a daughter.", grammar: [gram-number-measure] }
+  - { zh: 她結婚了，她先生在電腦公司工作。, en: "She is married; her husband works at a computer company.", grammar: [gram-zai-place] }
+  - { zh: 他大學畢業了，他不是學生。, en: "He has graduated from university; he is not a student.", grammar: [gram-bu-negation] }
+scenarios:
+  - slug: family-jobs
+    title: "Lisa asks about your family"
+    npc:
+      id: lisa
+      name: Lisa
+      personality: >
+        Gloria's sweet, warm-hearted coworker. Genuinely interested in other
+        people's families and always asks a friendly follow-up.
+      speechStyle: >
+        Short, kind sentences using only words from lessons 1–3. One question
+        at a time; repeats the learner's answer back to confirm.
+      particles: []
+    setting: >
+      A quiet corner of the office at lunchtime. Lisa and the learner are
+      chatting about their families.
+    goalSteps:
+      - { id: student, description: "Say whether your sister or brother is a student.", keywordHints: ["學生", "不是學生"] }
+      - { id: workplace, description: "Say where a family member works.", keywordHints: ["在", "工作"] }
+      - { id: married, description: "Say who is married and whether they have children.", keywordHints: ["結婚了", "孩子"] }
+      - { id: both, description: "Say that two people both do something (都).", keywordHints: ["都"] }
+    vocabExtras: [他, 不, 學生, 大學, 在, 哪裡, 工作, 銀行, 先生, 電腦, 公司, 孩子, 兒子, 女兒, 小孩, 都, 小學, 畢業了, 結婚了, 他們, 念書, 法國, 和]
+    opener: { zh: 你好，我是Lisa。你姐姐是學生嗎？, en: "Hello, I'm Lisa. Is your older sister a student?" }
+    successLine: { zh: 你姐姐結婚了，他們有兩個孩子。他們都不是學生。, en: "Your sister is married and they have two children. They are not students." }
+journalPrompts:
+  - { en: "Where do the members of your family work or study?", zh: 我哥哥在銀行工作。, words: [在, 工作, 銀行], grammar: [gram-zai-place] }
+  - { en: "Is anyone in your family married? Do they have children?", words: [結婚了, 先生, 孩子], grammar: [gram-dou-all] }
+  - { en: "Write about a family member who is no longer a student.", words: [學生, 大學, 畢業了], grammar: [gram-bu-negation] }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TouchEvent } from 'react';
 import {
   checkTaiwanness,
+  classScope,
   coverage,
   isReaderFocus,
   levelIndex,
@@ -17,6 +18,7 @@ import {
   type AnnotationMode,
   type AnnotationScript,
 } from '../components/AnnotatedText.js';
+import { SpeakerButton } from '../components/SpeakerButton.js';
 import { db, learnerService } from '../db/instance.js';
 import { getSiteCode } from '../lib/api.js';
 import { defineUnlisted, reportGloss, type AiDefinition } from '../lib/gloss-reports.js';
@@ -28,6 +30,8 @@ import { ReaderService, type NextSentenceResult } from '../lib/reader-service.js
 import { useLexicon, type LexiconLoadState } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
+import { useMyClass } from '../lib/my-class.js';
+import { useTextbookSentences } from '../lib/textbook-data.js';
 import { useSetting } from '../lib/useSetting.js';
 
 const SAMPLE = '我們搭捷運去便利商店，路上還遇到陳雅婷。他還沒還我錢，這件事情我做不了。';
@@ -45,6 +49,7 @@ const FOCUS_LABELS: Record<ReaderFocus, string> = {
   mixed: 'Mixed',
   review: 'Review',
   new: 'New words',
+  lesson: 'Lesson',
 };
 
 /** One thing shown in the reader. `pick` entries come from the New sentence
@@ -111,7 +116,11 @@ function ReaderView({
   const [mode, setMode] = useSetting<AnnotationMode>('readerMode', 'always');
   const [script, setScript] = useSetting<AnnotationScript>('readerScript', 'pinyin');
   const [storedFocus, setFocus] = useSetting<ReaderFocus>('readerFocus', 'mixed');
-  const focus: ReaderFocus = isReaderFocus(storedFocus) ? storedFocus : 'mixed';
+  const myClass = useMyClass();
+  // "Lesson" only exists while My class is on; otherwise a stored 'lesson' falls back to Mixed.
+  const focus: ReaderFocus =
+    isReaderFocus(storedFocus) && (storedFocus !== 'lesson' || myClass.enabled) ? storedFocus : 'mixed';
+  const textbookSentences = useTextbookSentences(myClass.enabled);
 
   const [lookupLog, setLookupLog] = useState<string[]>([]);
   const [knownSet, setKnownSet] = useState<Set<string>>(new Set());
@@ -150,17 +159,25 @@ function ReaderView({
         lexicon,
         llm,
         staticBank: bank.status === 'ready' ? bank.sentences : [],
+        classScope: classScope(myClass),
+        lesson:
+          myClass.enabled && textbookSentences.status === 'ready'
+            ? { n: myClass.currentLesson, sentences: textbookSentences.sentences }
+            : undefined,
         scenarios: scenarios.status === 'ready' ? scenarios.scenarios : [],
         // Live generation needs the household code (phase 8); dev has no gate.
         canGenerate: () => useFake || import.meta.env.DEV || Boolean(getSiteCode()),
       }),
-    [lexicon, llm, bank, scenarios, useFake],
+    [lexicon, llm, bank, scenarios, useFake, myClass, textbookSentences],
   );
 
   const current = nav.entries[nav.pos]!;
   const text = current.text;
 
-  const annotated = useMemo(() => annotate(text, lexicon), [text, lexicon]);
+  const annotated = useMemo(
+    () => annotate(text, lexicon, undefined, { textbook: current.sourceLabel?.startsWith('來學華語') }),
+    [text, lexicon, current.sourceLabel],
+  );
   const taiwanness = useMemo(() => checkTaiwanness(text), [text]);
   const cov = useMemo(
     () =>
@@ -383,7 +400,7 @@ function ReaderView({
       </p>
 
       <div className="reader-focus" role="radiogroup" aria-label="Sentence focus">
-        {READER_FOCUSES.map((f) => (
+        {READER_FOCUSES.filter((f) => f !== "lesson" || myClass.enabled).map((f) => (
           <button
             key={f}
             type="button"
@@ -428,6 +445,8 @@ function ReaderView({
         onLookup={handleLookup}
         currentLevel={currentLevel}
       />
+
+      {current.kind === 'pick' && <SpeakerButton kind="sentence" id={current.id} text={current.text} />}
 
       <p className="reader-reason" data-testid="reader-reason">
         {current.reason}

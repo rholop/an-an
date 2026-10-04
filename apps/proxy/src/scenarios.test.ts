@@ -7,6 +7,8 @@ describe('loadScenarioStore', () => {
     const ids = store
       .all()
       .map((s) => s.id)
+      // Phase 12 adds generated textbook scenarios (laixue-1-*); the proxy must know them too.
+      .filter((id) => !id.startsWith('laixue-1-'))
       .sort();
     expect(ids).toEqual([
       'clinic-call',
@@ -17,6 +19,13 @@ describe('loadScenarioStore', () => {
       'tea-shop',
       'youbike',
     ]);
+  });
+
+  it('knows the ten textbook scenarios (the proxy resolves NPC details server-side)', () => {
+    const store = loadScenarioStore();
+    const tb = store.all().filter((s) => s.id.startsWith('laixue-1-'));
+    expect(tb).toHaveLength(10);
+    expect(tb.every((s) => s.textbook?.textbookId === 'laixue-1')).toBe(true);
   });
 
   it('get() resolves a known scenario by id', () => {

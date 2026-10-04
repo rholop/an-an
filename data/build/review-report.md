@@ -1,6 +1,6 @@
 # Lexicon build review report — v2
 
-Built 2026-10-03. 24669 words.
+Built 2026-10-04. 24777 words.
 
 ## Row normalization
 
@@ -666,7 +666,7 @@ Built 2026-10-03. 24669 words.
 - `架/架(子)` / `jià/jià(zi)` — "架(子)" (jià(zi)) -> "架子" (jiàzi) (expanded stray optional-char parens with no matched counterpart for this alternative)
 - `老頭兒/老頭(子)` / `lăotóur/lăotóu(zi) ` — "老頭(子)" (lǎotóu(zi)) -> "老頭子" (lǎotóuzi) (expanded stray optional-char parens with no matched counterpart for this alternative)
 
-## MOE reading mismatches (38)
+## MOE reading mismatches (43)
 
 TOCFL list pinyin vs MOE pinyin — MOE was used in the built lexicon.
 
@@ -708,6 +708,11 @@ TOCFL list pinyin vs MOE pinyin — MOE was used in the built lexicon.
 - `使勁` (L5): list says `shǐjìng`, MOE says `shǐ jìn`
 - `欸` (supplement): list says `ê`, MOE says `āi`
 - `那個` (supplement): list says `nèige`, MOE says `nǎ ge`
+- `安安` (textbook): list says `Ān’ān`, MOE says `ān ān`
+- `什麼時候` (textbook): list says `shénme shíhòu`, MOE says `shí me shí hòu`
+- `噢` (textbook): list says `òu`, MOE says `yǔ`
+- `是啊` (textbook): list says `shì a!`, MOE says `shì a`
+- `可以嗎` (textbook): list says `kěyǐ ma?`, MOE says `kě yǐ ma`
 
 ## Unverified readings — not found in MOE at all (0)
 

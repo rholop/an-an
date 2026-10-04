@@ -1,0 +1,262 @@
+# Audio review
+
+Voice: zh-TW-HsiaoChenNeural · built 2026-10-04T14:40:40.594Z
+
+## Flagged by a person (0)
+
+_none_
+
+## Suspect: speech-to-text disagreed (243)
+
+Not played in the app until someone marks them OK on the review page.
+
+- word `supp-b01d72b0ef` “隨便” (ㄙㄨㄟˊ ㄅㄧㄢˋ) — heard “隨演。”
+- word `tocfl-0194e0fc01` “酸” (ㄙㄨㄢ) — heard “三。”
+- word `tocfl-026f60c6e7` “嚐” (ㄔㄤˊ) — heard “長。”
+- word `tocfl-02827ff78f` “場” (ㄔㄤˇ) — heard “廠。”
+- word `tocfl-032218f744` “送” (ㄙㄨㄥˋ) — heard “宋。”
+- word `tocfl-072c5db580` “乾” (ㄍㄢ) — heard “肝。”
+- word `tocfl-088dd0e79f` “甜點” (ㄊㄧㄢˊ ㄉㄧㄢˇ) — heard “天點。”
+- word `tocfl-0cf1ab2847` “要” (ㄧㄠˋ) — heard “藥。”
+- word `tocfl-0d4fae0e72` “香” (ㄒㄧㄤ) — heard “相。”
+- word `tocfl-0e28722ee0` “它們” (ㄊㄨㄛ ˙ㄇㄣ) — heard “穿了。”
+- word `tocfl-0e55d641e7` “聞” (ㄨㄣˊ) — heard “文。”
+- word `tocfl-0e6f4b6620` “邊兒” (ㄅㄧㄢ ㄦˊ) — heard “鞭兒。”
+- word `tocfl-0e7de26245` “舊” (ㄐㄧㄡˋ) — heard “救。”
+- word `tocfl-0e916b966b` “頭痛” (ㄊㄡˊ ㄊㄨㄥˋ) — heard “頭碰。”
+- word `tocfl-0f5118597c` “學期” (ㄒㄩㄝˊ ㄑㄧˊ) — heard “雪琪。”
+- word `tocfl-11efc251b0` “部” (ㄅㄨˋ) — heard “不？”
+- word `tocfl-12b1f2abef` “搬” (ㄅㄢ) — heard “班。”
+- word `tocfl-13eae871cd` “計畫” (ㄐㄧˋ ㄏㄨㄚˋ) — heard “計劃。”
+- word `tocfl-13ffe13651` “衣” (ㄧ) — heard “一。”
+- word `tocfl-146fd654fd` “騎” (ㄑㄧˊ) — heard “期。”
+- word `tocfl-150e8e10ba` “罐” (ㄍㄨㄢˋ) — heard “灌。”
+- word `tocfl-1966e2a776` “一半兒” (ㄧ ㄅㄢˋ ㄦˊ) — heard “依據兒。”
+- word `tocfl-19e7a1117e` “事” (ㄕˋ) — heard “是。”
+- word `tocfl-1c51e65bb9` “難” (ㄋㄢˊ) — heard “南。”
+- word `tocfl-1e5d9ea962` “原來” (ㄩㄢˊ ㄌㄞˊ) — heard “遠來。”
+- word `tocfl-1ed69dc6a5` “查” (ㄔㄚˊ) — heard “茶。”
+- word `tocfl-1f6ddbbdb8` “裡” (ㄌㄧˇ) — heard “李。”
+- word `tocfl-1fb98be339` “在” (ㄗㄞˋ) — heard “再。”
+- word `tocfl-1fcecee4fb` “船” (ㄔㄨㄢˊ) — heard “傳。”
+- word `tocfl-216258a891` “前年” (ㄑㄧㄢˊ ㄋㄧㄢˊ) — heard “年年。”
+- word `tocfl-21b712222f` “替” (ㄊㄧˋ) — heard “T。”
+- word `tocfl-22e40b7d9a` “它” (ㄊㄚ) — heard “他。”
+- word `tocfl-234b83aa00` “留” (ㄌㄧㄡˊ) — heard “劉。”
+- word `tocfl-23883b5c33` “新鮮” (ㄒㄧㄣ ˙ㄒㄧㄢ) — heard “新線。”
+- word `tocfl-23f5406d62` “城” (ㄔㄥˊ) — heard “陳。”
+- word `tocfl-2404b4fee3` “位” (ㄨㄟˋ) — heard “喂。”
+- word `tocfl-250927d44b` “鹽” (ㄧㄢˊ) — heard “巖。”
+- word `tocfl-26268fea9b` “男” (ㄋㄢˊ) — heard “南。”
+- word `tocfl-277a812c94` “忘” (ㄨㄤˋ) — heard “旺。”
+- word `tocfl-27b09c2861` “那” (ㄋㄚˋ) — heard “”
+- word `tocfl-2a6d4a8b35` “辦” (ㄅㄢˋ) — heard “但。”
+- word `tocfl-2b9f401ffc` “泡” (ㄆㄠˋ) — heard “砲。”
+- word `tocfl-2cb3f2593d` “地” (˙ㄉㄜ) — heard “的。”
+- word `tocfl-2dfdcd2bc8` “得” (˙ㄉㄜ) — heard “的。”
+- word `tocfl-2e55d791f5` “見” (ㄐㄧㄢˋ) — heard “建。”
+- word `tocfl-304fa8759d` “接” (ㄐㄧㄝ) — heard “街。”
+- word `tocfl-3109ec17ee` “條” (ㄊㄧㄠˊ) — heard “調。”
+- word `tocfl-318d5aca0e` “心” (ㄒㄧㄣ) — heard “新。”
+- word `tocfl-3361e60084` “喝” (ㄏㄜ) — heard “呵。”
+- word `tocfl-36d3588410` “往” (ㄨㄤˇ) — heard “網。”
+- word `tocfl-3834212092` “書店” (ㄕㄨ ㄉㄧㄢˋ) — heard “書鍊。”
+- word `tocfl-3870f17d35` “蛋” (ㄉㄢˋ) — heard “但。”
+- word `tocfl-391dc0c2bb` “坐” (ㄗㄨㄛˋ) — heard “作。”
+- word `tocfl-3a17b7902f` “完” (ㄨㄢˊ) — heard “玩。”
+- word `tocfl-3b2d621e36` “箱” (ㄒㄧㄤ) — heard “相。”
+- word `tocfl-3cd12c2336` “寫” (ㄒㄧㄝˇ) — heard “血。”
+- word `tocfl-3d559923ee` “得” (ㄉㄟˇ) — heard “Day。”
+- word `tocfl-3e681999a6` “涼” (ㄌㄧㄤˊ) — heard “梁。”
+- word `tocfl-3fa5298d8a` “又” (ㄧㄡˋ) — heard “右。”
+- word `tocfl-418793cac5` “一會” (ㄧ ㄏㄨㄟˇ) — heard “衣惠。”
+- word `tocfl-42a3f8d176` “船兒” (ㄔㄨㄢˊ ㄦˊ) — heard “傳而。”
+- word `tocfl-437b074542` “事兒” (ㄕˋ ㄦˊ) — heard “是兒。”
+- word `tocfl-4393daf5d8` “隻” (ㄓ) — heard “之。”
+- word `tocfl-4573935c3b` “祝” (ㄓㄨˋ) — heard “注。”
+- word `tocfl-46c9d2d002` “信” (ㄒㄧㄣˋ) — heard “性。”
+- word `tocfl-47dc9e9b14` “夏” (ㄒㄧㄚˋ) — heard “下。”
+- word `tocfl-485a26b8bc` “時” (ㄕˊ) — heard “十。”
+- word `tocfl-4a7296504c` “酒” (ㄐㄧㄡˇ) — heard “九。”
+- word `tocfl-4ad14b75ea` “菜” (ㄘㄞˋ) — heard “蔡。”
+- word `tocfl-4b68344f4f` “真” (ㄓㄣ) — heard “針。”
+- word `tocfl-4b7d089048` “計畫” (ㄐㄧˋ ㄏㄨㄚˋ) — heard “計劃。”
+- word `tocfl-4c48a89709` “河” (ㄏㄜˊ) — heard “和。”
+- word `tocfl-4cd1ae96ae` “比” (ㄅㄧˇ) — heard “筆。”
+- word `tocfl-4eb13bd744` “畫兒” (ㄏㄨㄚˋ ㄦˊ) — heard “化而。”
+- word `tocfl-53c8a1273e` “題” (ㄊㄧˊ) — heard “提。”
+- word `tocfl-559f38cd8e` “衣服” (ㄧ ˙ㄈㄨ) — heard “依附。”
+- word `tocfl-5634353e92` “中心” (ㄓㄨㄥ ㄒㄧㄣ) — heard “中興。”
+- word `tocfl-5742ad19ac` “近” (ㄐㄧㄣˋ) — heard “境。”
+- word `tocfl-57450ce81e` “著” (˙ㄓㄜ) — heard “這。”
+- word `tocfl-57dc4ce746` “汙染” (ㄨ ㄖㄢˇ) — heard “污染。”
+- word `tocfl-5827795f46` “敢” (ㄍㄢˇ) — heard “感。”
+- word `tocfl-58971c6f65` “半” (ㄅㄢˋ) — heard “但。”
+- word `tocfl-58e5bfe780` “煩” (ㄈㄢˊ) — heard “反。”
+- word `tocfl-5933fb976a` “熟” (ㄕㄡˊ) — heard “手。”
+- word `tocfl-594a5d12d6` “豬” (ㄓㄨ) — heard “朱。”
+- word `tocfl-594c346871` “姓” (ㄒㄧㄥˋ) — heard “性。”
+- word `tocfl-5b112d7736` “濕” (ㄕ) — heard “施。”
+- word `tocfl-5be0e90990` “公車” (ㄍㄨㄥ ㄔㄜ) — heard “供車。”
+- word `tocfl-5f9e7a0a13` “步” (ㄅㄨˋ) — heard “不？”
+- word `tocfl-613028cfb0` “常” (ㄔㄤˊ) — heard “長。”
+- word `tocfl-62abecda44` “牙刷” (ㄧㄚˊ ㄕㄨㄚ) — heard “亞刷。”
+- word `tocfl-6482e55b83` “美洲” (ㄇㄟˇ ㄓㄡ) — heard “每週。”
+- word `tocfl-64e19ba0ac` “塊” (ㄎㄨㄞˋ) — heard “快。”
+- word `tocfl-6626571043` “星星” (ㄒㄧㄥ ˙ㄒㄧㄥ) — heard “新鮮。”
+- word `tocfl-684bdd3125` “飽” (ㄅㄠˇ) — heard “寶。”
+- word `tocfl-6a79f1b279` “味” (ㄨㄟˋ) — heard “喂。”
+- word `tocfl-6ae1847221` “情形” (ㄑㄧㄥˊ ㄒㄧㄥˊ) — heard “請行。”
+- word `tocfl-6b1a1bad2a` “了解” (ㄌㄧㄠˇ ㄐㄧㄝˇ) — heard “瞭解。”
+- word `tocfl-6b8f725337` “上午” (ㄕㄤˋ ㄨˇ) — heard “尚午。”
+- word `tocfl-6c12832d6f` “溫泉” (ㄨㄣ ㄑㄩㄢˊ) — heard “”
+- word `tocfl-6eb5b4cd70` “不但” (ㄅㄨˋ ㄉㄢˋ) — heard “布丹。”
+- word `tocfl-6fb8a5bc0d` “空” (ㄎㄨㄥˋ) — heard “控。”
+- word `tocfl-710d19b567` “弄” (ㄋㄨㄥˋ) — heard “O。”
+- word `tocfl-71decc3241` “看見” (ㄎㄢˋ ˙ㄐㄧㄢ) — heard “看簡。”
+- word `tocfl-723b2321a4` “鐘” (ㄓㄨㄥ) — heard “中。”
+- word `tocfl-73f2105323` “死” (ㄙˇ) — heard “四。”
+- word `tocfl-748b92142c` “離” (ㄌㄧˊ) — heard “李。”
+- word `tocfl-750c441560` “只” (ㄓˇ) — heard “紙。”
+- word `tocfl-763f350af6` “輛” (ㄌㄧㄤˋ) — heard “亮。”
+- word `tocfl-76ae471fdd` “練習” (ㄌㄧㄢˋ ㄒㄧˊ) — heard “列席。”
+- word `tocfl-7724b7b3cd` “飯館” (ㄈㄢˋ ㄍㄨㄢˇ) — heard “飯管。”
+- word `tocfl-7a48620c41` “雨” (ㄩˇ) — heard “與。”
+- word `tocfl-7c9ba74124` “市” (ㄕˋ) — heard “是。”
+- word `tocfl-7dacc56bed` “支” (ㄓ) — heard “之。”
+- word `tocfl-7e5d66e6cf` “西” (ㄒㄧ) — heard “溪。”
+- word `tocfl-7f277f646c` “個” (˙ㄍㄜ) — heard “各。”
+- word `tocfl-806c00c83e` “哥” (ㄍㄜ) — heard “歌。”
+- word `tocfl-8246df6311` “住” (ㄓㄨˋ) — heard “注。”
+- word `tocfl-825983bc0a` “愛” (ㄞˋ) — heard “唉。”
+- word `tocfl-826a3ae48a` “越” (ㄩㄝˋ) — heard “躍。”
+- word `tocfl-84696d149c` “教” (ㄐㄧㄠ) — heard “交。”
+- word `tocfl-848a0a755a` “啊” (ㄚ) — heard “阿。”
+- word `tocfl-849d8fe058` “一點點” (ㄧ ㄉㄧㄢˇ ㄉㄧㄢˇ) — heard “一點。”
+- word `tocfl-8565d0c164` “疼” (ㄊㄥˊ) — heard “藤。”
+- word `tocfl-8607e5370f` “練習” (ㄌㄧㄢˋ ㄒㄧˊ) — heard “列席。”
+- word `tocfl-86251eab21` “貴” (ㄍㄨㄟˋ) — heard “櫃。”
+- word `tocfl-87528d4e8a` “信封” (ㄒㄧㄣˋ ㄈㄥ) — heard “信風。”
+- word `tocfl-87924ced89` “鄰居” (ㄌㄧㄣˊ ㄐㄩ) — heard “領居。”
+- word `tocfl-89d366253d` “哪” (˙ㄋㄚ) — heard “拿。”
+- word `tocfl-8b0ee869e0` “髮” (ㄈㄚˇ) — heard “法。”
+- word `tocfl-8c8a536423` “呢” (˙ㄋㄜ) — heard “哪？”
+- word `tocfl-8d03e0dc0b` “件” (ㄐㄧㄢˋ) — heard “建。”
+- word `tocfl-8ff168ee95` “正常” (ㄓㄥˋ ㄔㄤˊ) — heard “這場。”
+- word `tocfl-903c30be90` “流” (ㄌㄧㄡˊ) — heard “劉。”
+- word `tocfl-92078db11d` “家” (ㄐㄧㄚ) — heard “加。”
+- word `tocfl-922b24275b` “腳” (ㄐㄧㄠˇ) — heard “繳。”
+- word `tocfl-925aa71a73` “茶館” (ㄔㄚˊ ㄍㄨㄢˇ) — heard “插碗。”
+- word `tocfl-92a7be9e4c` “瘦” (ㄕㄡˋ) — heard “受。”
+- word `tocfl-93273c0564` “字” (ㄗˋ) — heard “自。”
+- word `tocfl-9332bca854` “舞” (ㄨˇ) — heard “五。”
+- word `tocfl-94052ef453` “弟” (ㄉㄧˋ) — heard “地。”
+- word `tocfl-94a3b9ec14` “秋” (ㄑㄧㄡ) — heard “邱。”
+- word `tocfl-9934fdd689` “辣” (ㄌㄚˋ) — heard “蠟。”
+- word `tocfl-9a0248f5d0` “急” (ㄐㄧˊ) — heard “吉。”
+- word `tocfl-9b12d585ea` “碗” (ㄨㄢˇ) — heard “晚。”
+- word `tocfl-9bf0443311` “講” (ㄐㄧㄤˇ) — heard “獎。”
+- word `tocfl-9cb986e3f0` “被” (ㄅㄟˋ) — heard “背。”
+- word `tocfl-a1d96273be` “甜” (ㄊㄧㄢˊ) — heard “田。”
+- word `tocfl-a21392a2af` “室友” (ㄕˋ ㄧㄡˇ) — heard “事有。”
+- word `tocfl-a33c539d94` “掉” (ㄉㄧㄠˋ) — heard “調。”
+- word `tocfl-a397d5a46b` “冷氣機” (ㄌㄥˇ ㄑㄧˋ ㄐㄧ) — heard “了七機。”
+- word `tocfl-a3b4dadbbb` “份” (ㄈㄣˋ) — heard “分。”
+- word `tocfl-a6bc7a1fd3` “整” (ㄓㄥˇ) — heard “震。”
+- word `tocfl-a73b22691a` “在” (ㄗㄞˋ) — heard “再。”
+- word `tocfl-a80cd7e79f` “伯” (ㄅㄛˊ) — heard “博。”
+- word `tocfl-a8abf55d3c` “久” (ㄐㄧㄡˇ) — heard “九。”
+- word `tocfl-aa0230a984` “戴” (ㄉㄞˋ) — heard “帶。”
+- word `tocfl-aa2810c578` “太” (ㄊㄞˋ) — heard “泰。”
+- word `tocfl-ab0a414e59` “一直” (ㄧ ㄓˊ) — heard “醫質。”
+- word `tocfl-abed89ec81` “狗” (ㄍㄡˇ) — heard “夠。”
+- word `tocfl-ac6839d7c8` “須” (ㄒㄩ) — heard “需。”
+- word `tocfl-acebb15a07` “鐘” (ㄓㄨㄥ) — heard “中。”
+- word `tocfl-ad0f220efc` “試” (ㄕˋ) — heard “是。”
+- word `tocfl-adba032853` “踢” (ㄊㄧ) — heard “T。”
+- word `tocfl-b1bb58d8ad` “乘” (ㄔㄥˊ) — heard “陳。”
+- word `tocfl-b2036dd027` “冬” (ㄉㄨㄥ) — heard “東。”
+- word `tocfl-b365879f90` “游” (ㄧㄡˊ) — heard “郵。”
+- word `tocfl-b69123b307` “眼鏡” (ㄧㄢˇ ㄐㄧㄥˋ) — heard “冶鏡。”
+- word `tocfl-b74453d607` “百” (ㄅㄞˇ) — heard “拜。”
+- word `tocfl-b815da1d40` “鎖” (ㄙㄨㄛˇ) — heard “所。”
+- word `tocfl-b816f25d04` “暖和” (ㄋㄨㄢˇ ˙ㄏㄨㄛ) — heard “那化。”
+- word `tocfl-ba73f9d863` “枝” (ㄓ) — heard “之。”
+- word `tocfl-bbe46e022b` “進” (ㄐㄧㄣˋ) — heard “境。”
+- word `tocfl-be4741f92b` “想” (ㄒㄧㄤˇ) — heard “響。”
+- word `tocfl-bf54cfa008` “吵” (ㄔㄠˇ) — heard “炒。”
+- word `tocfl-bf95d3c33e` “年級” (ㄋㄧㄢˊ ㄐㄧˊ) — heard “年籍？”
+- word `tocfl-c00f8ea193` “第” (ㄉㄧˋ) — heard “地。”
+- word `tocfl-c03e0e5d5d` “食物” (ㄕˊ ㄨˋ) — heard “15。”
+- word `tocfl-c0918c270d` “累” (ㄌㄟˋ) — heard “類。”
+- word `tocfl-c1643d9933` “應” (ㄧㄥ) — heard “英。”
+- word `tocfl-c282e7ccce` “台” (ㄊㄞˊ) — heard “臺。”
+- word `tocfl-c292120b69` “裡面” (ㄌㄧˇ ㄇㄧㄢˋ) — heard “理念。”
+- word `tocfl-c50934c923` “一半” (ㄧ ㄅㄢˋ) — heard “伊班。”
+- word `tocfl-c86e125382` “座” (ㄗㄨㄛˋ) — heard “作。”
+- word `tocfl-ccda6ca4b5` “陪” (ㄆㄟˊ) — heard “賠。”
+- word `tocfl-cce40f42ef` “做” (ㄗㄨㄛˋ) — heard “作。”
+- word `tocfl-ce7bee99b8` “每” (ㄇㄟˇ) — heard “美。”
+- word `tocfl-d0ac821545` “姊姊” (ㄗˇ ˙ㄗ) — heard “子子。”
+- word `tocfl-d19aea9325` “裝” (ㄓㄨㄤ) — heard “莊。”
+- word `tocfl-d214b63617` “呀” (ㄧㄚ) — heard “鴉。”
+- word `tocfl-d34556a566` “就” (ㄐㄧㄡˋ) — heard “救。”
+- word `tocfl-d3c7860a8f` “還” (ㄏㄞˊ) — heard “海。”
+- word `tocfl-d488447fcc` “像” (ㄒㄧㄤˋ) — heard “向。”
+- word `tocfl-d4fe751e2e` “月” (ㄩㄝˋ) — heard “躍。”
+- word `tocfl-d56ef155f4` “夜” (ㄧㄝˋ) — heard “葉。”
+- word `tocfl-d5955162d2` “傘” (ㄙㄢˇ) — heard “散。”
+- word `tocfl-d5a5a11359` “汗” (ㄏㄢˋ) — heard “漢。”
+- word `tocfl-d6196ef887` “封” (ㄈㄥ) — heard “風。”
+- word `tocfl-d782c1394a` “圓” (ㄩㄢˊ) — heard “元。”
+- word `tocfl-d7f9942438` “環保” (ㄏㄨㄢˊ ㄅㄠˇ) — heard “環寶。”
+- word `tocfl-d9abe3586a` “極” (ㄐㄧˊ) — heard “吉。”
+- word `tocfl-d9eceacd2c` “千” (ㄑㄧㄢ) — heard “鉛。”
+- word `tocfl-db1e071496` “渴” (ㄎㄜˇ) — heard “可。”
+- word `tocfl-dc0097e41a` “朵” (ㄉㄨㄛˇ) — heard “頓。”
+- word `tocfl-dc18511ea1` “總是” (ㄗㄨㄥˇ ㄕˋ) — heard “走勢。”
+- word `tocfl-dd31867640` “較” (ㄐㄧㄠˋ) — heard “叫。”
+- word `tocfl-de3e4c4ba6` “月台” (ㄩㄝˋ ㄊㄞˊ) — heard “月臺。”
+- word `tocfl-dfa9d8440f` “小心” (ㄒㄧㄠˇ ㄒㄧㄣ) — heard “小新。”
+- word `tocfl-dfb9c6cf41` “袋子” (ㄉㄞˋ ˙ㄗ) — heard “帶子。”
+- word `tocfl-e116ce436d` “店” (ㄉㄧㄢˋ) — heard “電。”
+- word `tocfl-e196b9937d` “盒” (ㄏㄜˊ) — heard “和。”
+- word `tocfl-e2be26f485` “起” (ㄑㄧˇ) — heard “啟。”
+- word `tocfl-e3abea01b9` “牙膏” (ㄧㄚˊ ㄍㄠ) — heard “雅膏。”
+- word `tocfl-e45288ec5d` “叔” (ㄕㄨˊ) — heard “鼠。”
+- word `tocfl-e4aea03344` “烤” (ㄎㄠˇ) — heard “考。”
+- word `tocfl-e4dc44ffd2` “還” (ㄏㄨㄢˊ) — heard “環。”
+- word `tocfl-e6d39f5488` “倍” (ㄅㄟˋ) — heard “背。”
+- word `tocfl-e6fec1509b` “道” (ㄉㄠˋ) — heard “到。”
+- word `tocfl-e742b89c52` “郵局” (ㄧㄡˊ ㄐㄩˊ) — heard “友局。”
+- word `tocfl-e9f02564ce` “眼睛” (ㄧㄢˇ ㄐㄧㄥ) — heard “冶金。”
+- word `tocfl-eb70d28b7e` “正” (ㄓㄥˋ) — heard “震。”
+- word `tocfl-eb96ae979f` “盒子” (ㄏㄜˊ ˙ㄗ) — heard “核子。”
+- word `tocfl-ec433a254f` “嗎” (˙ㄇㄚ) — heard “媽。”
+- word `tocfl-ee30a1d90a` “懂” (ㄉㄨㄥˇ) — heard “動。”
+- word `tocfl-eef829a3e6` “付” (ㄈㄨˋ) — heard “負。”
+- word `tocfl-eff54bef79` “遍” (ㄅㄧㄢˋ) — heard “變。”
+- word `tocfl-f1646af399` “碗” (ㄨㄢˇ) — heard “晚。”
+- word `tocfl-f1abc0e7bd` “一定” (ㄧ ㄉㄧㄥˋ) — heard “依定。”
+- word `tocfl-f23d404cd2` “大衣” (ㄉㄚˋ ㄧ) — heard “大一。”
+- word `tocfl-f2612ffb48` “在” (ㄗㄞˋ) — heard “再。”
+- word `tocfl-f2b58937cd` “對不起” (ㄉㄨㄟˋ ˙ㄅㄨ ㄑㄧˇ) — heard “”
+- word `tocfl-f3434a8bee` “要” (ㄧㄠˋ) — heard “藥。”
+- word `tocfl-f354dbbf76` “饅頭” (ㄇㄢˊ ˙ㄊㄡ) — heard “滿頭。”
+- word `tocfl-f532a62c03` “糖” (ㄊㄤˊ) — heard “唐。”
+- word `tocfl-f586d55b3f` “袋” (ㄉㄞˋ) — heard “帶。”
+- word `tocfl-f7a620b28b` “假” (ㄐㄧㄚˋ) — heard “價。”
+- word `tocfl-f956417e9a` “禮貌” (ㄌㄧˇ ㄇㄠˋ) — heard “李茂。”
+- word `tocfl-fac4ad0044` “已” (ㄧˇ) — heard “一。”
+- word `tocfl-fb11eabed1` “重” (ㄓㄨㄥˋ) — heard “中。”
+- word `tocfl-fb921a7eec` “蚊子” (ㄨㄣˊ ˙ㄗ) — heard “文字。”
+- word `tocfl-fc42af28db` “餓” (ㄜˋ) — heard “呃。”
+- word `tocfl-ff470ddc58` “油” (ㄧㄡˊ) — heard “郵。”
+- word `tocfl-ffb21a1371` “公園” (ㄍㄨㄥ ㄩㄢˊ) — heard “公元。”
+
+## Skipped: no clip made (4)
+
+- word `tocfl-16ac7e6b5e` “一點兒” — zhuyin "ㄧ ㄉㄧㄢˇㄦ " doesn't fit the characters
+- word `tocfl-544b92a56f` “一塊兒” — zhuyin "ㄧ ㄎㄨㄞˋㄦ" doesn't fit the characters
+- word `tocfl-f25dca6a4f` “一會兒” — zhuyin "ㄧ ㄏㄨㄟˇㄦ" doesn't fit the characters
+- word `tocfl-f96ffb5c1e` “味兒” — zhuyin "ㄨㄟˋㄦ " doesn't fit the characters

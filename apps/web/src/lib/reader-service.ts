@@ -3,12 +3,15 @@ import {
   buildReaderGenRequest,
   evaluateReaderSentence,
   hashReaderText,
+  lessonBadge,
+  lessonTag,
   nextNewItems,
   pickFromEvaluated,
   pickGenerationWord,
   readerSentencesFromChat,
   readerSentencesFromJournal,
   selectLocalReaderSentence,
+  type ClassScope,
   type Evidence,
   type Level,
   type Lexicon,
@@ -39,6 +42,10 @@ export interface ReaderDeps {
   /** Live generation needs the household code (phase 8); the page says whether one is set. */
   canGenerate?: () => boolean;
   rand?: () => number;
+  /** Phase 12: sentences written for the class's current lesson (the "Lesson" focus). */
+  lesson?: { n: number; sentences: readonly SentenceBankEntry[] };
+  /** Phase 12: keeps textbook words from lessons beyond current+1 out of the "New words" frontier. */
+  classScope?: ClassScope;
 }
 
 export interface NextSentenceRequest {
@@ -78,7 +85,10 @@ export class ReaderService {
     const learningIds = new Set(
       recognition.filter((c) => c.state === 'learning' || c.state === 'introduced').map((c) => c.item.id),
     );
-    const frontier = nextNewItems(cards, lexicon, FRONTIER_POOL, { currentLevel: level });
+    const frontier = nextNewItems(cards, lexicon, FRONTIER_POOL, {
+      currentLevel: level,
+      ...(this.deps.classScope?.enabled ? { classScope: this.deps.classScope } : {}),
+    });
     return { lexicon, learnerLevel: level, knownIds, dueIds, learningIds, frontier };
   }
 
@@ -89,10 +99,39 @@ export class ReaderService {
     return shown;
   }
 
+  /** "Lesson" focus: only sentences tagged with the current lesson, least
+   * recently shown first (never a live-generated or out-of-lesson one). */
+  private async nextLessonSentence(req: NextSentenceRequest, now: Date): Promise<NextSentenceResult | null> {
+    const lesson = this.deps.lesson;
+    if (!lesson) return null;
+    const rand = this.deps.rand ?? Math.random;
+    const tag = lessonTag(lesson.n);
+    const pool = lesson.sentences.filter((s) => s.lesson === lesson.n && (s.tags ?? []).includes(tag));
+    if (pool.length === 0) return null;
+    const shown = await this.shownMap(req.sessionIds ?? new Set(), now);
+    const unseen = pool.filter((s) => !shown.has(s.id));
+    const choices = unseen.length > 0 ? unseen : [...pool].sort((a, b) => (shown.get(a.id) ?? 0) - (shown.get(b.id) ?? 0)).slice(0, 5);
+    const entry = choices[Math.floor(rand() * choices.length)]!;
+    const sentence = { ...bankEntryToReaderSentence(entry), sourceLabel: lessonBadge(lesson.n) };
+    return {
+      generated: false,
+      pick: {
+        sentence,
+        focus: 'lesson',
+        focusWordId: entry.targetWordId,
+        reason: `Lesson ${lesson.n} sentence`,
+        exact: true,
+        coverage: 1,
+        unknownCount: 0,
+      },
+    };
+  }
+
   async next(req: NextSentenceRequest): Promise<NextSentenceResult | null> {
     const { db } = this.deps;
     const now = req.now ?? new Date();
     const rand = this.deps.rand ?? Math.random;
+    if (req.focus === 'lesson') return this.nextLessonSentence(req, now);
     const state = await this.learnerState(req.level, now);
     const [live, chat, journal] = await Promise.all([
       db.liveSentences.toArray(),

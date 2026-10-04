@@ -26,6 +26,24 @@ export default defineConfig(({ command }) => ({
         // session (phase doc 04) in particular needs the sentence bank
         // cached to build a session with no network at all.
         runtimeCaching: [
+          // Phase 10 audio. Clips are fetched whole (no Range header) by the
+          // player, so the full 200 response is cacheable: a clip works offline
+          // after its first play. The URL carries ?v=<hash>, so a regenerated
+          // clip is a new cache entry. The manifest is revalidated each visit.
+          {
+            urlPattern: ({ url }) => /\/audio\/(words|sentences)\/.+\.mp3$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'anan-audio-clips',
+              expiration: { maxEntries: 3000 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
+            urlPattern: ({ url }) => url.pathname.endsWith('/audio/manifest.json'),
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'anan-audio-manifest' },
+          },
           {
             urlPattern: ({ url }) => /\/(lexicon|scenarios|sentences)\//.test(url.pathname),
             handler: 'CacheFirst',

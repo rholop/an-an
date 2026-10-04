@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   dailyPrompt,
   findWordsUsed,
+  lessonBadge,
   pickPromptWords,
   renderBracketsInline,
   type JournalIssue,
@@ -21,6 +22,8 @@ import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
 import { JournalService } from '../lib/journal-service.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
+import { useMyClass } from '../lib/my-class.js';
+import { useTextbook } from '../lib/textbook-data.js';
 import { useSetting } from '../lib/useSetting.js';
 import './JournalPage.css';
 
@@ -55,7 +58,13 @@ function ZhWord({ word }: { word: Word }) {
   );
 }
 
-export function JournalPage() {
+/** `initialPromptId` / `onDone` let the textbook's "Study this lesson" session
+ * open one of the lesson's prompts and carry on when the entry is saved. */
+export function JournalPage({
+  initialPromptId,
+  lesson,
+  onDone,
+}: { initialPromptId?: string; lesson?: number; onDone?: () => void } = {}) {
   const lexiconState = useLexicon();
   const script = useReadingScript();
   const [useFakeLLM, setUseFakeLLM] = useState(false);
@@ -86,14 +95,50 @@ export function JournalPage() {
   const [progressKey, setProgressKey] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
-  const prompt = useMemo(() => dailyPrompt(new Date()), []);
-  // Phase 7: recomputed when "My level" changes — no reload needed.
-  const promptWords = useMemo(
+  const dailyP = useMemo(() => dailyPrompt(new Date()), []);
+  // Phase 12: while "My class" is on, the current lesson's prompts come first.
+  const myClass = useMyClass();
+  const textbookState = useTextbook();
+  const classPrompts = useMemo(
     () =>
-      lexiconState.status === 'ready'
-        ? pickPromptWords(dueCards, lexiconState.lexicon, new Date(), 3, learnerLevel)
+      myClass.enabled && textbookState.status === 'ready'
+        ? (textbookState.book.lessons[(lesson ?? myClass.currentLesson) - 1]?.journalPrompts ?? [])
         : [],
-    [lexiconState, dueCards, learnerLevel],
+    [myClass, textbookState, lesson],
+  );
+  const [donePromptIds, setDonePromptIds] = useState<Set<string>>(new Set());
+  const [chosenId, setChosenId] = useState<string | null>(initialPromptId ?? null);
+  useEffect(() => {
+    db.journalEntries
+      .where('status')
+      .equals('finished')
+      .toArray()
+      .then((rows) => setDonePromptIds(new Set(rows.flatMap((r) => (r.promptId ? [r.promptId] : [])))))
+      .catch(() => undefined);
+  }, [progressKey]);
+  const chosenClass =
+    classPrompts.find((p) => p.id === chosenId) ??
+    (chosenId === null ? classPrompts.find((p) => !donePromptIds.has(p.id)) : undefined);
+  const prompt = useMemo(
+    () =>
+      chosenClass
+        ? { id: chosenClass.id, en: chosenClass.promptEn, starterZh: chosenClass.promptZh ?? '' }
+        : dailyP,
+    [chosenClass, dailyP],
+  );
+  // Phase 7: recomputed when "My level" changes — no reload needed.
+  const promptWords = useMemo(() => {
+    if (lexiconState.status !== 'ready') return [];
+    if (chosenClass)
+      return chosenClass.useWords.flatMap((id) => lexiconState.lexicon.byId(id) ?? []);
+    return pickPromptWords(dueCards, lexiconState.lexicon, new Date(), 3, learnerLevel);
+  }, [lexiconState, dueCards, learnerLevel, chosenClass]);
+  const grammarHints = useMemo(
+    () =>
+      lexiconState.status === 'ready' && chosenClass
+        ? chosenClass.useGrammar.flatMap((id) => lexiconState.lexicon.grammarItemById(id)?.pattern ?? [])
+        : [],
+    [lexiconState, chosenClass],
   );
 
   const reload = useCallback(
@@ -155,6 +200,40 @@ export function JournalPage() {
           Use fake tutor (dev, no API key)
         </label>
 
+        {!entry && classPrompts.length > 0 && (
+          <div className="journal-class-prompts" data-testid="class-prompts">
+            <p>
+              <span className="textbook-badge" lang="zh-Hant">
+                {lessonBadge(lesson ?? myClass.currentLesson)}
+              </span>{' '}
+              Prompts from class
+            </p>
+            <div role="radiogroup" aria-label="Choose a prompt">
+              {classPrompts.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={chosenClass?.id === p.id}
+                  className={`reader-chip ${chosenClass?.id === p.id ? 'reader-chip--on' : ''}`}
+                  onClick={() => setChosenId(p.id)}
+                >
+                  {donePromptIds.has(p.id) ? '✓ ' : ''}Prompt {i + 1}
+                </button>
+              ))}
+              <button
+                type="button"
+                role="radio"
+                aria-checked={!chosenClass}
+                className={`reader-chip ${!chosenClass ? 'reader-chip--on' : ''}`}
+                onClick={() => setChosenId('daily')}
+              >
+                Daily prompt
+              </button>
+            </div>
+          </div>
+        )}
+
         {!entry && (
           <WriteStage
             service={service}
@@ -162,6 +241,7 @@ export function JournalPage() {
             learnerLevel={learnerLevel}
             prompt={prompt}
             promptWords={promptWords}
+            grammarHints={grammarHints}
             onSubmitted={(e, r) => {
               setEntry(e);
               setReview(r);
@@ -196,6 +276,11 @@ export function JournalPage() {
               Entry saved. Your corrections will come back as practice sentences in Cloze review.
             </p>
             <button onClick={startOver}>Write another entry</button>
+            {onDone && (
+              <button onClick={onDone} data-testid="journal-done">
+                Finish lesson
+              </button>
+            )}
           </section>
         )}
 
@@ -211,6 +296,7 @@ function WriteStage({
   learnerLevel,
   prompt,
   promptWords,
+  grammarHints,
   onSubmitted,
 }: {
   service: JournalService;
@@ -218,6 +304,7 @@ function WriteStage({
   learnerLevel: Level;
   prompt: ReturnType<typeof dailyPrompt>;
   promptWords: Word[];
+  grammarHints: string[];
   onSubmitted: (e: JournalEntryRow, r: JournalReviewRow) => void;
 }) {
   // Phase 8: the draft is kept in the profile's database, so it survives a
@@ -280,6 +367,11 @@ function WriteStage({
             ))}
           </ul>
         </div>
+      )}
+      {grammarHints.length > 0 && (
+        <p className="journal-muted">
+          Try this pattern: <span lang="zh-Hant">{grammarHints.join('；')}</span>
+        </p>
       )}
       <textarea
         className="journal-textarea"

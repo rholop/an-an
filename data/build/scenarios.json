@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "v1",
-    "buildDate": "2026-10-01",
-    "contentHash": "d6034c63663ba8ca3ea58d8e65d7d3bdedf7d0fe15d9e0849eaa4bda2ae91879"
+    "buildDate": "2026-10-04",
+    "contentHash": "02a1e41aee89ec44837b8417d14946af7bdfb13d0c783e700c300cc7c6f64fb9"
   },
   "scenarios": [
     {
@@ -239,6 +239,865 @@
       "successLine": {
         "zh": "好了，加值五百元完成，餘額是五百二十元，謝謝！",
         "en": "All done — topped up NT$500, your balance is NT$520, thank you!"
+      }
+    },
+    {
+      "id": "laixue-1-L01-language-exchange",
+      "title": "Meeting 明文 at a language exchange",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "王明文",
+        "personality": "A Taiwanese graduate student studying in the United States. Kind, friendly and patient; he is happy to help a beginner practise.\n",
+        "speechStyle": "Very short, slow sentences with only the words from lesson 1. He greets, gives his own surname and name, then asks one question at a time.\n",
+        "particles": []
+      },
+      "setting": "A language-exchange meetup in a university café. The learner meets 明文 for the first time and they introduce themselves.\n",
+      "goalSteps": [
+        {
+          "id": "greet",
+          "description": "Greet 明文.",
+          "keywordHints": [
+            "您好"
+          ]
+        },
+        {
+          "id": "surname",
+          "description": "Tell him your surname and ask his.",
+          "keywordHints": [
+            "我姓",
+            "貴姓"
+          ]
+        },
+        {
+          "id": "name",
+          "description": "Tell him your name and ask his.",
+          "keywordHints": [
+            "我叫",
+            "叫什麼名字"
+          ]
+        },
+        {
+          "id": "nationality",
+          "description": "Say your nationality and ask his.",
+          "keywordHints": [
+            "我是",
+            "哪國人"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "您",
+        "好",
+        "我",
+        "姓",
+        "王",
+        "叫",
+        "什麼",
+        "名字",
+        "是",
+        "人",
+        "請問",
+        "貴姓",
+        "哪國人",
+        "美國人",
+        "您呢",
+        "臺灣人",
+        "王明文",
+        "美國",
+        "臺灣",
+        "張"
+      ],
+      "opener": {
+        "zh": "您好。我姓王，請問您貴姓？",
+        "en": "Hello. My surname is Wang. May I ask yours?"
+      },
+      "successLine": {
+        "zh": "您好，我叫明文。我是臺灣人。",
+        "en": "Nice to meet you — I'm Mingwen, I'm Taiwanese."
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 1
+      }
+    },
+    {
+      "id": "laixue-1-L02-siblings-chat",
+      "title": "家文 asks about your family",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "jiawen",
+        "name": "王家文",
+        "personality": "A lively, cheerful Taiwanese high-school student visiting the United States. Curious about everyone and quick to ask the next question.\n",
+        "speechStyle": "Short, friendly sentences using only words from lessons 1 and 2. Asks one question at a time and repeats the number the learner gives.\n",
+        "particles": []
+      },
+      "setting": "A summer-camp lounge in the United States. 家文 has just met the learner and wants to know about their brothers and sisters.\n",
+      "goalSteps": [
+        {
+          "id": "greet",
+          "description": "Greet 家文 and tell him your name.",
+          "keywordHints": [
+            "您好",
+            "我叫"
+          ]
+        },
+        {
+          "id": "have-siblings",
+          "description": "Say whether you have brothers or sisters.",
+          "keywordHints": [
+            "我有",
+            "我沒有"
+          ]
+        },
+        {
+          "id": "how-many",
+          "description": "Say how many older/younger siblings you have.",
+          "keywordHints": [
+            "一個",
+            "兩個"
+          ]
+        },
+        {
+          "id": "ask-back",
+          "description": "Ask 家文 about his siblings.",
+          "keywordHints": [
+            "你有",
+            "嗎",
+            "您呢"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "有",
+        "兩",
+        "個",
+        "弟弟",
+        "你",
+        "嗎",
+        "一",
+        "姐姐",
+        "也",
+        "哥哥",
+        "沒",
+        "只",
+        "兄弟姊妹",
+        "妹妹"
+      ],
+      "opener": {
+        "zh": "您好，我是王家文。您有兄弟姊妹嗎？",
+        "en": "Hello, I'm Wang Jiawen. Do you have any brothers or sisters?"
+      },
+      "successLine": {
+        "zh": "我有一個姐姐，兩個弟弟。",
+        "en": "I have one older sister and two younger brothers."
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 2
+      }
+    },
+    {
+      "id": "laixue-1-L03-family-jobs",
+      "title": "Lisa asks about your family",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "lisa",
+        "name": "Lisa",
+        "personality": "Gloria's sweet, warm-hearted coworker. Genuinely interested in other people's families and always asks a friendly follow-up.\n",
+        "speechStyle": "Short, kind sentences using only words from lessons 1–3. One question at a time; repeats the learner's answer back to confirm.\n",
+        "particles": []
+      },
+      "setting": "A quiet corner of the office at lunchtime. Lisa and the learner are chatting about their families.\n",
+      "goalSteps": [
+        {
+          "id": "student",
+          "description": "Say whether your sister or brother is a student.",
+          "keywordHints": [
+            "學生",
+            "不是學生"
+          ]
+        },
+        {
+          "id": "workplace",
+          "description": "Say where a family member works.",
+          "keywordHints": [
+            "在",
+            "工作"
+          ]
+        },
+        {
+          "id": "married",
+          "description": "Say who is married and whether they have children.",
+          "keywordHints": [
+            "結婚了",
+            "孩子"
+          ]
+        },
+        {
+          "id": "both",
+          "description": "Say that two people both do something (都).",
+          "keywordHints": [
+            "都"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "他",
+        "不",
+        "學生",
+        "大學",
+        "在",
+        "哪裡",
+        "工作",
+        "銀行",
+        "先生",
+        "電腦",
+        "公司",
+        "孩子",
+        "兒子",
+        "女兒",
+        "小孩",
+        "都",
+        "小學",
+        "畢業了",
+        "結婚了",
+        "他們",
+        "念書",
+        "法國",
+        "和"
+      ],
+      "opener": {
+        "zh": "你好，我是Lisa。你姐姐是學生嗎？",
+        "en": "Hello, I'm Lisa. Is your older sister a student?"
+      },
+      "successLine": {
+        "zh": "你姐姐結婚了，他們有兩個孩子。他們都不是學生。",
+        "en": "Your sister is married and they have two children. They are not students."
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 3
+      }
+    },
+    {
+      "id": "laixue-1-L04-parents-jobs",
+      "title": "明文 asks about your parents' jobs",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "王明文",
+        "personality": "A kind, friendly Taiwanese graduate student. Interested in people's families; patient with a beginner.\n",
+        "speechStyle": "Short sentences using only words from lessons 1–4. Asks one question at a time, often \"…忙不忙？\" or \"…，你呢？\".\n",
+        "particles": []
+      },
+      "setting": "A table in a university café. 明文 and the learner chat about their parents: where they work and how busy they are.\n",
+      "goalSteps": [
+        {
+          "id": "parents-work",
+          "description": "Say where your father and mother work.",
+          "keywordHints": [
+            "爸爸",
+            "媽媽",
+            "在"
+          ]
+        },
+        {
+          "id": "busy",
+          "description": "Say whether their job is busy or tiring.",
+          "keywordHints": [
+            "忙",
+            "累"
+          ]
+        },
+        {
+          "id": "like",
+          "description": "Say what your mother or father likes.",
+          "keywordHints": [
+            "喜歡"
+          ]
+        },
+        {
+          "id": "ask-back",
+          "description": "Ask 明文 about his parents (…你呢？).",
+          "keywordHints": [
+            "呢"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "爸爸",
+        "媽媽",
+        "老師",
+        "忙",
+        "很",
+        "每天",
+        "累",
+        "喜歡",
+        "小孩子",
+        "說",
+        "教",
+        "法文",
+        "教書",
+        "李",
+        "今天"
+      ],
+      "opener": {
+        "zh": "你好。請問你爸爸、媽媽在哪裡工作？",
+        "en": "Hello. Where do your father and mother work?"
+      },
+      "successLine": {
+        "zh": "你爸爸的工作很忙，你媽媽喜歡教書。我爸爸也是老師。",
+        "en": "Your father's job is busy and your mother likes teaching. My father is a teacher too."
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 4
+      }
+    },
+    {
+      "id": "laixue-1-L05-introduce-friend",
+      "title": "Introducing a friend to 明文's father",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "mr-wang",
+        "name": "王先生",
+        "personality": "明文's father: warm, polite and welcoming to visitors. He likes to hear where guests live and where they would like to travel.\n",
+        "speechStyle": "Short, polite sentences using only words from lessons 1–5. Asks one question at a time; uses 您 with new people.\n",
+        "particles": []
+      },
+      "setting": "The Wang family's living room. The learner introduces a friend to 王先生 and they talk about where the friend lives and holiday plans.\n",
+      "goalSteps": [
+        {
+          "id": "introduce",
+          "description": "Introduce your friend (這是我朋友…).",
+          "keywordHints": [
+            "這是"
+          ]
+        },
+        {
+          "id": "lives",
+          "description": "Say where your friend lives.",
+          "keywordHints": [
+            "住在"
+          ]
+        },
+        {
+          "id": "holiday",
+          "description": "Say where your friend wants to go on holiday.",
+          "keywordHints": [
+            "想去",
+            "玩"
+          ]
+        },
+        {
+          "id": "welcome",
+          "description": "Say you are happy to meet 王先生.",
+          "keywordHints": [
+            "高興",
+            "認識"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "這",
+        "朋友",
+        "認識",
+        "高興",
+        "平常",
+        "住在",
+        "現在",
+        "學校",
+        "放假",
+        "來",
+        "玩",
+        "歡迎",
+        "想",
+        "去",
+        "國家",
+        "公園",
+        "好久不見",
+        "迪士尼樂園",
+        "臺北",
+        "加州",
+        "誰",
+        "父母"
+      ],
+      "opener": {
+        "zh": "您好，我是明文的爸爸。這是您的朋友嗎？",
+        "en": "Hello, I'm Mingwen's father. Is this your friend?"
+      },
+      "successLine": {
+        "zh": "歡迎你來臺灣玩！認識你很高興。",
+        "en": "Welcome to Taiwan! I'm very glad to meet you."
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 5
+      }
+    },
+    {
+      "id": "laixue-1-L06-weekend-hobbies",
+      "title": "Weekend hobbies with Lisa",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "lisa",
+        "name": "Lisa",
+        "personality": "Gloria's sweet, warm-hearted coworker who loves chatting about hobbies and weekend plans.\n",
+        "speechStyle": "Short, friendly sentences using only words from lessons 1–6. One question at a time; reacts to what the learner likes with 也 or 還.\n",
+        "particles": []
+      },
+      "setting": "The office break room on a Friday afternoon. Lisa asks what the learner likes to do at the weekend and in the evening.\n",
+      "goalSteps": [
+        {
+          "id": "likes",
+          "description": "Say what you like to do.",
+          "keywordHints": [
+            "喜歡"
+          ]
+        },
+        {
+          "id": "dislikes",
+          "description": "Say something you do not like.",
+          "keywordHints": [
+            "不喜歡"
+          ]
+        },
+        {
+          "id": "weekend",
+          "description": "Say what you do at the weekend.",
+          "keywordHints": [
+            "週末"
+          ]
+        },
+        {
+          "id": "evening",
+          "description": "Say what you do in the evening (晚上…在家…).",
+          "keywordHints": [
+            "晚上"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "運動",
+        "做",
+        "週末",
+        "打",
+        "網球",
+        "聽",
+        "音樂",
+        "和",
+        "可是",
+        "還",
+        "看",
+        "電視",
+        "晚上",
+        "常常",
+        "家",
+        "跑步",
+        "唱歌",
+        "跳舞",
+        "上午",
+        "太太"
+      ],
+      "opener": {
+        "zh": "你好。你週末喜歡做什麼？",
+        "en": "Hi. What do you like to do at the weekend?"
+      },
+      "successLine": {
+        "zh": "我也喜歡聽音樂，還喜歡看電視。",
+        "en": "I like listening to music too, and watching TV."
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 6
+      }
+    },
+    {
+      "id": "laixue-1-L07-bank-call",
+      "title": "Calling 台一銀行 for 林美美",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "miss-li",
+        "name": "李小姐",
+        "personality": "The polite receptionist at 台一銀行. Professional and helpful; takes messages carefully and repeats phone numbers back.\n",
+        "speechStyle": "Formal, short phone sentences using only words from lessons 1–7. Uses 您 and 請問 — one question at a time, and reads numbers digit by digit.\n",
+        "particles": []
+      },
+      "setting": "A telephone call. The learner phones 台一銀行 to speak to 林美美 小姐. She is not in the office, so the learner leaves a message and a number.\n",
+      "goalSteps": [
+        {
+          "id": "ask-for",
+          "description": "Ask for 林美美小姐.",
+          "keywordHints": [
+            "林美美",
+            "林小姐"
+          ]
+        },
+        {
+          "id": "when-back",
+          "description": "Ask when she will be back.",
+          "keywordHints": [
+            "什麼時候",
+            "回來"
+          ]
+        },
+        {
+          "id": "message",
+          "description": "Ask her to call you back (麻煩您…給我打電話).",
+          "keywordHints": [
+            "麻煩",
+            "打電話"
+          ]
+        },
+        {
+          "id": "number",
+          "description": "Give your cell phone number.",
+          "keywordHints": [
+            "手機",
+            "號碼"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "哪",
+        "位",
+        "喂",
+        "林",
+        "小姐",
+        "辦公室",
+        "回來",
+        "下午",
+        "麻煩",
+        "以後",
+        "給",
+        "電話",
+        "手機",
+        "號碼",
+        "謝謝",
+        "再見",
+        "零",
+        "二",
+        "三",
+        "四",
+        "五",
+        "六",
+        "七",
+        "八",
+        "九",
+        "什麼時候",
+        "打電話",
+        "幾號",
+        "好的",
+        "不客氣",
+        "台一銀行",
+        "林美美",
+        "北電公司",
+        "十",
+        "百"
+      ],
+      "opener": {
+        "zh": "喂，您好，這是台一銀行。",
+        "en": "Hello, this is Taiyi Bank."
+      },
+      "successLine": {
+        "zh": "好的，林小姐回來以後，給您打電話。再見！",
+        "en": "Okay — Miss Lin will call you when she gets back. Goodbye!"
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 7
+      }
+    },
+    {
+      "id": "laixue-1-L08-plan-birthday",
+      "title": "Planning 家文's birthday",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "jiawen",
+        "name": "王家文",
+        "personality": "A lively, cheerful high-school student whose birthday is tomorrow. He is not shy about asking for a gift and a big meal.\n",
+        "speechStyle": "Short, cheerful sentences using only words from lessons 1–8. Asks the learner (his 大哥) one thing at a time and ends requests with 好不好 or 可以嗎.\n",
+        "particles": []
+      },
+      "setting": "At home the evening before 家文's birthday. The learner is like his older brother and plans the birthday with him: the date, his age, a gift and a big meal.\n",
+      "goalSteps": [
+        {
+          "id": "date",
+          "description": "Say tomorrow's date and that it is his birthday.",
+          "keywordHints": [
+            "幾月",
+            "號",
+            "生日"
+          ]
+        },
+        {
+          "id": "age",
+          "description": "Ask how old he will be.",
+          "keywordHints": [
+            "幾歲",
+            "歲"
+          ]
+        },
+        {
+          "id": "gift",
+          "description": "Ask what birthday gift he wants.",
+          "keywordHints": [
+            "禮物",
+            "要"
+          ]
+        },
+        {
+          "id": "meal",
+          "description": "Treat him to a big meal (我請你…，好不好？).",
+          "keywordHints": [
+            "大餐",
+            "請"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "祝",
+        "生日",
+        "快樂",
+        "大哥",
+        "明天",
+        "月",
+        "號",
+        "噢",
+        "歲",
+        "要",
+        "禮物",
+        "雙",
+        "運動鞋",
+        "今天",
+        "買",
+        "請",
+        "吃",
+        "大餐",
+        "是啊",
+        "可以嗎",
+        "好不好",
+        "沒問題",
+        "今年",
+        "送",
+        "日"
+      ],
+      "opener": {
+        "zh": "大哥，明天是幾號？",
+        "en": "Big brother, what is the date tomorrow?"
+      },
+      "successLine": {
+        "zh": "好，沒問題！明天我請你去吃大餐，還送你一雙運動鞋。",
+        "en": "Okay, no problem! Tomorrow I'll treat you to a big meal and give you a pair of sneakers."
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 8
+      }
+    },
+    {
+      "id": "laixue-1-L09-dinner-invite",
+      "title": "Inviting a coworker to dinner",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "lisa",
+        "name": "Lisa",
+        "personality": "Gloria's sweet, warm-hearted coworker. Friendly and flexible, but her Saturday is already taken, so she needs a different day.\n",
+        "speechStyle": "Short, friendly sentences using only words from lessons 1–9. Gives a clear answer to each question: \"不行\" for Saturday, \"沒問題\" for Friday.\n",
+        "particles": []
+      },
+      "setting": "The office, near the end of the work week. The learner invites Lisa to have dinner at 美味餐廳, finds a day that works and agrees a time.\n",
+      "goalSteps": [
+        {
+          "id": "invite",
+          "description": "Invite Lisa to eat at 美味餐廳.",
+          "keywordHints": [
+            "餐廳",
+            "吃飯",
+            "跟"
+          ]
+        },
+        {
+          "id": "day",
+          "description": "When she says she is not free, suggest another day.",
+          "keywordHints": [
+            "星期",
+            "怎麼樣"
+          ]
+        },
+        {
+          "id": "time",
+          "description": "Agree a time (…點…).",
+          "keywordHints": [
+            "點",
+            "半"
+          ]
+        },
+        {
+          "id": "confirm",
+          "description": "Confirm the plan.",
+          "keywordHints": [
+            "太好了",
+            "見"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "星期五",
+        "時間",
+        "同事",
+        "要",
+        "餐廳",
+        "跟",
+        "一起",
+        "星期六",
+        "行",
+        "下課",
+        "點",
+        "半",
+        "見",
+        "那",
+        "家",
+        "牛肉麵",
+        "最",
+        "好吃",
+        "吃飯",
+        "不行",
+        "怎麼樣",
+        "太好了",
+        "美味餐廳",
+        "年",
+        "晚飯"
+      ],
+      "opener": {
+        "zh": "你好！你要跟我一起吃飯嗎？",
+        "en": "Hi! Would you like to eat together with me?"
+      },
+      "successLine": {
+        "zh": "太好了！星期五晚上六點半在美味餐廳見！",
+        "en": "Great! See you at Tasty Café at 6:30 on Friday evening!"
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 9
+      }
+    },
+    {
+      "id": "laixue-1-L10-coffee-break",
+      "title": "Coffee break with 明文: learning Mandarin",
+      "levelRange": {
+        "min": "N1",
+        "max": "N2"
+      },
+      "npc": {
+        "id": "mingwen",
+        "name": "王明文",
+        "personality": "A kind, friendly Taiwanese graduate student who helps the learner practise Mandarin. Encouraging; he asks how learning is going and which parts are hard.\n",
+        "speechStyle": "Short sentences using only words from lessons 1–10. One question at a time, often \"…得怎麼樣？\", \"…難不難？\" or \"你會…嗎？\".\n",
+        "particles": []
+      },
+      "setting": "A coffee shop near campus. 明文 and the learner take a break and talk about learning Mandarin: what is hard, speaking versus writing.\n",
+      "goalSteps": [
+        {
+          "id": "how-learning",
+          "description": "Say how your Mandarin is going (學得…).",
+          "keywordHints": [
+            "學得",
+            "不錯"
+          ]
+        },
+        {
+          "id": "hard",
+          "description": "Say what is hard for you (…有一點難).",
+          "keywordHints": [
+            "難",
+            "有一點"
+          ]
+        },
+        {
+          "id": "can-do",
+          "description": "Say what you can do (我會…).",
+          "keywordHints": [
+            "我會",
+            "不會"
+          ]
+        },
+        {
+          "id": "how-many",
+          "description": "Say roughly how many characters you can write.",
+          "keywordHints": [
+            "多少",
+            "差不多",
+            "字"
+          ]
+        }
+      ],
+      "vocabExtras": [
+        "學",
+        "中文",
+        "難",
+        "休息",
+        "一下",
+        "喝",
+        "杯",
+        "咖啡",
+        "吧",
+        "得",
+        "覺得",
+        "自己",
+        "不錯",
+        "會",
+        "多少",
+        "差不多",
+        "字",
+        "練習",
+        "說話",
+        "寫字",
+        "有一點",
+        "聊天",
+        "做飯",
+        "快",
+        "貴"
+      ],
+      "opener": {
+        "zh": "你好！我們去喝杯咖啡吧。你學中文，學得怎麼樣？",
+        "en": "Hi! Let's go and have a cup of coffee. How is your Mandarin coming along?"
+      },
+      "successLine": {
+        "zh": "你說得不錯！我們常常聊天，你的中文會很好。",
+        "en": "You speak well! If we chat often, your Mandarin will get very good."
+      },
+      "textbook": {
+        "textbookId": "laixue-1",
+        "lesson": 10
       }
     },
     {

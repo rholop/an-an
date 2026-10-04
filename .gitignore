@@ -38,3 +38,16 @@ data/raw/*.zip
 
 # Phase 8: per-profile saved copies written by the proxy at runtime.
 apps/proxy/sync-data/
+
+# Phase 10: household audio marks written by the proxy at runtime.
+apps/proxy/audio-data/
+
+# Phase 10: copy of data/build/audio (`pnpm sync:audio`).
+apps/web/public/audio/
+
+# Phase 12: the textbook is OCAC's — personal study only. PDF and book text stay out of git.
+data/raw/textbook/
+data/curriculum/laixue-1/private/
+
+# Phase 12: copy of data/curriculum/*/book.json + lesson sentences (`pnpm sync:textbook`).
+apps/web/public/textbook/

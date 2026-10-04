@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
+  lessonBadge,
   levelIndex,
   parseSyllableTone,
   senseSourceLabel,
@@ -9,6 +10,7 @@ import {
   type Token,
   type Word,
 } from '@anan/core';
+import { SpeakerButton } from './SpeakerButton.js';
 import './AnnotatedText.css';
 
 export interface AnnotatedToken {
@@ -23,6 +25,8 @@ export interface AnnotatedToken {
    * (the model's pick, else context rules, else the primary sense). */
   word?: Word;
   sense?: Sense;
+  /** Phase 12: the first 來學華語 lesson this word appears in, for the badge. */
+  textbookLesson?: number;
   /** Phase 2 §1 pinyin fading (readingDisplay()), set by the caller per-token
    * from the learner's own card. Only consulted when the page mode is
    * 'auto'; undefined (no card yet, e.g. a never-seen word) behaves like
@@ -178,6 +182,11 @@ function Popover({
           <span className="an-confidence-low"> (uncertain reading)</span>
         )}
       </div>
+      {at.wordId && (
+        <div className="an-popover-audio">
+          <SpeakerButton kind="word" id={at.wordId} label={at.token.text} />
+        </div>
+      )}
       <div className="an-popover-gloss">{at.gloss || '(no gloss)'}</div>
       {at.sense && <div className="an-popover-source">{senseSourceLabel(at.sense)}</div>}
       {others.length > 0 && (
@@ -204,7 +213,16 @@ function Popover({
           <span className="an-popover-source">教育部《重編國語辭典修訂本》</span>
         </div>
       )}
-      {at.level && <div className="an-popover-level">{at.level}</div>}
+      {(at.level || at.textbookLesson !== undefined) && (
+        <div className="an-popover-level">
+          {at.level}
+          {at.textbookLesson !== undefined && (
+            <span className="textbook-badge" lang="zh-Hant" data-testid="textbook-badge">
+              {lessonBadge(at.textbookLesson)}
+            </span>
+          )}
+        </div>
+      )}
       {onReport && (
         <button className="an-popover-report" onClick={onReport}>
           Report this definition

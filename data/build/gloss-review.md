@@ -2,14 +2,37 @@
 
 Words whose gloss a human should check. Put corrections in `data/supplement/gloss-overrides.yaml` (overrides always win and survive rebuilds).
 
-- 7918 words: 46 override, 0 ai, 7853 heuristic, 19 authored, 0 none.
-- N1–L2 words with a cited source: 100.0% of 1346.
-- 209 flagged.
+- 7966 words: 46 override, 0 ai, 7878 heuristic, 42 authored, 0 none.
+- N1–L2 words with a cited source: 98.4% of 1395.
+- 232 flagged.
 
 | level | word | reading | shown gloss | origin | flags | other candidates |
 | --- | --- | --- | --- | --- | --- | --- |
 | N1 | 對不起 | duì bu qǐ | I'm sorry; excuse me | heuristic | close-call | I'm sorry; excuse me; I beg your pardon · to let (sb) down; to disappoint |
 | N1 | 沒有 | méi yǒu | haven't; hasn't; doesn't exist | heuristic | close-call | haven't · hasn't · doesn't exist |
+| N1 | 哪國人 | nǎ guó rén | an interrogative phrase used to ask | authored | no-source |  |
+| N1 | 您呢 | nín ne | How about you? And you? | authored | no-source |  |
+| N1 | 王明文 | wáng míng wén | an example of a name | authored | no-source |  |
+| N1 | 家文 | jiā wén | Jiawen | authored | no-source |  |
+| N1 | 王家文 | wáng jiā wén | Wang Jiawen | authored | no-source |  |
+| N1 | 畢業了 | bì yè le | graduated | authored | no-source |  |
+| N1 | 結婚了 | jié hūn le | married | authored | no-source |  |
+| N1 | 學文 | xué wén | Xuewen | authored | no-source |  |
+| N1 | 王學文 | wáng xué wén | Wang Xuewen | authored | no-source |  |
+| N1 | 美生 | měi shēng | Meisheng | authored | no-source |  |
+| N1 | 明美 | míng měi | Mingmei | authored | no-source |  |
+| N1 | 住在 | zhù zài | to live in / at | authored | no-source |  |
+| N1 | 王小文 | wáng xiǎo wén | Wang Xiaowen | authored | no-source |  |
+| N1 | 什麼時候 | shí me shí hòu | when | authored | no-source |  |
+| N1 | 幾號 | jǐ hào | What is the phone number? | authored | no-source |  |
+| N1 | 台一銀行 | tái yī yín háng | Taiyi Bank | authored | no-source |  |
+| N1 | 林美美 | lín měi měi | an example of a name | authored | no-source |  |
+| N1 | 北電公司 | běi diàn gōng sī | Beidian Company | authored | no-source |  |
+| N1 | 美美 | měi měi | Meimei | authored | no-source |  |
+| N1 | 是啊 | shì a | That’s right. | authored | no-source |  |
+| N1 | 可以嗎 | kě yǐ ma | Could I? Is it okay? | authored | no-source |  |
+| N1 | 太好了 | tài hǎo le | Excellent! Great! | authored | no-source |  |
+| N1 | 美味餐廳 | měi wèi cān tīng | Tasty Café | authored | no-source |  |
 | N2 | 工作 | gōng zuò | work | heuristic | close-call | to work · (of a machine) to operate · job |
 | N2 | 說話 | shuō huà | to speak; to say; to talk | heuristic | close-call | to speak · to say · to talk |
 | N2 | 共 | gòng | together; altogether | heuristic | close-call | common · general · to share |

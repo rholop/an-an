@@ -33,6 +33,9 @@ export const ScenarioSchema = z.object({
   vocabExtras: z.array(z.string()).default([]),
   opener: z.object({ zh: z.string(), en: z.string() }),
   successLine: z.object({ zh: z.string(), en: z.string() }),
+  /** Phase 12: built for a textbook lesson. Hidden unless "My class" is on;
+   * unlocks when the class's current lesson >= `lesson`. */
+  textbook: z.object({ textbookId: z.string(), lesson: z.number().int().min(1) }).optional(),
 });
 export type Scenario = z.infer<typeof ScenarioSchema>;
 
@@ -47,6 +50,9 @@ const LEVEL_ORDER = LEVEL_IDS;
 /** Scenario unlock by level lives in data (CLAUDE.md §5): a scenario is
  * available once the learner's level falls within [min, max]. */
 export function isScenarioUnlocked(scenario: Scenario, learnerLevel: Level): boolean {
+  // Textbook scenarios are governed by the class setting, not the level
+  // picker — see isTextbookScenarioUnlocked.
+  if (scenario.textbook) return false;
   const idx = LEVEL_ORDER.indexOf(learnerLevel);
   return (
     idx >= LEVEL_ORDER.indexOf(scenario.levelRange.min) &&
@@ -79,4 +85,17 @@ export function resolveScenarioVocabExtraIds(
     else missing.push(headword);
   }
   return { ids, missing };
+}
+
+/** Phase 12: a textbook scenario is available only while "My class" is on and
+ * the class has reached its lesson. Non-textbook scenarios: not handled here. */
+export function isTextbookScenarioUnlocked(
+  scenario: Scenario,
+  myClass: { enabled: boolean; textbookId: string; currentLesson: number } | undefined,
+): boolean {
+  if (!scenario.textbook || !myClass?.enabled) return false;
+  return (
+    scenario.textbook.textbookId === myClass.textbookId &&
+    myClass.currentLesson >= scenario.textbook.lesson
+  );
 }

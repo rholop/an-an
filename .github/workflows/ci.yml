@@ -51,6 +51,9 @@ jobs:
           pnpm --filter @anan/web build
           pnpm --filter @anan/proxy build
 
+      - name: Azure key must not be in the web bundle or proxy
+        run: pnpm check:azure-key
+
   e2e:
     runs-on: ubuntu-latest
     needs: test

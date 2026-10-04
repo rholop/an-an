@@ -23,13 +23,19 @@ export function AnnotatedInline({
   text,
   lexicon,
   script,
+  textbook,
 }: {
   text: string;
   lexicon: Lexicon;
   script: AnnotationScript;
+  /** Phase 12: textbook content — show the book's own sense of each word first. */
+  textbook?: boolean;
 }) {
   const { level } = useCurrentLevel();
-  const tokens = useMemo(() => annotate(text, lexicon), [text, lexicon]);
+  const tokens = useMemo(
+    () => annotate(text, lexicon, undefined, { textbook }),
+    [text, lexicon, textbook],
+  );
   return (
     <AnnotatedText inline tokens={tokens} mode="always" script={script} currentLevel={level} />
   );
@@ -37,9 +43,17 @@ export function AnnotatedInline({
 
 /** One specific lexicon entry (so a tile shows ITS reading and sense, not
  * whichever sense the spelling resolves to). */
-export function AnnotatedWord({ word, script }: { word: Word; script: AnnotationScript }) {
+export function AnnotatedWord({
+  word,
+  script,
+  textbook,
+}: {
+  word: Word;
+  script: AnnotationScript;
+  textbook?: boolean;
+}) {
   const { level } = useCurrentLevel();
-  const tokens = useMemo(() => [annotateWord(word)], [word]);
+  const tokens = useMemo(() => [annotateWord(word, { textbook })], [word, textbook]);
   return (
     <AnnotatedText inline tokens={tokens} mode="always" script={script} currentLevel={level} />
   );

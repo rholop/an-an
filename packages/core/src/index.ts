@@ -28,3 +28,7 @@ export * from './gloss/schema.js';
 export * from './gloss/context.js';
 export * from './profiles.js';
 export * from './reader/select.js';
+export * from './audio/zhuyin-sapi.js';
+export * from './audio/ssml.js';
+export * from './audio/clips.js';
+export * from './textbook/index.js';

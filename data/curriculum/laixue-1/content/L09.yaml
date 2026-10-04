@@ -1,0 +1,60 @@
+lesson: 9
+sentences:
+  - { zh: 今天是星期幾？, en: "What day of the week is it today?", grammar: [gram-xingqi] }
+  - { zh: 明天是星期五。, en: "Tomorrow is Friday.", grammar: [gram-xingqi] }
+  - { zh: 今天是星期二。, en: "Today is Tuesday.", grammar: [gram-xingqi] }
+  - { zh: 我星期五有時間。, en: "I am free on Friday.", grammar: [gram-xingqi] }
+  - { zh: 你星期五有時間嗎？, en: "Are you free on Friday?", grammar: [gram-xingqi] }
+  - { zh: 你星期六有沒有時間？, en: "Are you free on Saturday?", grammar: [gram-xingqi] }
+  - { zh: 我星期六不行，星期五怎麼樣？, en: "Saturday doesn't work for me. How about Friday?", grammar: [gram-xingqi] }
+  - { zh: 禮拜五我要去餐廳吃飯。, en: "On Friday I'm going to a restaurant to eat.", grammar: [gram-xingqi] }
+  - { zh: 他星期一、星期二都在銀行工作。, en: "He works at the bank on Monday and Tuesday.", grammar: [gram-xingqi] }
+  - { zh: 太好了，星期五見！, en: "Great, see you on Friday!", grammar: [gram-xingqi] }
+  - { zh: 二零二五年十月四號是星期六。, en: "October 4th, 2025 is a Saturday.", grammar: [gram-year-date, gram-xingqi] }
+  - { zh: 我二零二五年二月五號去臺灣。, en: "I go to Taiwan on February 5th, 2025.", grammar: [gram-year-date] }
+  - { zh: 他二零二四年八月去美國。, en: "He goes to the United States in August 2024.", grammar: [gram-year-date] }
+  - { zh: 現在幾點？, en: "What time is it now?", grammar: [gram-dian-clock] }
+  - { zh: 現在三點。, en: "It is three o'clock now.", grammar: [gram-dian-clock] }
+  - { zh: 現在十點二十分。, en: "It is 10:20 now.", grammar: [gram-dian-clock] }
+  - { zh: 現在五點半。, en: "It is 5:30 now.", grammar: [gram-dian-clock] }
+  - { zh: 你幾點下課？, en: "What time does your class finish?", grammar: [gram-dian-clock] }
+  - { zh: 我四點半下課。, en: "My class finishes at 4:30.", grammar: [gram-dian-clock] }
+  - { zh: 他十一點下課。, en: "His class finishes at eleven.", grammar: [gram-dian-clock] }
+  - { zh: 我六點半在餐廳吃飯。, en: "I eat at the restaurant at 6:30.", grammar: [gram-dian-clock] }
+  - { zh: 我星期五晚上六點半在餐廳見。, en: "I'll meet you at the restaurant at 6:30 on Friday evening.", grammar: [gram-xingqi, gram-dian-clock] }
+  - { zh: 我跟朋友一起吃飯。, en: "I eat together with a friend.", grammar: [gram-gen-yiqi] }
+  - { zh: 我跟我同事一起去餐廳。, en: "I go to the restaurant together with my coworker.", grammar: [gram-gen-yiqi] }
+  - { zh: 我星期五跟同事一起吃牛肉麵。, en: "On Friday I eat beef noodle soup with a coworker.", grammar: [gram-gen-yiqi, gram-xingqi] }
+  - { zh: 你想跟我一起吃飯嗎？, en: "Would you like to eat with me?", grammar: [gram-gen-yiqi] }
+  - { zh: 我想跟你一起去餐廳，好不好？, en: "I'd like to go to the restaurant with you, okay?", grammar: [gram-gen-yiqi, gram-tag-question] }
+  - { zh: 他跟他媽媽一起去公園跑步。, en: "He goes running in the park with his mother.", grammar: [gram-gen-yiqi] }
+  - { zh: 我要跟我爸爸媽媽一起吃晚飯。, en: "I'm going to have dinner with my parents.", grammar: [gram-gen-yiqi] }
+  - { zh: 美味餐廳的牛肉麵最好吃。, en: "The beef noodle soup at Tasty Café is the most delicious.", grammar: [gram-de-possessive] }
+scenarios:
+  - slug: dinner-invite
+    title: "Inviting a coworker to dinner"
+    npc:
+      id: lisa
+      name: Lisa
+      personality: >
+        Gloria's sweet, warm-hearted coworker. Friendly and flexible, but her
+        Saturday is already taken, so she needs a different day.
+      speechStyle: >
+        Short, friendly sentences using only words from lessons 1–9. Gives a
+        clear answer to each question: "不行" for Saturday, "沒問題" for Friday.
+      particles: []
+    setting: >
+      The office, near the end of the work week. The learner invites Lisa to
+      have dinner at 美味餐廳, finds a day that works and agrees a time.
+    goalSteps:
+      - { id: invite, description: "Invite Lisa to eat at 美味餐廳.", keywordHints: ["餐廳", "吃飯", "跟"] }
+      - { id: day, description: "When she says she is not free, suggest another day.", keywordHints: ["星期", "怎麼樣"] }
+      - { id: time, description: "Agree a time (…點…).", keywordHints: ["點", "半"] }
+      - { id: confirm, description: "Confirm the plan.", keywordHints: ["太好了", "見"] }
+    vocabExtras: [星期五, 時間, 同事, 要, 餐廳, 跟, 一起, 星期六, 行, 下課, 點, 半, 見, 那, 家, 牛肉麵, 最, 好吃, 吃飯, 不行, 怎麼樣, 太好了, 美味餐廳, 年, 晚飯]
+    opener: { zh: 你好！你要跟我一起吃飯嗎？, en: "Hi! Would you like to eat together with me?" }
+    successLine: { zh: 太好了！星期五晚上六點半在美味餐廳見！, en: "Great! See you at Tasty Café at 6:30 on Friday evening!" }
+journalPrompts:
+  - { en: "Invite someone to go out for a meal and suggest a day.", zh: 你星期五有時間嗎？, words: [跟, 一起, 餐廳], grammar: [gram-gen-yiqi] }
+  - { en: "Write your plans for this week: which day and what time.", words: [星期五, 點, 下課], grammar: [gram-dian-clock] }
+  - { en: "Describe a restaurant you like and what is delicious there.", words: [餐廳, 好吃, 最], grammar: [gram-xingqi] }

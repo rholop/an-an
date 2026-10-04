@@ -25,6 +25,8 @@ import {
   loadSentenceGenPromptTemplate,
 } from './prompt.js';
 import { RateLimiter } from './rate-limit.js';
+import { FileAudioStore } from './audio-store.js';
+import { FileTextbookStore } from './textbook-store.js';
 import { FileSyncStore } from './sync-store.js';
 import { loadScenarioStore } from './scenarios.js';
 
@@ -118,6 +120,10 @@ const app = createApp({
   },
   siteCode: env.SITE_CODE,
   sync: new FileSyncStore(env.SYNC_DIR ?? fileURLToPath(new URL('../sync-data', import.meta.url))),
+  audio: new FileAudioStore(env.AUDIO_DIR ?? fileURLToPath(new URL('../audio-data', import.meta.url))),
+  textbook: new FileTextbookStore(
+    env.TEXTBOOK_DIR ?? fileURLToPath(new URL('../../../data/curriculum', import.meta.url)),
+  ),
   rateLimiter: new RateLimiter({
     requestsPerMinute: env.RATE_LIMIT_PER_MINUTE,
     dailyTokenBudget: env.DAILY_TOKEN_BUDGET,

@@ -3,7 +3,8 @@ import { cors } from 'hono/cors';
 import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { gunzipSync, gzipSync } from 'node:zlib';
-import { isProfileId } from '@anan/core';
+import { AudioKindSchema, isProfileId } from '@anan/core';
+import { z } from 'zod';
 import {
   DefineRequestSchema,
   DefineResponseSchema,
@@ -18,10 +19,11 @@ import {
   SentenceGenRequestSchema,
   TurnRequestSchema,
 } from '@anan/core';
-import type { z } from 'zod';
 import type { Env } from './env.js';
+import { renderFlaggedMarkdown, type AudioStore } from './audio-store.js';
 import { requireSiteCode } from './site-code.js';
 import type { SyncStore } from './sync-store.js';
+import type { TextbookPrivateKind, TextbookStore } from './textbook-store.js';
 import {
   DEFINE_JSON_SCHEMA,
   GLOSS_JSON_SCHEMA,
@@ -67,6 +69,10 @@ export interface AppDeps {
   siteCode: string;
   /** Phase 8: per-profile saved copies. */
   sync: SyncStore;
+  /** Phase 10: audio OK / "sounds wrong" marks. */
+  audio: AudioStore;
+  /** Phase 12: private textbook text (dialogues, examples). */
+  textbook?: TextbookStore;
   rateLimiter: RateLimiter;
   log?: (entry: Record<string, unknown>) => void;
 }
@@ -155,6 +161,54 @@ export function createApp(deps: AppDeps): Hono {
       return c.json({ rev: result.rev, updatedAt: result.updatedAt });
     },
   );
+
+  // ---- Phase 10 audio marks: shared by both profiles ----------------------
+  const AudioMarkRequestSchema = z.object({
+    kind: AudioKindSchema,
+    id: z.string().min(1).max(200),
+    /** The hash of the clip version the person heard (ties the mark to it). */
+    hash: z.string().regex(/^[0-9a-f]{64}$/),
+    status: z.enum(['verified', 'flagged']),
+    text: z.string().max(500),
+    profileId: z.string(),
+  });
+
+  app.get('/v1/audio/marks', async (c) => c.json({ marks: await deps.audio.marks() }));
+
+  app.post('/v1/audio/mark', async (c) => {
+    let body: unknown;
+    try {
+      body = await c.req.json();
+    } catch {
+      return c.json({ error: 'invalid JSON body' }, 400);
+    }
+    const parsed = AudioMarkRequestSchema.safeParse(body);
+    if (!parsed.success || !isProfileId(parsed.data.profileId)) {
+      return c.json({ error: 'invalid audio mark' }, 400);
+    }
+    const { kind, id, hash, status, text, profileId } = parsed.data;
+    const key = `${kind}:${id}`;
+    const mark = { status, hash, by: profileId, at: new Date().toISOString(), kind, text };
+    await deps.audio.set(key, mark);
+    log({ route: 'POST /v1/audio/mark', key, status, by: profileId });
+    return c.json({ key, mark });
+  });
+
+  app.get('/v1/audio/review.md', async (c) =>
+    c.text(renderFlaggedMarkdown(await deps.audio.marks()), 200, {
+      'content-type': 'text/markdown; charset=utf-8',
+    }),
+  );
+
+  // ---- Phase 12 textbook: the book's own text, household code required ----
+  // (The /v1/* guard above already enforces the code; there is no public route.)
+  app.get('/v1/textbook/:bookId/:kind', async (c) => {
+    const kind = c.req.param('kind');
+    if (kind !== 'dialogues' && kind !== 'examples') return c.json({ error: 'unknown resource' }, 404);
+    const data = await deps.textbook?.get(c.req.param('bookId'), kind as TextbookPrivateKind);
+    if (data === undefined) return c.json({ error: 'textbook text not installed' }, 404);
+    return c.json(data, 200, { 'cache-control': 'private, max-age=3600' });
+  });
 
   app.post('/v1/turn', async (c) => {
     const installId = c.req.header('x-install-id');

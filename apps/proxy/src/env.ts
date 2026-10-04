@@ -19,6 +19,10 @@ const EnvSchema = z.object({
   SITE_CODE: z.string().min(1).optional(),
   /** Where per-profile saved copies are written (see README "Sync"). */
   SYNC_DIR: z.string().optional(),
+  /** Where audio marks are written (phase 10). Default: apps/proxy/audio-data */
+  AUDIO_DIR: z.string().optional(),
+  /** Phase 12: folder holding data/curriculum/<book>/private/*.json (default: the repo's data/curriculum). */
+  TEXTBOOK_DIR: z.string().optional(),
   PROMPT_VERSION: z.string().default('v1'),
 });
 

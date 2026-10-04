@@ -9,8 +9,13 @@
     "build:sentences": "tsx src/build-sentences.ts",
     "diagnose:glosses": "tsx src/diagnose-glosses.ts",
     "build:glosses": "tsx src/build-glosses.ts",
+    "audio:build": "tsx src/build-audio.ts",
+    "audio:pull-flags": "tsx src/pull-audio-flags.ts",
     "gen:taiwanness": "tsx src/gen-taiwanness-data.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "curriculum:import": "tsx src/curriculum-import.ts",
+    "curriculum:content": "tsx src/build-textbook-content.ts",
+    "curriculum:build": "tsx src/curriculum-import.ts && tsx src/build-textbook-content.ts && tsx src/build-lexicon.ts && tsx src/build-scenarios.ts"
   },
   "dependencies": {
     "@anan/core": "workspace:*",

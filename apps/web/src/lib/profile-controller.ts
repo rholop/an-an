@@ -2,6 +2,7 @@ import { closeSession, currentSession, openSession, type Session } from '../db/i
 import type { ProfileId } from '../profiles.js';
 import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
 import { reloadCurrentLevel } from './current-level.js';
+import { reloadMyClass } from './my-class.js';
 import { SyncManager, type SyncStatus } from './sync.js';
 
 export const PROFILE_KEY = 'anan.profile';
@@ -63,6 +64,7 @@ export class ProfileController {
       },
       onDataChanged: () => {
         reloadCurrentLevel();
+        reloadMyClass();
         this.events.onDataChanged();
       },
     });

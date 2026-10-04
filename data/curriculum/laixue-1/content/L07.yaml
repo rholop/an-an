@@ -1,0 +1,56 @@
+lesson: 7
+sentences:
+  - { zh: 我的手機號碼是九二三四五六七八。, en: "My cell phone number is 92345678.", grammar: [gram-numbers-0-100] }
+  - { zh: 我的電話號碼是三五八二九七。, en: "My telephone number is 358297.", grammar: [gram-numbers-0-100] }
+  - { zh: 他的手機號碼是零九二三四五六七。, en: "His cell phone number is 09234567.", grammar: [gram-numbers-0-100] }
+  - { zh: 你的手機號碼是幾號？, en: "What is your cell phone number?", grammar: [gram-numbers-0-100] }
+  - { zh: 林小姐的電話是幾號？, en: "What is Miss Lin's telephone number?", grammar: [gram-numbers-0-100] }
+  - { zh: 我有兩個姐姐。, en: "I have two older sisters.", grammar: [gram-numbers-0-100] }
+  - { zh: 他有十個學生。, en: "He has ten students.", grammar: [gram-numbers-0-100] }
+  - { zh: 我有二十個學生。, en: "I have twenty students.", grammar: [gram-numbers-0-100] }
+  - { zh: 這個公司有一百個人。, en: "This company has one hundred people.", grammar: [gram-numbers-0-100] }
+  - { zh: 我給林小姐打電話。, en: "I call Miss Lin.", grammar: [gram-gei-call] }
+  - { zh: 我給他打電話。, en: "I call him.", grammar: [gram-gei-call] }
+  - { zh: 他給我打電話。, en: "He calls me.", grammar: [gram-gei-call] }
+  - { zh: 你給誰打電話？, en: "Who are you calling?", grammar: [gram-gei-call] }
+  - { zh: 我給我媽媽打電話。, en: "I call my mother.", grammar: [gram-gei-call] }
+  - { zh: 我哥哥給我打電話。, en: "My older brother calls me.", grammar: [gram-gei-call] }
+  - { zh: 我給北電公司打電話。, en: "I call Beidian Company.", grammar: [gram-gei-call] }
+  - { zh: 我今天給銀行打電話。, en: "I call the bank today.", grammar: [gram-gei-call] }
+  - { zh: 麻煩您給我打電話。, en: "Could you please call me?", grammar: [gram-gei-call] }
+  - { zh: 麻煩您給林小姐打電話。, en: "Could you please call Miss Lin?", grammar: [gram-gei-call] }
+  - { zh: 我回來以後，給你打電話。, en: "After I get back, I'll call you.", grammar: [gram-yihou, gram-gei-call] }
+  - { zh: 林小姐回來以後，給我打電話。, en: "After Miss Lin gets back, she'll call me.", grammar: [gram-yihou, gram-gei-call] }
+  - { zh: 我聽音樂以後，常常看電視。, en: "After I listen to music, I often watch TV.", grammar: [gram-yihou] }
+  - { zh: 我運動以後，常常很累。, en: "After I exercise, I am often tired.", grammar: [gram-yihou] }
+  - { zh: 他看電視以後，去公園跑步。, en: "After he watches TV, he goes running in the park.", grammar: [gram-yihou] }
+  - { zh: 我打電話以後，去公園跑步。, en: "After I make a call, I go running in the park.", grammar: [gram-yihou] }
+  - { zh: 我工作以後，在家看電視。, en: "After work, I watch TV at home.", grammar: [gram-yihou] }
+scenarios:
+  - slug: bank-call
+    title: "Calling 台一銀行 for 林美美"
+    npc:
+      id: miss-li
+      name: 李小姐
+      personality: >
+        The polite receptionist at 台一銀行. Professional and helpful; takes
+        messages carefully and repeats phone numbers back.
+      speechStyle: >
+        Formal, short phone sentences using only words from lessons 1–7. Uses
+        您 and 請問 — one question at a time, and reads numbers digit by digit.
+      particles: []
+    setting: >
+      A telephone call. The learner phones 台一銀行 to speak to 林美美 小姐.
+      She is not in the office, so the learner leaves a message and a number.
+    goalSteps:
+      - { id: ask-for, description: "Ask for 林美美小姐.", keywordHints: ["林美美", "林小姐"] }
+      - { id: when-back, description: "Ask when she will be back.", keywordHints: ["什麼時候", "回來"] }
+      - { id: message, description: "Ask her to call you back (麻煩您…給我打電話).", keywordHints: ["麻煩", "打電話"] }
+      - { id: number, description: "Give your cell phone number.", keywordHints: ["手機", "號碼"] }
+    vocabExtras: [哪, 位, 喂, 林, 小姐, 辦公室, 回來, 下午, 麻煩, 以後, 給, 電話, 手機, 號碼, 謝謝, 再見, 零, 二, 三, 四, 五, 六, 七, 八, 九, 什麼時候, 打電話, 幾號, 好的, 不客氣, 台一銀行, 林美美, 北電公司, 十, 百]
+    opener: { zh: 喂，您好，這是台一銀行。, en: "Hello, this is Taiyi Bank." }
+    successLine: { zh: 好的，林小姐回來以後，給您打電話。再見！, en: "Okay — Miss Lin will call you when she gets back. Goodbye!" }
+journalPrompts:
+  - { en: "Write a phone message for a colleague who is out of the office.", zh: 林小姐回來以後，給我打電話。, words: [麻煩, 回來, 電話], grammar: [gram-gei-call] }
+  - { en: "Give your contact details: your cell phone number and when to call.", words: [手機, 號碼, 下午], grammar: [gram-numbers-0-100] }
+  - { en: "Describe a call you made this week and what you did afterwards.", words: [打電話, 謝謝, 再見], grammar: [gram-yihou] }

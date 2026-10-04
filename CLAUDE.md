@@ -114,6 +114,7 @@ Phases may add fields but must not rename or remove these.
 | 4 | Cloze ladder from chat history + sentence bank | `04-cloze.md` |
 | 5 | Journal mode + error bank | `05-journal-error-bank.md` |
 | 6 | Game layer | `06-game-layer.md` |
+| 12 | Class textbook curriculum (來學華語 1) | `docs/textbook.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

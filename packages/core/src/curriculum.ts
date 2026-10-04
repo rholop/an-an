@@ -2,6 +2,7 @@ import { computeCharStats, transparency, type SkillCard } from './learner/index.
 import type { Lexicon } from './lexicon.js';
 import type { Level, Word } from './types.js';
 import { LEVEL_IDS } from './levels.config.js';
+import { firstLessonOfTags, tagsInScope, type ClassScope } from './textbook/scope.js';
 
 const LEVEL_ORDER = LEVEL_IDS;
 
@@ -28,6 +29,11 @@ export interface CurriculumContext {
    * up (see levelUpSuggestion) and never switches by itself. When unset the
    * frontier is derived from progress as before. */
   currentLevel?: Level;
+  /** Phase 12 "My class". When enabled: the current lesson's words get top
+   * priority, the next lesson's trickle in at `nextLevelTrickleShare`, and
+   * textbook words from later lessons stay out of the queue. Disabled or
+   * absent = exactly the previous behaviour. */
+  classScope?: ClassScope;
 }
 
 /** Share of `level`'s words that are at least "in review" (recognition
@@ -87,6 +93,11 @@ function sortCandidates(
   });
 }
 
+/** Current lesson first, then the most recent earlier lessons. */
+function lessonRank(lesson: number, scope: ClassScope): number {
+  return scope.currentLesson - lesson;
+}
+
 /**
  * Picks the next `n` new (never-introduced) words to show the learner:
  * mostly from the current frontier level plus any supplement/custom words
@@ -110,13 +121,17 @@ export function nextNewItems(
   const frontierIdx = LEVEL_ORDER.indexOf(frontier);
   const nextLevel = LEVEL_ORDER[frontierIdx + 1];
 
+  const scope = context.classScope?.enabled ? context.classScope : undefined;
+  const inScope = (w: Word) => !scope || tagsInScope(w.tags, scope);
+  const lessonOf = (w: Word) => (scope ? firstLessonOfTags(w.tags, scope.textbookId) : undefined);
+
   const mainPool = words.filter(
-    (w) => (w.level === frontier || w.level === null) && notIntroduced(w),
+    (w) => (w.level === frontier || w.level === null) && notIntroduced(w) && inScope(w),
   );
   const trickleEligible =
     levelCoverage(frontier, words, cards) >= config.levelAdvanceThreshold && nextLevel;
   const tricklePool = trickleEligible
-    ? words.filter((w) => w.level === nextLevel && notIntroduced(w))
+    ? words.filter((w) => w.level === nextLevel && notIntroduced(w) && inScope(w))
     : [];
 
   const trickleCount = trickleEligible ? Math.round(n * config.nextLevelTrickleShare) : 0;
@@ -125,7 +140,34 @@ export function nextNewItems(
   const sortedMain = sortCandidates(mainPool, cards, lexicon, context);
   const sortedTrickle = sortCandidates(tricklePool, cards, lexicon, context);
 
-  const picked = [...sortedMain.slice(0, mainCount), ...sortedTrickle.slice(0, trickleCount)];
+  let picked: Word[];
+  if (scope) {
+    // Textbook words regardless of level: the class is the frontier.
+    const tbPool = words.filter((w) => notIntroduced(w) && lessonOf(w) !== undefined && inScope(w));
+    const covered = sortCandidates(
+      tbPool.filter((w) => lessonOf(w)! <= scope.currentLesson),
+      cards,
+      lexicon,
+      context,
+    ).sort((a, b) => lessonRank(lessonOf(a)!, scope) - lessonRank(lessonOf(b)!, scope));
+    const nextLesson = sortCandidates(
+      tbPool.filter((w) => lessonOf(w)! === scope.currentLesson + 1),
+      cards,
+      lexicon,
+      context,
+    );
+    const nextCount = Math.min(nextLesson.length, Math.round(n * config.nextLevelTrickleShare));
+    const head = covered.slice(0, n - nextCount);
+    picked = [...head, ...nextLesson.slice(0, nextCount)];
+    const rest = [...sortedMain, ...sortedTrickle, ...covered.slice(head.length), ...nextLesson.slice(nextCount)];
+    for (const w of rest) {
+      if (picked.length >= n) break;
+      if (!picked.includes(w)) picked.push(w);
+    }
+    return picked.slice(0, n);
+  }
+
+  picked = [...sortedMain.slice(0, mainCount), ...sortedTrickle.slice(0, trickleCount)];
   // Backfill from the main pool if the trickle pool came up short.
   if (picked.length < n) {
     for (const w of sortedMain.slice(mainCount)) {

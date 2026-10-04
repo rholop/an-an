@@ -23,11 +23,16 @@ export const SentenceBankEntrySchema = z.object({
    * "generated-live" = produced on demand for the reader (phase 9) and kept in
    * the learner's own profile. Kept as an enum rather than a free string so a
    * new source is a deliberate, reviewed addition here, not a silent typo. */
-  source: z.enum(['generated', 'generated-live']),
+  source: z.enum(['generated', 'generated-live', 'textbook']),
   /** Phase 4 §1's "second-pass check... flag doubtful ones" — still shipped
    * (unlike an analyzeText failure, which is dropped outright), just
    * surfaced for human review rather than silently trusted. */
   doubtful: z.boolean().default(false),
+  /** Phase 12: textbook sentences carry `textbook:laixue-1`, `…:L03` tags, the
+   * lesson they were written for and the grammar items they exercise. */
+  tags: z.array(z.string()).optional(),
+  lesson: z.number().int().optional(),
+  grammarIds: z.array(z.string()).optional(),
 });
 export type SentenceBankEntry = z.infer<typeof SentenceBankEntrySchema>;
 

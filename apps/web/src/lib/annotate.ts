@@ -1,4 +1,5 @@
 import {
+  firstLessonOfTags,
   Lexicon,
   readingDisplay,
   resolveReading,
@@ -22,6 +23,9 @@ export function annotate(
   /** Phase 7: sense ids the model chose per token text (chat turns). Only used
    * if the id is one of the word's real senses; otherwise context rules pick. */
   senseHints?: ReadonlyMap<string, string>,
+  /** Phase 12: showing textbook content — a word's textbook sense (the book's
+   * own gloss) is preferred over the dictionary's primary sense. */
+  opts: { textbook?: boolean } = {},
 ): AnnotatedToken[] {
   const tokens = segment(text, lexicon);
   return tokens.map((token, i) => {
@@ -46,9 +50,13 @@ export function annotate(
             next: tokens[i + 1]?.text,
           })
         : undefined;
+      if (opts.textbook && matched?.textbookSenseId) {
+        sense = matched.senses?.find((x) => x.id === matched.textbookSenseId) ?? sense;
+      }
       gloss = sense?.glossEn ?? matched?.glossEn ?? '';
     }
-    return { token, reading, level, gloss, wordId, word, sense };
+    const textbookLesson = word ? firstLessonOfTags(word.tags) : undefined;
+    return { token, reading, level, gloss, wordId, word, sense, textbookLesson };
   });
 }
 
@@ -77,9 +85,12 @@ export function withReadingDisplay(
  * gloss taken from THAT entry, not re-derived from its spelling). For places
  * that show a specific word — a garden plant, a "try to use" word — where the
  * sense matters: 去 as the N1 verb must not turn into the L3 particle. */
-export function annotateWord(word: Word): AnnotatedToken {
+export function annotateWord(word: Word, opts: { textbook?: boolean } = {}): AnnotatedToken {
   const length = [...word.headword].length;
-  const sense = resolveSense(word, word.primarySenseId, {});
+  const sense =
+    (opts.textbook && word.textbookSenseId
+      ? word.senses?.find((x) => x.id === word.textbookSenseId)
+      : undefined) ?? resolveSense(word, word.primarySenseId, {});
   return {
     token: { text: word.headword, start: 0, end: length, kind: 'word' },
     reading: { pinyin: word.pinyin, zhuyin: word.zhuyin, confidence: 'high' },
@@ -88,5 +99,6 @@ export function annotateWord(word: Word): AnnotatedToken {
     wordId: word.id,
     word,
     sense,
+    textbookLesson: firstLessonOfTags(word.tags),
   };
 }

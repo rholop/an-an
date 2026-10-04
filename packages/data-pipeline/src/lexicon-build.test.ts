@@ -49,7 +49,10 @@ describe('the built lexicon (phase 7)', () => {
       expect(w.senses!.every((s) => s.id.startsWith(`${w.id}#`) && s.basedOn.length > 0)).toBe(
         true,
       );
-      expect(w.senses!.every((s) => s.glossEn.split(/\s+/).length <= 7)).toBe(true);
+      // Phase 12: the textbook's own sense keeps the book's wording, however long.
+      expect(
+        w.senses!.every((s) => s.basedOn.includes('textbook') || s.glossEn.split(/\s+/).length <= 7),
+      ).toBe(true);
     }
   });
 

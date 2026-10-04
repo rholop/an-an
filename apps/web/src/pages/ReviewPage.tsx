@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Evidence, Lexicon, SkillCard, Word } from '@anan/core';
-import { nextLeechTreatment } from '@anan/core';
+import type { Evidence, GrammarItem, Lexicon, SkillCard, Word } from '@anan/core';
+import { firstLessonOfTags, lessonBadge, nextLeechTreatment } from '@anan/core';
 import { db, learnerService } from '../db/instance.js';
 import { dueForecast } from '../db/queries.js';
+import { SpeakerButton } from '../components/SpeakerButton.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import './ReviewPage.css';
 
@@ -28,7 +29,9 @@ const GRADES: { grade: Grade; label: string }[] = [
 export function ReviewPage({
   focusCards,
   onExit,
-}: { focusCards?: SkillCard[]; onExit?: () => void } = {}) {
+  exitLabel = '← Back to garden',
+  title,
+}: { focusCards?: SkillCard[]; onExit?: () => void; exitLabel?: string; title?: string } = {}) {
   const lexiconState = useLexicon();
   const [queue, setQueue] = useState<SkillCard[] | null>(null);
   const [index, setIndex] = useState(0);
@@ -71,8 +74,8 @@ export function ReviewPage({
 
   return (
     <div className="review-page">
-      {onExit && <button onClick={onExit}>← Back to garden</button>}
-      <h1>{focusCards ? 'Water these words' : 'Review'}</h1>
+      {onExit && <button onClick={onExit}>{exitLabel}</button>}
+      <h1>{title ?? (focusCards ? 'Water these words' : 'Review')}</h1>
       <p className="review-meta">
         {Math.max(queue.length - index, 0)} due now (of {totalDue} this session)
         {forecast && <span className="review-forecast"> · next 7 days: {forecast.join(', ')}</span>}
@@ -86,6 +89,7 @@ export function ReviewPage({
         <ReviewCard
           card={current}
           word={current.item.kind === 'word' ? lexicon.byId(current.item.id) : undefined}
+          grammar={current.item.kind === 'grammar' ? lexicon.grammarItemById(current.item.id) : undefined}
           lexicon={lexicon}
           revealed={revealed}
           onReveal={() => setRevealed(true)}
@@ -99,6 +103,7 @@ export function ReviewPage({
 function ReviewCard({
   card,
   word,
+  grammar,
   lexicon,
   revealed,
   onReveal,
@@ -106,28 +111,44 @@ function ReviewCard({
 }: {
   card: SkillCard;
   word: Word | undefined;
+  grammar?: GrammarItem;
   lexicon: Lexicon;
   revealed: boolean;
   onReveal: () => void;
   onRate: (grade: Grade) => void;
 }) {
-  const front =
-    card.skill === 'recognition'
+  // Phase 12: grammar patterns are schedulable items too — pattern on the front,
+  // the app's own explanation on the back.
+  const lesson = grammar ? firstLessonOfTags(grammar.tags ?? []) : word ? firstLessonOfTags(word.tags) : undefined;
+  const front = grammar
+    ? grammar.pattern
+    : card.skill === 'recognition'
       ? (word?.headword ?? '(unknown item)')
       : (word?.glossEn ?? '(unknown item)');
-  const back =
-    card.skill === 'recognition'
+  const back = grammar
+    ? grammar.explanationEn
+    : card.skill === 'recognition'
       ? `${word?.pinyin ?? ''} · ${word?.zhuyin ?? ''} — ${word?.glossEn ?? ''}`
       : `${word?.headword ?? ''} (${word?.pinyin ?? ''})`;
 
   return (
     <div className="review-card">
-      <div className="review-card-skill">{card.skill}</div>
-      <div className="review-card-front">{front}</div>
+      <div className="review-card-skill">
+        {grammar ? 'grammar' : card.skill}
+        {lesson !== undefined && (
+          <span className="textbook-badge" lang="zh-Hant">
+            {lessonBadge(lesson)}
+          </span>
+        )}
+      </div>
+      <div className="review-card-front" lang={grammar ? 'zh-Hant' : undefined}>
+        {front}
+      </div>
 
       {revealed ? (
         <>
           <div className="review-card-back">{back}</div>
+          {word && <SpeakerButton kind="word" id={word.id} label={word.headword} />}
           {card.leech && word && <LeechBreakdown card={card} word={word} lexicon={lexicon} />}
           <div className="review-buttons">
             {GRADES.map(({ grade, label }) => (

@@ -1,0 +1,58 @@
+lesson: 5
+sentences:
+  - { zh: 這是我弟弟。, en: "This is my younger brother.", grammar: [gram-zhe-shi-intro] }
+  - { zh: 這是我朋友。, en: "This is my friend.", grammar: [gram-zhe-shi-intro] }
+  - { zh: 這是我弟弟，王家文。, en: "This is my younger brother, Wang Jiawen.", grammar: [gram-zhe-shi-intro] }
+  - { zh: 這是我姐姐，她在銀行工作。, en: "This is my older sister; she works at a bank.", grammar: [gram-zhe-shi-intro] }
+  - { zh: 這是我朋友，他是美國人。, en: "This is my friend; he is American.", grammar: [gram-zhe-shi-intro] }
+  - { zh: 這是我哥哥，他在大學念書。, en: "This is my older brother; he studies at a university.", grammar: [gram-zhe-shi-intro] }
+  - { zh: 這是誰？, en: "Who is this?", grammar: [gram-question-words] }
+  - { zh: 我住在臺灣。, en: "I live in Taiwan.", grammar: [gram-zhuzai] }
+  - { zh: 他住在美國。, en: "He lives in the United States.", grammar: [gram-zhuzai] }
+  - { zh: 我住在臺北。, en: "I live in Taipei.", grammar: [gram-zhuzai] }
+  - { zh: 我朋友住在加州。, en: "My friend lives in California.", grammar: [gram-zhuzai] }
+  - { zh: 我父母住在臺北。, en: "My parents live in Taipei.", grammar: [gram-zhuzai] }
+  - { zh: 你住在哪裡？, en: "Where do you live?", grammar: [gram-zhuzai, gram-question-words] }
+  - { zh: 你朋友住在哪裡？, en: "Where does your friend live?", grammar: [gram-zhuzai, gram-question-words] }
+  - { zh: 誰住在臺北？, en: "Who lives in Taipei?", grammar: [gram-zhuzai, gram-question-words] }
+  - { zh: 他是誰？, en: "Who is he?", grammar: [gram-question-words] }
+  - { zh: 他在哪裡念書？, en: "Where does he study?", grammar: [gram-question-words, gram-zai-place] }
+  - { zh: 誰在銀行工作？, en: "Who works at the bank?", grammar: [gram-question-words, gram-zai-place] }
+  - { zh: 你想去哪裡玩？, en: "Where would you like to go to have fun?", grammar: [gram-qu-place-verb, gram-question-words] }
+  - { zh: 我想去法國念書。, en: "I would like to go to France to study.", grammar: [gram-qu-place-verb] }
+  - { zh: 我想去迪士尼樂園玩。, en: "I would like to go to Disneyland.", grammar: [gram-qu-place-verb] }
+  - { zh: 他想去臺灣玩。, en: "He would like to go to Taiwan.", grammar: [gram-qu-place-verb] }
+  - { zh: 我想去公園玩。, en: "I would like to go to the park.", grammar: [gram-qu-place-verb] }
+  - { zh: 我弟弟想去迪士尼樂園玩。, en: "My younger brother would like to go to Disneyland.", grammar: [gram-qu-place-verb] }
+  - { zh: 我想去美國工作。, en: "I would like to go to the United States to work.", grammar: [gram-qu-place-verb] }
+  - { zh: 他平常住在臺北，現在在美國玩。, en: "He usually lives in Taipei; now he is in the United States on holiday.", grammar: [gram-zhuzai] }
+  - { zh: 我現在住在美國，平常住在臺灣。, en: "I live in the US now, and usually live in Taiwan.", grammar: [gram-zhuzai] }
+  - { zh: 我朋友放假，他想去臺灣玩。, en: "My friend is on holiday and wants to go to Taiwan.", grammar: [gram-qu-place-verb] }
+scenarios:
+  - slug: introduce-friend
+    title: "Introducing a friend to 明文's father"
+    npc:
+      id: mr-wang
+      name: 王先生
+      personality: >
+        明文's father: warm, polite and welcoming to visitors. He likes to hear
+        where guests live and where they would like to travel.
+      speechStyle: >
+        Short, polite sentences using only words from lessons 1–5. Asks one
+        question at a time; uses 您 with new people.
+      particles: []
+    setting: >
+      The Wang family's living room. The learner introduces a friend to 王先生
+      and they talk about where the friend lives and holiday plans.
+    goalSteps:
+      - { id: introduce, description: "Introduce your friend (這是我朋友…).", keywordHints: ["這是"] }
+      - { id: lives, description: "Say where your friend lives.", keywordHints: ["住在"] }
+      - { id: holiday, description: "Say where your friend wants to go on holiday.", keywordHints: ["想去", "玩"] }
+      - { id: welcome, description: "Say you are happy to meet 王先生.", keywordHints: ["高興", "認識"] }
+    vocabExtras: [這, 朋友, 認識, 高興, 平常, 住在, 現在, 學校, 放假, 來, 玩, 歡迎, 想, 去, 國家, 公園, 好久不見, 迪士尼樂園, 臺北, 加州, 誰, 父母]
+    opener: { zh: 您好，我是明文的爸爸。這是您的朋友嗎？, en: "Hello, I'm Mingwen's father. Is this your friend?" }
+    successLine: { zh: 歡迎你來臺灣玩！認識你很高興。, en: "Welcome to Taiwan! I'm very glad to meet you." }
+journalPrompts:
+  - { en: "Introduce a friend: who they are and how you know them.", zh: 這是我朋友。, words: [朋友, 認識, 高興], grammar: [gram-zhe-shi-intro] }
+  - { en: "Where do you live now, and where do your parents live?", words: [住在, 現在, 學校], grammar: [gram-zhuzai] }
+  - { en: "Write about a place you would like to visit and what you would do there.", words: [想, 去, 玩], grammar: [gram-qu-place-verb] }

@@ -8,6 +8,7 @@ import { db } from './db/instance.js';
 import { allTouchedCards } from './db/queries.js';
 import { initCurrentLevelIfUnset, useCurrentLevel } from './lib/current-level.js';
 import { useLexicon } from './lib/useLexicon.js';
+import { AudioReviewPage } from './pages/AudioReviewPage.js';
 import { AnkiImportPage } from './pages/AnkiImportPage.js';
 import { ChatPage } from './pages/ChatPage.js';
 import { ClozePage } from './pages/ClozePage.js';
@@ -15,6 +16,8 @@ import { CreditsPage } from './pages/CreditsPage.js';
 import { GardenPage } from './pages/GardenPage.js';
 import { JournalPage } from './pages/JournalPage.js';
 import { PlacementPage } from './pages/PlacementPage.js';
+import { TextbookPage } from './pages/TextbookPage.js';
+import { useMyClass } from './lib/my-class.js';
 import { ReaderPage } from './pages/ReaderPage.js';
 import { ProgressPage } from './pages/ProgressPage.js';
 import { ReviewPage } from './pages/ReviewPage.js';
@@ -31,9 +34,11 @@ type Route =
   | 'garden'
   | 'progress'
   | 'review'
+  | 'textbook'
   | 'placement'
   | 'anki-import'
   | 'credits'
+  | 'audio-review'
   | 'zhuyin-test';
 
 /** Phase 7 §2: the header level picker (visible on every screen) plus the
@@ -144,6 +149,7 @@ export function App() {
   const [route, setRoute] = useState<Route>(
     (new URLSearchParams(location.search).get('page') as Route) ?? 'reader',
   );
+  const myClass = useMyClass();
 
   return (
     <div className="app">
@@ -170,6 +176,13 @@ export function App() {
         <button onClick={() => setRoute('review')} disabled={route === 'review'}>
           Review
         </button>
+        <button
+          onClick={() => setRoute('textbook')}
+          disabled={route === 'textbook'}
+          data-testid="nav-textbook"
+        >
+          Textbook{myClass.enabled ? ` · L${myClass.currentLesson}` : ''}
+        </button>
         <button onClick={() => setRoute('placement')} disabled={route === 'placement'}>
           Placement
         </button>
@@ -178,6 +191,9 @@ export function App() {
         </button>
         <button onClick={() => setRoute('credits')} disabled={route === 'credits'}>
           Credits
+        </button>
+        <button onClick={() => setRoute('audio-review')} disabled={route === 'audio-review'}>
+          Audio review
         </button>
         <button onClick={() => setRoute('zhuyin-test')} disabled={route === 'zhuyin-test'}>
           Zhuyin rendering test
@@ -190,9 +206,11 @@ export function App() {
       {route === 'garden' && <GardenPage />}
       {route === 'progress' && <ProgressPage />}
       {route === 'review' && <ReviewPage />}
+      {route === 'textbook' && <TextbookPage />}
       {route === 'placement' && <PlacementPage />}
       {route === 'anki-import' && <AnkiImportPage />}
       {route === 'credits' && <CreditsPage />}
+      {route === 'audio-review' && <AudioReviewPage />}
       {route === 'zhuyin-test' && <ZhuyinTestPage />}
     </div>
   );

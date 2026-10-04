@@ -1,0 +1,55 @@
+lesson: 1
+sentences:
+  - { zh: 我姓王，他姓張。, en: "My surname is Wang and his is Zhang.", grammar: [gram-xing-jiao] }
+  - { zh: 我姓張，叫家文。, en: "My surname is Zhang and my name is Jiawen.", grammar: [gram-xing-jiao] }
+  - { zh: 他姓王。, en: His surname is Wang., grammar: [gram-xing-jiao] }
+  - { zh: 他姓張。, en: His surname is Zhang., grammar: [gram-xing-jiao] }
+  - { zh: 您貴姓？, en: "What is your surname? (polite)", grammar: [gram-xing-jiao] }
+  - { zh: 請問您貴姓？, en: "May I ask your surname?", grammar: [gram-xing-jiao] }
+  - { zh: 我叫家文。, en: "I am called Jiawen.", grammar: [gram-xing-jiao] }
+  - { zh: 我叫王家文。, en: "My name is Wang Jiawen.", grammar: [gram-xing-jiao] }
+  - { zh: 他叫王明文。, en: "He is called Wang Mingwen.", grammar: [gram-xing-jiao] }
+  - { zh: 您叫什麼名字？, en: "What is your name? (polite)", grammar: [gram-xing-jiao, gram-shenme-question] }
+  - { zh: 王家文叫什麼名字？, en: "What is Wang Jiawen called?", grammar: [gram-xing-jiao, gram-shenme-question] }
+  - { zh: 請問他叫什麼名字？, en: "May I ask what he is called?", grammar: [gram-shenme-question] }
+  - { zh: 我是王明文。, en: "I am Wang Mingwen.", grammar: [gram-shi-identity] }
+  - { zh: 我是美國人。, en: "I am American.", grammar: [gram-shi-identity] }
+  - { zh: 我是臺灣人，他是美國人。, en: "I am Taiwanese and he is American.", grammar: [gram-shi-identity] }
+  - { zh: 他是臺灣人。, en: "He is Taiwanese.", grammar: [gram-shi-identity] }
+  - { zh: 他是美國人。, en: "He is American.", grammar: [gram-shi-identity] }
+  - { zh: 請問他是哪國人？, en: "May I ask what nationality he is?", grammar: [gram-shi-identity] }
+  - { zh: 請問您是哪國人？, en: "May I ask what your nationality is?", grammar: [gram-shi-identity] }
+  - { zh: 我姓王，叫明文。, en: "My surname is Wang and my name is Mingwen.", grammar: [gram-xing-jiao] }
+  - { zh: 我姓王，您貴姓？, en: "My surname is Wang. And yours?", grammar: [gram-xing-jiao] }
+  - { zh: 我是臺灣人，您呢？, en: "I am Taiwanese. And you?", grammar: [gram-shi-identity] }
+  - { zh: 我是美國人，您呢？, en: "I am American. And you?", grammar: [gram-shi-identity] }
+  - { zh: 您好，我姓張。, en: "Hello, my surname is Zhang.", grammar: [gram-xing-jiao] }
+  - { zh: 您好，我叫明文，請問您貴姓？, en: "Hello, I am Mingwen. May I ask your surname?", grammar: [gram-xing-jiao] }
+scenarios:
+  - slug: language-exchange
+    title: "Meeting 明文 at a language exchange"
+    npc:
+      id: mingwen
+      name: 王明文
+      personality: >
+        A Taiwanese graduate student studying in the United States. Kind,
+        friendly and patient; he is happy to help a beginner practise.
+      speechStyle: >
+        Very short, slow sentences with only the words from lesson 1. He greets,
+        gives his own surname and name, then asks one question at a time.
+      particles: []
+    setting: >
+      A language-exchange meetup in a university café. The learner meets 明文
+      for the first time and they introduce themselves.
+    goalSteps:
+      - { id: greet, description: "Greet 明文.", keywordHints: ["您好"] }
+      - { id: surname, description: "Tell him your surname and ask his.", keywordHints: ["我姓", "貴姓"] }
+      - { id: name, description: "Tell him your name and ask his.", keywordHints: ["我叫", "叫什麼名字"] }
+      - { id: nationality, description: "Say your nationality and ask his.", keywordHints: ["我是", "哪國人"] }
+    vocabExtras: [您, 好, 我, 姓, 王, 叫, 什麼, 名字, 是, 人, 請問, 貴姓, 哪國人, 美國人, 您呢, 臺灣人, 王明文, 美國, 臺灣, 張]
+    opener: { zh: 您好。我姓王，請問您貴姓？, en: "Hello. My surname is Wang. May I ask yours?" }
+    successLine: { zh: 您好，我叫明文。我是臺灣人。, en: "Nice to meet you — I'm Mingwen, I'm Taiwanese." }
+journalPrompts:
+  - { en: "Introduce yourself: your surname, your name and your nationality.", zh: 我姓王，我叫明文。, words: [姓, 叫, 名字], grammar: [gram-xing-jiao] }
+  - { en: "Introduce your husband (or a friend) by name and nationality.", words: [名字, 是, 美國人], grammar: [gram-shi-identity] }
+  - { en: "Write a short greeting dialogue between two people meeting for the first time.", words: [請問, 您呢, 什麼], grammar: [gram-shenme-question] }

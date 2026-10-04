@@ -9,7 +9,8 @@ const SCENARIOS_DIR = path.resolve(__dirname, '../../../../data/scenarios');
 describe('loadScenarios: the real data/scenarios/*.yaml files', () => {
   it('parses all seven scenarios (Phase 3: tea shop + EasyCard; Phase 6: five more)', () => {
     const scenarios = loadScenarios(SCENARIOS_DIR);
-    const ids = scenarios.map((s) => s.id).sort();
+    // Phase 12 adds generated textbook scenarios (laixue-1-*); they are checked in curriculum-data.test.ts.
+    const ids = scenarios.map((s) => s.id).filter((id) => !id.startsWith('laixue-1-')).sort();
     expect(ids).toEqual([
       'clinic-call',
       'convenience-store',

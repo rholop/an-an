@@ -43,6 +43,7 @@ jobs:
             # Build the web PWA and the proxy server.
             pnpm --filter @anan/web build
             pnpm --filter @anan/proxy build
+            pnpm check:azure-key
 
             # Publish the web build where nginx's /an-an location expects it.
             mkdir -p /var/www/an-an

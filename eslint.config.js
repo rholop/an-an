@@ -54,7 +54,7 @@ export default [
     languageOptions: { sourceType: 'commonjs', globals: globals.node },
   },
   {
-    files: ['apps/web/scripts/**/*.mjs', 'apps/web/playwright.config.ts'],
+    files: ['apps/web/scripts/**/*.mjs', 'scripts/**/*.mjs', 'apps/web/playwright.config.ts'],
     languageOptions: { globals: globals.node },
   },
   {

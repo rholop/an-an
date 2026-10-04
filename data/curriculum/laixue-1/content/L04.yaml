@@ -1,0 +1,57 @@
+lesson: 4
+sentences:
+  - { zh: 你忙不忙？, en: "Are you busy?", grammar: [gram-a-not-a] }
+  - { zh: 你累不累？, en: "Are you tired?", grammar: [gram-a-not-a] }
+  - { zh: 你是不是老師？, en: "Are you a teacher?", grammar: [gram-a-not-a] }
+  - { zh: 你有沒有哥哥？, en: "Do you have an older brother?", grammar: [gram-a-not-a] }
+  - { zh: 你有沒有孩子？, en: "Do you have children?", grammar: [gram-a-not-a] }
+  - { zh: 你爸爸忙不忙？, en: "Is your father busy?", grammar: [gram-a-not-a] }
+  - { zh: 你媽媽累不累？, en: "Is your mother tired?", grammar: [gram-a-not-a] }
+  - { zh: 你爸爸是不是老師？, en: "Is your father a teacher?", grammar: [gram-a-not-a] }
+  - { zh: 你在不在大學工作？, en: "Do you work at a university?", grammar: [gram-a-not-a] }
+  - { zh: 你喜歡不喜歡你的工作？, en: "Do you like your job?", grammar: [gram-a-not-a, gram-de-possessive] }
+  - { zh: 我叫家文，您呢？, en: "My name is Jiawen. And you?", grammar: [gram-ne-followup] }
+  - { zh: 我姓張，您呢？, en: "My surname is Zhang. And you?", grammar: [gram-ne-followup] }
+  - { zh: 我有一個弟弟，你呢？, en: "I have a younger brother. And you?", grammar: [gram-ne-followup] }
+  - { zh: 我在銀行工作，你呢？, en: "I work at a bank. And you?", grammar: [gram-ne-followup] }
+  - { zh: 我是老師，你呢？, en: "I am a teacher. And you?", grammar: [gram-ne-followup] }
+  - { zh: 我不是學生，您呢？, en: "I am not a student. And you?", grammar: [gram-ne-followup] }
+  - { zh: 我的名字是小文。, en: "My name is Xiaowen.", grammar: [gram-de-possessive] }
+  - { zh: 我的工作很忙。, en: "My job is very busy.", grammar: [gram-de-possessive] }
+  - { zh: 我爸爸的工作很忙。, en: "My father's job is very busy.", grammar: [gram-de-possessive] }
+  - { zh: 他的工作很累。, en: "His job is very tiring.", grammar: [gram-de-possessive] }
+  - { zh: 明文的媽媽是小學老師。, en: "Mingwen's mother is an elementary school teacher.", grammar: [gram-de-possessive] }
+  - { zh: 我媽媽喜歡她的工作。, en: "My mother likes her job.", grammar: [gram-de-possessive] }
+  - { zh: 他的媽媽喜歡小孩子。, en: "His mother likes children.", grammar: [gram-de-possessive] }
+  - { zh: 我媽媽喜歡小孩子，你媽媽喜歡不喜歡？, en: "My mother likes children; does yours?", grammar: [gram-a-not-a] }
+  - { zh: 我爸爸是法文老師，你爸爸呢？, en: "My father is a French teacher. And yours?", grammar: [gram-ne-followup] }
+  - { zh: 我每天都很忙，你忙不忙？, en: "I am busy every day. Are you?", grammar: [gram-a-not-a] }
+  - { zh: 他每天都很累，你呢？, en: "He is tired every day. And you?", grammar: [gram-ne-followup] }
+scenarios:
+  - slug: parents-jobs
+    title: "明文 asks about your parents' jobs"
+    npc:
+      id: mingwen
+      name: 王明文
+      personality: >
+        A kind, friendly Taiwanese graduate student. Interested in people's
+        families; patient with a beginner.
+      speechStyle: >
+        Short sentences using only words from lessons 1–4. Asks one question at
+        a time, often "…忙不忙？" or "…，你呢？".
+      particles: []
+    setting: >
+      A table in a university café. 明文 and the learner chat about their
+      parents: where they work and how busy they are.
+    goalSteps:
+      - { id: parents-work, description: "Say where your father and mother work.", keywordHints: ["爸爸", "媽媽", "在"] }
+      - { id: busy, description: "Say whether their job is busy or tiring.", keywordHints: ["忙", "累"] }
+      - { id: like, description: "Say what your mother or father likes.", keywordHints: ["喜歡"] }
+      - { id: ask-back, description: "Ask 明文 about his parents (…你呢？).", keywordHints: ["呢"] }
+    vocabExtras: [爸爸, 媽媽, 老師, 忙, 很, 每天, 累, 喜歡, 小孩子, 說, 教, 法文, 教書, 李, 今天]
+    opener: { zh: 你好。請問你爸爸、媽媽在哪裡工作？, en: "Hello. Where do your father and mother work?" }
+    successLine: { zh: 你爸爸的工作很忙，你媽媽喜歡教書。我爸爸也是老師。, en: "Your father's job is busy and your mother likes teaching. My father is a teacher too." }
+journalPrompts:
+  - { en: "Describe your job (or studies) and say whether you like it.", zh: 我喜歡我的老師。, words: [喜歡, 老師, 很], grammar: [gram-de-possessive] }
+  - { en: "Write about a family member's job: where they work and whether it is busy.", words: [爸爸, 忙, 教書], grammar: [gram-a-not-a] }
+  - { en: "Describe a busy day: are you tired? And what about your family?", words: [每天, 累, 忙], grammar: [gram-ne-followup] }

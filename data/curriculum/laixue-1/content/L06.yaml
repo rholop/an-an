@@ -1,0 +1,54 @@
+lesson: 6
+sentences:
+  - { zh: 我喜歡唱歌，還喜歡跳舞。, en: "I like singing, and I also like dancing.", grammar: [gram-hai-also] }
+  - { zh: 我喜歡聽音樂，還喜歡看電視。, en: "I like listening to music, and I also like watching TV.", grammar: [gram-hai-also] }
+  - { zh: 我週末喜歡打網球，還喜歡跑步。, en: "At weekends I like to play tennis, and I also like to run.", grammar: [gram-hai-also] }
+  - { zh: 他喜歡運動，還喜歡唱歌。, en: "He likes sports, and he also likes singing.", grammar: [gram-hai-also] }
+  - { zh: 我想去臺灣，還想去美國。, en: "I want to go to Taiwan, and I also want to go to the United States.", grammar: [gram-hai-also] }
+  - { zh: 我有一個姐姐，還有一個哥哥。, en: "I have an older sister, and also an older brother.", grammar: [gram-hai-also] }
+  - { zh: 我平常喜歡聽音樂，週末還喜歡打網球。, en: "I usually like listening to music, and at weekends I also like playing tennis.", grammar: [gram-hai-also] }
+  - { zh: 我晚上在家看電視。, en: "I watch TV at home in the evening.", grammar: [gram-time-place-order] }
+  - { zh: 我週末在家看電視。, en: "I watch TV at home at the weekend.", grammar: [gram-time-place-order] }
+  - { zh: 我平常在公園跑步。, en: "I usually run in the park.", grammar: [gram-time-place-order] }
+  - { zh: 我每天在學校念書。, en: "I study at school every day.", grammar: [gram-time-place-order] }
+  - { zh: 他晚上在家聽音樂。, en: "He listens to music at home in the evening.", grammar: [gram-time-place-order] }
+  - { zh: 你週末在哪裡運動？, en: "Where do you exercise at the weekend?", grammar: [gram-time-place-order] }
+  - { zh: 你晚上在家做什麼？, en: "What do you do at home in the evening?", grammar: [gram-time-place-order] }
+  - { zh: 我週末常常在家看電視。, en: "I often watch TV at home at weekends.", grammar: [gram-time-place-order] }
+  - { zh: 我週末常常去公園跑步。, en: "I often go to the park to run at weekends.", grammar: [gram-qu-place-verb] }
+  - { zh: 他們都不喜歡跑步。, en: "None of them likes running.", grammar: [gram-ye-dou-order] }
+  - { zh: 我也不喜歡跳舞。, en: "I don't like dancing either.", grammar: [gram-ye-dou-order] }
+  - { zh: 我哥哥也不喜歡運動。, en: "My older brother doesn't like sports either.", grammar: [gram-ye-dou-order] }
+  - { zh: 我媽媽也都喜歡聽音樂。, en: "My mother and the others all like listening to music too.", grammar: [gram-ye-dou-order] }
+  - { zh: 他們都沒有哥哥。, en: "None of them has an older brother.", grammar: [gram-ye-dou-order] }
+  - { zh: 他們也都有弟弟。, en: "They all have younger brothers too.", grammar: [gram-ye-dou-order] }
+  - { zh: 我弟弟也不喜歡打網球。, en: "My younger brother does not like tennis either.", grammar: [gram-ye-dou-order] }
+  - { zh: 我和我弟弟都喜歡唱歌，可是都不喜歡跳舞。, en: "My younger brother and I both like singing, but neither of us likes dancing.", grammar: [gram-ye-dou-order] }
+scenarios:
+  - slug: weekend-hobbies
+    title: "Weekend hobbies with Lisa"
+    npc:
+      id: lisa
+      name: Lisa
+      personality: >
+        Gloria's sweet, warm-hearted coworker who loves chatting about hobbies
+        and weekend plans.
+      speechStyle: >
+        Short, friendly sentences using only words from lessons 1–6. One
+        question at a time; reacts to what the learner likes with 也 or 還.
+      particles: []
+    setting: >
+      The office break room on a Friday afternoon. Lisa asks what the learner
+      likes to do at the weekend and in the evening.
+    goalSteps:
+      - { id: likes, description: "Say what you like to do.", keywordHints: ["喜歡"] }
+      - { id: dislikes, description: "Say something you do not like.", keywordHints: ["不喜歡"] }
+      - { id: weekend, description: "Say what you do at the weekend.", keywordHints: ["週末"] }
+      - { id: evening, description: "Say what you do in the evening (晚上…在家…).", keywordHints: ["晚上"] }
+    vocabExtras: [運動, 做, 週末, 打, 網球, 聽, 音樂, 和, 可是, 還, 看, 電視, 晚上, 常常, 家, 跑步, 唱歌, 跳舞, 上午, 太太]
+    opener: { zh: 你好。你週末喜歡做什麼？, en: "Hi. What do you like to do at the weekend?" }
+    successLine: { zh: 我也喜歡聽音樂，還喜歡看電視。, en: "I like listening to music too, and watching TV." }
+journalPrompts:
+  - { en: "Describe your weekend: where you are and what you do.", zh: 我週末在家看電視。, words: [週末, 運動, 看], grammar: [gram-time-place-order] }
+  - { en: "Write about one hobby you like and one you don't.", words: [唱歌, 跳舞, 可是], grammar: [gram-hai-also] }
+  - { en: "Describe your usual day: what you often do in the evening.", words: [常常, 晚上, 電視], grammar: [gram-ye-dou-order] }

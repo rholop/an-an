@@ -1,18 +1,23 @@
 import {
   analyzeText,
+  derivedCompoundIds,
+  lessonScopedWordIds,
   nextNewItems,
   resolveScenarioVocabExtraIds,
   segment,
   type AnalyzeContext,
   type AnalyzeResult,
+  type ClassScope,
   type Evidence,
   type Lexicon,
   type Scenario,
   type SkillCard,
   type TurnHistoryEntry,
+  type Textbook,
   type TurnRequest,
   type TurnResponse,
   type TutorLLM,
+  wordInScope,
 } from '@anan/core';
 import type { AnanDB, ConversationRow, TurnRow } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
@@ -32,6 +37,13 @@ export const DEFAULT_CHAT_SERVICE_CONFIG: ChatServiceConfig = {
   dueSampleSize: 10,
   newTargetsPerTurn: 3,
 };
+
+/** Phase 12 "My class", read fresh on every turn. Absent or `scope.enabled`
+ * false means chat behaves exactly as before. */
+export interface ClassChatContext {
+  scope: ClassScope;
+  book: Textbook;
+}
 
 export interface SendTurnResult {
   npcTurn: TurnRow;
@@ -74,6 +86,7 @@ export class ChatService {
     private readonly rng: () => number = Math.random,
     /** Phase 6: called once when a conversation completes (all goals done). */
     private readonly onCompleted?: (conversation: ConversationRow) => Promise<void>,
+    private readonly classContext?: () => ClassChatContext | undefined,
   ) {}
 
   /** Starts a conversation: the scenario's opener is authored data, not
@@ -216,16 +229,39 @@ export class ChatService {
       en: t.en,
     }));
 
-    const [knownCards, { ids: allowedExtraIds }] = await Promise.all([
+    const klass = this.classContext?.();
+    const scope = klass?.scope.enabled ? klass.scope : undefined;
+    const [knownAll, { ids: scenarioExtraIds }] = await Promise.all([
       this.learnerService.knownSet('review'),
       Promise.resolve(resolveScenarioVocabExtraIds(scenario, this.lexicon)),
     ]);
+    // My class: textbook words from lessons beyond current+1 stay out of the known sample.
+    const knownCards = scope
+      ? new Set([...knownAll].filter((id) => {
+          const w = this.lexicon.byId(id);
+          return !w || wordInScope(w, scope);
+        }))
+      : knownAll;
+    // A textbook scenario may use every word of lessons ≤ its own (plus obvious
+    // compounds of them) — the validator allows those; the model is shown the
+    // scenario's own list plus its lesson's vocabulary.
+    let allowedExtraIds = scenarioExtraIds;
+    let validatorExtraIds = scenarioExtraIds;
+    if (scenario.textbook && klass) {
+      const scoped = lessonScopedWordIds(klass.book, scenario.textbook.lesson);
+      const lessonOwn = klass.book.lessons[scenario.textbook.lesson - 1]?.vocab ?? [];
+      allowedExtraIds = [...new Set([...scenarioExtraIds, ...lessonOwn])].slice(0, 60);
+      validatorExtraIds = [
+        ...new Set([...scenarioExtraIds, ...scoped, ...derivedCompoundIds(this.lexicon, scoped)]),
+      ];
+    }
     const dueCards = await this.learnerService.dueCards(now, 10_000);
     const dueWordIds = dueCards.filter((c) => c.skill === 'recognition').map((c) => c.item.id);
     const allCards: SkillCard[] = dueCards; // best-effort pool for nextNewItems' "touched" check
     const targets = nextNewItems(allCards, this.lexicon, this.config.newTargetsPerTurn, {
       scenarioTags: [scenario.id],
       currentLevel: options.learnerLevel,
+      ...(scope ? { classScope: scope } : {}),
     });
     const targetIds = targets.map((w) => w.id);
 
@@ -250,7 +286,7 @@ export class ChatService {
     const analyzeCtx = await this.buildAnalyzeContext(
       options.learnerLevel,
       targetIds,
-      allowedExtraIds,
+      validatorExtraIds,
     );
 
     let attempts = 0;

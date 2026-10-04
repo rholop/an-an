@@ -4,6 +4,7 @@ import { backupFileName, exportBackup, importBackup } from '../db/backup.js';
 import { db } from '../db/instance.js';
 import type { AiGlossRow, GlossReportRow } from '../db/schema.js';
 import { exportReportsAsOverridesYaml } from '../lib/gloss-reports.js';
+import { useSetting } from '../lib/useSetting.js';
 
 /** Every dictionary/data source bundled in the app, with the licence terms
  * that require attribution (phase doc B7). Keep in sync with data/raw/SOURCES.md. */
@@ -45,6 +46,13 @@ export const CREDITS: {
     terms: 'Word list used for study; parsed copies from ivankra/tocfl.',
   },
   {
+    name: 'Microsoft Azure AI Speech (neural text-to-speech, zh-TW)',
+    what: 'The spoken clips for words and sentences. Generated offline from the Ministry of Education readings, checked by speech-to-text and by a person, and stored as static files.',
+    licence: 'Microsoft Azure AI Services terms',
+    href: 'https://azure.microsoft.com/products/ai-services/ai-speech',
+    terms: 'Synthesized audio produced under the owner’s own Azure Speech subscription.',
+  },
+  {
     name: 'Unicode Unihan database',
     what: 'Per-character English definitions for the character-breakdown help. Optional source.',
     licence: 'Unicode Terms of Use (permissive)',
@@ -52,6 +60,25 @@ export const CREDITS: {
     terms: 'Copyright © Unicode, Inc.',
   },
 ];
+
+/** Phase 10 §7: per-profile switch for every speaker button. */
+function AudioSettingsPanel() {
+  const [enabled, setEnabled] = useSetting<boolean>('audioEnabled', true);
+  return (
+    <section>
+      <h2>Audio</h2>
+      <label>
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => setEnabled(e.target.checked)}
+          data-testid="audio-toggle"
+        />{' '}
+        Show speaker buttons
+      </label>
+    </section>
+  );
+}
 
 /** Phase 8 §6: backup export/import for the CURRENT profile only; the file
  * name carries the profile id so two people's files can't be mixed up. */
@@ -150,6 +177,8 @@ export function CreditsPage() {
           </li>
         ))}
       </ul>
+
+      <AudioSettingsPanel />
 
       <BackupPanel />
 

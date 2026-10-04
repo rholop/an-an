@@ -15,8 +15,9 @@ import { analyzeText, type AnalyzeContext } from '../validate/turn.js';
  * and validates what comes back with {@link evaluateReaderSentence}.
  */
 
-export type ReaderFocus = 'mixed' | 'review' | 'new';
-export const READER_FOCUSES: readonly ReaderFocus[] = ['mixed', 'review', 'new'];
+export type ReaderFocus = 'mixed' | 'review' | 'new' | 'lesson';
+/** `lesson` (Phase 12) is offered only while "My class" is on: sentences written for the current textbook lesson. */
+export const READER_FOCUSES: readonly ReaderFocus[] = ['mixed', 'review', 'new', 'lesson'];
 export const isReaderFocus = (v: unknown): v is ReaderFocus =>
   typeof v === 'string' && (READER_FOCUSES as readonly string[]).includes(v);
 

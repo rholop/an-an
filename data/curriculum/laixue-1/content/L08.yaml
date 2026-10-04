@@ -1,0 +1,58 @@
+lesson: 8
+sentences:
+  - { zh: 今天是八月十一號。, en: "Today is August 11th.", grammar: [gram-dates] }
+  - { zh: 明天是十月十號。, en: "Tomorrow is October 10th.", grammar: [gram-dates] }
+  - { zh: 我的生日是三月五號。, en: "My birthday is March 5th.", grammar: [gram-dates] }
+  - { zh: 我的生日是六月三號。, en: "My birthday is June 3rd.", grammar: [gram-dates] }
+  - { zh: 他的生日是九月二十號。, en: "His birthday is September 20th.", grammar: [gram-dates] }
+  - { zh: 他的生日是八月十七日。, en: "His birthday is August 17th.", grammar: [gram-dates] }
+  - { zh: 我哥哥的生日是十二月十五號。, en: "My older brother's birthday is December 15th.", grammar: [gram-dates] }
+  - { zh: 我哥哥八月十一號去美國。, en: "My older brother goes to the United States on August 11th.", grammar: [gram-dates] }
+  - { zh: 我的生日是十一月九號，他的生日是十一月十號。, en: "My birthday is November 9th; his is November 10th.", grammar: [gram-dates] }
+  - { zh: 今天是幾月幾日？, en: "What is the date today?", grammar: [gram-ji-questions] }
+  - { zh: 明天是幾月幾號？, en: "What is the date tomorrow?", grammar: [gram-ji-questions] }
+  - { zh: 你的生日是幾月幾號？, en: "What is the date of your birthday?", grammar: [gram-ji-questions] }
+  - { zh: 他的生日是幾月幾號？, en: "What is the date of his birthday?", grammar: [gram-ji-questions] }
+  - { zh: 你弟弟今年幾歲？, en: "How old is your younger brother this year?", grammar: [gram-ji-questions] }
+  - { zh: 他今年幾歲？, en: "How old is he this year?", grammar: [gram-ji-questions] }
+  - { zh: 你哥哥今年幾歲？, en: "How old is your older brother?", grammar: [gram-ji-questions] }
+  - { zh: 我今年二十歲。, en: "I am twenty years old.", grammar: [gram-numbers-0-100] }
+  - { zh: 我弟弟今年十七歲。, en: "My younger brother is seventeen this year.", grammar: [gram-numbers-0-100] }
+  - { zh: 我要一雙運動鞋，好不好？, en: "I'd like a pair of sneakers, okay?", grammar: [gram-tag-question, gram-number-measure] }
+  - { zh: 我請他去吃大餐，好不好？, en: "I'll treat him to a big meal, okay?", grammar: [gram-tag-question] }
+  - { zh: 今天晚上我請你去吃大餐，好不好？, en: "Tonight I'll treat you to a big meal, okay?", grammar: [gram-tag-question] }
+  - { zh: 我明天去買禮物，可以嗎？, en: "I'll go and buy the gift tomorrow, is that OK?", grammar: [gram-tag-question, gram-qu-place-verb] }
+  - { zh: 我要去迪士尼樂園玩，可以嗎？, en: "I want to go to Disneyland, is that OK?", grammar: [gram-tag-question] }
+  - { zh: 我今天晚上去買運動鞋，好不好？, en: "I'll go and buy sneakers tonight, okay?", grammar: [gram-tag-question] }
+  - { zh: 祝你生日快樂，你要什麼生日禮物？, en: "Happy birthday! What birthday gift do you want?", grammar: [gram-question-words] }
+  - { zh: 你還要什麼？, en: "What else do you want?", grammar: [gram-question-words] }
+  - { zh: 我要一雙運動鞋。, en: "I want a pair of sneakers.", grammar: [gram-number-measure] }
+scenarios:
+  - slug: plan-birthday
+    title: "Planning 家文's birthday"
+    npc:
+      id: jiawen
+      name: 王家文
+      personality: >
+        A lively, cheerful high-school student whose birthday is tomorrow. He
+        is not shy about asking for a gift and a big meal.
+      speechStyle: >
+        Short, cheerful sentences using only words from lessons 1–8. Asks the
+        learner (his 大哥) one thing at a time and ends requests with 好不好 or 可以嗎.
+      particles: []
+    setting: >
+      At home the evening before 家文's birthday. The learner is like his older
+      brother and plans the birthday with him: the date, his age, a gift and a
+      big meal.
+    goalSteps:
+      - { id: date, description: "Say tomorrow's date and that it is his birthday.", keywordHints: ["幾月", "號", "生日"] }
+      - { id: age, description: "Ask how old he will be.", keywordHints: ["幾歲", "歲"] }
+      - { id: gift, description: "Ask what birthday gift he wants.", keywordHints: ["禮物", "要"] }
+      - { id: meal, description: "Treat him to a big meal (我請你…，好不好？).", keywordHints: ["大餐", "請"] }
+    vocabExtras: [祝, 生日, 快樂, 大哥, 明天, 月, 號, 噢, 歲, 要, 禮物, 雙, 運動鞋, 今天, 買, 請, 吃, 大餐, 是啊, 可以嗎, 好不好, 沒問題, 今年, 送, 日]
+    opener: { zh: 大哥，明天是幾號？, en: "Big brother, what is the date tomorrow?" }
+    successLine: { zh: 好，沒問題！明天我請你去吃大餐，還送你一雙運動鞋。, en: "Okay, no problem! Tomorrow I'll treat you to a big meal and give you a pair of sneakers." }
+journalPrompts:
+  - { en: "When is your birthday and how old are you this year?", zh: 我今年二十歲。, words: [生日, 歲, 月], grammar: [gram-ji-questions] }
+  - { en: "Write about a gift you want and ask someone politely to buy it.", words: [要, 禮物, 買], grammar: [gram-tag-question] }
+  - { en: "How do you celebrate your birthday? Who do you eat with?", words: [吃, 大餐, 快樂], grammar: [gram-dates] }

@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  classScope,
   formatDuration,
+  isTextbookScenarioUnlocked,
+  lessonBadge,
   scenarioMatchesLevels,
   type Level,
   type Scenario,
@@ -19,6 +22,8 @@ import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
+import { useMyClass, peekMyClass } from '../lib/my-class.js';
+import { useTextbook } from '../lib/textbook-data.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSetting } from '../lib/useSetting.js';
 import './ChatPage.css';
@@ -27,10 +32,17 @@ type Scaffolding = 'high' | 'medium' | 'low';
 const SCAFFOLDING_LEVELS: Scaffolding[] = ['high', 'medium', 'low'];
 const SUGGESTED_REPLY_CAP: Record<Scaffolding, number> = { high: 2, medium: 1, low: 0 };
 
-export function ChatPage() {
+/** `initialScenarioId` / `onExit` let the textbook's "Study this lesson" session
+ * run a specific scenario inside its own flow and carry on when it ends. */
+export function ChatPage({
+  initialScenarioId,
+  onExit,
+}: { initialScenarioId?: string; onExit?: () => void } = {}) {
   const lexiconState = useLexicon();
   const scenariosState = useScenarios();
 
+  const myClass = useMyClass();
+  const textbookState = useTextbook();
   const [cardsByWordId, setCardsByWordId] = useState<Map<string, SkillCard>>(new Map());
   const refreshCards = useCallback(async () => {
     setCardsByWordId(await recognitionCardsByWordId(db));
@@ -65,8 +77,13 @@ export function ChatPage() {
       undefined,
       undefined,
       (c) => gameService.onScenarioCompleted(c),
+      // Phase 12: read fresh each turn, so changing the class lesson applies at once.
+      () =>
+        textbookState.status === 'ready'
+          ? { scope: classScope(peekMyClass()), book: textbookState.book }
+          : undefined,
     );
-  }, [lexiconState, tutorLLM]);
+  }, [lexiconState, tutorLLM, textbookState]);
 
   // Phase 6: the scenario map (stars, unlocks, real-world coverage), refreshed
   // whenever we return to the picker.
@@ -129,6 +146,10 @@ export function ChatPage() {
   }
 
   function backToScenarios() {
+    if (onExit) {
+      onExit();
+      return;
+    }
     setMapKey((k) => k + 1);
     setScenario(null);
     setConversationId(null);
@@ -138,6 +159,16 @@ export function ChatPage() {
     setEnded(false);
     setError(null);
   }
+
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!initialScenarioId || autoStarted.current || !chatService || scenariosState.status !== 'ready')
+      return;
+    const s = scenariosState.scenarios.find((x) => x.id === initialScenarioId);
+    if (!s) return;
+    autoStarted.current = true;
+    void startScenario(s);
+  }, [initialScenarioId, chatService, scenariosState]);
 
   function makeOnLookup(turnId: number | undefined) {
     return async (at: AnnotatedToken, kind: 'gloss' | 'reading') => {
@@ -255,6 +286,8 @@ export function ChatPage() {
               bestUnassistedMs: undefined,
             }))
           )
+            // Textbook scenarios are governed by "My class", never by the level picker.
+            .filter((node) => !node.scenario.textbook)
             .filter((node) => scenarioMatchesLevels(node.scenario, levelFilter))
             .map((node) => {
               const s = node.scenario;
@@ -298,6 +331,35 @@ export function ChatPage() {
               );
             })}
         </div>
+        {myClass.enabled && (
+          <section className="chat-class-section" aria-label="My class scenarios">
+            <h2 lang="zh-Hant">來學華語 · My class (lesson {myClass.currentLesson})</h2>
+            <div className="chat-scenario-list">
+              {scenariosState.scenarios
+                .filter((sc) => sc.textbook?.textbookId === myClass.textbookId)
+                .sort((a, b) => a.textbook!.lesson - b.textbook!.lesson)
+                .map((sc) => {
+                  const unlocked = isTextbookScenarioUnlocked(sc, myClass);
+                  return (
+                    <button
+                      key={sc.id}
+                      className="chat-scenario-card"
+                      disabled={!unlocked}
+                      onClick={() => startScenario(sc)}
+                      title={unlocked ? undefined : `Unlocks when the class reaches lesson ${sc.textbook!.lesson}`}
+                      data-testid={`class-scenario-${sc.id}`}
+                    >
+                      <div className="chat-scenario-title">{sc.title}</div>
+                      <div className="chat-scenario-range">
+                        <span className="textbook-badge" lang="zh-Hant">{lessonBadge(sc.textbook!.lesson)}</span>
+                        {!unlocked && ' · 🔒 locked'}
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+          </section>
+        )}
         {import.meta.env.DEV && (
           <label className="chat-dev-toggle">
             <input
@@ -333,6 +395,7 @@ export function ChatPage() {
                   t.sense_id ? [[t.text, t.sense_id] as const] : [],
                 ),
               ),
+              { textbook: Boolean(scenario.textbook) },
             ),
             cardsByWordId,
           );

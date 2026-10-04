@@ -13,7 +13,10 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "pipeline:build": "pnpm --filter @anan/data-pipeline build:lexicon && pnpm --filter @anan/data-pipeline build:scenarios",
-    "dev:web": "pnpm --filter @anan/web dev"
+    "curriculum:import": "pnpm --filter @anan/data-pipeline curriculum:import",
+    "check:azure-key": "node scripts/check-no-azure-key.mjs",
+    "dev:web": "pnpm --filter @anan/web dev",
+    "curriculum:build": "pnpm --filter @anan/data-pipeline curriculum:build"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

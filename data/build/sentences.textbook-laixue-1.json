@@ -1,0 +1,9783 @@
+{
+  "meta": {
+    "version": "v1",
+    "buildDate": "2026-10-04",
+    "level": "N1"
+  },
+  "sentences": [
+    {
+      "id": "tb-L01-001",
+      "zh": "我姓王，他姓張。",
+      "en": "My surname is Wang and his is Zhang.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "王"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "張"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-002",
+      "zh": "我姓張，叫家文。",
+      "en": "My surname is Zhang and my name is Jiawen.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "張"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "家文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-003",
+      "zh": "他姓王。",
+      "en": "His surname is Wang.",
+      "targetWordId": "tocfl-594c346871",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "王"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-004",
+      "zh": "他姓張。",
+      "en": "His surname is Zhang.",
+      "targetWordId": "tocfl-594c346871",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "張"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-005",
+      "zh": "您貴姓？",
+      "en": "What is your surname? (polite)",
+      "targetWordId": "tocfl-a5d7ec02ce",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "您"
+        },
+        {
+          "text": "貴姓"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-006",
+      "zh": "請問您貴姓？",
+      "en": "May I ask your surname?",
+      "targetWordId": "tocfl-056657bf9c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "請問"
+        },
+        {
+          "text": "您"
+        },
+        {
+          "text": "貴姓"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-007",
+      "zh": "我叫家文。",
+      "en": "I am called Jiawen.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "家文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-008",
+      "zh": "我叫王家文。",
+      "en": "My name is Wang Jiawen.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "王家文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-009",
+      "zh": "他叫王明文。",
+      "en": "He is called Wang Mingwen.",
+      "targetWordId": "tocfl-843c0fdc73",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "王明文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-010",
+      "zh": "您叫什麼名字？",
+      "en": "What is your name? (polite)",
+      "targetWordId": "tocfl-a5d7ec02ce",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "您"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "什麼"
+        },
+        {
+          "text": "名字"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao",
+        "gram-shenme-question"
+      ]
+    },
+    {
+      "id": "tb-L01-011",
+      "zh": "王家文叫什麼名字？",
+      "en": "What is Wang Jiawen called?",
+      "targetWordId": "tocfl-843c0fdc73",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "王家文"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "什麼"
+        },
+        {
+          "text": "名字"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao",
+        "gram-shenme-question"
+      ]
+    },
+    {
+      "id": "tb-L01-012",
+      "zh": "請問他叫什麼名字？",
+      "en": "May I ask what he is called?",
+      "targetWordId": "tocfl-056657bf9c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "請問"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "什麼"
+        },
+        {
+          "text": "名字"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shenme-question"
+      ]
+    },
+    {
+      "id": "tb-L01-013",
+      "zh": "我是王明文。",
+      "en": "I am Wang Mingwen.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "王明文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shi-identity"
+      ]
+    },
+    {
+      "id": "tb-L01-014",
+      "zh": "我是美國人。",
+      "en": "I am American.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "美國人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shi-identity"
+      ]
+    },
+    {
+      "id": "tb-L01-015",
+      "zh": "我是臺灣人，他是美國人。",
+      "en": "I am Taiwanese and he is American.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "臺灣人"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "美國人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shi-identity"
+      ]
+    },
+    {
+      "id": "tb-L01-016",
+      "zh": "他是臺灣人。",
+      "en": "He is Taiwanese.",
+      "targetWordId": "tocfl-126e767039",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "臺灣人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shi-identity"
+      ]
+    },
+    {
+      "id": "tb-L01-017",
+      "zh": "他是美國人。",
+      "en": "He is American.",
+      "targetWordId": "tocfl-126e767039",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "美國人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shi-identity"
+      ]
+    },
+    {
+      "id": "tb-L01-018",
+      "zh": "請問他是哪國人？",
+      "en": "May I ask what nationality he is?",
+      "targetWordId": "tocfl-056657bf9c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "請問"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "哪國人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shi-identity"
+      ]
+    },
+    {
+      "id": "tb-L01-019",
+      "zh": "請問您是哪國人？",
+      "en": "May I ask what your nationality is?",
+      "targetWordId": "tocfl-056657bf9c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "請問"
+        },
+        {
+          "text": "您"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "哪國人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shi-identity"
+      ]
+    },
+    {
+      "id": "tb-L01-020",
+      "zh": "我姓王，叫明文。",
+      "en": "My surname is Wang and my name is Mingwen.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "王"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "明文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-021",
+      "zh": "我姓王，您貴姓？",
+      "en": "My surname is Wang. And yours?",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "王"
+        },
+        {
+          "text": "您"
+        },
+        {
+          "text": "貴姓"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-022",
+      "zh": "我是臺灣人，您呢？",
+      "en": "I am Taiwanese. And you?",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "臺灣人"
+        },
+        {
+          "text": "您呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shi-identity"
+      ]
+    },
+    {
+      "id": "tb-L01-023",
+      "zh": "我是美國人，您呢？",
+      "en": "I am American. And you?",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "美國人"
+        },
+        {
+          "text": "您呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-shi-identity"
+      ]
+    },
+    {
+      "id": "tb-L01-024",
+      "zh": "您好，我姓張。",
+      "en": "Hello, my surname is Zhang.",
+      "targetWordId": "tocfl-a5d7ec02ce",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "您"
+        },
+        {
+          "text": "好"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "張"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L01-025",
+      "zh": "您好，我叫明文，請問您貴姓？",
+      "en": "Hello, I am Mingwen. May I ask your surname?",
+      "targetWordId": "tocfl-a5d7ec02ce",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "您"
+        },
+        {
+          "text": "好"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "明文"
+        },
+        {
+          "text": "請問"
+        },
+        {
+          "text": "您"
+        },
+        {
+          "text": "貴姓"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "lesson": 1,
+      "grammarIds": [
+        "gram-xing-jiao"
+      ]
+    },
+    {
+      "id": "tb-L02-001",
+      "zh": "我有一個哥哥。",
+      "en": "I have one older brother.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "哥哥"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-002",
+      "zh": "我有弟弟。",
+      "en": "I have a younger brother.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "弟弟"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-003",
+      "zh": "我有姐姐。",
+      "en": "I have an older sister.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "姐姐"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-004",
+      "zh": "我有兩個妹妹。",
+      "en": "I have two younger sisters.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "妹妹"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-005",
+      "zh": "我有一個姐姐。",
+      "en": "I have one older sister.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "姐姐"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou",
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L02-006",
+      "zh": "我有兩個哥哥。",
+      "en": "I have two older brothers.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "哥哥"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou",
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L02-007",
+      "zh": "我有一個哥哥，一個妹妹。",
+      "en": "I have one older brother and one younger sister.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "妹妹"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L02-008",
+      "zh": "我有兩個姐姐，沒有弟弟。",
+      "en": "I have two older sisters and no younger brother.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "姐姐"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "弟弟"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou",
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L02-009",
+      "zh": "我沒有姐姐。",
+      "en": "I don't have an older sister.",
+      "targetWordId": "moec-b8a867198f",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "姐姐"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-010",
+      "zh": "我沒有弟弟。",
+      "en": "I don't have a younger brother.",
+      "targetWordId": "tocfl-80c4c8a3da",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "弟弟"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-011",
+      "zh": "我沒有兄弟姊妹。",
+      "en": "I don't have any siblings.",
+      "targetWordId": "tb-801ccf4079",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "兄弟姊妹"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-012",
+      "zh": "他有兩個姐姐。",
+      "en": "He has two older sisters.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "姐姐"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou",
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L02-013",
+      "zh": "他沒有妹妹。",
+      "en": "He doesn't have a younger sister.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "妹妹"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-014",
+      "zh": "你有姐姐嗎？",
+      "en": "Do you have an older sister?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "姐姐"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ma-question",
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-015",
+      "zh": "你有弟弟嗎？",
+      "en": "Do you have a younger brother?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ma-question",
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-016",
+      "zh": "他有兄弟姊妹嗎？",
+      "en": "Does he have any siblings?",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "兄弟姊妹"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ma-question",
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-017",
+      "zh": "您有妹妹嗎？",
+      "en": "Do you have a younger sister? (polite)",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "您"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "妹妹"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ma-question",
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-018",
+      "zh": "他有姐姐嗎？",
+      "en": "Does he have an older sister?",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "姐姐"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ma-question",
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-019",
+      "zh": "王明文有兩個弟弟。",
+      "en": "Wang Mingwen has two younger brothers.",
+      "targetWordId": "tocfl-0ba7ac5779",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "王明文"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "弟弟"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou",
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L02-020",
+      "zh": "我只有一個姐姐。",
+      "en": "I only have one older sister.",
+      "targetWordId": "moec-b8a867198f",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "只有"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "姐姐"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou",
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L02-021",
+      "zh": "我只有一個哥哥。",
+      "en": "I only have one older brother.",
+      "targetWordId": "tocfl-3fef802071",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "只有"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "哥哥"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-you-meiyou",
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L02-022",
+      "zh": "我也有一個姐姐。",
+      "en": "I also have an older sister.",
+      "targetWordId": "tocfl-f6db107280",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "姐姐"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ye-also",
+        "gram-you-meiyou",
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L02-023",
+      "zh": "我也是臺灣人。",
+      "en": "I am Taiwanese too.",
+      "targetWordId": "tocfl-f6db107280",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "臺灣人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ye-also"
+      ]
+    },
+    {
+      "id": "tb-L02-024",
+      "zh": "他也姓王。",
+      "en": "His surname is Wang too.",
+      "targetWordId": "tocfl-f6db107280",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "王"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ye-also"
+      ]
+    },
+    {
+      "id": "tb-L02-025",
+      "zh": "他也沒有弟弟。",
+      "en": "He doesn't have a younger brother either.",
+      "targetWordId": "tocfl-f6db107280",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "弟弟"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ye-also",
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L02-026",
+      "zh": "您也是美國人嗎？",
+      "en": "Are you American too?",
+      "targetWordId": "tocfl-f6db107280",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "您"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "美國人"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ye-also",
+        "gram-ma-question"
+      ]
+    },
+    {
+      "id": "tb-L02-027",
+      "zh": "你是臺灣人嗎？",
+      "en": "Are you Taiwanese?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "臺灣人"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ma-question"
+      ]
+    },
+    {
+      "id": "tb-L02-028",
+      "zh": "您姓王嗎？",
+      "en": "Is your surname Wang?",
+      "targetWordId": "tocfl-ec433a254f",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "您"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "王"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ma-question"
+      ]
+    },
+    {
+      "id": "tb-L02-029",
+      "zh": "我沒有哥哥，也沒有弟弟。",
+      "en": "I have no older brother and no younger brother either.",
+      "targetWordId": "tocfl-3fef802071",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "弟弟"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "lesson": 2,
+      "grammarIds": [
+        "gram-ye-also",
+        "gram-you-meiyou"
+      ]
+    },
+    {
+      "id": "tb-L03-001",
+      "zh": "我哥哥不是學生。",
+      "en": "My older brother is not a student.",
+      "targetWordId": "tocfl-df11d6ee67",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "不是"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-002",
+      "zh": "我不是美國人。",
+      "en": "I am not American.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不是"
+        },
+        {
+          "text": "美國人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-003",
+      "zh": "我不姓王。",
+      "en": "My surname is not Wang.",
+      "targetWordId": "tocfl-2b99827e3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "王"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-004",
+      "zh": "我不叫明文。",
+      "en": "My name is not Mingwen.",
+      "targetWordId": "tocfl-2b99827e3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "明文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-005",
+      "zh": "他不是學生。",
+      "en": "He is not a student.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "不是"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-006",
+      "zh": "他不工作。",
+      "en": "He does not work.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-007",
+      "zh": "我不是臺灣人，我是美國人。",
+      "en": "I am not Taiwanese, I am American.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不是"
+        },
+        {
+          "text": "臺灣人"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "美國人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-008",
+      "zh": "我哥哥不工作。",
+      "en": "My older brother does not work.",
+      "targetWordId": "tocfl-2b99827e3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-009",
+      "zh": "我在銀行工作。",
+      "en": "I work at a bank.",
+      "targetWordId": "tocfl-1fb98be339",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-010",
+      "zh": "我弟弟在電腦公司工作。",
+      "en": "My younger brother works at a computer company.",
+      "targetWordId": "tocfl-1fb98be339",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "電腦"
+        },
+        {
+          "text": "公司"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-011",
+      "zh": "他在小學工作。",
+      "en": "He works at an elementary school.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "小學"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-012",
+      "zh": "你在哪裡工作？",
+      "en": "Where do you work?",
+      "targetWordId": "tocfl-1fb98be339",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "哪裡"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-013",
+      "zh": "他在哪裡工作？",
+      "en": "Where does he work?",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "哪裡"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-014",
+      "zh": "我哥哥在電腦公司工作。",
+      "en": "My older brother works at a computer company.",
+      "targetWordId": "tocfl-1fb98be339",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "電腦"
+        },
+        {
+          "text": "公司"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-015",
+      "zh": "我姐姐在銀行工作。",
+      "en": "My older sister works at a bank.",
+      "targetWordId": "tocfl-1fb98be339",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "姐姐"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-016",
+      "zh": "她先生在大學工作。",
+      "en": "Her husband works at a university.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "先生"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "大學"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-017",
+      "zh": "他不在銀行工作。",
+      "en": "He does not work at a bank.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "不在"
+        },
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation",
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-018",
+      "zh": "我弟弟在小學念書。",
+      "en": "My younger brother studies at an elementary school.",
+      "targetWordId": "tocfl-1fb98be339",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "小學"
+        },
+        {
+          "text": "念書"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-019",
+      "zh": "我們都是學生。",
+      "en": "We are all students.",
+      "targetWordId": "tocfl-4254b875e7",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-dou-all"
+      ]
+    },
+    {
+      "id": "tb-L03-020",
+      "zh": "他們都是美國人。",
+      "en": "They are all American.",
+      "targetWordId": "tocfl-490e9adcc1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "美國人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-dou-all"
+      ]
+    },
+    {
+      "id": "tb-L03-021",
+      "zh": "我們都不是學生。",
+      "en": "None of us is a student.",
+      "targetWordId": "tocfl-4254b875e7",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "不是"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-dou-all",
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-022",
+      "zh": "他們都姓王。",
+      "en": "They are all surnamed Wang.",
+      "targetWordId": "tocfl-490e9adcc1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "王"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-dou-all"
+      ]
+    },
+    {
+      "id": "tb-L03-023",
+      "zh": "他們都不姓張。",
+      "en": "None of them is surnamed Zhang.",
+      "targetWordId": "tocfl-490e9adcc1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "張"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-dou-all",
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L03-024",
+      "zh": "我和我哥哥都是學生。",
+      "en": "My older brother and I are both students.",
+      "targetWordId": "tocfl-4254b875e7",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "和"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-dou-all"
+      ]
+    },
+    {
+      "id": "tb-L03-025",
+      "zh": "我姐姐和我哥哥都在銀行工作。",
+      "en": "My older sister and my older brother both work at a bank.",
+      "targetWordId": "tocfl-4254b875e7",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "姐姐"
+        },
+        {
+          "text": "和"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-dou-all",
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-026",
+      "zh": "他們都在小學念書。",
+      "en": "They all study at an elementary school.",
+      "targetWordId": "tocfl-490e9adcc1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "小學"
+        },
+        {
+          "text": "念書"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-dou-all",
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-027",
+      "zh": "他們都不在大學工作。",
+      "en": "None of them works at a university.",
+      "targetWordId": "tocfl-490e9adcc1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "不在"
+        },
+        {
+          "text": "大學"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-dou-all",
+        "gram-bu-negation",
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-028",
+      "zh": "她有兩個孩子，一個兒子，一個女兒。",
+      "en": "She has two children, a son and a daughter.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "孩子"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "兒子"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "女兒"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L03-029",
+      "zh": "她結婚了，她先生在電腦公司工作。",
+      "en": "She is married; her husband works at a computer company.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "結婚了"
+        },
+        {
+          "text": "她"
+        },
+        {
+          "text": "先生"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "電腦"
+        },
+        {
+          "text": "公司"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L03-030",
+      "zh": "他大學畢業了，他不是學生。",
+      "en": "He has graduated from university; he is not a student.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "大學"
+        },
+        {
+          "text": "畢業了"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "不是"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "lesson": 3,
+      "grammarIds": [
+        "gram-bu-negation"
+      ]
+    },
+    {
+      "id": "tb-L04-001",
+      "zh": "你忙不忙？",
+      "en": "Are you busy?",
+      "targetWordId": "tocfl-6b29522157",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "忙"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "忙"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-002",
+      "zh": "你累不累？",
+      "en": "Are you tired?",
+      "targetWordId": "tocfl-c0918c270d",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "累"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "累"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-003",
+      "zh": "你是不是老師？",
+      "en": "Are you a teacher?",
+      "targetWordId": "tocfl-e6e5696c01",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "是不是"
+        },
+        {
+          "text": "老師"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-004",
+      "zh": "你有沒有哥哥？",
+      "en": "Do you have an older brother?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "哥哥"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-005",
+      "zh": "你有沒有孩子？",
+      "en": "Do you have children?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "孩子"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-006",
+      "zh": "你爸爸忙不忙？",
+      "en": "Is your father busy?",
+      "targetWordId": "tocfl-485f51de92",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "爸爸"
+        },
+        {
+          "text": "忙"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "忙"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-007",
+      "zh": "你媽媽累不累？",
+      "en": "Is your mother tired?",
+      "targetWordId": "tocfl-feba8fafa9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "累"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "累"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-008",
+      "zh": "你爸爸是不是老師？",
+      "en": "Is your father a teacher?",
+      "targetWordId": "tocfl-485f51de92",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "爸爸"
+        },
+        {
+          "text": "是不是"
+        },
+        {
+          "text": "老師"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-009",
+      "zh": "你在不在大學工作？",
+      "en": "Do you work at a university?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "不在"
+        },
+        {
+          "text": "大學"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-010",
+      "zh": "你喜歡不喜歡你的工作？",
+      "en": "Do you like your job?",
+      "targetWordId": "tocfl-8cca6ed256",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a",
+        "gram-de-possessive"
+      ]
+    },
+    {
+      "id": "tb-L04-011",
+      "zh": "我叫家文，您呢？",
+      "en": "My name is Jiawen. And you?",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "叫"
+        },
+        {
+          "text": "家文"
+        },
+        {
+          "text": "您呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-ne-followup"
+      ]
+    },
+    {
+      "id": "tb-L04-012",
+      "zh": "我姓張，您呢？",
+      "en": "My surname is Zhang. And you?",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "姓"
+        },
+        {
+          "text": "張"
+        },
+        {
+          "text": "您呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-ne-followup"
+      ]
+    },
+    {
+      "id": "tb-L04-013",
+      "zh": "我有一個弟弟，你呢？",
+      "en": "I have a younger brother. And you?",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-ne-followup"
+      ]
+    },
+    {
+      "id": "tb-L04-014",
+      "zh": "我在銀行工作，你呢？",
+      "en": "I work at a bank. And you?",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-ne-followup"
+      ]
+    },
+    {
+      "id": "tb-L04-015",
+      "zh": "我是老師，你呢？",
+      "en": "I am a teacher. And you?",
+      "targetWordId": "tocfl-e6e5696c01",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "老師"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-ne-followup"
+      ]
+    },
+    {
+      "id": "tb-L04-016",
+      "zh": "我不是學生，您呢？",
+      "en": "I am not a student. And you?",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不是"
+        },
+        {
+          "text": "學生"
+        },
+        {
+          "text": "您呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-ne-followup"
+      ]
+    },
+    {
+      "id": "tb-L04-017",
+      "zh": "我的名字是小文。",
+      "en": "My name is Xiaowen.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "名字"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "小文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-de-possessive"
+      ]
+    },
+    {
+      "id": "tb-L04-018",
+      "zh": "我的工作很忙。",
+      "en": "My job is very busy.",
+      "targetWordId": "tocfl-66de47b958",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "忙"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-de-possessive"
+      ]
+    },
+    {
+      "id": "tb-L04-019",
+      "zh": "我爸爸的工作很忙。",
+      "en": "My father's job is very busy.",
+      "targetWordId": "tocfl-485f51de92",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "爸爸"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "忙"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-de-possessive"
+      ]
+    },
+    {
+      "id": "tb-L04-020",
+      "zh": "他的工作很累。",
+      "en": "His job is very tiring.",
+      "targetWordId": "tocfl-66de47b958",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "累"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-de-possessive"
+      ]
+    },
+    {
+      "id": "tb-L04-021",
+      "zh": "明文的媽媽是小學老師。",
+      "en": "Mingwen's mother is an elementary school teacher.",
+      "targetWordId": "tocfl-feba8fafa9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "明文"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "小學"
+        },
+        {
+          "text": "老師"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-de-possessive"
+      ]
+    },
+    {
+      "id": "tb-L04-022",
+      "zh": "我媽媽喜歡她的工作。",
+      "en": "My mother likes her job.",
+      "targetWordId": "tocfl-feba8fafa9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "她"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-de-possessive"
+      ]
+    },
+    {
+      "id": "tb-L04-023",
+      "zh": "他的媽媽喜歡小孩子。",
+      "en": "His mother likes children.",
+      "targetWordId": "tocfl-feba8fafa9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "小孩子"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-de-possessive"
+      ]
+    },
+    {
+      "id": "tb-L04-024",
+      "zh": "我媽媽喜歡小孩子，你媽媽喜歡不喜歡？",
+      "en": "My mother likes children; does yours?",
+      "targetWordId": "tocfl-feba8fafa9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "小孩子"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "喜歡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-025",
+      "zh": "我爸爸是法文老師，你爸爸呢？",
+      "en": "My father is a French teacher. And yours?",
+      "targetWordId": "tocfl-485f51de92",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "爸爸"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "法文"
+        },
+        {
+          "text": "老師"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "爸爸"
+        },
+        {
+          "text": "呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-ne-followup"
+      ]
+    },
+    {
+      "id": "tb-L04-026",
+      "zh": "我每天都很忙，你忙不忙？",
+      "en": "I am busy every day. Are you?",
+      "targetWordId": "moec-fe09b2a21c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "每天"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "忙"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "忙"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "忙"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-a-not-a"
+      ]
+    },
+    {
+      "id": "tb-L04-027",
+      "zh": "他每天都很累，你呢？",
+      "en": "He is tired every day. And you?",
+      "targetWordId": "moec-fe09b2a21c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "每天"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "累"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "呢"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "lesson": 4,
+      "grammarIds": [
+        "gram-ne-followup"
+      ]
+    },
+    {
+      "id": "tb-L05-001",
+      "zh": "這是我弟弟。",
+      "en": "This is my younger brother.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "弟弟"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhe-shi-intro"
+      ]
+    },
+    {
+      "id": "tb-L05-002",
+      "zh": "這是我朋友。",
+      "en": "This is my friend.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "朋友"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhe-shi-intro"
+      ]
+    },
+    {
+      "id": "tb-L05-003",
+      "zh": "這是我弟弟，王家文。",
+      "en": "This is my younger brother, Wang Jiawen.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "王家文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhe-shi-intro"
+      ]
+    },
+    {
+      "id": "tb-L05-004",
+      "zh": "這是我姐姐，她在銀行工作。",
+      "en": "This is my older sister; she works at a bank.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "姐姐"
+        },
+        {
+          "text": "她"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhe-shi-intro"
+      ]
+    },
+    {
+      "id": "tb-L05-005",
+      "zh": "這是我朋友，他是美國人。",
+      "en": "This is my friend; he is American.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "朋友"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "美國人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhe-shi-intro"
+      ]
+    },
+    {
+      "id": "tb-L05-006",
+      "zh": "這是我哥哥，他在大學念書。",
+      "en": "This is my older brother; he studies at a university.",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "大學"
+        },
+        {
+          "text": "念書"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhe-shi-intro"
+      ]
+    },
+    {
+      "id": "tb-L05-007",
+      "zh": "這是誰？",
+      "en": "Who is this?",
+      "targetWordId": "tocfl-89e707550c",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "誰"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-question-words"
+      ]
+    },
+    {
+      "id": "tb-L05-008",
+      "zh": "我住在臺灣。",
+      "en": "I live in Taiwan.",
+      "targetWordId": "tb-ccf8acf637",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "臺灣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai"
+      ]
+    },
+    {
+      "id": "tb-L05-009",
+      "zh": "他住在美國。",
+      "en": "He lives in the United States.",
+      "targetWordId": "tb-ccf8acf637",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "美國"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai"
+      ]
+    },
+    {
+      "id": "tb-L05-010",
+      "zh": "我住在臺北。",
+      "en": "I live in Taipei.",
+      "targetWordId": "tb-ccf8acf637",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "臺北"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai"
+      ]
+    },
+    {
+      "id": "tb-L05-011",
+      "zh": "我朋友住在加州。",
+      "en": "My friend lives in California.",
+      "targetWordId": "tocfl-79b6361089",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "朋友"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "加州"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai"
+      ]
+    },
+    {
+      "id": "tb-L05-012",
+      "zh": "我父母住在臺北。",
+      "en": "My parents live in Taipei.",
+      "targetWordId": "tb-ccf8acf637",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "父母"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "臺北"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai"
+      ]
+    },
+    {
+      "id": "tb-L05-013",
+      "zh": "你住在哪裡？",
+      "en": "Where do you live?",
+      "targetWordId": "tb-ccf8acf637",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "哪裡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai",
+        "gram-question-words"
+      ]
+    },
+    {
+      "id": "tb-L05-014",
+      "zh": "你朋友住在哪裡？",
+      "en": "Where does your friend live?",
+      "targetWordId": "tocfl-79b6361089",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "朋友"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "哪裡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai",
+        "gram-question-words"
+      ]
+    },
+    {
+      "id": "tb-L05-015",
+      "zh": "誰住在臺北？",
+      "en": "Who lives in Taipei?",
+      "targetWordId": "tb-ccf8acf637",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "誰"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "臺北"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai",
+        "gram-question-words"
+      ]
+    },
+    {
+      "id": "tb-L05-016",
+      "zh": "他是誰？",
+      "en": "Who is he?",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "誰"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-question-words"
+      ]
+    },
+    {
+      "id": "tb-L05-017",
+      "zh": "他在哪裡念書？",
+      "en": "Where does he study?",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "哪裡"
+        },
+        {
+          "text": "念書"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-question-words",
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L05-018",
+      "zh": "誰在銀行工作？",
+      "en": "Who works at the bank?",
+      "targetWordId": "tocfl-8c7b2e0173",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "誰"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-question-words",
+        "gram-zai-place"
+      ]
+    },
+    {
+      "id": "tb-L05-019",
+      "zh": "你想去哪裡玩？",
+      "en": "Where would you like to go to have fun?",
+      "targetWordId": "tocfl-be4741f92b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "哪裡"
+        },
+        {
+          "text": "玩"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-qu-place-verb",
+        "gram-question-words"
+      ]
+    },
+    {
+      "id": "tb-L05-020",
+      "zh": "我想去法國念書。",
+      "en": "I would like to go to France to study.",
+      "targetWordId": "tocfl-be4741f92b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "法國"
+        },
+        {
+          "text": "念書"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-qu-place-verb"
+      ]
+    },
+    {
+      "id": "tb-L05-021",
+      "zh": "我想去迪士尼樂園玩。",
+      "en": "I would like to go to Disneyland.",
+      "targetWordId": "tocfl-be4741f92b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "迪士尼樂園"
+        },
+        {
+          "text": "玩"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-qu-place-verb"
+      ]
+    },
+    {
+      "id": "tb-L05-022",
+      "zh": "他想去臺灣玩。",
+      "en": "He would like to go to Taiwan.",
+      "targetWordId": "tocfl-be4741f92b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "臺灣"
+        },
+        {
+          "text": "玩"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-qu-place-verb"
+      ]
+    },
+    {
+      "id": "tb-L05-023",
+      "zh": "我想去公園玩。",
+      "en": "I would like to go to the park.",
+      "targetWordId": "tocfl-be4741f92b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "公園"
+        },
+        {
+          "text": "玩"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-qu-place-verb"
+      ]
+    },
+    {
+      "id": "tb-L05-024",
+      "zh": "我弟弟想去迪士尼樂園玩。",
+      "en": "My younger brother would like to go to Disneyland.",
+      "targetWordId": "tocfl-be4741f92b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "迪士尼樂園"
+        },
+        {
+          "text": "玩"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-qu-place-verb"
+      ]
+    },
+    {
+      "id": "tb-L05-025",
+      "zh": "我想去美國工作。",
+      "en": "I would like to go to the United States to work.",
+      "targetWordId": "tocfl-be4741f92b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "美國"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-qu-place-verb"
+      ]
+    },
+    {
+      "id": "tb-L05-026",
+      "zh": "他平常住在臺北，現在在美國玩。",
+      "en": "He usually lives in Taipei; now he is in the United States on holiday.",
+      "targetWordId": "tocfl-39b867df96",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "平常"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "臺北"
+        },
+        {
+          "text": "現在"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "美國"
+        },
+        {
+          "text": "玩"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai"
+      ]
+    },
+    {
+      "id": "tb-L05-027",
+      "zh": "我現在住在美國，平常住在臺灣。",
+      "en": "I live in the US now, and usually live in Taiwan.",
+      "targetWordId": "tocfl-ff2bca9c96",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "現在"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "美國"
+        },
+        {
+          "text": "平常"
+        },
+        {
+          "text": "住在"
+        },
+        {
+          "text": "臺灣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-zhuzai"
+      ]
+    },
+    {
+      "id": "tb-L05-028",
+      "zh": "我朋友放假，他想去臺灣玩。",
+      "en": "My friend is on holiday and wants to go to Taiwan.",
+      "targetWordId": "tocfl-79b6361089",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "朋友"
+        },
+        {
+          "text": "放假"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "臺灣"
+        },
+        {
+          "text": "玩"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "lesson": 5,
+      "grammarIds": [
+        "gram-qu-place-verb"
+      ]
+    },
+    {
+      "id": "tb-L06-001",
+      "zh": "我喜歡唱歌，還喜歡跳舞。",
+      "en": "I like singing, and I also like dancing.",
+      "targetWordId": "tocfl-840e495392",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "唱歌"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "跳舞"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-hai-also"
+      ]
+    },
+    {
+      "id": "tb-L06-002",
+      "zh": "我喜歡聽音樂，還喜歡看電視。",
+      "en": "I like listening to music, and I also like watching TV.",
+      "targetWordId": "tocfl-a56e4048ae",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "音樂"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "電視"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-hai-also"
+      ]
+    },
+    {
+      "id": "tb-L06-003",
+      "zh": "我週末喜歡打網球，還喜歡跑步。",
+      "en": "At weekends I like to play tennis, and I also like to run.",
+      "targetWordId": "tocfl-ed73cfde55",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "週末"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "打網"
+        },
+        {
+          "text": "球"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "跑步"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-hai-also"
+      ]
+    },
+    {
+      "id": "tb-L06-004",
+      "zh": "他喜歡運動，還喜歡唱歌。",
+      "en": "He likes sports, and he also likes singing.",
+      "targetWordId": "tocfl-1ce77cadad",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "運動"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "唱歌"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-hai-also"
+      ]
+    },
+    {
+      "id": "tb-L06-005",
+      "zh": "我想去臺灣，還想去美國。",
+      "en": "I want to go to Taiwan, and I also want to go to the United States.",
+      "targetWordId": "tocfl-d3c7860a8f",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "臺灣"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "美國"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-hai-also"
+      ]
+    },
+    {
+      "id": "tb-L06-006",
+      "zh": "我有一個姐姐，還有一個哥哥。",
+      "en": "I have an older sister, and also an older brother.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "姐姐"
+        },
+        {
+          "text": "還有"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "哥哥"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-hai-also"
+      ]
+    },
+    {
+      "id": "tb-L06-007",
+      "zh": "我平常喜歡聽音樂，週末還喜歡打網球。",
+      "en": "I usually like listening to music, and at weekends I also like playing tennis.",
+      "targetWordId": "tocfl-a56e4048ae",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "平常"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "音樂"
+        },
+        {
+          "text": "週末"
+        },
+        {
+          "text": "還"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "打網"
+        },
+        {
+          "text": "球"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-hai-also"
+      ]
+    },
+    {
+      "id": "tb-L06-008",
+      "zh": "我晚上在家看電視。",
+      "en": "I watch TV at home in the evening.",
+      "targetWordId": "tocfl-62d708404a",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "晚上"
+        },
+        {
+          "text": "在家"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "電視"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-time-place-order"
+      ]
+    },
+    {
+      "id": "tb-L06-009",
+      "zh": "我週末在家看電視。",
+      "en": "I watch TV at home at the weekend.",
+      "targetWordId": "tocfl-ed73cfde55",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "週末"
+        },
+        {
+          "text": "在家"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "電視"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-time-place-order"
+      ]
+    },
+    {
+      "id": "tb-L06-010",
+      "zh": "我平常在公園跑步。",
+      "en": "I usually run in the park.",
+      "targetWordId": "tocfl-33d0f2d800",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "平常"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "公園"
+        },
+        {
+          "text": "跑步"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-time-place-order"
+      ]
+    },
+    {
+      "id": "tb-L06-011",
+      "zh": "我每天在學校念書。",
+      "en": "I study at school every day.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "每天"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "學校"
+        },
+        {
+          "text": "念書"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-time-place-order"
+      ]
+    },
+    {
+      "id": "tb-L06-012",
+      "zh": "他晚上在家聽音樂。",
+      "en": "He listens to music at home in the evening.",
+      "targetWordId": "tocfl-62d708404a",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "晚上"
+        },
+        {
+          "text": "在家"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "音樂"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-time-place-order"
+      ]
+    },
+    {
+      "id": "tb-L06-013",
+      "zh": "你週末在哪裡運動？",
+      "en": "Where do you exercise at the weekend?",
+      "targetWordId": "tocfl-ed73cfde55",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "週末"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "哪裡"
+        },
+        {
+          "text": "運動"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-time-place-order"
+      ]
+    },
+    {
+      "id": "tb-L06-014",
+      "zh": "你晚上在家做什麼？",
+      "en": "What do you do at home in the evening?",
+      "targetWordId": "tocfl-62d708404a",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "晚上"
+        },
+        {
+          "text": "在家"
+        },
+        {
+          "text": "做"
+        },
+        {
+          "text": "什麼"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-time-place-order"
+      ]
+    },
+    {
+      "id": "tb-L06-015",
+      "zh": "我週末常常在家看電視。",
+      "en": "I often watch TV at home at weekends.",
+      "targetWordId": "tocfl-ed73cfde55",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "週末"
+        },
+        {
+          "text": "常常"
+        },
+        {
+          "text": "在家"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "電視"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-time-place-order"
+      ]
+    },
+    {
+      "id": "tb-L06-016",
+      "zh": "我週末常常去公園跑步。",
+      "en": "I often go to the park to run at weekends.",
+      "targetWordId": "tocfl-ed73cfde55",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "週末"
+        },
+        {
+          "text": "常常"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "公園"
+        },
+        {
+          "text": "跑步"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-qu-place-verb"
+      ]
+    },
+    {
+      "id": "tb-L06-017",
+      "zh": "他們都不喜歡跑步。",
+      "en": "None of them likes running.",
+      "targetWordId": "tocfl-33d0f2d800",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "跑步"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-ye-dou-order"
+      ]
+    },
+    {
+      "id": "tb-L06-018",
+      "zh": "我也不喜歡跳舞。",
+      "en": "I don't like dancing either.",
+      "targetWordId": "tocfl-a35fc1d43a",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "跳舞"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-ye-dou-order"
+      ]
+    },
+    {
+      "id": "tb-L06-019",
+      "zh": "我哥哥也不喜歡運動。",
+      "en": "My older brother doesn't like sports either.",
+      "targetWordId": "tocfl-1ce77cadad",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "運動"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-ye-dou-order"
+      ]
+    },
+    {
+      "id": "tb-L06-020",
+      "zh": "我媽媽也都喜歡聽音樂。",
+      "en": "My mother and the others all like listening to music too.",
+      "targetWordId": "tocfl-a56e4048ae",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "音樂"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-ye-dou-order"
+      ]
+    },
+    {
+      "id": "tb-L06-021",
+      "zh": "他們都沒有哥哥。",
+      "en": "None of them has an older brother.",
+      "targetWordId": "tocfl-490e9adcc1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他們"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "哥哥"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-ye-dou-order"
+      ]
+    },
+    {
+      "id": "tb-L06-022",
+      "zh": "他們也都有弟弟。",
+      "en": "They all have younger brothers too.",
+      "targetWordId": "tocfl-490e9adcc1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他們"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "弟弟"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-ye-dou-order"
+      ]
+    },
+    {
+      "id": "tb-L06-023",
+      "zh": "我弟弟也不喜歡打網球。",
+      "en": "My younger brother does not like tennis either.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "也"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "打網"
+        },
+        {
+          "text": "球"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-ye-dou-order"
+      ]
+    },
+    {
+      "id": "tb-L06-024",
+      "zh": "我和我弟弟都喜歡唱歌，可是都不喜歡跳舞。",
+      "en": "My younger brother and I both like singing, but neither of us likes dancing.",
+      "targetWordId": "tocfl-0b3d2f7f28",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "和"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "唱歌"
+        },
+        {
+          "text": "可是"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "喜歡"
+        },
+        {
+          "text": "跳舞"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "lesson": 6,
+      "grammarIds": [
+        "gram-ye-dou-order"
+      ]
+    },
+    {
+      "id": "tb-L07-001",
+      "zh": "我的手機號碼是九二三四五六七八。",
+      "en": "My cell phone number is 92345678.",
+      "targetWordId": "tocfl-8e37d8babc",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "手機"
+        },
+        {
+          "text": "號碼"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "九"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "三"
+        },
+        {
+          "text": "四"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "六"
+        },
+        {
+          "text": "七"
+        },
+        {
+          "text": "八"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L07-002",
+      "zh": "我的電話號碼是三五八二九七。",
+      "en": "My telephone number is 358297.",
+      "targetWordId": "tocfl-c128a92442",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "電話"
+        },
+        {
+          "text": "號碼"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "三五"
+        },
+        {
+          "text": "八"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "九"
+        },
+        {
+          "text": "七"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L07-003",
+      "zh": "他的手機號碼是零九二三四五六七。",
+      "en": "His cell phone number is 09234567.",
+      "targetWordId": "tocfl-8e37d8babc",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "手機"
+        },
+        {
+          "text": "號碼"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "零"
+        },
+        {
+          "text": "九"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "三"
+        },
+        {
+          "text": "四"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "六"
+        },
+        {
+          "text": "七"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L07-004",
+      "zh": "你的手機號碼是幾號？",
+      "en": "What is your cell phone number?",
+      "targetWordId": "tocfl-8e37d8babc",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "手機"
+        },
+        {
+          "text": "號碼"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "幾號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L07-005",
+      "zh": "林小姐的電話是幾號？",
+      "en": "What is Miss Lin's telephone number?",
+      "targetWordId": "tb-afdc0a7ceb",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "林"
+        },
+        {
+          "text": "小姐"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "電話"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "幾號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L07-006",
+      "zh": "我有兩個姐姐。",
+      "en": "I have two older sisters.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "姐姐"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L07-007",
+      "zh": "他有十個學生。",
+      "en": "He has ten students.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L07-008",
+      "zh": "我有二十個學生。",
+      "en": "I have twenty students.",
+      "targetWordId": "tocfl-7bb5d94953",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L07-009",
+      "zh": "這個公司有一百個人。",
+      "en": "This company has one hundred people.",
+      "targetWordId": "moec-258a0d1886",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "公司"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "百"
+        },
+        {
+          "text": "個人"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L07-010",
+      "zh": "我給林小姐打電話。",
+      "en": "I call Miss Lin.",
+      "targetWordId": "tocfl-f1c5f742c2",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "林"
+        },
+        {
+          "text": "小姐"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-011",
+      "zh": "我給他打電話。",
+      "en": "I call him.",
+      "targetWordId": "tocfl-f1c5f742c2",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-012",
+      "zh": "他給我打電話。",
+      "en": "He calls me.",
+      "targetWordId": "tocfl-f1c5f742c2",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-013",
+      "zh": "你給誰打電話？",
+      "en": "Who are you calling?",
+      "targetWordId": "tocfl-f1c5f742c2",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "誰"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-014",
+      "zh": "我給我媽媽打電話。",
+      "en": "I call my mother.",
+      "targetWordId": "tocfl-f1c5f742c2",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-015",
+      "zh": "我哥哥給我打電話。",
+      "en": "My older brother calls me.",
+      "targetWordId": "tocfl-f1c5f742c2",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-016",
+      "zh": "我給北電公司打電話。",
+      "en": "I call Beidian Company.",
+      "targetWordId": "tocfl-f1c5f742c2",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "北電公司"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-017",
+      "zh": "我今天給銀行打電話。",
+      "en": "I call the bank today.",
+      "targetWordId": "tocfl-f1c5f742c2",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "今天"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-018",
+      "zh": "麻煩您給我打電話。",
+      "en": "Could you please call me?",
+      "targetWordId": "tocfl-781c80e9bd",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "麻煩"
+        },
+        {
+          "text": "您"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-019",
+      "zh": "麻煩您給林小姐打電話。",
+      "en": "Could you please call Miss Lin?",
+      "targetWordId": "tocfl-781c80e9bd",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "麻煩"
+        },
+        {
+          "text": "您"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "林"
+        },
+        {
+          "text": "小姐"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-020",
+      "zh": "我回來以後，給你打電話。",
+      "en": "After I get back, I'll call you.",
+      "targetWordId": "moec-5f085f36aa",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "回來"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-yihou",
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-021",
+      "zh": "林小姐回來以後，給我打電話。",
+      "en": "After Miss Lin gets back, she'll call me.",
+      "targetWordId": "tb-afdc0a7ceb",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "林"
+        },
+        {
+          "text": "小姐"
+        },
+        {
+          "text": "回來"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "打電話"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-yihou",
+        "gram-gei-call"
+      ]
+    },
+    {
+      "id": "tb-L07-022",
+      "zh": "我聽音樂以後，常常看電視。",
+      "en": "After I listen to music, I often watch TV.",
+      "targetWordId": "tocfl-a2cefdd5e9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "聽"
+        },
+        {
+          "text": "音樂"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "常常"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "電視"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-yihou"
+      ]
+    },
+    {
+      "id": "tb-L07-023",
+      "zh": "我運動以後，常常很累。",
+      "en": "After I exercise, I am often tired.",
+      "targetWordId": "tocfl-a2cefdd5e9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "運動"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "常常"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "累"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-yihou"
+      ]
+    },
+    {
+      "id": "tb-L07-024",
+      "zh": "他看電視以後，去公園跑步。",
+      "en": "After he watches TV, he goes running in the park.",
+      "targetWordId": "tocfl-a2cefdd5e9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "電視"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "公園"
+        },
+        {
+          "text": "跑步"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-yihou"
+      ]
+    },
+    {
+      "id": "tb-L07-025",
+      "zh": "我打電話以後，去公園跑步。",
+      "en": "After I make a call, I go running in the park.",
+      "targetWordId": "tocfl-d068a0edb6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "打電話"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "公園"
+        },
+        {
+          "text": "跑步"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-yihou"
+      ]
+    },
+    {
+      "id": "tb-L07-026",
+      "zh": "我工作以後，在家看電視。",
+      "en": "After work, I watch TV at home.",
+      "targetWordId": "tocfl-a2cefdd5e9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "工作"
+        },
+        {
+          "text": "以後"
+        },
+        {
+          "text": "在家"
+        },
+        {
+          "text": "看"
+        },
+        {
+          "text": "電視"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "lesson": 7,
+      "grammarIds": [
+        "gram-yihou"
+      ]
+    },
+    {
+      "id": "tb-L08-001",
+      "zh": "今天是八月十一號。",
+      "en": "Today is August 11th.",
+      "targetWordId": "tocfl-74c7794307",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "八"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "一號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-dates"
+      ]
+    },
+    {
+      "id": "tb-L08-002",
+      "zh": "明天是十月十號。",
+      "en": "Tomorrow is October 10th.",
+      "targetWordId": "tocfl-2707586eb6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "明天"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-dates"
+      ]
+    },
+    {
+      "id": "tb-L08-003",
+      "zh": "我的生日是三月五號。",
+      "en": "My birthday is March 5th.",
+      "targetWordId": "tocfl-824d01acc6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "三"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-dates"
+      ]
+    },
+    {
+      "id": "tb-L08-004",
+      "zh": "我的生日是六月三號。",
+      "en": "My birthday is June 3rd.",
+      "targetWordId": "tocfl-824d01acc6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "六月"
+        },
+        {
+          "text": "三"
+        },
+        {
+          "text": "號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-dates"
+      ]
+    },
+    {
+      "id": "tb-L08-005",
+      "zh": "他的生日是九月二十號。",
+      "en": "His birthday is September 20th.",
+      "targetWordId": "tocfl-824d01acc6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "九"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-dates"
+      ]
+    },
+    {
+      "id": "tb-L08-006",
+      "zh": "他的生日是八月十七日。",
+      "en": "His birthday is August 17th.",
+      "targetWordId": "tocfl-824d01acc6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "八"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "七"
+        },
+        {
+          "text": "日"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-dates"
+      ]
+    },
+    {
+      "id": "tb-L08-007",
+      "zh": "我哥哥的生日是十二月十五號。",
+      "en": "My older brother's birthday is December 15th.",
+      "targetWordId": "tocfl-824d01acc6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-dates"
+      ]
+    },
+    {
+      "id": "tb-L08-008",
+      "zh": "我哥哥八月十一號去美國。",
+      "en": "My older brother goes to the United States on August 11th.",
+      "targetWordId": "tocfl-d4fe751e2e",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "八"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "一號"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "美國"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-dates"
+      ]
+    },
+    {
+      "id": "tb-L08-009",
+      "zh": "我的生日是十一月九號，他的生日是十一月十號。",
+      "en": "My birthday is November 9th; his is November 10th.",
+      "targetWordId": "tocfl-824d01acc6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "一月"
+        },
+        {
+          "text": "九"
+        },
+        {
+          "text": "號"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "一月"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-dates"
+      ]
+    },
+    {
+      "id": "tb-L08-010",
+      "zh": "今天是幾月幾日？",
+      "en": "What is the date today?",
+      "targetWordId": "tocfl-74c7794307",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "幾"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "幾"
+        },
+        {
+          "text": "日"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-ji-questions"
+      ]
+    },
+    {
+      "id": "tb-L08-011",
+      "zh": "明天是幾月幾號？",
+      "en": "What is the date tomorrow?",
+      "targetWordId": "tocfl-2707586eb6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "明天"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "幾"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "幾號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-ji-questions"
+      ]
+    },
+    {
+      "id": "tb-L08-012",
+      "zh": "你的生日是幾月幾號？",
+      "en": "What is the date of your birthday?",
+      "targetWordId": "tocfl-824d01acc6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "幾"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "幾號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-ji-questions"
+      ]
+    },
+    {
+      "id": "tb-L08-013",
+      "zh": "他的生日是幾月幾號？",
+      "en": "What is the date of his birthday?",
+      "targetWordId": "tocfl-824d01acc6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "幾"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "幾號"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-ji-questions"
+      ]
+    },
+    {
+      "id": "tb-L08-014",
+      "zh": "你弟弟今年幾歲？",
+      "en": "How old is your younger brother this year?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "今年"
+        },
+        {
+          "text": "幾歲"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-ji-questions"
+      ]
+    },
+    {
+      "id": "tb-L08-015",
+      "zh": "他今年幾歲？",
+      "en": "How old is he this year?",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "今年"
+        },
+        {
+          "text": "幾歲"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-ji-questions"
+      ]
+    },
+    {
+      "id": "tb-L08-016",
+      "zh": "你哥哥今年幾歲？",
+      "en": "How old is your older brother?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "今年"
+        },
+        {
+          "text": "幾歲"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-ji-questions"
+      ]
+    },
+    {
+      "id": "tb-L08-017",
+      "zh": "我今年二十歲。",
+      "en": "I am twenty years old.",
+      "targetWordId": "tocfl-9a92abb03f",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "今年"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "歲"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L08-018",
+      "zh": "我弟弟今年十七歲。",
+      "en": "My younger brother is seventeen this year.",
+      "targetWordId": "tocfl-9a92abb03f",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "今年"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "七"
+        },
+        {
+          "text": "歲"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-numbers-0-100"
+      ]
+    },
+    {
+      "id": "tb-L08-019",
+      "zh": "我要一雙運動鞋，好不好？",
+      "en": "I'd like a pair of sneakers, okay?",
+      "targetWordId": "tocfl-f3434a8bee",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "要"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "雙"
+        },
+        {
+          "text": "運動鞋"
+        },
+        {
+          "text": "好不好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-tag-question",
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L08-020",
+      "zh": "我請他去吃大餐，好不好？",
+      "en": "I'll treat him to a big meal, okay?",
+      "targetWordId": "tocfl-eefeda1588",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "請"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "大餐"
+        },
+        {
+          "text": "好不好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-tag-question"
+      ]
+    },
+    {
+      "id": "tb-L08-021",
+      "zh": "今天晚上我請你去吃大餐，好不好？",
+      "en": "Tonight I'll treat you to a big meal, okay?",
+      "targetWordId": "tocfl-74c7794307",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "晚上"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "請"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "大餐"
+        },
+        {
+          "text": "好不好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-tag-question"
+      ]
+    },
+    {
+      "id": "tb-L08-022",
+      "zh": "我明天去買禮物，可以嗎？",
+      "en": "I'll go and buy the gift tomorrow, is that OK?",
+      "targetWordId": "tocfl-2707586eb6",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "明天"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "買"
+        },
+        {
+          "text": "禮物"
+        },
+        {
+          "text": "可以嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-tag-question",
+        "gram-qu-place-verb"
+      ]
+    },
+    {
+      "id": "tb-L08-023",
+      "zh": "我要去迪士尼樂園玩，可以嗎？",
+      "en": "I want to go to Disneyland, is that OK?",
+      "targetWordId": "tocfl-f3434a8bee",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "要"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "迪士尼樂園"
+        },
+        {
+          "text": "玩"
+        },
+        {
+          "text": "可以嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-tag-question"
+      ]
+    },
+    {
+      "id": "tb-L08-024",
+      "zh": "我今天晚上去買運動鞋，好不好？",
+      "en": "I'll go and buy sneakers tonight, okay?",
+      "targetWordId": "tocfl-74c7794307",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "今天"
+        },
+        {
+          "text": "晚上"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "買"
+        },
+        {
+          "text": "運動鞋"
+        },
+        {
+          "text": "好不好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-tag-question"
+      ]
+    },
+    {
+      "id": "tb-L08-025",
+      "zh": "祝你生日快樂，你要什麼生日禮物？",
+      "en": "Happy birthday! What birthday gift do you want?",
+      "targetWordId": "tocfl-4573935c3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "祝"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "快樂"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "要"
+        },
+        {
+          "text": "什麼"
+        },
+        {
+          "text": "生日"
+        },
+        {
+          "text": "禮物"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-question-words"
+      ]
+    },
+    {
+      "id": "tb-L08-026",
+      "zh": "你還要什麼？",
+      "en": "What else do you want?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "還要"
+        },
+        {
+          "text": "什麼"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-question-words"
+      ]
+    },
+    {
+      "id": "tb-L08-027",
+      "zh": "我要一雙運動鞋。",
+      "en": "I want a pair of sneakers.",
+      "targetWordId": "tocfl-f3434a8bee",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "要"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "雙"
+        },
+        {
+          "text": "運動鞋"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "lesson": 8,
+      "grammarIds": [
+        "gram-number-measure"
+      ]
+    },
+    {
+      "id": "tb-L09-001",
+      "zh": "今天是星期幾？",
+      "en": "What day of the week is it today?",
+      "targetWordId": "tocfl-74c7794307",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "星期"
+        },
+        {
+          "text": "幾"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-002",
+      "zh": "明天是星期五。",
+      "en": "Tomorrow is Friday.",
+      "targetWordId": "tb-84b4437aca",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "明天"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "星期五"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-003",
+      "zh": "今天是星期二。",
+      "en": "Today is Tuesday.",
+      "targetWordId": "tocfl-74c7794307",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "今天"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "星期"
+        },
+        {
+          "text": "二"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-004",
+      "zh": "我星期五有時間。",
+      "en": "I am free on Friday.",
+      "targetWordId": "tb-84b4437aca",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "星期五"
+        },
+        {
+          "text": "有時"
+        },
+        {
+          "text": "間"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-005",
+      "zh": "你星期五有時間嗎？",
+      "en": "Are you free on Friday?",
+      "targetWordId": "tb-84b4437aca",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "星期五"
+        },
+        {
+          "text": "有時"
+        },
+        {
+          "text": "間"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-006",
+      "zh": "你星期六有沒有時間？",
+      "en": "Are you free on Saturday?",
+      "targetWordId": "tb-cc63efa7b1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "星期六"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "沒有"
+        },
+        {
+          "text": "時間"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-007",
+      "zh": "我星期六不行，星期五怎麼樣？",
+      "en": "Saturday doesn't work for me. How about Friday?",
+      "targetWordId": "tb-cc63efa7b1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "星期六"
+        },
+        {
+          "text": "不行"
+        },
+        {
+          "text": "星期五"
+        },
+        {
+          "text": "怎麼樣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-008",
+      "zh": "禮拜五我要去餐廳吃飯。",
+      "en": "On Friday I'm going to a restaurant to eat.",
+      "targetWordId": "tocfl-0cf1ab2847",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "禮拜"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "要"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "餐廳"
+        },
+        {
+          "text": "吃飯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-009",
+      "zh": "他星期一、星期二都在銀行工作。",
+      "en": "He works at the bank on Monday and Tuesday.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "星期"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "星期"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "都"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "銀行"
+        },
+        {
+          "text": "工作"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-010",
+      "zh": "太好了，星期五見！",
+      "en": "Great, see you on Friday!",
+      "targetWordId": "tb-ff6830c502",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "太好了"
+        },
+        {
+          "text": "星期五"
+        },
+        {
+          "text": "見"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-011",
+      "zh": "二零二五年十月四號是星期六。",
+      "en": "October 4th, 2025 is a Saturday.",
+      "targetWordId": "tb-cc63efa7b1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "二"
+        },
+        {
+          "text": "零"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "年"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "四"
+        },
+        {
+          "text": "號"
+        },
+        {
+          "text": "是"
+        },
+        {
+          "text": "星期六"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-year-date",
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-012",
+      "zh": "我二零二五年二月五號去臺灣。",
+      "en": "I go to Taiwan on February 5th, 2025.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "零"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "年"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "號"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "臺灣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-year-date"
+      ]
+    },
+    {
+      "id": "tb-L09-013",
+      "zh": "他二零二四年八月去美國。",
+      "en": "He goes to the United States in August 2024.",
+      "targetWordId": "tocfl-c8b02f2841",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "零"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "四"
+        },
+        {
+          "text": "年"
+        },
+        {
+          "text": "八"
+        },
+        {
+          "text": "月"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "美國"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-year-date"
+      ]
+    },
+    {
+      "id": "tb-L09-014",
+      "zh": "現在幾點？",
+      "en": "What time is it now?",
+      "targetWordId": "tocfl-15b1a8bf3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "現在"
+        },
+        {
+          "text": "幾"
+        },
+        {
+          "text": "點"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-dian-clock"
+      ]
+    },
+    {
+      "id": "tb-L09-015",
+      "zh": "現在三點。",
+      "en": "It is three o'clock now.",
+      "targetWordId": "tocfl-15b1a8bf3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "現在"
+        },
+        {
+          "text": "三"
+        },
+        {
+          "text": "點"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-dian-clock"
+      ]
+    },
+    {
+      "id": "tb-L09-016",
+      "zh": "現在十點二十分。",
+      "en": "It is 10:20 now.",
+      "targetWordId": "tocfl-15b1a8bf3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "現在"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "二"
+        },
+        {
+          "text": "十分"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-dian-clock"
+      ]
+    },
+    {
+      "id": "tb-L09-017",
+      "zh": "現在五點半。",
+      "en": "It is 5:30 now.",
+      "targetWordId": "tocfl-15b1a8bf3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "現在"
+        },
+        {
+          "text": "五"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "半"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-dian-clock"
+      ]
+    },
+    {
+      "id": "tb-L09-018",
+      "zh": "你幾點下課？",
+      "en": "What time does your class finish?",
+      "targetWordId": "tocfl-15b1a8bf3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "幾"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "下課"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-dian-clock"
+      ]
+    },
+    {
+      "id": "tb-L09-019",
+      "zh": "我四點半下課。",
+      "en": "My class finishes at 4:30.",
+      "targetWordId": "tocfl-15b1a8bf3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "四"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "半"
+        },
+        {
+          "text": "下課"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-dian-clock"
+      ]
+    },
+    {
+      "id": "tb-L09-020",
+      "zh": "他十一點下課。",
+      "en": "His class finishes at eleven.",
+      "targetWordId": "tocfl-e869a714ba",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "十"
+        },
+        {
+          "text": "一點"
+        },
+        {
+          "text": "下課"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-dian-clock"
+      ]
+    },
+    {
+      "id": "tb-L09-021",
+      "zh": "我六點半在餐廳吃飯。",
+      "en": "I eat at the restaurant at 6:30.",
+      "targetWordId": "tocfl-15b1a8bf3b",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "六"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "半"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "餐廳"
+        },
+        {
+          "text": "吃飯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-dian-clock"
+      ]
+    },
+    {
+      "id": "tb-L09-022",
+      "zh": "我星期五晚上六點半在餐廳見。",
+      "en": "I'll meet you at the restaurant at 6:30 on Friday evening.",
+      "targetWordId": "tb-84b4437aca",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "星期五"
+        },
+        {
+          "text": "晚上"
+        },
+        {
+          "text": "六"
+        },
+        {
+          "text": "點"
+        },
+        {
+          "text": "半"
+        },
+        {
+          "text": "在"
+        },
+        {
+          "text": "餐廳"
+        },
+        {
+          "text": "見"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-xingqi",
+        "gram-dian-clock"
+      ]
+    },
+    {
+      "id": "tb-L09-023",
+      "zh": "我跟朋友一起吃飯。",
+      "en": "I eat together with a friend.",
+      "targetWordId": "tocfl-14611f83c9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "跟"
+        },
+        {
+          "text": "朋友"
+        },
+        {
+          "text": "一起"
+        },
+        {
+          "text": "吃飯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-gen-yiqi"
+      ]
+    },
+    {
+      "id": "tb-L09-024",
+      "zh": "我跟我同事一起去餐廳。",
+      "en": "I go to the restaurant together with my coworker.",
+      "targetWordId": "tocfl-14611f83c9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "跟"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "同事"
+        },
+        {
+          "text": "一起"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "餐廳"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-gen-yiqi"
+      ]
+    },
+    {
+      "id": "tb-L09-025",
+      "zh": "我星期五跟同事一起吃牛肉麵。",
+      "en": "On Friday I eat beef noodle soup with a coworker.",
+      "targetWordId": "tb-84b4437aca",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "星期五"
+        },
+        {
+          "text": "跟"
+        },
+        {
+          "text": "同事"
+        },
+        {
+          "text": "一起"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "牛肉麵"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-gen-yiqi",
+        "gram-xingqi"
+      ]
+    },
+    {
+      "id": "tb-L09-026",
+      "zh": "你想跟我一起吃飯嗎？",
+      "en": "Would you like to eat with me?",
+      "targetWordId": "tocfl-14611f83c9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "跟"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "一起"
+        },
+        {
+          "text": "吃飯"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-gen-yiqi"
+      ]
+    },
+    {
+      "id": "tb-L09-027",
+      "zh": "我想跟你一起去餐廳，好不好？",
+      "en": "I'd like to go to the restaurant with you, okay?",
+      "targetWordId": "tocfl-14611f83c9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "想"
+        },
+        {
+          "text": "跟"
+        },
+        {
+          "text": "你"
+        },
+        {
+          "text": "一起"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "餐廳"
+        },
+        {
+          "text": "好不好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-gen-yiqi",
+        "gram-tag-question"
+      ]
+    },
+    {
+      "id": "tb-L09-028",
+      "zh": "他跟他媽媽一起去公園跑步。",
+      "en": "He goes running in the park with his mother.",
+      "targetWordId": "tocfl-14611f83c9",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "跟"
+        },
+        {
+          "text": "他"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "一起"
+        },
+        {
+          "text": "去"
+        },
+        {
+          "text": "公園"
+        },
+        {
+          "text": "跑步"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-gen-yiqi"
+      ]
+    },
+    {
+      "id": "tb-L09-029",
+      "zh": "我要跟我爸爸媽媽一起吃晚飯。",
+      "en": "I'm going to have dinner with my parents.",
+      "targetWordId": "tocfl-0cf1ab2847",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "要"
+        },
+        {
+          "text": "跟"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "爸爸"
+        },
+        {
+          "text": "媽媽"
+        },
+        {
+          "text": "一起"
+        },
+        {
+          "text": "吃"
+        },
+        {
+          "text": "晚飯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-gen-yiqi"
+      ]
+    },
+    {
+      "id": "tb-L09-030",
+      "zh": "美味餐廳的牛肉麵最好吃。",
+      "en": "The beef noodle soup at Tasty Café is the most delicious.",
+      "targetWordId": "tb-2e9db6e051",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "美味餐廳"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "牛肉麵"
+        },
+        {
+          "text": "最好"
+        },
+        {
+          "text": "吃"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "lesson": 9,
+      "grammarIds": [
+        "gram-de-possessive"
+      ]
+    },
+    {
+      "id": "tb-L10-001",
+      "zh": "他說中文，說得很好。",
+      "en": "He speaks Mandarin very well.",
+      "targetWordId": "tocfl-a6e36b0ec1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-002",
+      "zh": "我學中文，學得不錯。",
+      "en": "I am learning Mandarin quite well.",
+      "targetWordId": "tocfl-6b2999c554",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "不錯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-003",
+      "zh": "她唱歌，唱得很好。",
+      "en": "She sings very well.",
+      "targetWordId": "tocfl-2dfdcd2bc8",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "她"
+        },
+        {
+          "text": "唱歌"
+        },
+        {
+          "text": "唱"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-004",
+      "zh": "我弟弟跳舞，跳得不好。",
+      "en": "My younger brother does not dance well.",
+      "targetWordId": "tocfl-2dfdcd2bc8",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "弟弟"
+        },
+        {
+          "text": "跳舞"
+        },
+        {
+          "text": "跳"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "不好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-005",
+      "zh": "李老師寫字，寫得很快。",
+      "en": "Teacher Li writes characters fast.",
+      "targetWordId": "moec-0075d73b7a",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "李"
+        },
+        {
+          "text": "老師"
+        },
+        {
+          "text": "寫字"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "快"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-006",
+      "zh": "你說中文，說得怎麼樣？",
+      "en": "How well do you speak Mandarin?",
+      "targetWordId": "tocfl-a6e36b0ec1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "怎麼樣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-007",
+      "zh": "你學中文，學得怎麼樣？",
+      "en": "How are you doing at learning Mandarin?",
+      "targetWordId": "tocfl-6b2999c554",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "學"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "怎麼樣"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-008",
+      "zh": "我哥哥跑步，跑得很快。",
+      "en": "My older brother runs very fast.",
+      "targetWordId": "tocfl-2dfdcd2bc8",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "哥哥"
+        },
+        {
+          "text": "跑步"
+        },
+        {
+          "text": "跑"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "快"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-009",
+      "zh": "我姐姐做飯，做得很好。",
+      "en": "My older sister cooks very well.",
+      "targetWordId": "tocfl-2dfdcd2bc8",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "姐姐"
+        },
+        {
+          "text": "做飯"
+        },
+        {
+          "text": "做"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "好"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-010",
+      "zh": "他打網球，打得不錯。",
+      "en": "He plays tennis quite well.",
+      "targetWordId": "tocfl-2dfdcd2bc8",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "打網"
+        },
+        {
+          "text": "球"
+        },
+        {
+          "text": "打"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "不錯"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-011",
+      "zh": "我說得不好，可是我常常練習。",
+      "en": "I don't speak well, but I practise often.",
+      "targetWordId": "tocfl-2dfdcd2bc8",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "不好"
+        },
+        {
+          "text": "可是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "常常"
+        },
+        {
+          "text": "練習"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-de-complement"
+      ]
+    },
+    {
+      "id": "tb-L10-012",
+      "zh": "我說中文有一點難。",
+      "en": "Speaking Mandarin is a little difficult for me.",
+      "targetWordId": "tocfl-a6e36b0ec1",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "有一點"
+        },
+        {
+          "text": "難"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-youyidian"
+      ]
+    },
+    {
+      "id": "tb-L10-013",
+      "zh": "寫字有一點難。",
+      "en": "Writing characters is a bit hard.",
+      "targetWordId": "moec-0075d73b7a",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "寫字"
+        },
+        {
+          "text": "有一點"
+        },
+        {
+          "text": "難"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-youyidian"
+      ]
+    },
+    {
+      "id": "tb-L10-014",
+      "zh": "我今天有一點累。",
+      "en": "I am a little tired today.",
+      "targetWordId": "tocfl-e006561609",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "今天"
+        },
+        {
+          "text": "有一點"
+        },
+        {
+          "text": "累"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-youyidian"
+      ]
+    },
+    {
+      "id": "tb-L10-015",
+      "zh": "我今天有點忙。",
+      "en": "I am a little busy today.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "今天"
+        },
+        {
+          "text": "有點"
+        },
+        {
+          "text": "忙"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-youyidian"
+      ]
+    },
+    {
+      "id": "tb-L10-016",
+      "zh": "這家餐廳有一點貴。",
+      "en": "This restaurant is a little expensive.",
+      "targetWordId": "tocfl-e006561609",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這"
+        },
+        {
+          "text": "家"
+        },
+        {
+          "text": "餐廳"
+        },
+        {
+          "text": "有一點"
+        },
+        {
+          "text": "貴"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-youyidian"
+      ]
+    },
+    {
+      "id": "tb-L10-017",
+      "zh": "我覺得聊天不難，可是寫字有一點難。",
+      "en": "I think chatting isn't hard, but writing characters is a little hard.",
+      "targetWordId": "tocfl-d0baf0a365",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "覺得"
+        },
+        {
+          "text": "聊天"
+        },
+        {
+          "text": "不"
+        },
+        {
+          "text": "難"
+        },
+        {
+          "text": "可是"
+        },
+        {
+          "text": "寫字"
+        },
+        {
+          "text": "有一點"
+        },
+        {
+          "text": "難"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-youyidian"
+      ]
+    },
+    {
+      "id": "tb-L10-018",
+      "zh": "我會說中文。",
+      "en": "I can speak Mandarin.",
+      "targetWordId": "tocfl-7a2f97cfcb",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "會"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "中文"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-hui-can"
+      ]
+    },
+    {
+      "id": "tb-L10-019",
+      "zh": "我會寫字。",
+      "en": "I can write characters.",
+      "targetWordId": "tocfl-7a2f97cfcb",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "會"
+        },
+        {
+          "text": "寫字"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-hui-can"
+      ]
+    },
+    {
+      "id": "tb-L10-020",
+      "zh": "我不會打網球。",
+      "en": "I can't play tennis.",
+      "targetWordId": "tocfl-df8a004869",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不會"
+        },
+        {
+          "text": "打網"
+        },
+        {
+          "text": "球"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-hui-can"
+      ]
+    },
+    {
+      "id": "tb-L10-021",
+      "zh": "我不會跳舞，可是我會唱歌。",
+      "en": "I can't dance, but I can sing.",
+      "targetWordId": "tocfl-7a2f97cfcb",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "不會"
+        },
+        {
+          "text": "跳舞"
+        },
+        {
+          "text": "可是"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "會"
+        },
+        {
+          "text": "唱歌"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-hui-can"
+      ]
+    },
+    {
+      "id": "tb-L10-022",
+      "zh": "你會說中文嗎？",
+      "en": "Can you speak Mandarin?",
+      "targetWordId": "tocfl-7a2f97cfcb",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "會"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "中文"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-hui-can"
+      ]
+    },
+    {
+      "id": "tb-L10-023",
+      "zh": "你會做飯嗎？",
+      "en": "Can you cook?",
+      "targetWordId": "tocfl-7a2f97cfcb",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "會"
+        },
+        {
+          "text": "做飯"
+        },
+        {
+          "text": "嗎"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-hui-can"
+      ]
+    },
+    {
+      "id": "tb-L10-024",
+      "zh": "他會寫多少字？",
+      "en": "How many characters can he write?",
+      "targetWordId": "tocfl-7a2f97cfcb",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "會"
+        },
+        {
+          "text": "寫"
+        },
+        {
+          "text": "多少"
+        },
+        {
+          "text": "字"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-hui-can",
+        "gram-duoshao-ji"
+      ]
+    },
+    {
+      "id": "tb-L10-025",
+      "zh": "你有多少個學生？",
+      "en": "How many students do you have?",
+      "targetWordId": "tocfl-3b59f04f42",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "多少"
+        },
+        {
+          "text": "個"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-duoshao-ji"
+      ]
+    },
+    {
+      "id": "tb-L10-026",
+      "zh": "這個學校有多少學生？",
+      "en": "How many students does this school have?",
+      "targetWordId": "tocfl-3b59f04f42",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "這個"
+        },
+        {
+          "text": "學校"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "多少"
+        },
+        {
+          "text": "學生"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-duoshao-ji"
+      ]
+    },
+    {
+      "id": "tb-L10-027",
+      "zh": "你有幾個孩子？",
+      "en": "How many children do you have?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "幾個"
+        },
+        {
+          "text": "孩子"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-duoshao-ji"
+      ]
+    },
+    {
+      "id": "tb-L10-028",
+      "zh": "你有幾個弟弟？",
+      "en": "How many younger brothers do you have?",
+      "targetWordId": "tocfl-c041cb3654",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "你"
+        },
+        {
+          "text": "有"
+        },
+        {
+          "text": "幾個"
+        },
+        {
+          "text": "弟弟"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-duoshao-ji"
+      ]
+    },
+    {
+      "id": "tb-L10-029",
+      "zh": "他喝幾杯咖啡？",
+      "en": "How many cups of coffee does he drink?",
+      "targetWordId": "tocfl-3361e60084",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "他"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "幾"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "咖啡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-duoshao-ji"
+      ]
+    },
+    {
+      "id": "tb-L10-030",
+      "zh": "我每天喝兩杯咖啡。",
+      "en": "I drink two cups of coffee every day.",
+      "targetWordId": "tocfl-3361e60084",
+      "level": "N1",
+      "tokens": [
+        {
+          "text": "我"
+        },
+        {
+          "text": "每天"
+        },
+        {
+          "text": "喝"
+        },
+        {
+          "text": "兩"
+        },
+        {
+          "text": "杯"
+        },
+        {
+          "text": "咖啡"
+        }
+      ],
+      "source": "generated",
+      "doubtful": false,
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "lesson": 10,
+      "grammarIds": [
+        "gram-number-measure"
+      ]
+    }
+  ]
+}

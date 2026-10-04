@@ -219,3 +219,35 @@ describe('ReaderService evidence', () => {
     ]);
   });
 });
+
+describe('ReaderService.next — Lesson focus (Phase 12)', () => {
+  const tbEntry = (zh: string, lesson: number) =>
+    entry(zh, 'w-wo', { lesson, tags: ['textbook:laixue-1', `textbook:laixue-1:L${String(lesson).padStart(2, '0')}`], source: 'generated' });
+  const sentences = [tbEntry('我去喝咖啡。', 3), tbEntry('我喜歡吃。', 3), tbEntry('我去吃。', 4), tbEntry('我好。', 2)];
+
+  it('offers only sentences tagged with the current lesson', async () => {
+    await seedLearner();
+    const reader = service({ lesson: { n: 3, sentences }, rand: () => 0 });
+    const seen = new Set<string>();
+    for (let i = 0; i < 6; i++) {
+      const r = await reader.next({ focus: 'lesson', level: 'N1', sessionIds: seen, now: NOW });
+      expect(r).not.toBeNull();
+      expect(['我去喝咖啡。', '我喜歡吃。']).toContain(r!.pick.sentence.zh);
+      expect(r!.pick.focus).toBe('lesson');
+      expect(r!.generated).toBe(false);
+      seen.add(r!.pick.sentence.id);
+    }
+  });
+
+  it('never repeats a sentence until the lesson pool is used up', async () => {
+    const reader = service({ lesson: { n: 3, sentences }, rand: () => 0 });
+    const a = await reader.next({ focus: 'lesson', level: 'N1', now: NOW });
+    const b = await reader.next({ focus: 'lesson', level: 'N1', sessionIds: new Set([a!.pick.sentence.id]), now: NOW });
+    expect(b!.pick.sentence.id).not.toBe(a!.pick.sentence.id);
+  });
+
+  it('returns nothing (and never goes live) when the lesson has no sentences', async () => {
+    const reader = service({ lesson: { n: 9, sentences }, llm: { generateSentences: async () => { throw new Error('should not be called'); } } });
+    expect(await reader.next({ focus: 'lesson', level: 'N1', now: NOW })).toBeNull();
+  });
+});

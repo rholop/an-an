@@ -1,0 +1,59 @@
+lesson: 2
+sentences:
+  - { zh: 我有一個哥哥。, en: "I have one older brother.", grammar: [gram-you-meiyou] }
+  - { zh: 我有弟弟。, en: I have a younger brother., grammar: [gram-you-meiyou] }
+  - { zh: 我有姐姐。, en: I have an older sister., grammar: [gram-you-meiyou] }
+  - { zh: 我有兩個妹妹。, en: "I have two younger sisters.", grammar: [gram-you-meiyou] }
+  - { zh: 我有一個姐姐。, en: I have one older sister., grammar: [gram-you-meiyou, gram-number-measure] }
+  - { zh: 我有兩個哥哥。, en: "I have two older brothers.", grammar: [gram-you-meiyou, gram-number-measure] }
+  - { zh: 我有一個哥哥，一個妹妹。, en: "I have one older brother and one younger sister.", grammar: [gram-number-measure] }
+  - { zh: 我有兩個姐姐，沒有弟弟。, en: "I have two older sisters and no younger brother.", grammar: [gram-you-meiyou, gram-number-measure] }
+  - { zh: 我沒有姐姐。, en: "I don't have an older sister.", grammar: [gram-you-meiyou] }
+  - { zh: 我沒有弟弟。, en: "I don't have a younger brother.", grammar: [gram-you-meiyou] }
+  - { zh: 我沒有兄弟姊妹。, en: "I don't have any siblings.", grammar: [gram-you-meiyou] }
+  - { zh: 他有兩個姐姐。, en: "He has two older sisters.", grammar: [gram-you-meiyou, gram-number-measure] }
+  - { zh: 他沒有妹妹。, en: "He doesn't have a younger sister.", grammar: [gram-you-meiyou] }
+  - { zh: 你有姐姐嗎？, en: "Do you have an older sister?", grammar: [gram-ma-question, gram-you-meiyou] }
+  - { zh: 你有弟弟嗎？, en: "Do you have a younger brother?", grammar: [gram-ma-question, gram-you-meiyou] }
+  - { zh: 他有兄弟姊妹嗎？, en: "Does he have any siblings?", grammar: [gram-ma-question, gram-you-meiyou] }
+  - { zh: 您有妹妹嗎？, en: "Do you have a younger sister? (polite)", grammar: [gram-ma-question, gram-you-meiyou] }
+  - { zh: 他有姐姐嗎？, en: "Does he have an older sister?", grammar: [gram-ma-question, gram-you-meiyou] }
+  - { zh: 王明文有兩個弟弟。, en: "Wang Mingwen has two younger brothers.", grammar: [gram-you-meiyou, gram-number-measure] }
+  - { zh: 我只有一個姐姐。, en: "I only have one older sister.", grammar: [gram-you-meiyou, gram-number-measure] }
+  - { zh: 我只有一個哥哥。, en: "I only have one older brother.", grammar: [gram-you-meiyou, gram-number-measure] }
+  - { zh: 我也有一個姐姐。, en: "I also have an older sister.", grammar: [gram-ye-also, gram-you-meiyou, gram-number-measure] }
+  - { zh: 我也是臺灣人。, en: "I am Taiwanese too.", grammar: [gram-ye-also] }
+  - { zh: 他也姓王。, en: "His surname is Wang too.", grammar: [gram-ye-also] }
+  - { zh: 他也沒有弟弟。, en: "He doesn't have a younger brother either.", grammar: [gram-ye-also, gram-you-meiyou] }
+  - { zh: 您也是美國人嗎？, en: "Are you American too?", grammar: [gram-ye-also, gram-ma-question] }
+  - { zh: 你是臺灣人嗎？, en: "Are you Taiwanese?", grammar: [gram-ma-question] }
+  - { zh: 您姓王嗎？, en: "Is your surname Wang?", grammar: [gram-ma-question] }
+  - { zh: 我沒有哥哥，也沒有弟弟。, en: "I have no older brother and no younger brother either.", grammar: [gram-ye-also, gram-you-meiyou] }
+scenarios:
+  - slug: siblings-chat
+    title: "家文 asks about your family"
+    npc:
+      id: jiawen
+      name: 王家文
+      personality: >
+        A lively, cheerful Taiwanese high-school student visiting the United
+        States. Curious about everyone and quick to ask the next question.
+      speechStyle: >
+        Short, friendly sentences using only words from lessons 1 and 2. Asks
+        one question at a time and repeats the number the learner gives.
+      particles: []
+    setting: >
+      A summer-camp lounge in the United States. 家文 has just met the learner
+      and wants to know about their brothers and sisters.
+    goalSteps:
+      - { id: greet, description: "Greet 家文 and tell him your name.", keywordHints: ["您好", "我叫"] }
+      - { id: have-siblings, description: "Say whether you have brothers or sisters.", keywordHints: ["我有", "我沒有"] }
+      - { id: how-many, description: "Say how many older/younger siblings you have.", keywordHints: ["一個", "兩個"] }
+      - { id: ask-back, description: "Ask 家文 about his siblings.", keywordHints: ["你有", "嗎", "您呢"] }
+    vocabExtras: [有, 兩, 個, 弟弟, 你, 嗎, 一, 姐姐, 也, 哥哥, 沒, 只, 兄弟姊妹, 妹妹]
+    opener: { zh: 您好，我是王家文。您有兄弟姊妹嗎？, en: "Hello, I'm Wang Jiawen. Do you have any brothers or sisters?" }
+    successLine: { zh: 我有一個姐姐，兩個弟弟。, en: "I have one older sister and two younger brothers." }
+journalPrompts:
+  - { en: "Describe your family: how many older and younger siblings you have.", zh: 我有一個姐姐。, words: [有, 個, 兩], grammar: [gram-number-measure] }
+  - { en: "Which of your friends have siblings? Who is an only child?", words: [也, 只, 兄弟姊妹], grammar: [gram-ye-also] }
+  - { en: "Write about your partner's family: who they have and who they don't.", words: [沒, 有, 嗎], grammar: [gram-you-meiyou] }

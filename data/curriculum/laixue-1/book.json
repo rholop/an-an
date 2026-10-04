@@ -1,0 +1,4437 @@
+{
+  "meta": {
+    "version": "v1",
+    "buildDate": "2026-10-04"
+  },
+  "textbook": {
+    "id": "laixue-1",
+    "titleZh": "來學華語 第一冊",
+    "titleEn": "Let's Learn Mandarin 1",
+    "lessons": [
+      {
+        "id": "laixue-1-L01",
+        "n": 1,
+        "titleZh": "您好",
+        "titleEn": "Hello!",
+        "topic": "Greetings",
+        "objectives": [
+          "Greet others",
+          "Tell others your name and nationality and inquire the same of others"
+        ],
+        "vocab": [
+          "tocfl-a5d7ec02ce",
+          "tocfl-5751a000f5",
+          "tocfl-df8a004869",
+          "tocfl-594c346871",
+          "tb-f31eb37a1d",
+          "tocfl-843c0fdc73",
+          "tocfl-f1954edb18",
+          "tocfl-8728ee4984",
+          "tocfl-126e767039",
+          "tocfl-6c6b0597dc",
+          "tocfl-056657bf9c",
+          "tocfl-59f250a41b",
+          "tb-77d30ea05d",
+          "tb-cff8c55db7",
+          "tb-64c10f2e29",
+          "tb-0f7c542524",
+          "tb-e0843c79c8",
+          "tb-341493acd2",
+          "tb-1ced8f822f"
+        ],
+        "supplementary": [
+          "tocfl-c8b02f2841",
+          "tb-5865be1e21"
+        ],
+        "grammarWords": [],
+        "properNouns": [
+          "tb-f31eb37a1d",
+          "tb-e0843c79c8",
+          "tb-341493acd2",
+          "tb-1ced8f822f",
+          "tb-5865be1e21",
+          "tb-0a4cafd113",
+          "tb-ca5aef669e",
+          "tb-967d75cca7"
+        ],
+        "grammar": [
+          "gram-xing-jiao",
+          "gram-shi-identity",
+          "gram-shenme-question"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L01",
+        "scenarios": [
+          "laixue-1-L01-language-exchange"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L01-jp1",
+            "lessonId": "laixue-1-L01",
+            "promptEn": "Introduce yourself: your surname, your name and your nationality.",
+            "promptZh": "我姓王，我叫明文。",
+            "useWords": [
+              "tocfl-594c346871",
+              "tocfl-843c0fdc73",
+              "tocfl-8728ee4984"
+            ],
+            "useGrammar": [
+              "gram-xing-jiao"
+            ]
+          },
+          {
+            "id": "laixue-1-L01-jp2",
+            "lessonId": "laixue-1-L01",
+            "promptEn": "Introduce your husband (or a friend) by name and nationality.",
+            "useWords": [
+              "tocfl-8728ee4984",
+              "tocfl-126e767039",
+              "tb-cff8c55db7"
+            ],
+            "useGrammar": [
+              "gram-shi-identity"
+            ]
+          },
+          {
+            "id": "laixue-1-L01-jp3",
+            "lessonId": "laixue-1-L01",
+            "promptEn": "Write a short greeting dialogue between two people meeting for the first time.",
+            "useWords": [
+              "tocfl-056657bf9c",
+              "tb-64c10f2e29",
+              "tocfl-f1954edb18"
+            ],
+            "useGrammar": [
+              "gram-shenme-question"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "laixue-1-L02",
+        "n": 2,
+        "titleZh": "我有兩個弟弟",
+        "titleEn": "I Have Two Younger Brothers",
+        "topic": "Family",
+        "objectives": [
+          "Quantify and describe family members",
+          "Ask others if they have siblings"
+        ],
+        "vocab": [
+          "tocfl-0ba7ac5779",
+          "tocfl-a844cb0bd2",
+          "tocfl-7f277f646c",
+          "tocfl-80c4c8a3da",
+          "tocfl-c041cb3654",
+          "tocfl-ec433a254f",
+          "tocfl-9f1ac1726a",
+          "moec-b8a867198f",
+          "tocfl-f6db107280",
+          "tocfl-3fef802071",
+          "tocfl-76408eeb58",
+          "tocfl-750c441560",
+          "tb-801ccf4079"
+        ],
+        "supplementary": [
+          "tocfl-eeac533ccb"
+        ],
+        "grammarWords": [],
+        "properNouns": [],
+        "grammar": [
+          "gram-you-meiyou",
+          "gram-ma-question",
+          "gram-number-measure",
+          "gram-ye-also"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L02",
+        "scenarios": [
+          "laixue-1-L02-siblings-chat"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L02-jp1",
+            "lessonId": "laixue-1-L02",
+            "promptEn": "Describe your family: how many older and younger siblings you have.",
+            "promptZh": "我有一個姐姐。",
+            "useWords": [
+              "tocfl-0ba7ac5779",
+              "tocfl-7f277f646c",
+              "tocfl-a844cb0bd2"
+            ],
+            "useGrammar": [
+              "gram-number-measure"
+            ]
+          },
+          {
+            "id": "laixue-1-L02-jp2",
+            "lessonId": "laixue-1-L02",
+            "promptEn": "Which of your friends have siblings? Who is an only child?",
+            "useWords": [
+              "tocfl-f6db107280",
+              "tocfl-750c441560",
+              "tb-801ccf4079"
+            ],
+            "useGrammar": [
+              "gram-ye-also"
+            ]
+          },
+          {
+            "id": "laixue-1-L02-jp3",
+            "lessonId": "laixue-1-L02",
+            "promptEn": "Write about your partner's family: who they have and who they don't.",
+            "useWords": [
+              "tocfl-76408eeb58",
+              "tocfl-0ba7ac5779",
+              "tocfl-ec433a254f"
+            ],
+            "useGrammar": [
+              "gram-you-meiyou"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "laixue-1-L03",
+        "n": 3,
+        "titleZh": "她不是學生",
+        "titleEn": "She Is Not a Student",
+        "topic": "Occupations (I)",
+        "objectives": [
+          "Ask others if they are students",
+          "Ask others common occupations and work places",
+          "Describe marital status and family members"
+        ],
+        "vocab": [
+          "tocfl-c8b02f2841",
+          "tocfl-2b99827e3b",
+          "tocfl-df11d6ee67",
+          "tocfl-d430a2b764",
+          "tocfl-1fb98be339",
+          "tocfl-ada71020c3",
+          "tocfl-d7f41fa541",
+          "tocfl-ea19127732",
+          "tocfl-dbe16a6f7a",
+          "tocfl-b541819b3a",
+          "tocfl-4bf2daaa1c",
+          "tocfl-e210565179",
+          "tocfl-246abbbff2",
+          "tocfl-f05bd63014",
+          "tb-842d3bbe31",
+          "tocfl-4254b875e7",
+          "tocfl-6a51849e4e",
+          "tb-2d0ec7af64",
+          "tb-67f28b0c26",
+          "tocfl-490e9adcc1",
+          "tocfl-e87966ae89"
+        ],
+        "supplementary": [
+          "moec-34a1c97d9c",
+          "tocfl-0b3d2f7f28"
+        ],
+        "grammarWords": [],
+        "properNouns": [
+          "tb-354710efde",
+          "tb-8749bde1a4",
+          "tb-b5912b1dd9",
+          "tb-de30499b7f",
+          "tb-a2402f3044",
+          "tb-aebbb5d86c"
+        ],
+        "grammar": [
+          "gram-bu-negation",
+          "gram-zai-place",
+          "gram-dou-all"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L03",
+        "scenarios": [
+          "laixue-1-L03-family-jobs"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L03-jp1",
+            "lessonId": "laixue-1-L03",
+            "promptEn": "Where do the members of your family work or study?",
+            "promptZh": "我哥哥在銀行工作。",
+            "useWords": [
+              "tocfl-1fb98be339",
+              "tocfl-d7f41fa541",
+              "tocfl-ea19127732"
+            ],
+            "useGrammar": [
+              "gram-zai-place"
+            ]
+          },
+          {
+            "id": "laixue-1-L03-jp2",
+            "lessonId": "laixue-1-L03",
+            "promptEn": "Is anyone in your family married? Do they have children?",
+            "useWords": [
+              "tb-67f28b0c26",
+              "tocfl-dbe16a6f7a",
+              "tocfl-e210565179"
+            ],
+            "useGrammar": [
+              "gram-dou-all"
+            ]
+          },
+          {
+            "id": "laixue-1-L03-jp3",
+            "lessonId": "laixue-1-L03",
+            "promptEn": "Write about a family member who is no longer a student.",
+            "useWords": [
+              "tocfl-df11d6ee67",
+              "tocfl-d430a2b764",
+              "tb-2d0ec7af64"
+            ],
+            "useGrammar": [
+              "gram-bu-negation"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "laixue-1-L04",
+        "n": 4,
+        "titleZh": "我爸爸在電腦公司工作",
+        "titleEn": "My Father Works at a Computer Company",
+        "topic": "Occupations (II)",
+        "objectives": [
+          "Discuss about your life",
+          "Identify more specific occupations and work places"
+        ],
+        "vocab": [
+          "tocfl-485f51de92",
+          "tocfl-feba8fafa9",
+          "tocfl-e6e5696c01",
+          "tocfl-6b29522157",
+          "tocfl-66de47b958",
+          "moec-fe09b2a21c",
+          "tocfl-c0918c270d",
+          "tocfl-8cca6ed256",
+          "tocfl-695e82fbcc",
+          "tocfl-eac7d9cc06",
+          "tocfl-84696d149c",
+          "moec-6db0a4c922",
+          "tocfl-2ad20543bc"
+        ],
+        "supplementary": [
+          "tb-6317d59e8c",
+          "tocfl-74c7794307"
+        ],
+        "grammarWords": [
+          "tocfl-8c8a536423",
+          "tocfl-40ad287929"
+        ],
+        "properNouns": [
+          "tb-6317d59e8c",
+          "tb-b63ca20aef"
+        ],
+        "grammar": [
+          "gram-a-not-a",
+          "gram-ne-followup",
+          "gram-de-possessive"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L04",
+        "scenarios": [
+          "laixue-1-L04-parents-jobs"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L04-jp1",
+            "lessonId": "laixue-1-L04",
+            "promptEn": "Describe your job (or studies) and say whether you like it.",
+            "promptZh": "我喜歡我的老師。",
+            "useWords": [
+              "tocfl-8cca6ed256",
+              "tocfl-e6e5696c01",
+              "tocfl-66de47b958"
+            ],
+            "useGrammar": [
+              "gram-de-possessive"
+            ]
+          },
+          {
+            "id": "laixue-1-L04-jp2",
+            "lessonId": "laixue-1-L04",
+            "promptEn": "Write about a family member's job: where they work and whether it is busy.",
+            "useWords": [
+              "tocfl-485f51de92",
+              "tocfl-6b29522157",
+              "tocfl-2ad20543bc"
+            ],
+            "useGrammar": [
+              "gram-a-not-a"
+            ]
+          },
+          {
+            "id": "laixue-1-L04-jp3",
+            "lessonId": "laixue-1-L04",
+            "promptEn": "Describe a busy day: are you tired? And what about your family?",
+            "useWords": [
+              "moec-fe09b2a21c",
+              "tocfl-c0918c270d",
+              "tocfl-6b29522157"
+            ],
+            "useGrammar": [
+              "gram-ne-followup"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "laixue-1-L05",
+        "n": 5,
+        "titleZh": "歡迎你來",
+        "titleEn": "Welcome!",
+        "topic": "Getting Acquainted",
+        "objectives": [
+          "Introduce others",
+          "Express hospitality",
+          "Talk about plans for vacation"
+        ],
+        "vocab": [
+          "tocfl-89e707550c",
+          "tocfl-79b6361089",
+          "tocfl-a593b6ba0d",
+          "tocfl-9554c9d611",
+          "tocfl-39b867df96",
+          "tb-ccf8acf637",
+          "tocfl-ff2bca9c96",
+          "tocfl-d44d3a4900",
+          "tocfl-9187a49d75",
+          "tocfl-ec17004474",
+          "tocfl-36c85ba240",
+          "tocfl-2eeb8ce0e1",
+          "tocfl-be4741f92b",
+          "tocfl-b2d9f51336",
+          "tocfl-9ca5afb931",
+          "tocfl-ffb21a1371",
+          "tb-c82bfa3296",
+          "tb-9d7f2ffa5d"
+        ],
+        "supplementary": [
+          "tb-ef10f7d379",
+          "tb-e029985225",
+          "tocfl-8c7b2e0173",
+          "tocfl-9becc067c8"
+        ],
+        "grammarWords": [],
+        "properNouns": [
+          "tb-9d7f2ffa5d",
+          "tb-4edb729a91"
+        ],
+        "grammar": [
+          "gram-zhe-shi-intro",
+          "gram-zhuzai",
+          "gram-question-words",
+          "gram-qu-place-verb"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L05",
+        "scenarios": [
+          "laixue-1-L05-introduce-friend"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L05-jp1",
+            "lessonId": "laixue-1-L05",
+            "promptEn": "Introduce a friend: who they are and how you know them.",
+            "promptZh": "這是我朋友。",
+            "useWords": [
+              "tocfl-79b6361089",
+              "tocfl-a593b6ba0d",
+              "tocfl-9554c9d611"
+            ],
+            "useGrammar": [
+              "gram-zhe-shi-intro"
+            ]
+          },
+          {
+            "id": "laixue-1-L05-jp2",
+            "lessonId": "laixue-1-L05",
+            "promptEn": "Where do you live now, and where do your parents live?",
+            "useWords": [
+              "tb-ccf8acf637",
+              "tocfl-ff2bca9c96",
+              "tocfl-d44d3a4900"
+            ],
+            "useGrammar": [
+              "gram-zhuzai"
+            ]
+          },
+          {
+            "id": "laixue-1-L05-jp3",
+            "lessonId": "laixue-1-L05",
+            "promptEn": "Write about a place you would like to visit and what you would do there.",
+            "useWords": [
+              "tocfl-be4741f92b",
+              "tocfl-b2d9f51336",
+              "tocfl-36c85ba240"
+            ],
+            "useGrammar": [
+              "gram-qu-place-verb"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "laixue-1-L06",
+        "n": 6,
+        "titleZh": "你平常喜歡做什麼？",
+        "titleEn": "What Do You Usually Like to Do?",
+        "topic": "Leisure",
+        "objectives": [
+          "List common hobbies",
+          "Inquire the interests of others",
+          "Discuss likes / dislikes",
+          "Describe your daily activities"
+        ],
+        "vocab": [
+          "tocfl-1ce77cadad",
+          "tocfl-cce40f42ef",
+          "tocfl-ed73cfde55",
+          "tocfl-28f89db477",
+          "tocfl-0011aaca20",
+          "tocfl-a56e4048ae",
+          "tocfl-446cc8c7c7",
+          "tocfl-0b3d2f7f28",
+          "tocfl-e6a5a1a9b4",
+          "tocfl-d3c7860a8f",
+          "tocfl-858bcd695a",
+          "tb-d93a192beb",
+          "tocfl-62d708404a",
+          "tocfl-548d8c0926",
+          "tocfl-92078db11d",
+          "tocfl-33d0f2d800",
+          "tocfl-840e495392",
+          "tocfl-a35fc1d43a"
+        ],
+        "supplementary": [
+          "tocfl-6b8f725337",
+          "tocfl-446d85bce3"
+        ],
+        "grammarWords": [],
+        "properNouns": [],
+        "grammar": [
+          "gram-hai-also",
+          "gram-time-place-order",
+          "gram-ye-dou-order"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L06",
+        "scenarios": [
+          "laixue-1-L06-weekend-hobbies"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L06-jp1",
+            "lessonId": "laixue-1-L06",
+            "promptEn": "Describe your weekend: where you are and what you do.",
+            "promptZh": "我週末在家看電視。",
+            "useWords": [
+              "tocfl-ed73cfde55",
+              "tocfl-1ce77cadad",
+              "tocfl-858bcd695a"
+            ],
+            "useGrammar": [
+              "gram-time-place-order"
+            ]
+          },
+          {
+            "id": "laixue-1-L06-jp2",
+            "lessonId": "laixue-1-L06",
+            "promptEn": "Write about one hobby you like and one you don't.",
+            "useWords": [
+              "tocfl-840e495392",
+              "tocfl-a35fc1d43a",
+              "tocfl-e6a5a1a9b4"
+            ],
+            "useGrammar": [
+              "gram-hai-also"
+            ]
+          },
+          {
+            "id": "laixue-1-L06-jp3",
+            "lessonId": "laixue-1-L06",
+            "promptEn": "Describe your usual day: what you often do in the evening.",
+            "useWords": [
+              "tocfl-548d8c0926",
+              "tocfl-62d708404a",
+              "tb-d93a192beb"
+            ],
+            "useGrammar": [
+              "gram-ye-dou-order"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "laixue-1-L07",
+        "n": 7,
+        "titleZh": "請問您是哪位？",
+        "titleEn": "May I Ask Who This Is?",
+        "topic": "Formal Phone Etiquette",
+        "objectives": [
+          "Converse on the phone formally",
+          "Identify yourself and your intention",
+          "Ask cell phone numbers",
+          "Leave a message"
+        ],
+        "vocab": [
+          "tocfl-61304d4bb5",
+          "tocfl-2404b4fee3",
+          "tocfl-fd688b69c2",
+          "tb-afdc0a7ceb",
+          "tocfl-9b66c24d69",
+          "tocfl-5dea7d1c8b",
+          "moec-5f085f36aa",
+          "tocfl-a1e5e6da1c",
+          "tocfl-781c80e9bd",
+          "tocfl-a2cefdd5e9",
+          "tocfl-f1c5f742c2",
+          "tocfl-c128a92442",
+          "tocfl-8e37d8babc",
+          "tocfl-5a876eebfb",
+          "tocfl-09068deb1e",
+          "tocfl-5bb3b0bc43",
+          "tocfl-c46f43970d",
+          "tocfl-7bb5d94953",
+          "tocfl-1e6df0ee37",
+          "tocfl-0e0084100d",
+          "tocfl-c51230ed9b",
+          "tocfl-9025b26991",
+          "tocfl-4f65074f38",
+          "tocfl-50c3aa5b31",
+          "tocfl-2417cadddd",
+          "tb-7d808eaf1f",
+          "tocfl-d068a0edb6",
+          "tb-959e1ef3eb",
+          "tb-15ef5e4b10",
+          "tocfl-d1c0cd08ba",
+          "tb-afcab8df87",
+          "tb-a0f45b43eb",
+          "tb-292b51f677"
+        ],
+        "supplementary": [
+          "tocfl-81bf8200e7",
+          "tocfl-b74453d607"
+        ],
+        "grammarWords": [],
+        "properNouns": [
+          "tb-afdc0a7ceb",
+          "tb-afcab8df87",
+          "tb-a0f45b43eb",
+          "tb-292b51f677",
+          "tb-3ea3cefdc3"
+        ],
+        "grammar": [
+          "gram-numbers-0-100",
+          "gram-gei-call",
+          "gram-yihou"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L07",
+        "scenarios": [
+          "laixue-1-L07-bank-call"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L07-jp1",
+            "lessonId": "laixue-1-L07",
+            "promptEn": "Write a phone message for a colleague who is out of the office.",
+            "promptZh": "林小姐回來以後，給我打電話。",
+            "useWords": [
+              "tocfl-781c80e9bd",
+              "moec-5f085f36aa",
+              "tocfl-c128a92442"
+            ],
+            "useGrammar": [
+              "gram-gei-call"
+            ]
+          },
+          {
+            "id": "laixue-1-L07-jp2",
+            "lessonId": "laixue-1-L07",
+            "promptEn": "Give your contact details: your cell phone number and when to call.",
+            "useWords": [
+              "tocfl-8e37d8babc",
+              "tocfl-5a876eebfb",
+              "tocfl-a1e5e6da1c"
+            ],
+            "useGrammar": [
+              "gram-numbers-0-100"
+            ]
+          },
+          {
+            "id": "laixue-1-L07-jp3",
+            "lessonId": "laixue-1-L07",
+            "promptEn": "Describe a call you made this week and what you did afterwards.",
+            "useWords": [
+              "tocfl-d068a0edb6",
+              "tocfl-09068deb1e",
+              "tocfl-5bb3b0bc43"
+            ],
+            "useGrammar": [
+              "gram-yihou"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "laixue-1-L08",
+        "n": 8,
+        "titleZh": "祝你生日快樂",
+        "titleEn": "Happy Birthday to You!",
+        "topic": "Birthday and Dates",
+        "objectives": [
+          "Identify dates",
+          "Say birthdays and ages",
+          "Make a request"
+        ],
+        "vocab": [
+          "tocfl-4573935c3b",
+          "tocfl-824d01acc6",
+          "tocfl-1dc8b040bd",
+          "tocfl-3c98e401b9",
+          "tocfl-2707586eb6",
+          "tocfl-d4fe751e2e",
+          "tocfl-393a5c3e7e",
+          "tb-c60e9ca34c",
+          "tocfl-9a92abb03f",
+          "tocfl-f3434a8bee",
+          "tocfl-2922ccf3dd",
+          "tocfl-dc41d1b97e",
+          "moec-aa78332299",
+          "tocfl-74c7794307",
+          "tocfl-d9c66f870a",
+          "tocfl-eefeda1588",
+          "tocfl-29992340ae",
+          "moec-09b3446903",
+          "tb-6325ca44a1",
+          "tb-5cb466146b",
+          "moec-67f843d89c",
+          "tb-23665fb010"
+        ],
+        "supplementary": [
+          "tocfl-38aa88f35a",
+          "tocfl-032218f744",
+          "tocfl-e40b830809"
+        ],
+        "grammarWords": [
+          "tocfl-3caff6844c",
+          "tocfl-76fa79162a"
+        ],
+        "properNouns": [],
+        "grammar": [
+          "gram-dates",
+          "gram-ji-questions",
+          "gram-tag-question"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L08",
+        "scenarios": [
+          "laixue-1-L08-plan-birthday"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L08-jp1",
+            "lessonId": "laixue-1-L08",
+            "promptEn": "When is your birthday and how old are you this year?",
+            "promptZh": "我今年二十歲。",
+            "useWords": [
+              "tocfl-824d01acc6",
+              "tocfl-9a92abb03f",
+              "tocfl-d4fe751e2e"
+            ],
+            "useGrammar": [
+              "gram-ji-questions"
+            ]
+          },
+          {
+            "id": "laixue-1-L08-jp2",
+            "lessonId": "laixue-1-L08",
+            "promptEn": "Write about a gift you want and ask someone politely to buy it.",
+            "useWords": [
+              "tocfl-f3434a8bee",
+              "tocfl-2922ccf3dd",
+              "tocfl-d9c66f870a"
+            ],
+            "useGrammar": [
+              "gram-tag-question"
+            ]
+          },
+          {
+            "id": "laixue-1-L08-jp3",
+            "lessonId": "laixue-1-L08",
+            "promptEn": "How do you celebrate your birthday? Who do you eat with?",
+            "useWords": [
+              "tocfl-29992340ae",
+              "moec-09b3446903",
+              "tocfl-1dc8b040bd"
+            ],
+            "useGrammar": [
+              "gram-dates"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "laixue-1-L09",
+        "n": 9,
+        "titleZh": "妳星期五有時間嗎？",
+        "titleEn": "Are You Free on Friday?",
+        "topic": "Making Social Plans",
+        "objectives": [
+          "Invite others out to eat",
+          "Say complete dates and tell time",
+          "Accept or decline invitations based on availability",
+          "Confirm the date / time and location of invitations"
+        ],
+        "vocab": [
+          "tb-84b4437aca",
+          "tocfl-aee54ca9ef",
+          "tocfl-17aa2b9bde",
+          "tocfl-0cf1ab2847",
+          "tocfl-90c7688865",
+          "tocfl-14611f83c9",
+          "tocfl-2d03bda470",
+          "tb-cc63efa7b1",
+          "tocfl-dabf206f19",
+          "tocfl-e869a714ba",
+          "tocfl-15b1a8bf3b",
+          "tocfl-58971c6f65",
+          "tocfl-2e55d791f5",
+          "tocfl-27b09c2861",
+          "tocfl-a3ffb26f29",
+          "tb-7b0b0ae000",
+          "tocfl-d95a2d91ef",
+          "moec-7d4eadc559",
+          "moec-14c587ddf8",
+          "moec-4e2a8be792",
+          "tocfl-c6709cbdc2",
+          "tb-ff6830c502",
+          "tb-2e9db6e051"
+        ],
+        "supplementary": [
+          "tocfl-1d0ecc194a",
+          "moec-685847b391"
+        ],
+        "grammarWords": [
+          "tocfl-b2d18e1fd7",
+          "tocfl-b2a8605470",
+          "tocfl-5c3db186b7",
+          "tocfl-c78da712c6",
+          "tocfl-e0191448c3",
+          "tocfl-ca79e477b1",
+          "moec-ef2eb3bea9"
+        ],
+        "properNouns": [
+          "tb-2e9db6e051"
+        ],
+        "grammar": [
+          "gram-xingqi",
+          "gram-year-date",
+          "gram-dian-clock",
+          "gram-gen-yiqi"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L09",
+        "scenarios": [
+          "laixue-1-L09-dinner-invite"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L09-jp1",
+            "lessonId": "laixue-1-L09",
+            "promptEn": "Invite someone to go out for a meal and suggest a day.",
+            "promptZh": "你星期五有時間嗎？",
+            "useWords": [
+              "tocfl-14611f83c9",
+              "tocfl-2d03bda470",
+              "tocfl-90c7688865"
+            ],
+            "useGrammar": [
+              "gram-gen-yiqi"
+            ]
+          },
+          {
+            "id": "laixue-1-L09-jp2",
+            "lessonId": "laixue-1-L09",
+            "promptEn": "Write your plans for this week: which day and what time.",
+            "useWords": [
+              "tb-84b4437aca",
+              "tocfl-15b1a8bf3b",
+              "tocfl-e869a714ba"
+            ],
+            "useGrammar": [
+              "gram-dian-clock"
+            ]
+          },
+          {
+            "id": "laixue-1-L09-jp3",
+            "lessonId": "laixue-1-L09",
+            "promptEn": "Describe a restaurant you like and what is delicious there.",
+            "useWords": [
+              "tocfl-90c7688865",
+              "moec-7d4eadc559",
+              "tocfl-d95a2d91ef"
+            ],
+            "useGrammar": [
+              "gram-xingqi"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "laixue-1-L10",
+        "n": 10,
+        "titleZh": "學中文難不難？",
+        "titleEn": "Is It Hard to Learn Mandarin?",
+        "topic": "Studying",
+        "objectives": [
+          "Describe one’s experience studying a language",
+          "Talk about one’s skill through learning",
+          "Comment on one’s language ability",
+          "Ask others’ performance in some task"
+        ],
+        "vocab": [
+          "tocfl-6b2999c554",
+          "tocfl-a6e36b0ec1",
+          "tocfl-1c51e65bb9",
+          "tocfl-04bdc50299",
+          "moec-1ab2c2cbc2",
+          "tocfl-3361e60084",
+          "tocfl-a28d989f7e",
+          "tocfl-7c491838af",
+          "tocfl-4e56220e25",
+          "tocfl-2dfdcd2bc8",
+          "tocfl-d0baf0a365",
+          "tocfl-52430ae3b9",
+          "tocfl-d76f16ccbf",
+          "tocfl-7a2f97cfcb",
+          "tocfl-3b59f04f42",
+          "tocfl-cc79077554",
+          "tocfl-93273c0564",
+          "tocfl-8607e5370f",
+          "tocfl-7e76cc7921",
+          "moec-0075d73b7a",
+          "tocfl-e006561609",
+          "tocfl-e3cfa3aa3f"
+        ],
+        "supplementary": [
+          "moec-16fa62f8f5",
+          "tocfl-c797debd16",
+          "tocfl-86251eab21"
+        ],
+        "grammarWords": [
+          "tocfl-7e16c61d13"
+        ],
+        "properNouns": [],
+        "grammar": [
+          "gram-de-complement",
+          "gram-youyidian",
+          "gram-hui-can",
+          "gram-duoshao-ji"
+        ],
+        "dialogueRef": "dialogues.json#laixue-1-L10",
+        "scenarios": [
+          "laixue-1-L10-coffee-break"
+        ],
+        "journalPrompts": [
+          {
+            "id": "laixue-1-L10-jp1",
+            "lessonId": "laixue-1-L10",
+            "promptEn": "Is Chinese hard for you? Say what is hard and what is easy.",
+            "promptZh": "寫字有一點難。",
+            "useWords": [
+              "tocfl-1c51e65bb9",
+              "tocfl-6b2999c554",
+              "tocfl-d0baf0a365"
+            ],
+            "useGrammar": [
+              "gram-youyidian"
+            ]
+          },
+          {
+            "id": "laixue-1-L10-jp2",
+            "lessonId": "laixue-1-L10",
+            "promptEn": "What do you practise, and who do you practise with?",
+            "useWords": [
+              "tocfl-8607e5370f",
+              "tocfl-7e76cc7921",
+              "tocfl-e3cfa3aa3f"
+            ],
+            "useGrammar": [
+              "gram-de-complement"
+            ]
+          },
+          {
+            "id": "laixue-1-L10-jp3",
+            "lessonId": "laixue-1-L10",
+            "promptEn": "Write about something you can do well and something you can't do yet.",
+            "useWords": [
+              "tocfl-7a2f97cfcb",
+              "moec-0075d73b7a",
+              "tocfl-d76f16ccbf"
+            ],
+            "useGrammar": [
+              "gram-hui-can"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "grammarItems": [
+    {
+      "id": "gram-xing-jiao",
+      "pattern": "S + 姓 + surname；S + 叫 + name",
+      "level": "N1",
+      "explanationEn": "姓 is followed by a family name only. 叫 is followed by a given name or a full name. Use 姓 for \"my surname is…\" and 叫 for \"I am called…\".",
+      "examples": [
+        "tb-L01-001",
+        "tb-L01-002",
+        "tb-L01-003",
+        "tb-L01-004",
+        "tb-L01-005",
+        "tb-L01-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "focus": [
+        "姓",
+        "叫"
+      ]
+    },
+    {
+      "id": "gram-shi-identity",
+      "pattern": "S + 是 + name / nationality",
+      "level": "N1",
+      "explanationEn": "是 links a person to a name or a nationality: 我是臺灣人. Nothing like \"to be\" is needed with 姓 or 叫, but 是 works with names and nationalities.",
+      "examples": [
+        "tb-L01-013",
+        "tb-L01-014",
+        "tb-L01-015",
+        "tb-L01-016",
+        "tb-L01-017",
+        "tb-L01-018"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "focus": [
+        "是"
+      ]
+    },
+    {
+      "id": "gram-shenme-question",
+      "pattern": "S + V + 什麼(名字)？",
+      "level": "N1",
+      "explanationEn": "A question word takes the place of the answer and the word order does not change: 你叫什麼名字？ (compare 我叫明文).",
+      "examples": [
+        "tb-L01-010",
+        "tb-L01-011",
+        "tb-L01-012"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L01"
+      ],
+      "focus": [
+        "什麼"
+      ]
+    },
+    {
+      "id": "gram-you-meiyou",
+      "pattern": "S + 有 / 沒有 + O",
+      "level": "N1",
+      "explanationEn": "有 means \"to have\" (or \"there is\"). Its negative is 沒有 (never 不有): 我沒有弟弟.",
+      "examples": [
+        "tb-L02-001",
+        "tb-L02-002",
+        "tb-L02-003",
+        "tb-L02-004",
+        "tb-L02-005",
+        "tb-L02-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "focus": [
+        "沒有",
+        "有"
+      ]
+    },
+    {
+      "id": "gram-ma-question",
+      "pattern": "statement + 嗎？",
+      "level": "N1",
+      "explanationEn": "Add 嗎 to the end of a statement to turn it into a yes/no question: 你有弟弟嗎？",
+      "examples": [
+        "tb-L02-014",
+        "tb-L02-015",
+        "tb-L02-016",
+        "tb-L02-017",
+        "tb-L02-018",
+        "tb-L02-026"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "focus": [
+        "嗎"
+      ]
+    },
+    {
+      "id": "gram-number-measure",
+      "pattern": "Numeral + 個 + N",
+      "level": "N1",
+      "explanationEn": "Counting people or things needs a measure word between the number and the noun. 個 is the general one: 一個弟弟. For two, use 兩個, not 二個.",
+      "examples": [
+        "tb-L02-005",
+        "tb-L02-006",
+        "tb-L02-007",
+        "tb-L02-008",
+        "tb-L02-012",
+        "tb-L02-019"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "focus": [
+        "個",
+        "雙"
+      ]
+    },
+    {
+      "id": "gram-ye-also",
+      "pattern": "S + 也 + V + O",
+      "level": "N1",
+      "explanationEn": "也 means \"also/too\" and goes right before the verb, after the subject: 我也是臺灣人.",
+      "examples": [
+        "tb-L02-022",
+        "tb-L02-023",
+        "tb-L02-024",
+        "tb-L02-025",
+        "tb-L02-026",
+        "tb-L02-029"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L02"
+      ],
+      "focus": [
+        "也"
+      ]
+    },
+    {
+      "id": "gram-bu-negation",
+      "pattern": "S + 不 + V",
+      "level": "N1",
+      "explanationEn": "不 goes in front of a verb to make it negative: 我不是學生. It is read bú before a 4th-tone syllable and bù otherwise.",
+      "examples": [
+        "tb-L03-001",
+        "tb-L03-002",
+        "tb-L03-003",
+        "tb-L03-004",
+        "tb-L03-005",
+        "tb-L03-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "focus": [
+        "不"
+      ]
+    },
+    {
+      "id": "gram-zai-place",
+      "pattern": "S + 在 + place + V (O)",
+      "level": "N1",
+      "explanationEn": "The place where something happens goes before the verb, introduced by 在: 我在銀行工作. This is the opposite of English word order.",
+      "examples": [
+        "tb-L03-009",
+        "tb-L03-010",
+        "tb-L03-011",
+        "tb-L03-012",
+        "tb-L03-013",
+        "tb-L03-014"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "focus": [
+        "在"
+      ]
+    },
+    {
+      "id": "gram-dou-all",
+      "pattern": "N (plural) + 都 + (不) + V",
+      "level": "N1",
+      "explanationEn": "都 means \"both/all\" and sits before the verb, referring back to people or things already mentioned. 都不 means \"none of them\": 他們都不是學生.",
+      "examples": [
+        "tb-L03-019",
+        "tb-L03-020",
+        "tb-L03-021",
+        "tb-L03-022",
+        "tb-L03-023",
+        "tb-L03-024"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "focus": [
+        "都"
+      ]
+    },
+    {
+      "id": "gram-a-not-a",
+      "pattern": "S + V 不 V (O)？ / S + 有沒有 + O？",
+      "level": "N1",
+      "explanationEn": "Repeat the verb with 不 between to ask a yes/no question: 你忙不忙？ With 有 the negative is 沒有: 你有沒有哥哥？ Don't add 嗎 as well.",
+      "examples": [
+        "tb-L04-001",
+        "tb-L04-002",
+        "tb-L04-003",
+        "tb-L04-004",
+        "tb-L04-005",
+        "tb-L04-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "focus": []
+    },
+    {
+      "id": "gram-ne-followup",
+      "pattern": "S1 + V + N，S2 + 呢？",
+      "level": "N1",
+      "explanationEn": "呢 after a noun or pronoun means \"and what about…?\", returning a question you were just asked: 我叫小文，您呢？",
+      "examples": [
+        "tb-L04-011",
+        "tb-L04-012",
+        "tb-L04-013",
+        "tb-L04-014",
+        "tb-L04-015",
+        "tb-L04-016"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "focus": [
+        "呢"
+      ]
+    },
+    {
+      "id": "gram-de-possessive",
+      "pattern": "N / Pron + 的 + N",
+      "level": "N1",
+      "explanationEn": "的 links an owner to what is owned: 我的電腦. It is usually left out with close family: 我媽媽, 我爸爸.",
+      "examples": [
+        "tb-L04-010",
+        "tb-L04-017",
+        "tb-L04-018",
+        "tb-L04-019",
+        "tb-L04-020",
+        "tb-L04-021"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "focus": [
+        "的"
+      ]
+    },
+    {
+      "id": "gram-zhe-shi-intro",
+      "pattern": "這是 + relationship (+ name)",
+      "level": "N1",
+      "explanationEn": "The usual way to introduce someone: 這是我弟弟, then optionally their name: 這是我弟弟，王家文.",
+      "examples": [
+        "tb-L05-001",
+        "tb-L05-002",
+        "tb-L05-003",
+        "tb-L05-004",
+        "tb-L05-005",
+        "tb-L05-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "focus": [
+        "這是"
+      ]
+    },
+    {
+      "id": "gram-zhuzai",
+      "pattern": "S + 住在 + place",
+      "level": "N1",
+      "explanationEn": "住在 means \"live in/at\" and takes the place straight after it: 他住在臺灣.",
+      "examples": [
+        "tb-L05-008",
+        "tb-L05-009",
+        "tb-L05-010",
+        "tb-L05-011",
+        "tb-L05-012",
+        "tb-L05-013"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "focus": [
+        "住在"
+      ]
+    },
+    {
+      "id": "gram-question-words",
+      "pattern": "Question word in place of the answer (什麼 / 哪裡 / 誰)",
+      "level": "N1",
+      "explanationEn": "誰, 什麼 and 哪裡 stand where the answer would go, with no change in word order: 他在哪裡工作？ 誰住在臺北？",
+      "examples": [
+        "tb-L05-007",
+        "tb-L05-013",
+        "tb-L05-014",
+        "tb-L05-015",
+        "tb-L05-016",
+        "tb-L05-017"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "focus": [
+        "誰",
+        "哪裡",
+        "什麼"
+      ]
+    },
+    {
+      "id": "gram-qu-place-verb",
+      "pattern": "S + (想) + 去 + place + V",
+      "level": "N1",
+      "explanationEn": "去 + place says where you go, and a second verb says what for. 想 (\"would like to\") goes before 去: 我想去法國念書.",
+      "examples": [
+        "tb-L05-019",
+        "tb-L05-020",
+        "tb-L05-021",
+        "tb-L05-022",
+        "tb-L05-023",
+        "tb-L05-024"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L05"
+      ],
+      "focus": [
+        "去"
+      ]
+    },
+    {
+      "id": "gram-hai-also",
+      "pattern": "S + V1 + O1，還 + V2 + O2",
+      "level": "N1",
+      "explanationEn": "還 adds a further action or item to what you just said (\"also, in addition\"): 我喜歡唱歌，還喜歡跳舞. It differs from 也, which adds another subject.",
+      "examples": [
+        "tb-L06-001",
+        "tb-L06-002",
+        "tb-L06-003",
+        "tb-L06-004",
+        "tb-L06-005",
+        "tb-L06-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "focus": [
+        "還"
+      ]
+    },
+    {
+      "id": "gram-time-place-order",
+      "pattern": "S + time + 在 + place + V (O)",
+      "level": "N1",
+      "explanationEn": "Chinese order: who, when, where, then what: 我晚上在家看電視.",
+      "examples": [
+        "tb-L06-008",
+        "tb-L06-009",
+        "tb-L06-010",
+        "tb-L06-011",
+        "tb-L06-012",
+        "tb-L06-013"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "focus": [
+        "在"
+      ]
+    },
+    {
+      "id": "gram-ye-dou-order",
+      "pattern": "S + 也 / 都 + (不 / 沒) + V",
+      "level": "N1",
+      "explanationEn": "也 and 都 come before the negative: 我們都沒有弟弟 (\"none of us has…\"). When used together the order is 也都: 他們也都有弟弟.",
+      "examples": [
+        "tb-L06-017",
+        "tb-L06-018",
+        "tb-L06-019",
+        "tb-L06-020",
+        "tb-L06-021",
+        "tb-L06-022"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "focus": [
+        "也",
+        "都"
+      ]
+    },
+    {
+      "id": "gram-numbers-0-100",
+      "pattern": "Numbers 0–100；兩 + measure word",
+      "level": "N1",
+      "explanationEn": "Numbers 11–99 are built from 十: 十二, 二十, 二十五. Use 兩 for \"two\" of something (兩個學生) and 二 when counting or in numbers.",
+      "examples": [
+        "tb-L07-001",
+        "tb-L07-002",
+        "tb-L07-003",
+        "tb-L07-004",
+        "tb-L07-005",
+        "tb-L07-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "focus": []
+    },
+    {
+      "id": "gram-gei-call",
+      "pattern": "S + 給 + someone + 打電話",
+      "level": "N1",
+      "explanationEn": "給 marks who receives the call and goes before the verb: 我給你打電話. The person called comes before 打電話.",
+      "examples": [
+        "tb-L07-010",
+        "tb-L07-011",
+        "tb-L07-012",
+        "tb-L07-013",
+        "tb-L07-014",
+        "tb-L07-015"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "focus": [
+        "給"
+      ]
+    },
+    {
+      "id": "gram-yihou",
+      "pattern": "event 1 + 以後 + event 2",
+      "level": "N1",
+      "explanationEn": "以後 after the first event means \"after that…\": 下課以後，我去吃飯. The earlier event comes first, as in English.",
+      "examples": [
+        "tb-L07-020",
+        "tb-L07-021",
+        "tb-L07-022",
+        "tb-L07-023",
+        "tb-L07-024",
+        "tb-L07-025"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L07"
+      ],
+      "focus": [
+        "以後"
+      ]
+    },
+    {
+      "id": "gram-dates",
+      "pattern": "month 月 + day 號 / 日",
+      "level": "N1",
+      "explanationEn": "Months are number + 月 (八月); days are number + 號 (十一號), or 日 in writing. Order is month first, then day.",
+      "examples": [
+        "tb-L08-001",
+        "tb-L08-002",
+        "tb-L08-003",
+        "tb-L08-004",
+        "tb-L08-005",
+        "tb-L08-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "focus": [
+        "月",
+        "號"
+      ]
+    },
+    {
+      "id": "gram-ji-questions",
+      "pattern": "幾月幾號？ / 幾歲？",
+      "level": "N1",
+      "explanationEn": "幾 asks for a number: 今天幾月幾號？ asks the date, 你幾歲？ asks the age. Answer by putting the number where 幾 was.",
+      "examples": [
+        "tb-L08-010",
+        "tb-L08-011",
+        "tb-L08-012",
+        "tb-L08-013",
+        "tb-L08-014",
+        "tb-L08-015"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "focus": [
+        "幾"
+      ]
+    },
+    {
+      "id": "gram-tag-question",
+      "pattern": "…，好不好？ / …，可以嗎？",
+      "level": "N1",
+      "explanationEn": "Put 好不好 or 好嗎 after a suggestion to ask \"is that OK?\", and 可以嗎 to ask for permission: 我們去吃大餐，好不好？",
+      "examples": [
+        "tb-L08-019",
+        "tb-L08-020",
+        "tb-L08-021",
+        "tb-L08-022",
+        "tb-L08-023",
+        "tb-L08-024"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "focus": [
+        "好不好",
+        "可以嗎",
+        "好嗎"
+      ]
+    },
+    {
+      "id": "gram-xingqi",
+      "pattern": "星期 + number",
+      "level": "N1",
+      "explanationEn": "Weekdays are 星期 + number, Monday = 一. Sunday is 星期天 or 星期日, never 星期七. 禮拜 means the same as 星期. Ask with 星期幾？",
+      "examples": [
+        "tb-L09-001",
+        "tb-L09-002",
+        "tb-L09-003",
+        "tb-L09-004",
+        "tb-L09-005",
+        "tb-L09-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "focus": [
+        "星期"
+      ]
+    },
+    {
+      "id": "gram-year-date",
+      "pattern": "year 年 + month 月 + day 號",
+      "level": "N1",
+      "explanationEn": "Dates run from big to small: year, month, day. Years are read digit by digit: 二〇二五年.",
+      "examples": [
+        "tb-L09-011",
+        "tb-L09-012",
+        "tb-L09-013"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "focus": [
+        "年"
+      ]
+    },
+    {
+      "id": "gram-dian-clock",
+      "pattern": "hour 點 + minute 分 / 半",
+      "level": "N1",
+      "explanationEn": "Time is number + 點 (o'clock), then minutes + 分, or 半 for half past: 六點半. 分 can be dropped after the number.",
+      "examples": [
+        "tb-L09-014",
+        "tb-L09-015",
+        "tb-L09-016",
+        "tb-L09-017",
+        "tb-L09-018",
+        "tb-L09-019"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "focus": [
+        "點"
+      ]
+    },
+    {
+      "id": "gram-gen-yiqi",
+      "pattern": "S + 跟 + someone + 一起 + V (O)",
+      "level": "N1",
+      "explanationEn": "跟…一起 means \"together with…\" and goes before the main verb: 我跟朋友一起吃飯.",
+      "examples": [
+        "tb-L09-023",
+        "tb-L09-024",
+        "tb-L09-025",
+        "tb-L09-026",
+        "tb-L09-027",
+        "tb-L09-028"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "focus": [
+        "跟"
+      ]
+    },
+    {
+      "id": "gram-de-complement",
+      "pattern": "S + V (+ O)，V + 得 + (Adv) + Vs",
+      "level": "N1",
+      "explanationEn": "得 after a verb introduces how well or how the action is done: 他說得很好. If the verb has an object, repeat the verb: 他說中文，說得很好.",
+      "examples": [
+        "tb-L10-001",
+        "tb-L10-002",
+        "tb-L10-003",
+        "tb-L10-004",
+        "tb-L10-005",
+        "tb-L10-006"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "focus": [
+        "得"
+      ]
+    },
+    {
+      "id": "gram-youyidian",
+      "pattern": "有一點 + state verb",
+      "level": "N1",
+      "explanationEn": "有一點 (or 有點) means \"a little\" and is for unwelcome things: 有一點累, 有點難. It is not used with positive ones such as 好吃.",
+      "examples": [
+        "tb-L10-012",
+        "tb-L10-013",
+        "tb-L10-014",
+        "tb-L10-015",
+        "tb-L10-016",
+        "tb-L10-017"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "focus": [
+        "有一點",
+        "有點"
+      ]
+    },
+    {
+      "id": "gram-hui-can",
+      "pattern": "S + 會 / 不會 + V (O)",
+      "level": "N1",
+      "explanationEn": "會 means \"know how to\" for a learned skill: 我會說中文. The negative is 不會.",
+      "examples": [
+        "tb-L10-018",
+        "tb-L10-019",
+        "tb-L10-020",
+        "tb-L10-021",
+        "tb-L10-022",
+        "tb-L10-023"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "focus": [
+        "會"
+      ]
+    },
+    {
+      "id": "gram-duoshao-ji",
+      "pattern": "S + V + 多少 / 幾 + (measure word) + N？",
+      "level": "N1",
+      "explanationEn": "多少 asks about any quantity (the measure word is optional); 幾 is for small numbers (up to about ten) and always takes a measure word: 你有幾個孩子？",
+      "examples": [
+        "tb-L10-024",
+        "tb-L10-025",
+        "tb-L10-026",
+        "tb-L10-027",
+        "tb-L10-028",
+        "tb-L10-029"
+      ],
+      "tags": [
+        "textbook:laixue-1",
+        "textbook:laixue-1:L10"
+      ],
+      "focus": [
+        "多少",
+        "幾"
+      ]
+    }
+  ],
+  "wordNotes": [
+    {
+      "wordId": "tocfl-a5d7ec02ce",
+      "lesson": 1,
+      "n": 1,
+      "section": "core",
+      "headword": "您",
+      "pinyin": "nín",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "you (polite and respectful to elders)"
+    },
+    {
+      "wordId": "tocfl-5751a000f5",
+      "lesson": 1,
+      "n": 2,
+      "section": "core",
+      "headword": "好",
+      "pinyin": "hǎo",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "good, fine"
+    },
+    {
+      "wordId": "tocfl-df8a004869",
+      "lesson": 1,
+      "n": 3,
+      "section": "core",
+      "headword": "我",
+      "pinyin": "wǒ",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "I, me"
+    },
+    {
+      "wordId": "tocfl-594c346871",
+      "lesson": 1,
+      "n": 4,
+      "section": "core",
+      "headword": "姓",
+      "pinyin": "xìng",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to be surnamed"
+    },
+    {
+      "wordId": "tb-f31eb37a1d",
+      "lesson": 1,
+      "n": 5,
+      "section": "core",
+      "headword": "王",
+      "pinyin": "Wáng",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "an example of a surname"
+    },
+    {
+      "wordId": "tocfl-843c0fdc73",
+      "lesson": 1,
+      "n": 6,
+      "section": "core",
+      "headword": "叫",
+      "pinyin": "jiào",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to be called"
+    },
+    {
+      "wordId": "tocfl-f1954edb18",
+      "lesson": 1,
+      "n": 7,
+      "section": "core",
+      "headword": "什麼",
+      "pinyin": "shénme",
+      "pos": [
+        "QPr"
+      ],
+      "glossEn": "what"
+    },
+    {
+      "wordId": "tocfl-8728ee4984",
+      "lesson": 1,
+      "n": 8,
+      "section": "core",
+      "headword": "名字",
+      "pinyin": "míngzi",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "name"
+    },
+    {
+      "wordId": "tocfl-126e767039",
+      "lesson": 1,
+      "n": 9,
+      "section": "core",
+      "headword": "是",
+      "pinyin": "shì",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to be (am, is, are)"
+    },
+    {
+      "wordId": "tocfl-6c6b0597dc",
+      "lesson": 1,
+      "n": 10,
+      "section": "core",
+      "headword": "人",
+      "pinyin": "rén",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "people, person"
+    },
+    {
+      "wordId": "tocfl-056657bf9c",
+      "lesson": 1,
+      "n": 11,
+      "section": "phrase",
+      "headword": "請問",
+      "pinyin": "qǐng wèn",
+      "pos": [],
+      "glossEn": "May I ask you…, Excuse me, …"
+    },
+    {
+      "wordId": "tocfl-59f250a41b",
+      "lesson": 1,
+      "n": 12,
+      "section": "phrase",
+      "headword": "貴姓",
+      "pinyin": "guì xìng",
+      "pos": [],
+      "glossEn": "Polite way to ask someone’s surname"
+    },
+    {
+      "wordId": "tb-77d30ea05d",
+      "lesson": 1,
+      "n": 13,
+      "section": "phrase",
+      "headword": "哪國人",
+      "pinyin": "nǎ guó rén",
+      "pos": [],
+      "glossEn": "an interrogative phrase used to ask what someone’s nationality"
+    },
+    {
+      "wordId": "tb-cff8c55db7",
+      "lesson": 1,
+      "n": 14,
+      "section": "phrase",
+      "headword": "美國人",
+      "pinyin": "Měiguó rén",
+      "pos": [],
+      "glossEn": "American"
+    },
+    {
+      "wordId": "tb-64c10f2e29",
+      "lesson": 1,
+      "n": 15,
+      "section": "phrase",
+      "headword": "您呢",
+      "pinyin": "nín ne",
+      "pos": [],
+      "glossEn": "How about you? And you?"
+    },
+    {
+      "wordId": "tb-0f7c542524",
+      "lesson": 1,
+      "n": 16,
+      "section": "phrase",
+      "headword": "臺灣人",
+      "pinyin": "Táiwān rén",
+      "pos": [],
+      "glossEn": "Taiwanese"
+    },
+    {
+      "wordId": "tb-e0843c79c8",
+      "lesson": 1,
+      "n": 17,
+      "section": "proper",
+      "headword": "王明文",
+      "pinyin": "Wáng Míngwén",
+      "pos": [],
+      "glossEn": "an example of a name"
+    },
+    {
+      "wordId": "tb-341493acd2",
+      "lesson": 1,
+      "n": 18,
+      "section": "proper",
+      "headword": "美國",
+      "pinyin": "Měiguó",
+      "pos": [],
+      "glossEn": "America (abbreviated version of United States of America)"
+    },
+    {
+      "wordId": "tb-1ced8f822f",
+      "lesson": 1,
+      "n": 19,
+      "section": "proper",
+      "headword": "臺灣",
+      "pinyin": "Táiwān",
+      "pos": [],
+      "glossEn": "Taiwan"
+    },
+    {
+      "wordId": "tocfl-c8b02f2841",
+      "lesson": 1,
+      "n": 20,
+      "section": "supplementary",
+      "headword": "他",
+      "pinyin": "tā",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "he, him"
+    },
+    {
+      "wordId": "tb-5865be1e21",
+      "lesson": 1,
+      "n": 21,
+      "section": "supplementary",
+      "headword": "張",
+      "pinyin": "Zhāng",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "an example of a surname"
+    },
+    {
+      "wordId": "tocfl-0ba7ac5779",
+      "lesson": 2,
+      "n": 1,
+      "section": "core",
+      "headword": "有",
+      "pinyin": "yǒu",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to have, there is / are"
+    },
+    {
+      "wordId": "tocfl-a844cb0bd2",
+      "lesson": 2,
+      "n": 2,
+      "section": "core",
+      "headword": "兩",
+      "pinyin": "liǎng",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "two (to express for quantity)"
+    },
+    {
+      "wordId": "tocfl-7f277f646c",
+      "lesson": 2,
+      "n": 3,
+      "section": "core",
+      "headword": "個",
+      "pinyin": "ge",
+      "pos": [
+        "M"
+      ],
+      "glossEn": "generic measure word"
+    },
+    {
+      "wordId": "tocfl-80c4c8a3da",
+      "lesson": 2,
+      "n": 4,
+      "section": "core",
+      "headword": "弟弟",
+      "pinyin": "dìdi",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "younger brother"
+    },
+    {
+      "wordId": "tocfl-c041cb3654",
+      "lesson": 2,
+      "n": 5,
+      "section": "core",
+      "headword": "你",
+      "pinyin": "nǐ / nǐ",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "you (male or generic) / you (female only)"
+    },
+    {
+      "wordId": "tocfl-ec433a254f",
+      "lesson": 2,
+      "n": 6,
+      "section": "core",
+      "headword": "嗎",
+      "pinyin": "ma",
+      "pos": [
+        "Ptc"
+      ],
+      "glossEn": "question particle"
+    },
+    {
+      "wordId": "tocfl-9f1ac1726a",
+      "lesson": 2,
+      "n": 7,
+      "section": "core",
+      "headword": "一",
+      "pinyin": "yī / yí / yì",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "one"
+    },
+    {
+      "wordId": "moec-b8a867198f",
+      "lesson": 2,
+      "n": 8,
+      "section": "core",
+      "headword": "姊姊",
+      "pinyin": "jiějie",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "older sister"
+    },
+    {
+      "wordId": "tocfl-f6db107280",
+      "lesson": 2,
+      "n": 9,
+      "section": "core",
+      "headword": "也",
+      "pinyin": "yě",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "also"
+    },
+    {
+      "wordId": "tocfl-3fef802071",
+      "lesson": 2,
+      "n": 10,
+      "section": "core",
+      "headword": "哥哥",
+      "pinyin": "gēge",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "older brother"
+    },
+    {
+      "wordId": "tocfl-76408eeb58",
+      "lesson": 2,
+      "n": 11,
+      "section": "core",
+      "headword": "沒",
+      "pinyin": "méi",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "not"
+    },
+    {
+      "wordId": "tocfl-750c441560",
+      "lesson": 2,
+      "n": 12,
+      "section": "core",
+      "headword": "只",
+      "pinyin": "zhǐ",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "only"
+    },
+    {
+      "wordId": "tb-801ccf4079",
+      "lesson": 2,
+      "n": 13,
+      "section": "phrase",
+      "headword": "兄弟姊妹",
+      "pinyin": "xiōngdì jiěmèi",
+      "pos": [],
+      "glossEn": "siblings"
+    },
+    {
+      "wordId": "tocfl-eeac533ccb",
+      "lesson": 2,
+      "n": 14,
+      "section": "supplementary",
+      "headword": "妹妹",
+      "pinyin": "mèimei",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "younger sister"
+    },
+    {
+      "wordId": "tocfl-c8b02f2841",
+      "lesson": 3,
+      "n": 1,
+      "section": "core",
+      "headword": "她",
+      "pinyin": "tā",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "she, her / he, him"
+    },
+    {
+      "wordId": "tocfl-2b99827e3b",
+      "lesson": 3,
+      "n": 2,
+      "section": "core",
+      "headword": "不",
+      "pinyin": "bú / bù",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "no, not"
+    },
+    {
+      "wordId": "tocfl-df11d6ee67",
+      "lesson": 3,
+      "n": 3,
+      "section": "core",
+      "headword": "學生",
+      "pinyin": "xuéshēng",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "student"
+    },
+    {
+      "wordId": "tocfl-d430a2b764",
+      "lesson": 3,
+      "n": 4,
+      "section": "core",
+      "headword": "大學",
+      "pinyin": "dàxué",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "university, college"
+    },
+    {
+      "wordId": "tocfl-1fb98be339",
+      "lesson": 3,
+      "n": 5,
+      "section": "core",
+      "headword": "在",
+      "pinyin": "zài",
+      "pos": [
+        "Prep"
+      ],
+      "glossEn": "in, on, at"
+    },
+    {
+      "wordId": "tocfl-ada71020c3",
+      "lesson": 3,
+      "n": 6,
+      "section": "core",
+      "headword": "哪裡",
+      "pinyin": "nǎlǐ (nǎr)",
+      "pos": [
+        "QPr"
+      ],
+      "glossEn": "where"
+    },
+    {
+      "wordId": "tocfl-d7f41fa541",
+      "lesson": 3,
+      "n": 7,
+      "section": "core",
+      "headword": "工作",
+      "pinyin": "gōngzuò",
+      "pos": [
+        "V",
+        "N"
+      ],
+      "glossEn": "to work, work"
+    },
+    {
+      "wordId": "tocfl-ea19127732",
+      "lesson": 3,
+      "n": 8,
+      "section": "core",
+      "headword": "銀行",
+      "pinyin": "yínháng",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "bank"
+    },
+    {
+      "wordId": "tocfl-dbe16a6f7a",
+      "lesson": 3,
+      "n": 9,
+      "section": "core",
+      "headword": "先生",
+      "pinyin": "xiānshēng",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "husband, Mr."
+    },
+    {
+      "wordId": "tocfl-b541819b3a",
+      "lesson": 3,
+      "n": 10,
+      "section": "core",
+      "headword": "電腦",
+      "pinyin": "diànnǎo",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "computer"
+    },
+    {
+      "wordId": "tocfl-4bf2daaa1c",
+      "lesson": 3,
+      "n": 11,
+      "section": "core",
+      "headword": "公司",
+      "pinyin": "gōngsī",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "company"
+    },
+    {
+      "wordId": "tocfl-e210565179",
+      "lesson": 3,
+      "n": 12,
+      "section": "core",
+      "headword": "孩子",
+      "pinyin": "háizi",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "child"
+    },
+    {
+      "wordId": "tocfl-246abbbff2",
+      "lesson": 3,
+      "n": 13,
+      "section": "core",
+      "headword": "兒子",
+      "pinyin": "érzi",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "son"
+    },
+    {
+      "wordId": "tocfl-f05bd63014",
+      "lesson": 3,
+      "n": 14,
+      "section": "core",
+      "headword": "女兒",
+      "pinyin": "nǚ’ér",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "daughter"
+    },
+    {
+      "wordId": "tb-842d3bbe31",
+      "lesson": 3,
+      "n": 15,
+      "section": "core",
+      "headword": "小孩",
+      "pinyin": "xiǎohái",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "child"
+    },
+    {
+      "wordId": "tocfl-4254b875e7",
+      "lesson": 3,
+      "n": 16,
+      "section": "core",
+      "headword": "都",
+      "pinyin": "dōu",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "both, all"
+    },
+    {
+      "wordId": "tocfl-6a51849e4e",
+      "lesson": 3,
+      "n": 17,
+      "section": "core",
+      "headword": "小學",
+      "pinyin": "xiǎoxué",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "elementary school"
+    },
+    {
+      "wordId": "tb-2d0ec7af64",
+      "lesson": 3,
+      "n": 18,
+      "section": "phrase",
+      "headword": "畢業了",
+      "pinyin": "bìyè le",
+      "pos": [],
+      "glossEn": "graduated"
+    },
+    {
+      "wordId": "tb-67f28b0c26",
+      "lesson": 3,
+      "n": 19,
+      "section": "phrase",
+      "headword": "結婚了",
+      "pinyin": "jiéhūn le",
+      "pos": [],
+      "glossEn": "married"
+    },
+    {
+      "wordId": "tocfl-490e9adcc1",
+      "lesson": 3,
+      "n": 20,
+      "section": "phrase",
+      "headword": "他們",
+      "pinyin": "tāmen",
+      "pos": [],
+      "glossEn": "they (plural of “he / she”)"
+    },
+    {
+      "wordId": "tocfl-e87966ae89",
+      "lesson": 3,
+      "n": 21,
+      "section": "phrase",
+      "headword": "念書",
+      "pinyin": "niàn shū",
+      "pos": [],
+      "glossEn": "to study"
+    },
+    {
+      "wordId": "moec-34a1c97d9c",
+      "lesson": 3,
+      "n": 22,
+      "section": "supplementary",
+      "headword": "法國",
+      "pinyin": "Fǎguó",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "France"
+    },
+    {
+      "wordId": "tocfl-0b3d2f7f28",
+      "lesson": 3,
+      "n": 23,
+      "section": "supplementary",
+      "headword": "和",
+      "pinyin": "hàn / hé",
+      "pos": [
+        "Conj"
+      ],
+      "glossEn": "and"
+    },
+    {
+      "wordId": "tocfl-485f51de92",
+      "lesson": 4,
+      "n": 1,
+      "section": "core",
+      "headword": "爸爸",
+      "pinyin": "bàba",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "father, dad"
+    },
+    {
+      "wordId": "tocfl-feba8fafa9",
+      "lesson": 4,
+      "n": 2,
+      "section": "core",
+      "headword": "媽媽",
+      "pinyin": "māma",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "mother, mom"
+    },
+    {
+      "wordId": "tocfl-e6e5696c01",
+      "lesson": 4,
+      "n": 3,
+      "section": "core",
+      "headword": "老師",
+      "pinyin": "lǎoshī",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "teacher"
+    },
+    {
+      "wordId": "tocfl-6b29522157",
+      "lesson": 4,
+      "n": 4,
+      "section": "core",
+      "headword": "忙",
+      "pinyin": "máng",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "busy"
+    },
+    {
+      "wordId": "tocfl-66de47b958",
+      "lesson": 4,
+      "n": 5,
+      "section": "core",
+      "headword": "很",
+      "pinyin": "hěn",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "very"
+    },
+    {
+      "wordId": "moec-fe09b2a21c",
+      "lesson": 4,
+      "n": 6,
+      "section": "core",
+      "headword": "每天",
+      "pinyin": "měitiān",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "every day"
+    },
+    {
+      "wordId": "tocfl-c0918c270d",
+      "lesson": 4,
+      "n": 7,
+      "section": "core",
+      "headword": "累",
+      "pinyin": "lèi",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "tired, tiring"
+    },
+    {
+      "wordId": "tocfl-8cca6ed256",
+      "lesson": 4,
+      "n": 8,
+      "section": "core",
+      "headword": "喜歡",
+      "pinyin": "xǐhuān",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to like"
+    },
+    {
+      "wordId": "tocfl-695e82fbcc",
+      "lesson": 4,
+      "n": 9,
+      "section": "core",
+      "headword": "小孩子",
+      "pinyin": "xiǎo háizi",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "children, kids"
+    },
+    {
+      "wordId": "tocfl-eac7d9cc06",
+      "lesson": 4,
+      "n": 10,
+      "section": "core",
+      "headword": "說",
+      "pinyin": "shuō",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to say"
+    },
+    {
+      "wordId": "tocfl-84696d149c",
+      "lesson": 4,
+      "n": 11,
+      "section": "core",
+      "headword": "教",
+      "pinyin": "jiāo",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to teach"
+    },
+    {
+      "wordId": "moec-6db0a4c922",
+      "lesson": 4,
+      "n": 12,
+      "section": "core",
+      "headword": "法文",
+      "pinyin": "Fǎwén",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "French language"
+    },
+    {
+      "wordId": "tocfl-2ad20543bc",
+      "lesson": 4,
+      "n": 13,
+      "section": "phrase",
+      "headword": "教書",
+      "pinyin": "jiāo shū",
+      "pos": [],
+      "glossEn": "the job of teaching"
+    },
+    {
+      "wordId": "tb-6317d59e8c",
+      "lesson": 4,
+      "n": 14,
+      "section": "supplementary",
+      "headword": "李",
+      "pinyin": "Lǐ",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "an example of a surname"
+    },
+    {
+      "wordId": "tocfl-74c7794307",
+      "lesson": 4,
+      "n": 15,
+      "section": "supplementary",
+      "headword": "今天",
+      "pinyin": "jīntiān",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "today"
+    },
+    {
+      "wordId": "tocfl-89e707550c",
+      "lesson": 5,
+      "n": 1,
+      "section": "core",
+      "headword": "這",
+      "pinyin": "zhè",
+      "pos": [
+        "Det"
+      ],
+      "glossEn": "this"
+    },
+    {
+      "wordId": "tocfl-79b6361089",
+      "lesson": 5,
+      "n": 2,
+      "section": "core",
+      "headword": "朋友",
+      "pinyin": "péngyǒu",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "friend"
+    },
+    {
+      "wordId": "tocfl-a593b6ba0d",
+      "lesson": 5,
+      "n": 3,
+      "section": "core",
+      "headword": "認識",
+      "pinyin": "rènshì",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to know, meet, recognize"
+    },
+    {
+      "wordId": "tocfl-9554c9d611",
+      "lesson": 5,
+      "n": 4,
+      "section": "core",
+      "headword": "高興",
+      "pinyin": "gāoxìng",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "happy, glad"
+    },
+    {
+      "wordId": "tocfl-39b867df96",
+      "lesson": 5,
+      "n": 5,
+      "section": "core",
+      "headword": "平常",
+      "pinyin": "píngcháng",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "usually, normally"
+    },
+    {
+      "wordId": "tb-ccf8acf637",
+      "lesson": 5,
+      "n": 6,
+      "section": "core",
+      "headword": "住在",
+      "pinyin": "zhù zài",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to live in / at"
+    },
+    {
+      "wordId": "tocfl-ff2bca9c96",
+      "lesson": 5,
+      "n": 7,
+      "section": "core",
+      "headword": "現在",
+      "pinyin": "xiànzài",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "now"
+    },
+    {
+      "wordId": "tocfl-d44d3a4900",
+      "lesson": 5,
+      "n": 8,
+      "section": "core",
+      "headword": "學校",
+      "pinyin": "xuéxiào",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "school"
+    },
+    {
+      "wordId": "tocfl-9187a49d75",
+      "lesson": 5,
+      "n": 9,
+      "section": "core",
+      "headword": "放假",
+      "pinyin": "fàngjià",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to be on school break, to be on vacation"
+    },
+    {
+      "wordId": "tocfl-ec17004474",
+      "lesson": 5,
+      "n": 10,
+      "section": "core",
+      "headword": "來",
+      "pinyin": "lái",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to come"
+    },
+    {
+      "wordId": "tocfl-36c85ba240",
+      "lesson": 5,
+      "n": 11,
+      "section": "core",
+      "headword": "玩",
+      "pinyin": "wán",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to have fun, to play"
+    },
+    {
+      "wordId": "tocfl-2eeb8ce0e1",
+      "lesson": 5,
+      "n": 12,
+      "section": "core",
+      "headword": "歡迎",
+      "pinyin": "huānyíng",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to welcome"
+    },
+    {
+      "wordId": "tocfl-be4741f92b",
+      "lesson": 5,
+      "n": 13,
+      "section": "core",
+      "headword": "想",
+      "pinyin": "xiǎng",
+      "pos": [
+        "Vaux"
+      ],
+      "glossEn": "would like, to want, to have a desire to"
+    },
+    {
+      "wordId": "tocfl-b2d9f51336",
+      "lesson": 5,
+      "n": 14,
+      "section": "core",
+      "headword": "去",
+      "pinyin": "qù",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to go"
+    },
+    {
+      "wordId": "tocfl-9ca5afb931",
+      "lesson": 5,
+      "n": 15,
+      "section": "core",
+      "headword": "國家",
+      "pinyin": "guójiā",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "nation, country"
+    },
+    {
+      "wordId": "tocfl-ffb21a1371",
+      "lesson": 5,
+      "n": 16,
+      "section": "core",
+      "headword": "公園",
+      "pinyin": "gōngyuán",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "park"
+    },
+    {
+      "wordId": "tb-c82bfa3296",
+      "lesson": 5,
+      "n": 17,
+      "section": "phrase",
+      "headword": "好久不見",
+      "pinyin": "hǎojiǔ bújiàn",
+      "pos": [],
+      "glossEn": "long time no see"
+    },
+    {
+      "wordId": "tb-9d7f2ffa5d",
+      "lesson": 5,
+      "n": 18,
+      "section": "proper",
+      "headword": "迪士尼樂園",
+      "pinyin": "Díshìní lèyuán",
+      "pos": [],
+      "glossEn": "Disneyland"
+    },
+    {
+      "wordId": "tb-ef10f7d379",
+      "lesson": 5,
+      "n": 19,
+      "section": "supplementary",
+      "headword": "臺北",
+      "pinyin": "Táiběi",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "Taipei"
+    },
+    {
+      "wordId": "tb-e029985225",
+      "lesson": 5,
+      "n": 20,
+      "section": "supplementary",
+      "headword": "加州",
+      "pinyin": "Jiāzhōu",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "California"
+    },
+    {
+      "wordId": "tocfl-8c7b2e0173",
+      "lesson": 5,
+      "n": 21,
+      "section": "supplementary",
+      "headword": "誰",
+      "pinyin": "shéi",
+      "pos": [
+        "QPr"
+      ],
+      "glossEn": "who, whom"
+    },
+    {
+      "wordId": "tocfl-9becc067c8",
+      "lesson": 5,
+      "n": 22,
+      "section": "supplementary",
+      "headword": "父母",
+      "pinyin": "fùmǔ",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "parents in a formal way"
+    },
+    {
+      "wordId": "tocfl-1ce77cadad",
+      "lesson": 6,
+      "n": 1,
+      "section": "core",
+      "headword": "運動",
+      "pinyin": "yùndòng",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to exercise"
+    },
+    {
+      "wordId": "tocfl-cce40f42ef",
+      "lesson": 6,
+      "n": 2,
+      "section": "core",
+      "headword": "做",
+      "pinyin": "zuò",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to do"
+    },
+    {
+      "wordId": "tocfl-ed73cfde55",
+      "lesson": 6,
+      "n": 3,
+      "section": "core",
+      "headword": "週末",
+      "pinyin": "zhōumò",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "weekend"
+    },
+    {
+      "wordId": "tocfl-28f89db477",
+      "lesson": 6,
+      "n": 4,
+      "section": "core",
+      "headword": "打",
+      "pinyin": "dǎ",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to play (ball)"
+    },
+    {
+      "wordId": "tocfl-0011aaca20",
+      "lesson": 6,
+      "n": 5,
+      "section": "core",
+      "headword": "網球",
+      "pinyin": "wǎngqiú",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "tennis"
+    },
+    {
+      "wordId": "tocfl-a56e4048ae",
+      "lesson": 6,
+      "n": 6,
+      "section": "core",
+      "headword": "聽",
+      "pinyin": "tīng",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to listen"
+    },
+    {
+      "wordId": "tocfl-446cc8c7c7",
+      "lesson": 6,
+      "n": 7,
+      "section": "core",
+      "headword": "音樂",
+      "pinyin": "yīnyuè",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "music"
+    },
+    {
+      "wordId": "tocfl-0b3d2f7f28",
+      "lesson": 6,
+      "n": 8,
+      "section": "core",
+      "headword": "和",
+      "pinyin": "hàn / hé",
+      "pos": [
+        "Conj"
+      ],
+      "glossEn": "and"
+    },
+    {
+      "wordId": "tocfl-e6a5a1a9b4",
+      "lesson": 6,
+      "n": 9,
+      "section": "core",
+      "headword": "可是",
+      "pinyin": "kěshì",
+      "pos": [
+        "Conj"
+      ],
+      "glossEn": "but, however"
+    },
+    {
+      "wordId": "tocfl-d3c7860a8f",
+      "lesson": 6,
+      "n": 10,
+      "section": "core",
+      "headword": "還",
+      "pinyin": "hái",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "also, in addition, as well"
+    },
+    {
+      "wordId": "tocfl-858bcd695a",
+      "lesson": 6,
+      "n": 11,
+      "section": "core",
+      "headword": "看",
+      "pinyin": "kàn",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to see, look, watch, read"
+    },
+    {
+      "wordId": "tb-d93a192beb",
+      "lesson": 6,
+      "n": 12,
+      "section": "core",
+      "headword": "電視",
+      "pinyin": "diànshì",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "television"
+    },
+    {
+      "wordId": "tocfl-62d708404a",
+      "lesson": 6,
+      "n": 13,
+      "section": "core",
+      "headword": "晚上",
+      "pinyin": "wǎnshàng",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "night, at night"
+    },
+    {
+      "wordId": "tocfl-548d8c0926",
+      "lesson": 6,
+      "n": 14,
+      "section": "core",
+      "headword": "常常",
+      "pinyin": "chángcháng",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "often"
+    },
+    {
+      "wordId": "tocfl-92078db11d",
+      "lesson": 6,
+      "n": 15,
+      "section": "core",
+      "headword": "家",
+      "pinyin": "jiā",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "house, home, family"
+    },
+    {
+      "wordId": "tocfl-33d0f2d800",
+      "lesson": 6,
+      "n": 16,
+      "section": "phrase",
+      "headword": "跑步",
+      "pinyin": "pǎo bù",
+      "pos": [],
+      "glossEn": "to run, to jog"
+    },
+    {
+      "wordId": "tocfl-840e495392",
+      "lesson": 6,
+      "n": 17,
+      "section": "phrase",
+      "headword": "唱歌",
+      "pinyin": "chàng gē",
+      "pos": [],
+      "glossEn": "to sing"
+    },
+    {
+      "wordId": "tocfl-a35fc1d43a",
+      "lesson": 6,
+      "n": 18,
+      "section": "phrase",
+      "headword": "跳舞",
+      "pinyin": "tiào wǔ",
+      "pos": [],
+      "glossEn": "to dance"
+    },
+    {
+      "wordId": "tocfl-6b8f725337",
+      "lesson": 6,
+      "n": 19,
+      "section": "supplementary",
+      "headword": "上午",
+      "pinyin": "shàngwǔ",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "later morning"
+    },
+    {
+      "wordId": "tocfl-446d85bce3",
+      "lesson": 6,
+      "n": 20,
+      "section": "supplementary",
+      "headword": "太太",
+      "pinyin": "tàitai",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "wife, Mrs."
+    },
+    {
+      "wordId": "tocfl-61304d4bb5",
+      "lesson": 7,
+      "n": 1,
+      "section": "core",
+      "headword": "哪",
+      "pinyin": "nǎ",
+      "pos": [
+        "QPr"
+      ],
+      "glossEn": "which, who"
+    },
+    {
+      "wordId": "tocfl-2404b4fee3",
+      "lesson": 7,
+      "n": 2,
+      "section": "core",
+      "headword": "位",
+      "pinyin": "wèi",
+      "pos": [
+        "M"
+      ],
+      "glossEn": "polite measure word for people"
+    },
+    {
+      "wordId": "tocfl-fd688b69c2",
+      "lesson": 7,
+      "n": 3,
+      "section": "core",
+      "headword": "喂",
+      "pinyin": "wéi",
+      "pos": [
+        "Ptc"
+      ],
+      "glossEn": "Hello! (over the phone)"
+    },
+    {
+      "wordId": "tb-afdc0a7ceb",
+      "lesson": 7,
+      "n": 4,
+      "section": "core",
+      "headword": "林",
+      "pinyin": "Lín",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "Lin (a surname)"
+    },
+    {
+      "wordId": "tocfl-9b66c24d69",
+      "lesson": 7,
+      "n": 5,
+      "section": "core",
+      "headword": "小姐",
+      "pinyin": "xiǎojiě",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "Ms., Miss"
+    },
+    {
+      "wordId": "tocfl-5dea7d1c8b",
+      "lesson": 7,
+      "n": 6,
+      "section": "core",
+      "headword": "辦公室",
+      "pinyin": "bàngōngshì",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "office"
+    },
+    {
+      "wordId": "moec-5f085f36aa",
+      "lesson": 7,
+      "n": 7,
+      "section": "core",
+      "headword": "回來",
+      "pinyin": "huílái",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to return, get back"
+    },
+    {
+      "wordId": "tocfl-a1e5e6da1c",
+      "lesson": 7,
+      "n": 8,
+      "section": "core",
+      "headword": "下午",
+      "pinyin": "xiàwǔ",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "afternoon"
+    },
+    {
+      "wordId": "tocfl-781c80e9bd",
+      "lesson": 7,
+      "n": 9,
+      "section": "core",
+      "headword": "麻煩",
+      "pinyin": "máfán",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "please, “If it’s not too much trouble”, “can I trouble you to”"
+    },
+    {
+      "wordId": "tocfl-a2cefdd5e9",
+      "lesson": 7,
+      "n": 10,
+      "section": "core",
+      "headword": "以後",
+      "pinyin": "yǐhòu",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "after"
+    },
+    {
+      "wordId": "tocfl-f1c5f742c2",
+      "lesson": 7,
+      "n": 11,
+      "section": "core",
+      "headword": "給",
+      "pinyin": "gěi",
+      "pos": [
+        "Prep"
+      ],
+      "glossEn": "to"
+    },
+    {
+      "wordId": "tocfl-c128a92442",
+      "lesson": 7,
+      "n": 12,
+      "section": "core",
+      "headword": "電話",
+      "pinyin": "diànhuà",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "telephone"
+    },
+    {
+      "wordId": "tocfl-8e37d8babc",
+      "lesson": 7,
+      "n": 13,
+      "section": "core",
+      "headword": "手機",
+      "pinyin": "shǒujī",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "cell phone"
+    },
+    {
+      "wordId": "tocfl-5a876eebfb",
+      "lesson": 7,
+      "n": 14,
+      "section": "core",
+      "headword": "號碼",
+      "pinyin": "hàomǎ",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "number"
+    },
+    {
+      "wordId": "tocfl-09068deb1e",
+      "lesson": 7,
+      "n": 15,
+      "section": "core",
+      "headword": "謝謝",
+      "pinyin": "xièxie",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to thank, thanks"
+    },
+    {
+      "wordId": "tocfl-5bb3b0bc43",
+      "lesson": 7,
+      "n": 16,
+      "section": "core",
+      "headword": "再見",
+      "pinyin": "zàijiàn",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "goodbye, see you again"
+    },
+    {
+      "wordId": "tocfl-c46f43970d",
+      "lesson": 7,
+      "n": 17,
+      "section": "core",
+      "headword": "零",
+      "pinyin": "líng",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "0, zero"
+    },
+    {
+      "wordId": "tocfl-7bb5d94953",
+      "lesson": 7,
+      "n": 18,
+      "section": "core",
+      "headword": "二",
+      "pinyin": "èr",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "2, two"
+    },
+    {
+      "wordId": "tocfl-1e6df0ee37",
+      "lesson": 7,
+      "n": 19,
+      "section": "core",
+      "headword": "三",
+      "pinyin": "sān",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "3, three"
+    },
+    {
+      "wordId": "tocfl-0e0084100d",
+      "lesson": 7,
+      "n": 20,
+      "section": "core",
+      "headword": "四",
+      "pinyin": "sì",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "4, four"
+    },
+    {
+      "wordId": "tocfl-c51230ed9b",
+      "lesson": 7,
+      "n": 21,
+      "section": "core",
+      "headword": "五",
+      "pinyin": "wǔ",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "5, five"
+    },
+    {
+      "wordId": "tocfl-9025b26991",
+      "lesson": 7,
+      "n": 22,
+      "section": "core",
+      "headword": "六",
+      "pinyin": "liù",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "6, six"
+    },
+    {
+      "wordId": "tocfl-4f65074f38",
+      "lesson": 7,
+      "n": 23,
+      "section": "core",
+      "headword": "七",
+      "pinyin": "qī",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "7, seven"
+    },
+    {
+      "wordId": "tocfl-50c3aa5b31",
+      "lesson": 7,
+      "n": 24,
+      "section": "core",
+      "headword": "八",
+      "pinyin": "bā",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "8, eight"
+    },
+    {
+      "wordId": "tocfl-2417cadddd",
+      "lesson": 7,
+      "n": 25,
+      "section": "core",
+      "headword": "九",
+      "pinyin": "jiǔ",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "9, nine"
+    },
+    {
+      "wordId": "tb-7d808eaf1f",
+      "lesson": 7,
+      "n": 26,
+      "section": "phrase",
+      "headword": "什麼時候",
+      "pinyin": "shénme shíhòu",
+      "pos": [],
+      "glossEn": "when"
+    },
+    {
+      "wordId": "tocfl-d068a0edb6",
+      "lesson": 7,
+      "n": 27,
+      "section": "phrase",
+      "headword": "打電話",
+      "pinyin": "dǎ diànhuà",
+      "pos": [],
+      "glossEn": "to make a phone call"
+    },
+    {
+      "wordId": "tb-959e1ef3eb",
+      "lesson": 7,
+      "n": 28,
+      "section": "phrase",
+      "headword": "幾號",
+      "pinyin": "jǐ hào",
+      "pos": [],
+      "glossEn": "What is the phone number?"
+    },
+    {
+      "wordId": "tb-15ef5e4b10",
+      "lesson": 7,
+      "n": 29,
+      "section": "phrase",
+      "headword": "好的",
+      "pinyin": "hǎode",
+      "pos": [],
+      "glossEn": "yes, okay"
+    },
+    {
+      "wordId": "tocfl-d1c0cd08ba",
+      "lesson": 7,
+      "n": 30,
+      "section": "phrase",
+      "headword": "不客氣",
+      "pinyin": "bú kèqì",
+      "pos": [],
+      "glossEn": "You are welcome."
+    },
+    {
+      "wordId": "tb-afcab8df87",
+      "lesson": 7,
+      "n": 31,
+      "section": "proper",
+      "headword": "台一銀行",
+      "pinyin": "Táiyī Yínháng",
+      "pos": [],
+      "glossEn": "Taiyi Bank"
+    },
+    {
+      "wordId": "tb-a0f45b43eb",
+      "lesson": 7,
+      "n": 32,
+      "section": "proper",
+      "headword": "林美美",
+      "pinyin": "Lín Měiměi",
+      "pos": [],
+      "glossEn": "an example of a name"
+    },
+    {
+      "wordId": "tb-292b51f677",
+      "lesson": 7,
+      "n": 33,
+      "section": "proper",
+      "headword": "北電公司",
+      "pinyin": "Běidiàn Gōngsī",
+      "pos": [],
+      "glossEn": "Beidian Company"
+    },
+    {
+      "wordId": "tocfl-81bf8200e7",
+      "lesson": 7,
+      "n": 34,
+      "section": "supplementary",
+      "headword": "十",
+      "pinyin": "shí",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "10, ten"
+    },
+    {
+      "wordId": "tocfl-b74453d607",
+      "lesson": 7,
+      "n": 35,
+      "section": "supplementary",
+      "headword": "百",
+      "pinyin": "bǎi",
+      "pos": [
+        "Num"
+      ],
+      "glossEn": "100, hundred"
+    },
+    {
+      "wordId": "tocfl-4573935c3b",
+      "lesson": 8,
+      "n": 1,
+      "section": "core",
+      "headword": "祝",
+      "pinyin": "zhù",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to wish"
+    },
+    {
+      "wordId": "tocfl-824d01acc6",
+      "lesson": 8,
+      "n": 2,
+      "section": "core",
+      "headword": "生日",
+      "pinyin": "shēngrì",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "birthday"
+    },
+    {
+      "wordId": "tocfl-1dc8b040bd",
+      "lesson": 8,
+      "n": 3,
+      "section": "core",
+      "headword": "快樂",
+      "pinyin": "kuàilè",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "happy"
+    },
+    {
+      "wordId": "tocfl-3c98e401b9",
+      "lesson": 8,
+      "n": 4,
+      "section": "core",
+      "headword": "大哥",
+      "pinyin": "dàgē",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "oldest brother"
+    },
+    {
+      "wordId": "tocfl-2707586eb6",
+      "lesson": 8,
+      "n": 5,
+      "section": "core",
+      "headword": "明天",
+      "pinyin": "míngtiān",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "tomorrow"
+    },
+    {
+      "wordId": "tocfl-d4fe751e2e",
+      "lesson": 8,
+      "n": 6,
+      "section": "core",
+      "headword": "月",
+      "pinyin": "yuè",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "month"
+    },
+    {
+      "wordId": "tocfl-393a5c3e7e",
+      "lesson": 8,
+      "n": 7,
+      "section": "core",
+      "headword": "號",
+      "pinyin": "hào",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "days of the month"
+    },
+    {
+      "wordId": "tb-c60e9ca34c",
+      "lesson": 8,
+      "n": 8,
+      "section": "core",
+      "headword": "噢",
+      "pinyin": "òu",
+      "pos": [
+        "Ptc"
+      ],
+      "glossEn": "Oh"
+    },
+    {
+      "wordId": "tocfl-9a92abb03f",
+      "lesson": 8,
+      "n": 9,
+      "section": "core",
+      "headword": "歲",
+      "pinyin": "suì",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "year of age"
+    },
+    {
+      "wordId": "tocfl-f3434a8bee",
+      "lesson": 8,
+      "n": 10,
+      "section": "core",
+      "headword": "要",
+      "pinyin": "yào",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to want, to need"
+    },
+    {
+      "wordId": "tocfl-2922ccf3dd",
+      "lesson": 8,
+      "n": 11,
+      "section": "core",
+      "headword": "禮物",
+      "pinyin": "lǐwù",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "gift, present"
+    },
+    {
+      "wordId": "tocfl-dc41d1b97e",
+      "lesson": 8,
+      "n": 12,
+      "section": "core",
+      "headword": "雙",
+      "pinyin": "shuāng",
+      "pos": [
+        "M"
+      ],
+      "glossEn": "measure word for a pair"
+    },
+    {
+      "wordId": "moec-aa78332299",
+      "lesson": 8,
+      "n": 13,
+      "section": "phrase",
+      "headword": "運動鞋",
+      "pinyin": "yùndòng xié",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "sports shoes, sneakers"
+    },
+    {
+      "wordId": "tocfl-74c7794307",
+      "lesson": 8,
+      "n": 14,
+      "section": "phrase",
+      "headword": "今天",
+      "pinyin": "jīntiān",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "today"
+    },
+    {
+      "wordId": "tocfl-d9c66f870a",
+      "lesson": 8,
+      "n": 15,
+      "section": "phrase",
+      "headword": "買",
+      "pinyin": "mǎi",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to buy"
+    },
+    {
+      "wordId": "tocfl-eefeda1588",
+      "lesson": 8,
+      "n": 16,
+      "section": "phrase",
+      "headword": "請",
+      "pinyin": "qǐng",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to treat, please (polite form of request)"
+    },
+    {
+      "wordId": "tocfl-29992340ae",
+      "lesson": 8,
+      "n": 17,
+      "section": "phrase",
+      "headword": "吃",
+      "pinyin": "chī",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to eat"
+    },
+    {
+      "wordId": "moec-09b3446903",
+      "lesson": 8,
+      "n": 18,
+      "section": "phrase",
+      "headword": "大餐",
+      "pinyin": "dàcān",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "a fancy meal"
+    },
+    {
+      "wordId": "tb-6325ca44a1",
+      "lesson": 8,
+      "n": 19,
+      "section": "phrase",
+      "headword": "是啊",
+      "pinyin": "shì a!",
+      "pos": [],
+      "glossEn": "That’s right."
+    },
+    {
+      "wordId": "tb-5cb466146b",
+      "lesson": 8,
+      "n": 20,
+      "section": "phrase",
+      "headword": "可以嗎",
+      "pinyin": "kěyǐ ma?",
+      "pos": [],
+      "glossEn": "Could I? Is it okay?"
+    },
+    {
+      "wordId": "moec-67f843d89c",
+      "lesson": 8,
+      "n": 21,
+      "section": "phrase",
+      "headword": "好不好",
+      "pinyin": "hǎo bù hǎo?",
+      "pos": [],
+      "glossEn": "Is it okay? How does that sound?"
+    },
+    {
+      "wordId": "tb-23665fb010",
+      "lesson": 8,
+      "n": 22,
+      "section": "phrase",
+      "headword": "沒問題",
+      "pinyin": "méi wèntí",
+      "pos": [],
+      "glossEn": "No problem."
+    },
+    {
+      "wordId": "tocfl-38aa88f35a",
+      "lesson": 8,
+      "n": 23,
+      "section": "supplementary",
+      "headword": "今年",
+      "pinyin": "jīnnián",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "this year"
+    },
+    {
+      "wordId": "tocfl-032218f744",
+      "lesson": 8,
+      "n": 24,
+      "section": "supplementary",
+      "headword": "送",
+      "pinyin": "sòng",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to give a gift to someone"
+    },
+    {
+      "wordId": "tocfl-e40b830809",
+      "lesson": 8,
+      "n": 25,
+      "section": "supplementary",
+      "headword": "日",
+      "pinyin": "rì",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "days of the month (in written)"
+    },
+    {
+      "wordId": "tb-84b4437aca",
+      "lesson": 9,
+      "n": 1,
+      "section": "core",
+      "headword": "星期五",
+      "pinyin": "xīngqíwǔ",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "Friday"
+    },
+    {
+      "wordId": "tocfl-aee54ca9ef",
+      "lesson": 9,
+      "n": 2,
+      "section": "core",
+      "headword": "時間",
+      "pinyin": "shíjiān",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "time"
+    },
+    {
+      "wordId": "tocfl-17aa2b9bde",
+      "lesson": 9,
+      "n": 3,
+      "section": "core",
+      "headword": "同事",
+      "pinyin": "tóngshì",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "coworker, colleague"
+    },
+    {
+      "wordId": "tocfl-0cf1ab2847",
+      "lesson": 9,
+      "n": 4,
+      "section": "core",
+      "headword": "要",
+      "pinyin": "yào",
+      "pos": [
+        "Vaux"
+      ],
+      "glossEn": "to want to"
+    },
+    {
+      "wordId": "tocfl-90c7688865",
+      "lesson": 9,
+      "n": 5,
+      "section": "core",
+      "headword": "餐廳",
+      "pinyin": "cāntīng",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "restaurant"
+    },
+    {
+      "wordId": "tocfl-14611f83c9",
+      "lesson": 9,
+      "n": 6,
+      "section": "core",
+      "headword": "跟",
+      "pinyin": "gēn",
+      "pos": [
+        "Prep"
+      ],
+      "glossEn": "with"
+    },
+    {
+      "wordId": "tocfl-2d03bda470",
+      "lesson": 9,
+      "n": 7,
+      "section": "core",
+      "headword": "一起",
+      "pinyin": "yìqǐ",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "together"
+    },
+    {
+      "wordId": "tb-cc63efa7b1",
+      "lesson": 9,
+      "n": 8,
+      "section": "core",
+      "headword": "星期六",
+      "pinyin": "xīngqíliù",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "Saturday"
+    },
+    {
+      "wordId": "tocfl-dabf206f19",
+      "lesson": 9,
+      "n": 9,
+      "section": "core",
+      "headword": "行",
+      "pinyin": "xíng",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "okay, all right"
+    },
+    {
+      "wordId": "tocfl-e869a714ba",
+      "lesson": 9,
+      "n": 10,
+      "section": "core",
+      "headword": "下課",
+      "pinyin": "xiàkè",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to finish class"
+    },
+    {
+      "wordId": "tocfl-15b1a8bf3b",
+      "lesson": 9,
+      "n": 11,
+      "section": "core",
+      "headword": "點",
+      "pinyin": "diǎn",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "o’clock"
+    },
+    {
+      "wordId": "tocfl-58971c6f65",
+      "lesson": 9,
+      "n": 12,
+      "section": "core",
+      "headword": "半",
+      "pinyin": "bàn",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "half"
+    },
+    {
+      "wordId": "tocfl-2e55d791f5",
+      "lesson": 9,
+      "n": 13,
+      "section": "core",
+      "headword": "見",
+      "pinyin": "jiàn",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to see, to meet"
+    },
+    {
+      "wordId": "tocfl-27b09c2861",
+      "lesson": 9,
+      "n": 14,
+      "section": "core",
+      "headword": "那",
+      "pinyin": "nà",
+      "pos": [
+        "Det"
+      ],
+      "glossEn": "that"
+    },
+    {
+      "wordId": "tocfl-a3ffb26f29",
+      "lesson": 9,
+      "n": 15,
+      "section": "core",
+      "headword": "家",
+      "pinyin": "jiā",
+      "pos": [
+        "M"
+      ],
+      "glossEn": "measure word for restaurant, shop"
+    },
+    {
+      "wordId": "tb-7b0b0ae000",
+      "lesson": 9,
+      "n": 16,
+      "section": "core",
+      "headword": "牛肉麵",
+      "pinyin": "niúròumiàn",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "beef noodle soup"
+    },
+    {
+      "wordId": "tocfl-d95a2d91ef",
+      "lesson": 9,
+      "n": 17,
+      "section": "core",
+      "headword": "最",
+      "pinyin": "zuì",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "most (for a superlative degree)"
+    },
+    {
+      "wordId": "moec-7d4eadc559",
+      "lesson": 9,
+      "n": 18,
+      "section": "core",
+      "headword": "好吃",
+      "pinyin": "hǎochī",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "delicious"
+    },
+    {
+      "wordId": "moec-14c587ddf8",
+      "lesson": 9,
+      "n": 19,
+      "section": "phrase",
+      "headword": "吃飯",
+      "pinyin": "chī fàn",
+      "pos": [],
+      "glossEn": "to eat, to have a meal"
+    },
+    {
+      "wordId": "moec-4e2a8be792",
+      "lesson": 9,
+      "n": 20,
+      "section": "phrase",
+      "headword": "不行",
+      "pinyin": "bù xíng",
+      "pos": [],
+      "glossEn": "not good, It is not okay."
+    },
+    {
+      "wordId": "tocfl-c6709cbdc2",
+      "lesson": 9,
+      "n": 21,
+      "section": "phrase",
+      "headword": "怎麼樣",
+      "pinyin": "zěnmeyàng",
+      "pos": [],
+      "glossEn": "How about it? How does that sound? What do you think?"
+    },
+    {
+      "wordId": "tb-ff6830c502",
+      "lesson": 9,
+      "n": 22,
+      "section": "phrase",
+      "headword": "太好了",
+      "pinyin": "tài hǎo le",
+      "pos": [],
+      "glossEn": "Excellent! Great!"
+    },
+    {
+      "wordId": "tb-2e9db6e051",
+      "lesson": 9,
+      "n": 23,
+      "section": "proper",
+      "headword": "美味餐廳",
+      "pinyin": "Měiwèi Cāntīng",
+      "pos": [],
+      "glossEn": "Tasty Café"
+    },
+    {
+      "wordId": "tocfl-1d0ecc194a",
+      "lesson": 9,
+      "n": 24,
+      "section": "supplementary",
+      "headword": "年",
+      "pinyin": "nián",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "year"
+    },
+    {
+      "wordId": "moec-685847b391",
+      "lesson": 9,
+      "n": 25,
+      "section": "supplementary",
+      "headword": "晚飯",
+      "pinyin": "wǎn fàn",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "dinner"
+    },
+    {
+      "wordId": "tocfl-6b2999c554",
+      "lesson": 10,
+      "n": 1,
+      "section": "core",
+      "headword": "學",
+      "pinyin": "xué",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to learn, to study"
+    },
+    {
+      "wordId": "tocfl-a6e36b0ec1",
+      "lesson": 10,
+      "n": 2,
+      "section": "core",
+      "headword": "中文",
+      "pinyin": "Zhōngwén",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "Mandarin (Chinese)"
+    },
+    {
+      "wordId": "tocfl-1c51e65bb9",
+      "lesson": 10,
+      "n": 3,
+      "section": "core",
+      "headword": "難",
+      "pinyin": "nán",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "hard, difficult"
+    },
+    {
+      "wordId": "tocfl-04bdc50299",
+      "lesson": 10,
+      "n": 4,
+      "section": "core",
+      "headword": "休息",
+      "pinyin": "xiūxí",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to take a break"
+    },
+    {
+      "wordId": "moec-1ab2c2cbc2",
+      "lesson": 10,
+      "n": 5,
+      "section": "core",
+      "headword": "一下",
+      "pinyin": "yíxià",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "used after a verb to indicate a quick action, for a short period of time"
+    },
+    {
+      "wordId": "tocfl-3361e60084",
+      "lesson": 10,
+      "n": 6,
+      "section": "core",
+      "headword": "喝",
+      "pinyin": "hē",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to drink"
+    },
+    {
+      "wordId": "tocfl-a28d989f7e",
+      "lesson": 10,
+      "n": 7,
+      "section": "core",
+      "headword": "杯",
+      "pinyin": "bēi",
+      "pos": [
+        "M"
+      ],
+      "glossEn": "measure word for drinks (cup / glass)"
+    },
+    {
+      "wordId": "tocfl-7c491838af",
+      "lesson": 10,
+      "n": 8,
+      "section": "core",
+      "headword": "咖啡",
+      "pinyin": "kāfēi",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "coffee"
+    },
+    {
+      "wordId": "tocfl-4e56220e25",
+      "lesson": 10,
+      "n": 9,
+      "section": "core",
+      "headword": "吧",
+      "pinyin": "ba",
+      "pos": [
+        "Ptc"
+      ],
+      "glossEn": "sentence-final particle for suggestion"
+    },
+    {
+      "wordId": "tocfl-2dfdcd2bc8",
+      "lesson": 10,
+      "n": 10,
+      "section": "core",
+      "headword": "得",
+      "pinyin": "de",
+      "pos": [
+        "Ptc"
+      ],
+      "glossEn": "complement marker"
+    },
+    {
+      "wordId": "tocfl-d0baf0a365",
+      "lesson": 10,
+      "n": 11,
+      "section": "core",
+      "headword": "覺得",
+      "pinyin": "juéde",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to think, to feel"
+    },
+    {
+      "wordId": "tocfl-52430ae3b9",
+      "lesson": 10,
+      "n": 12,
+      "section": "core",
+      "headword": "自己",
+      "pinyin": "zìjǐ",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "self"
+    },
+    {
+      "wordId": "tocfl-d76f16ccbf",
+      "lesson": 10,
+      "n": 13,
+      "section": "core",
+      "headword": "不錯",
+      "pinyin": "búcuò",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "not bad, pretty good"
+    },
+    {
+      "wordId": "tocfl-7a2f97cfcb",
+      "lesson": 10,
+      "n": 14,
+      "section": "core",
+      "headword": "會",
+      "pinyin": "huì",
+      "pos": [
+        "Vaux"
+      ],
+      "glossEn": "can, know how to"
+    },
+    {
+      "wordId": "tocfl-3b59f04f42",
+      "lesson": 10,
+      "n": 15,
+      "section": "core",
+      "headword": "多少",
+      "pinyin": "duōshǎo",
+      "pos": [
+        "QPr"
+      ],
+      "glossEn": "how much, how many"
+    },
+    {
+      "wordId": "tocfl-cc79077554",
+      "lesson": 10,
+      "n": 16,
+      "section": "core",
+      "headword": "差不多",
+      "pinyin": "chābùduō",
+      "pos": [
+        "Adv"
+      ],
+      "glossEn": "approximately"
+    },
+    {
+      "wordId": "tocfl-93273c0564",
+      "lesson": 10,
+      "n": 17,
+      "section": "core",
+      "headword": "字",
+      "pinyin": "zì",
+      "pos": [
+        "N"
+      ],
+      "glossEn": "Chinese character"
+    },
+    {
+      "wordId": "tocfl-8607e5370f",
+      "lesson": 10,
+      "n": 18,
+      "section": "core",
+      "headword": "練習",
+      "pinyin": "liànxí",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to practice"
+    },
+    {
+      "wordId": "tocfl-7e76cc7921",
+      "lesson": 10,
+      "n": 19,
+      "section": "phrase",
+      "headword": "說話",
+      "pinyin": "shuō huà",
+      "pos": [],
+      "glossEn": "to talk"
+    },
+    {
+      "wordId": "moec-0075d73b7a",
+      "lesson": 10,
+      "n": 20,
+      "section": "phrase",
+      "headword": "寫字",
+      "pinyin": "xiě zì",
+      "pos": [],
+      "glossEn": "to write characters"
+    },
+    {
+      "wordId": "tocfl-e006561609",
+      "lesson": 10,
+      "n": 21,
+      "section": "phrase",
+      "headword": "有一點",
+      "pinyin": "yǒu yìdiǎn",
+      "pos": [],
+      "glossEn": "a little, somewhat"
+    },
+    {
+      "wordId": "tocfl-e3cfa3aa3f",
+      "lesson": 10,
+      "n": 22,
+      "section": "phrase",
+      "headword": "聊天",
+      "pinyin": "liáo tiān",
+      "pos": [],
+      "glossEn": "to chat"
+    },
+    {
+      "wordId": "moec-16fa62f8f5",
+      "lesson": 10,
+      "n": 23,
+      "section": "supplementary",
+      "headword": "做飯",
+      "pinyin": "zuò fàn",
+      "pos": [
+        "V"
+      ],
+      "glossEn": "to cook"
+    },
+    {
+      "wordId": "tocfl-c797debd16",
+      "lesson": 10,
+      "n": 24,
+      "section": "supplementary",
+      "headword": "快",
+      "pinyin": "kuài",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "fast, quick"
+    },
+    {
+      "wordId": "tocfl-86251eab21",
+      "lesson": 10,
+      "n": 25,
+      "section": "supplementary",
+      "headword": "貴",
+      "pinyin": "guì",
+      "pos": [
+        "Vs"
+      ],
+      "glossEn": "expensive"
+    },
+    {
+      "wordId": "tocfl-8c8a536423",
+      "lesson": 4,
+      "n": 0,
+      "section": "grammar",
+      "headword": "呢",
+      "pinyin": "ne",
+      "pos": [],
+      "glossEn": "particle indicating continuation of a state"
+    },
+    {
+      "wordId": "tocfl-40ad287929",
+      "lesson": 4,
+      "n": 0,
+      "section": "grammar",
+      "headword": "的",
+      "pinyin": "de",
+      "pos": [],
+      "glossEn": "of; ~'s"
+    },
+    {
+      "wordId": "tocfl-3caff6844c",
+      "lesson": 8,
+      "n": 0,
+      "section": "grammar",
+      "headword": "幾",
+      "pinyin": "jǐ",
+      "pos": [],
+      "glossEn": "how many; several; a few"
+    },
+    {
+      "wordId": "tocfl-76fa79162a",
+      "lesson": 8,
+      "n": 0,
+      "section": "grammar",
+      "headword": "可以",
+      "pinyin": "kě yǐ",
+      "pos": [],
+      "glossEn": "can; may; not bad; pretty good"
+    },
+    {
+      "wordId": "tocfl-b2d18e1fd7",
+      "lesson": 9,
+      "n": 0,
+      "section": "grammar",
+      "headword": "星期",
+      "pinyin": "xīng qí",
+      "pos": [],
+      "glossEn": "week; Sunday"
+    },
+    {
+      "wordId": "tocfl-b2a8605470",
+      "lesson": 9,
+      "n": 0,
+      "section": "grammar",
+      "headword": "星期天",
+      "pinyin": "xīng qí tiān",
+      "pos": [],
+      "glossEn": "Sunday"
+    },
+    {
+      "wordId": "tocfl-5c3db186b7",
+      "lesson": 9,
+      "n": 0,
+      "section": "grammar",
+      "headword": "星期日",
+      "pinyin": "xīng qí rì",
+      "pos": [],
+      "glossEn": "Sunday"
+    },
+    {
+      "wordId": "tocfl-c78da712c6",
+      "lesson": 9,
+      "n": 0,
+      "section": "grammar",
+      "headword": "禮拜",
+      "pinyin": "lǐ bài",
+      "pos": [],
+      "glossEn": "week"
+    },
+    {
+      "wordId": "tocfl-e0191448c3",
+      "lesson": 9,
+      "n": 0,
+      "section": "grammar",
+      "headword": "週",
+      "pinyin": "zhōu",
+      "pos": [],
+      "glossEn": "week; weekly"
+    },
+    {
+      "wordId": "tocfl-ca79e477b1",
+      "lesson": 9,
+      "n": 0,
+      "section": "grammar",
+      "headword": "分",
+      "pinyin": "fēn",
+      "pos": [],
+      "glossEn": "0.01 yuan"
+    },
+    {
+      "wordId": "moec-ef2eb3bea9",
+      "lesson": 9,
+      "n": 0,
+      "section": "grammar",
+      "headword": "點鐘",
+      "pinyin": "diǎn zhōng",
+      "pos": [],
+      "glossEn": "(indicating time of day) o'clock"
+    },
+    {
+      "wordId": "tocfl-7e16c61d13",
+      "lesson": 10,
+      "n": 0,
+      "section": "grammar",
+      "headword": "有點",
+      "pinyin": "yǒu diǎn",
+      "pos": [],
+      "glossEn": "a little"
+    }
+  ]
+}

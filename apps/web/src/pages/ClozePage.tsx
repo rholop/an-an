@@ -23,11 +23,14 @@ import {
   type SessionItem,
 } from '@anan/core';
 import { db, gameService, learnerService } from '../db/instance.js';
+import { SpeakerButton } from '../components/SpeakerButton.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { allChatLines, allJournalSentences } from '../db/queries.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
+import { useMyClass } from '../lib/my-class.js';
+import { useTextbookSentences } from '../lib/textbook-data.js';
 import './ClozePage.css';
 
 type Outcome = 'correct' | 'correct_wrong_tone' | 'wrong';
@@ -104,6 +107,9 @@ export function ClozePage() {
     return [...levels];
   }, [dueCards, lexiconState]);
   const sentenceBankState = useSentenceBank(neededLevels);
+  // Phase 12: the lesson sentences (lessons up to the class's current one) join the bank while My class is on.
+  const myClass = useMyClass();
+  const textbookSentences = useTextbookSentences(myClass.enabled);
 
   const [session, setSession] = useState<SessionEntry[] | null>(null);
   const [index, setIndex] = useState(0);
@@ -114,6 +120,7 @@ export function ClozePage() {
     lexiconState.status === 'ready' &&
     scenariosState.status === 'ready' &&
     sentenceBankState.status === 'ready' &&
+    textbookSentences.status === 'ready' &&
     dueCards !== null &&
     knownIds !== null &&
     chatLines !== null &&
@@ -131,7 +138,12 @@ export function ClozePage() {
       learnerLevel,
       journalSentences: journalSentences!,
       chatLines: chatLines!,
-      bankSentences: sentenceBankState.sentences,
+      bankSentences: [
+        ...sentenceBankState.sentences,
+        ...(myClass.enabled && textbookSentences.status === 'ready'
+          ? textbookSentences.sentences.filter((x) => (x.lesson ?? 0) <= myClass.currentLesson)
+          : []),
+      ],
       errorItems: errorItems!,
       now: new Date(),
     });
@@ -447,7 +459,7 @@ function ChoiceExerciseView({
           </button>
         ))}
       </div>
-      {answered && <Feedback outcome={answered} word={item.word} onNext={onNext} />}
+      {answered && <Feedback outcome={answered} word={item.word} onNext={onNext} sentenceZh={item.source?.zh} />}
     </div>
   );
 }
@@ -522,7 +534,7 @@ function TypedExerciseView({
           Submit
         </button>
       </div>
-      {answered && <Feedback outcome={answered} word={item.word} onNext={onNext} />}
+      {answered && <Feedback outcome={answered} word={item.word} onNext={onNext} sentenceZh={item.source?.zh} />}
     </div>
   );
 }
@@ -582,6 +594,7 @@ function ReorderExerciseView({
           outcome={answered}
           word={item.word}
           onNext={onNext}
+          sentenceZh={item.source?.zh}
           correctTextOverride={exercise.correctOrder.join('')}
         />
       )}
@@ -594,11 +607,14 @@ function Feedback({
   word,
   onNext,
   correctTextOverride,
+  sentenceZh,
 }: {
   outcome: Outcome;
   word: SessionItem['word'];
   onNext: () => void;
   correctTextOverride?: string;
+  /** The full sentence the exercise came from: its clip (if any) plays after answering. */
+  sentenceZh?: string;
 }) {
   return (
     <div className={`cloze-feedback cloze-feedback--${outcome}`}>
@@ -608,6 +624,10 @@ function Feedback({
         {outcome === 'wrong' &&
           `✗ Wrong — it's ${correctTextOverride ?? `${word.headword} (${word.pinyin})`}`}
       </p>
+      <div className="cloze-audio">
+        {sentenceZh && <SpeakerButton kind="sentence" text={sentenceZh} label="the sentence" />}
+        <SpeakerButton kind="word" id={word.id} label={word.headword} />
+      </div>
       <button onClick={onNext}>Next</button>
     </div>
   );

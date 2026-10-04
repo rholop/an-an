@@ -12,7 +12,7 @@ export interface Word {
   variants: string[];
   pos: string[];
   level: Level | null;
-  source: 'tocfl' | 'supplement' | 'custom';
+  source: 'tocfl' | 'supplement' | 'custom' | 'textbook';
   pinyin: string;
   pinyinNumeric: string;
   zhuyin: string;
@@ -30,6 +30,8 @@ export interface Word {
   /** MOE 重編國語辭典 definition(s) for this reading, VERBATIM (CC BY-ND:
    * never edit this text; show it with credit). */
   moeDefZh?: string[];
+  /** Phase 12: the textbook's own sense (an entry of `senses`), shown first in textbook context. */
+  textbookSenseId?: string;
 }
 
 /** One sense of a word. Chosen and condensed from source candidates, never
@@ -52,6 +54,10 @@ export interface GrammarItem {
   level: Level | null;
   explanationEn: string;
   examples: string[];
+  /** Phase 12: e.g. ['textbook:laixue-1', 'textbook:laixue-1:L03']. */
+  tags?: string[];
+  /** Phase 12: the function word(s) that signal the pattern in a sentence; blanked by the grammar cloze. */
+  focus?: string[];
 }
 
 export type ItemRef = { kind: 'word' | 'grammar'; id: string };
@@ -74,10 +80,12 @@ export interface Evidence {
     | 'review_easy'
     | 'anki_import_seen'
     | 'placement_known'
-    | 'placement_unknown';
+    | 'placement_unknown'
+    /** Phase 12: the class covered this item's lesson. Introduces the card only. */
+    | 'textbook_lesson_covered';
   at: Date;
   context?: {
-    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader';
+    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook';
     refId?: string;
     /** Phase 5: a journal_misuse the learner corrected themselves. */
     selfFixed?: boolean;

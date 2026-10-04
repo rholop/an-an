@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Scenario, SentenceGenRequest, TurnRequest } from '@anan/core';
 import { createApp } from './app.js';
+import { MemoryAudioStore } from './audio-store.js';
+import { MemoryTextbookStore } from './textbook-store.js';
 import { MemorySyncStore, type SyncStore } from './sync-store.js';
 import {
   loadGlossPromptTemplates,
@@ -151,6 +153,10 @@ function buildApp(
     },
     siteCode: 'tofu',
     sync: overrides.sync ?? new MemorySyncStore(),
+    audio: new MemoryAudioStore(),
+    textbook: new MemoryTextbookStore({
+      'laixue-1/dialogues': { 'laixue-1-L01': { lines: [{ speaker: '王明文', zh: '您好。' }] } },
+    }),
     rateLimiter:
       overrides.rateLimiter ??
       new RateLimiter({ requestsPerMinute: 100, dailyTokenBudget: 1_000_000 }),
@@ -705,5 +711,72 @@ describe('sync endpoints (phase 8)', () => {
     expect((await put(app, 'ron', { baseRev: -1, data: data(1) })).status).toBe(400);
     expect((await put(app, 'ron', { baseRev: 0, data: 'str' })).status).toBe(400);
     expect((await app.request('/v1/sync/ron', { method: 'PUT', body: '{nope' })).status).toBe(400);
+  });
+});
+
+describe('audio marks (phase 10)', () => {
+  const hash = 'a'.repeat(64);
+  const post = (app: ReturnType<typeof buildApp>, body: object) =>
+    app.request('/v1/audio/mark', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  const flag = { kind: 'word', id: 'w1', hash, status: 'flagged', text: '垃圾', profileId: 'ron' };
+
+  it('a flag is visible to everyone straight away and lands in the review markdown with who flagged it', async () => {
+    const app = buildApp();
+    expect((await post(app, flag)).status).toBe(200);
+    const { marks } = (await (await app.request('/v1/audio/marks')).json()) as {
+      marks: Record<string, { status: string; by: string; hash: string }>;
+    };
+    expect(marks['word:w1']).toMatchObject({ status: 'flagged', by: 'ron', hash });
+    const md = await (await app.request('/v1/audio/review.md')).text();
+    expect(md).toContain('“垃圾”');
+    expect(md).toContain('flagged by ron');
+  });
+
+  it('a later OK replaces a flag; unknown profiles and bad hashes are rejected', async () => {
+    const app = buildApp();
+    await post(app, flag);
+    await post(app, { ...flag, status: 'verified', profileId: 'guanyu' });
+    const { marks } = (await (await app.request('/v1/audio/marks')).json()) as {
+      marks: Record<string, { status: string }>;
+    };
+    expect(marks['word:w1']!.status).toBe('verified');
+    expect((await post(app, { ...flag, profileId: 'mallory' })).status).toBe(400);
+    expect((await post(app, { ...flag, hash: 'nope' })).status).toBe(400);
+  });
+
+  it('needs the household code', async () => {
+    const app = buildApp({ autoCode: false });
+    expect((await app.request('/v1/audio/marks')).status).toBe(401);
+    expect(
+      (
+        await app.request('/v1/audio/mark', {
+          method: 'POST',
+          body: JSON.stringify(flag),
+        })
+      ).status,
+    ).toBe(401);
+  });
+});
+
+describe('textbook text (phase 12)', () => {
+  it('is refused without the household code (401), whatever the book id', async () => {
+    const app = buildApp({ autoCode: false });
+    expect((await app.request('/v1/textbook/laixue-1/dialogues')).status).toBe(401);
+    expect((await app.request('/v1/textbook/laixue-1/examples')).status).toBe(401);
+    expect((await app.request('/v1/textbook/nope/dialogues')).status).toBe(401);
+  });
+
+  it('is served with the code; unknown books, kinds and traversal attempts are 404', async () => {
+    const app = buildApp();
+    const res = await app.request('/v1/textbook/laixue-1/dialogues');
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as Record<string, unknown>)['laixue-1-L01']).toBeTruthy();
+    expect((await app.request('/v1/textbook/laixue-1/examples')).status).toBe(404);
+    expect((await app.request('/v1/textbook/laixue-1/pages')).status).toBe(404);
+    expect((await app.request('/v1/textbook/..%2F..%2Fetc/dialogues')).status).toBe(404);
   });
 });

@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm sync:lexicon && pnpm sync:scenarios && pnpm sync:sentences && vite",
-    "build": "pnpm sync:lexicon && pnpm sync:scenarios && pnpm sync:sentences && tsc --noEmit && vite build",
+    "dev": "pnpm sync:lexicon && pnpm sync:scenarios && pnpm sync:sentences && pnpm sync:audio && pnpm sync:textbook && vite",
+    "build": "pnpm sync:lexicon && pnpm sync:scenarios && pnpm sync:sentences && pnpm sync:audio && pnpm sync:textbook && tsc --noEmit && vite build",
     "preview": "vite preview",
     "sync:lexicon": "node scripts/sync-lexicon.mjs",
     "sync:scenarios": "node scripts/sync-scenarios.mjs",
     "sync:sentences": "node scripts/sync-sentences.mjs",
+    "sync:audio": "node scripts/sync-audio.mjs",
+    "sync:textbook": "node scripts/sync-textbook.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
