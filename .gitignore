@@ -47,7 +47,7 @@ apps/web/public/audio/
 
 # Phase 12: the textbook is OCAC's — personal study only. PDF and book text stay out of git.
 data/raw/textbook/
-data/curriculum/laixue-1/private/
+data/curriculum/*/private/
 
 # Phase 12: copy of data/curriculum/*/book.json + lesson sentences (`pnpm sync:textbook`).
 apps/web/public/textbook/
