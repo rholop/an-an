@@ -37,8 +37,13 @@ jobs:
       - name: Typecheck (proxy)
         run: pnpm --filter @anan/proxy exec tsc --noEmit -p tsconfig.json
 
-      - name: Build lexicon + scenarios (data-pipeline, from committed data/raw)
-        run: pnpm pipeline:build
+      # The lexicon is NOT rebuilt here. Its glosses use the Wiktionary and Unihan
+      # dumps, which are git-ignored (data/raw/SOURCES.md), so a CI rebuild is a
+      # worse lexicon than the one that ships (e.g. N1-L2 gloss support 92.5% vs
+      # 95.6%) and the tests would be checking something nobody uses. The tests run
+      # against the committed data/build/lexicon.v2.json, as deploy does.
+      - name: Build scenarios (data-pipeline)
+        run: pnpm --filter @anan/data-pipeline build:scenarios
 
       - name: Unit tests
         run: pnpm test
@@ -70,8 +75,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build lexicon + scenarios
-        run: pnpm pipeline:build
+      # Committed lexicon, not a rebuild (see the unit-test job above).
+      - name: Build scenarios
+        run: pnpm --filter @anan/data-pipeline build:scenarios
 
       - name: Install Playwright browsers
         run: pnpm --filter @anan/web exec playwright install --with-deps chromium webkit
