@@ -4,10 +4,10 @@ import { z } from 'zod';
 const EnvSchema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
-  GEMINI_MODEL_TURN: z.string().default('gemini-1.5-flash'),
+  GEMINI_MODEL_TURN: z.string().default('gemini-3.5-flash-lite'),
   OPENAI_MODEL_TURN: z.string().default('gpt-4o-mini'),
   // Journal review/check/explain (Phase 5) can use a stronger model than chat.
-  GEMINI_MODEL_JOURNAL: z.string().default('gemini-1.5-flash'),
+  GEMINI_MODEL_JOURNAL: z.string().default('gemini-3.5-flash-lite'),
   OPENAI_MODEL_JOURNAL: z.string().default('gpt-4o-mini'),
   CORS_ORIGIN: z.string().default('http://localhost:5183'),
   /** Requests per client (install-id header) per minute. */
