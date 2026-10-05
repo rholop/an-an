@@ -45,6 +45,18 @@ test('reporting a journal cloze removes it at once, and Undo brings it back', as
       flagged: false,
       createdAt: new Date(),
       status: 'active',
+      version: 2,
+      en: 'I went to Taiwan today.',
+      explanationEn: 'Today, not yesterday.',
+      marks: { original: [[1, 3]], corrected: [[1, 3]] },
+      exercise: {
+        kind: 'cloze',
+        prompt: 'Use the right word here.',
+        blankStart: 1,
+        blankEnd: 3,
+        answer: '今天',
+        accepted: ['今天'],
+      },
     });
   }, due.toISOString());
 

@@ -9,6 +9,13 @@ import type {
   JournalExplainResponse,
   JournalReview,
   JournalReviewRequest,
+  JournalSentenceFixRequest,
+  JournalSolveRequest,
+  JournalSolveResponse,
+  JournalVerifyRequest,
+  JournalVerifyResponse,
+  ModelSentenceReview,
+  ProviderName,
 } from '../journal/types.js';
 
 // Shared between apps/proxy (request handling) and apps/web (fetch calls) —
@@ -105,6 +112,14 @@ export interface TutorLLM {
   /** Phase 7: runtime definition for a word that is NOT in the lexicon only.
    * The result is shown labelled "AI-generated" and queued for review. */
   defineWord(req: DefineRequest): Promise<DefineResponse>;
+  /** Phase 17: one corrected sentence again, after the checker objected. */
+  fixJournalSentence(
+    req: JournalSentenceFixRequest,
+  ): Promise<{ review: ModelSentenceReview; servedBy?: ProviderName }>;
+  /** Phase 17: the independent checker (never sees the original sentence). */
+  verifyJournalSentence(req: JournalVerifyRequest): Promise<JournalVerifyResponse>;
+  /** Phase 17: the cloze solver test. */
+  solveJournalCloze(req: JournalSolveRequest): Promise<JournalSolveResponse>;
   /** Phase 16: is this full corrected sentence natural Taiwan Mandarin? */
   checkCloze(req: { sentence: string }): Promise<{ ok: boolean; reason?: string }>;
   /** Phase 9: on-demand example sentences for the reader (POST /v1/sentences).

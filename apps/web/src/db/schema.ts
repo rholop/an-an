@@ -1,6 +1,8 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type {
   ErrorItem,
+  RawSentenceReview,
+  VerifiedSentenceRef,
   Evidence,
   ItemRef,
   JournalIssue,
@@ -156,6 +158,14 @@ export interface JournalReviewRow {
   /** Updated when the entry is finished (flagged issues don't count). */
   errorsPer100Chars: number | null;
   createdAt: Date;
+  /** Phase 17 Part A: the model's fully corrected version of every sentence,
+   * with `original` attached by code. Stored at submit, checked at finish. */
+  sentences?: RawSentenceReview[];
+  /** Phase 17 Part B: sentences that passed or failed the check (cached). */
+  verifiedSentences?: VerifiedSentenceRef[];
+  /** Set once every sentence has been checked and its items built. Entries
+   * without it are (re)processed when the app is online (the Part E migration). */
+  itemsBuiltAt?: Date;
 }
 
 /** Phase 7 §B6: a learner's "Report this definition", kept locally and
@@ -373,6 +383,24 @@ export class AnanDB extends Dexie {
           .toCollection()
           .modify((row: { status?: string }) => {
             row.status ??= 'pending_check';
+          });
+      });
+
+    // v8 (Phase 17): journal review items are rebuilt from fully corrected,
+    // independently checked sentences. Every item from before is the old
+    // one-span-patched kind: it waits as `pending_rebuild` (never shown) until
+    // the migration rebuilds it or blocks it with a reason. Items the learner
+    // reported or deleted keep their status. No index changes.
+    this.version(8)
+      .stores({})
+      .upgrade(async (tx) => {
+        await tx
+          .table('errorItems')
+          .toCollection()
+          .modify((row: { version?: number; status?: string }) => {
+            if (row.version === 2) return;
+            if (row.status === 'reported' || row.status === 'deleted') return;
+            row.status = 'pending_rebuild';
           });
       });
 

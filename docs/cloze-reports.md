@@ -29,17 +29,11 @@ migration runs on the Cloze page and lists everything it blocks.
 
 ## How a journal cloze reaches the learner now
 
-1. `buildErrorItems` builds the item (all corrections applied, blank on whole
-   tokens) with status `pending_check`, or `blocked` with the reason when the
-   rules already fail.
-2. `checkErrorItem` / `checkJournalCloze` (`packages/core/src/cloze/check-journal-cloze.ts`) runs the
-   rules, then one cached naturalness check (`POST /v1/cloze-check`, Gemini
-   first, OpenAI as fallback). If the model can't be reached the item stays
-   `pending_check` and is hidden until the next run.
-3. Only `active` items are ever shown. `blocked` and `reported` items appear
-   on the **Reported clozes** page.
-4. Existing items: Dexie v7 moves every stored item to `pending_check`, and the
-   Cloze page runs the check over them (and over journal sentences) on open.
+Phase 17 replaced the item builder this document first fixed (see
+`docs/journal-cloze.md`). What stays from Phase 16: the pre-show rules
+(`checkJournalClozeRules`), `blocked`/`reported`/`pending_check` statuses, and the
+Reported page. Only `active` items with `version: 2` are ever shown; the older
+one-span-patched items are rebuilt or blocked by the migration.
 
 ## Reporting
 

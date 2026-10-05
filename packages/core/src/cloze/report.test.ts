@@ -25,6 +25,7 @@ const item = (over: Partial<ErrorItem> = {}): ErrorItem => ({
   flagged: false,
   createdAt: now,
   status: 'active',
+  version: 2,
   ...over,
 });
 
@@ -34,6 +35,7 @@ describe('error item statuses', () => {
     for (const status of ['pending_check', 'blocked', 'reported', 'deleted', undefined] as const)
       expect(isShowableErrorItem(item({ status }))).toBe(false);
     expect(isShowableErrorItem(item({ flagged: true }))).toBe(false);
+    expect(isShowableErrorItem(item({ version: undefined }))).toBe(false); // legacy: rebuilt first
   });
   it('report, restore and block keep the card as it was', () => {
     const base = item();

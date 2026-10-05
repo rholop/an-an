@@ -1,0 +1,441 @@
+{
+  "learnerLevel": "L2",
+  "protectedTerms": [
+    "印",
+    "羅恩",
+    "小安",
+    "冠宇"
+  ],
+  "entries": [
+    {
+      "id": "example-garbled",
+      "category": "owner-example",
+      "original": "我的姓印名字印羅恩。",
+      "reference": {
+        "corrected": "我姓印，名字叫羅恩。",
+        "en": "My surname is Yin and my name is Rowan."
+      },
+      "note": "The sentence from the owner's screenshot (fixtures/17-garbled-cloze-example.png). 我的姓是印，名字是羅恩。 is also acceptable."
+    },
+    {
+      "id": "missing-shi-1",
+      "category": "missing-是",
+      "original": "他老師。",
+      "reference": {
+        "corrected": "他是老師。",
+        "en": "He is a teacher."
+      }
+    },
+    {
+      "id": "missing-shi-2",
+      "category": "missing-是",
+      "original": "我的朋友台灣人。",
+      "reference": {
+        "corrected": "我的朋友是台灣人。",
+        "en": "My friend is Taiwanese."
+      }
+    },
+    {
+      "id": "missing-shi-3",
+      "category": "missing-是",
+      "original": "這我的書。",
+      "reference": {
+        "corrected": "這是我的書。",
+        "en": "This is my book."
+      }
+    },
+    {
+      "id": "missing-shi-4",
+      "category": "missing-是",
+      "original": "我哥哥學生。",
+      "reference": {
+        "corrected": "我哥哥是學生。",
+        "en": "My older brother is a student."
+      }
+    },
+    {
+      "id": "missing-de-1",
+      "category": "missing-的",
+      "original": "這是我老師書。",
+      "reference": {
+        "corrected": "這是我老師的書。",
+        "en": "This is my teacher's book."
+      }
+    },
+    {
+      "id": "missing-de-2",
+      "category": "missing-的",
+      "original": "我喜歡他給我禮物。",
+      "reference": {
+        "corrected": "我喜歡他給我的禮物。",
+        "en": "I like the gift he gave me."
+      }
+    },
+    {
+      "id": "missing-de-3",
+      "category": "missing-的",
+      "original": "這是很好咖啡。",
+      "reference": {
+        "corrected": "這是很好的咖啡。",
+        "en": "This is very good coffee."
+      }
+    },
+    {
+      "id": "missing-le-1",
+      "category": "missing-了",
+      "original": "我昨天買一本書。",
+      "reference": {
+        "corrected": "我昨天買了一本書。",
+        "en": "I bought a book yesterday."
+      }
+    },
+    {
+      "id": "missing-le-2",
+      "category": "missing-了",
+      "original": "他已經走。",
+      "reference": {
+        "corrected": "他已經走了。",
+        "en": "He has already left."
+      }
+    },
+    {
+      "id": "missing-le-3",
+      "category": "missing-了",
+      "original": "我們昨天看電影。",
+      "reference": {
+        "corrected": "我們昨天看了電影。",
+        "en": "We watched a movie yesterday."
+      }
+    },
+    {
+      "id": "measure-1",
+      "category": "measure-word",
+      "original": "我有三個狗。",
+      "reference": {
+        "corrected": "我有三隻狗。",
+        "en": "I have three dogs."
+      }
+    },
+    {
+      "id": "measure-2",
+      "category": "measure-word",
+      "original": "我買了兩個書。",
+      "reference": {
+        "corrected": "我買了兩本書。",
+        "en": "I bought two books."
+      }
+    },
+    {
+      "id": "measure-3",
+      "category": "measure-word",
+      "original": "我有一個桌子。",
+      "reference": {
+        "corrected": "我有一張桌子。",
+        "en": "I have a table."
+      }
+    },
+    {
+      "id": "measure-4",
+      "category": "measure-word",
+      "original": "他騎一個機車。",
+      "reference": {
+        "corrected": "他騎一台機車。",
+        "en": "He rides a scooter."
+      }
+    },
+    {
+      "id": "measure-5",
+      "category": "measure-word",
+      "original": "我要一個咖啡。",
+      "reference": {
+        "corrected": "我要一杯咖啡。",
+        "en": "I'd like a coffee."
+      }
+    },
+    {
+      "id": "order-1",
+      "category": "word-order",
+      "original": "我去昨天夜市。",
+      "reference": {
+        "corrected": "我昨天去夜市。",
+        "en": "I went to the night market yesterday."
+      }
+    },
+    {
+      "id": "order-2",
+      "category": "word-order",
+      "original": "我很喜歡咖啡喝。",
+      "reference": {
+        "corrected": "我很喜歡喝咖啡。",
+        "en": "I really like drinking coffee."
+      }
+    },
+    {
+      "id": "order-3",
+      "category": "word-order",
+      "original": "他在台北住。",
+      "reference": {
+        "corrected": "他住在台北。",
+        "en": "He lives in Taipei."
+      }
+    },
+    {
+      "id": "order-4",
+      "category": "word-order",
+      "original": "我們吃飯在家。",
+      "reference": {
+        "corrected": "我們在家吃飯。",
+        "en": "We eat at home."
+      }
+    },
+    {
+      "id": "order-5",
+      "category": "word-order",
+      "original": "你有沒有時間明天？",
+      "reference": {
+        "corrected": "你明天有沒有時間？",
+        "en": "Do you have time tomorrow?"
+      }
+    },
+    {
+      "id": "mainland-1",
+      "category": "mainland-word",
+      "original": "我坐地鐵去上班。",
+      "reference": {
+        "corrected": "我搭捷運去上班。",
+        "en": "I take the MRT to work."
+      }
+    },
+    {
+      "id": "mainland-2",
+      "category": "mainland-word",
+      "original": "我用視頻跟媽媽聊天。",
+      "reference": {
+        "corrected": "我用視訊跟媽媽聊天。",
+        "en": "I video-chat with my mom."
+      }
+    },
+    {
+      "id": "mainland-3",
+      "category": "mainland-word",
+      "original": "這個軟件很好用。",
+      "reference": {
+        "corrected": "這個軟體很好用。",
+        "en": "This software is easy to use."
+      }
+    },
+    {
+      "id": "mainland-4",
+      "category": "mainland-word",
+      "original": "我在網絡上買東西。",
+      "reference": {
+        "corrected": "我在網路上買東西。",
+        "en": "I buy things online."
+      }
+    },
+    {
+      "id": "mainland-5",
+      "category": "mainland-word",
+      "original": "我想吃土豆。",
+      "reference": {
+        "corrected": "我想吃馬鈴薯。",
+        "en": "I want to eat potatoes."
+      }
+    },
+    {
+      "id": "mainland-6",
+      "category": "mainland-word",
+      "original": "我有一個自行車。",
+      "reference": {
+        "corrected": "我有一台腳踏車。",
+        "en": "I have a bicycle."
+      }
+    },
+    {
+      "id": "name-1",
+      "category": "names",
+      "original": "羅恩今天去台灣。",
+      "reference": {
+        "corrected": "羅恩今天去台灣。",
+        "en": "Rowan is going to Taiwan today."
+      },
+      "note": "already correct; contains a name"
+    },
+    {
+      "id": "name-2",
+      "category": "names",
+      "original": "小安喜歡咖啡很多。",
+      "reference": {
+        "corrected": "小安很喜歡咖啡。",
+        "en": "Xiao An likes coffee a lot."
+      }
+    },
+    {
+      "id": "name-3",
+      "category": "names",
+      "original": "我跟冠宇去夜市了昨天。",
+      "reference": {
+        "corrected": "我昨天跟冠宇去了夜市。",
+        "en": "Yesterday I went to the night market with Guanyu."
+      }
+    },
+    {
+      "id": "name-4",
+      "category": "names",
+      "original": "我是從美國來。",
+      "reference": {
+        "corrected": "我從美國來。",
+        "en": "I come from America."
+      }
+    },
+    {
+      "id": "number-1",
+      "category": "numbers",
+      "original": "我有三個姊姊。",
+      "reference": {
+        "corrected": "我有三個姊姊。",
+        "en": "I have three older sisters."
+      },
+      "note": "already correct; contains a number"
+    },
+    {
+      "id": "number-2",
+      "category": "numbers",
+      "original": "我今年二十五歲了。",
+      "reference": {
+        "corrected": "我今年二十五歲了。",
+        "en": "I am twenty-five this year."
+      },
+      "note": "already correct; contains a number"
+    },
+    {
+      "id": "number-3",
+      "category": "numbers",
+      "original": "我買了二個蘋果。",
+      "reference": {
+        "corrected": "我買了兩個蘋果。",
+        "en": "I bought two apples."
+      },
+      "note": "the changed word is a number: it must never be a blank"
+    },
+    {
+      "id": "number-4",
+      "category": "numbers",
+      "original": "現在是下午三點鐘。",
+      "reference": {
+        "corrected": "現在是下午三點鐘。",
+        "en": "It is three o'clock in the afternoon."
+      },
+      "note": "already correct; contains a number"
+    },
+    {
+      "id": "multi-1",
+      "category": "multiple-errors",
+      "original": "昨天我去夜市買東西很多。",
+      "reference": {
+        "corrected": "昨天我去夜市買了很多東西。",
+        "en": "Yesterday I went to the night market and bought a lot of things."
+      }
+    },
+    {
+      "id": "multi-2",
+      "category": "multiple-errors",
+      "original": "他不是喜歡咖啡。",
+      "reference": {
+        "corrected": "他不喜歡咖啡。",
+        "en": "He doesn't like coffee."
+      }
+    },
+    {
+      "id": "multi-3",
+      "category": "multiple-errors",
+      "original": "我很高興見面你。",
+      "reference": {
+        "corrected": "我很高興見到你。",
+        "en": "I'm happy to meet you."
+      }
+    },
+    {
+      "id": "multi-4",
+      "category": "multiple-errors",
+      "original": "我們一起去看電影昨天晚上。",
+      "reference": {
+        "corrected": "我們昨天晚上一起去看電影。",
+        "en": "Last night we went to see a movie together."
+      }
+    },
+    {
+      "id": "multi-5",
+      "category": "multiple-errors",
+      "original": "我有兩個朋友是台灣人，他們很好人。",
+      "reference": {
+        "corrected": "我有兩個朋友是台灣人，他們人很好。",
+        "en": "I have two friends who are Taiwanese; they are very nice."
+      }
+    },
+    {
+      "id": "multi-6",
+      "category": "multiple-errors",
+      "original": "我昨天去夜市買三個東西喝咖啡。",
+      "reference": {
+        "corrected": "我昨天去夜市買了三樣東西，還喝了咖啡。",
+        "en": "Yesterday I went to the night market, bought three things and had coffee."
+      },
+      "note": "larger rewrite: expect a Fix my sentence item"
+    },
+    {
+      "id": "particle-1",
+      "category": "particle",
+      "original": "你吃飯嗎了？",
+      "reference": {
+        "corrected": "你吃飯了嗎？",
+        "en": "Have you eaten?"
+      }
+    },
+    {
+      "id": "correct-1",
+      "category": "already-correct",
+      "original": "我喜歡喝咖啡。",
+      "reference": {
+        "corrected": "我喜歡喝咖啡。",
+        "en": "I like drinking coffee."
+      }
+    },
+    {
+      "id": "correct-2",
+      "category": "already-correct",
+      "original": "今天天氣很好。",
+      "reference": {
+        "corrected": "今天天氣很好。",
+        "en": "The weather is nice today."
+      }
+    },
+    {
+      "id": "correct-3",
+      "category": "already-correct",
+      "original": "我昨天去了夜市。",
+      "reference": {
+        "corrected": "我昨天去了夜市。",
+        "en": "I went to the night market yesterday."
+      }
+    },
+    {
+      "id": "correct-4",
+      "category": "already-correct",
+      "original": "他是我的老師。",
+      "reference": {
+        "corrected": "他是我的老師。",
+        "en": "He is my teacher."
+      }
+    },
+    {
+      "id": "correct-5",
+      "category": "already-correct",
+      "original": "我每天搭捷運去學校。",
+      "reference": {
+        "corrected": "我每天搭捷運去學校。",
+        "en": "I take the MRT to school every day."
+      }
+    }
+  ]
+}

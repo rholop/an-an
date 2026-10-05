@@ -157,6 +157,9 @@ export const JournalReviewSchema = z.object({
   /** Phase 17: a fully corrected version of every numbered sentence in the
    * request, separate from the (capped) issues above. */
   sentences: z.array(ModelSentenceReviewSchema).optional(),
+  /** Set by the client from the proxy's `x-served-by` header: which provider
+   * wrote the corrections (the checker then uses the other one). */
+  servedBy: ProviderNameSchema.optional(),
 });
 export type JournalReview = z.infer<typeof JournalReviewSchema>;
 

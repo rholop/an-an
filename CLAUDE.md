@@ -115,6 +115,8 @@ Phases may add fields but must not rename or remove these.
 | 5 | Journal mode + error bank | `05-journal-error-bank.md` |
 | 6 | Game layer | `06-game-layer.md` |
 | 12 | Class textbook curriculum (來學華語 1) | `docs/textbook.md` |
+| 16 | Report a bad cloze; check journal clozes before they are shown | `docs/cloze-reports.md` |
+| 17 | Journal clozes rebuilt from fully corrected, independently checked sentences | `docs/journal-cloze.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

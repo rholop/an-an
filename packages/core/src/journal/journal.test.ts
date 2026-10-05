@@ -9,8 +9,6 @@ import type { Word } from '../types.js';
 import { extractBrackets, lookupBracketInLexicon, renderBracketsInline } from './bracket.js';
 import {
   buildErrorCloze,
-  buildErrorItems,
-  gradeErrorAnswer,
   patternCounts,
   reviewErrorItem,
   selectDueErrorItems,
@@ -276,88 +274,63 @@ describe('sentences', () => {
   });
 });
 
+/** A rebuilt (Phase 17) cloze item, built directly for the scheduling tests. */
+const makeItem = (over: Partial<ErrorItem> = {}): ErrorItem => ({
+  id: 'e1:0',
+  journalEntryId: 'e1',
+  original: '我昨天去了台灣。',
+  corrected: '我今天去了台灣。',
+  span: [1, 3],
+  blank: [1, 3],
+  type: 'error',
+  pattern: '了-placement',
+  card: emptyCard(now),
+  flagged: false,
+  createdAt: now,
+  version: 2,
+  status: 'active',
+  en: 'I went to Taiwan today.',
+  exercise: { kind: 'cloze', prompt: 'Use the right word here.', blankStart: 1, blankEnd: 3, answer: '今天', accepted: ['今天'] },
+  ...over,
+});
+
 describe('error bank', () => {
-  const text = '今天天氣很好。我昨天去了台灣。';
-  const entryIssue = issue({
-    span: [8, 9],
-    correction: '去',
-    pattern: '了-placement',
-    type: 'error',
-  });
-  const items = buildErrorItems('e1', text, [{ issue: entryIssue, index: 0 }], now);
+  const items = [makeItem()];
 
-  it('builds an item scoped to the sentence with a blank on the corrected span', () => {
-    expect(items).toHaveLength(1);
-    const it = items[0]!;
-    expect(it.original).toBe('我昨天去了台灣。');
-    expect(it.span).toEqual([1, 2]);
-    const c = buildErrorCloze(it);
-    expect(c.sentence).toBe(it.corrected);
+  it('reads the blank back from a stored item', () => {
+    const c = buildErrorCloze(items[0]!);
+    expect(c.sentence).toBe('我今天去了台灣。');
     expect(c.sentence.slice(c.blankStart, c.blankEnd)).toBe(c.answer);
-    expect(c.answer).toBe('去');
-    expect(it.id).toBe('e1:0');
+    expect(c.answer).toBe('今天');
   });
 
-  it('handles corrections of a different length', () => {
-    const [it] = buildErrorItems(
-      'e2',
-      '我很喜歡咖啡。',
-      [{ issue: issue({ span: [2, 4], correction: '愛喝' }), index: 0 }],
-      now,
-    );
-    const c = buildErrorCloze(it!);
-    expect(c.answer).toBe('愛喝');
-    expect(c.sentence).toBe('我很愛喝咖啡。');
-    const [short] = buildErrorItems(
-      'e3',
-      '我很喜歡咖啡。',
-      [{ issue: issue({ span: [2, 4], correction: '愛' }), index: 0 }],
-      now,
-    );
-    expect(buildErrorCloze(short!).answer).toBe('愛');
-  });
-
-  it('blocks (never shows) sentences that still hold an English gap', () => {
-    const [it] = buildErrorItems(
-      'e',
-      '我去 [gym]。',
-      [{ issue: issue({ span: [0, 1], correction: '你' }), index: 0 }],
-      now,
-    );
-    expect(it!.status).toBe('blocked');
-    expect(it!.blockedReason).toMatch(/bracket/);
-  });
-
-  it('grades typed answers and reschedules with FSRS', () => {
+  it('reschedules with FSRS (a wrong tone is Hard, a miss is Again)', () => {
     const it = items[0]!;
-    expect(gradeErrorAnswer(' 去 ', it)).toBe('correct');
-    expect(gradeErrorAnswer('來', it)).toBe('wrong');
     const good = reviewErrorItem(it, 'correct', now);
+    const hint = reviewErrorItem(it, 'hint', now);
     const bad = reviewErrorItem(it, 'wrong', now);
-    expect(good.card.due.getTime()).toBeGreaterThan(bad.card.due.getTime());
+    expect(good.card.due.getTime()).toBeGreaterThan(hint.card.due.getTime());
+    expect(hint.card.due.getTime()).toBeGreaterThanOrEqual(bad.card.due.getTime());
     expect(good.card.reps).toBe(1);
   });
 
-  it('prioritises recurring patterns and never serves flagged items', () => {
-    const mk = (
-      id: string,
-      pattern: string | undefined,
-      over: Partial<ErrorItem> = {},
-    ): ErrorItem => ({
-      ...items[0]!,
-      id,
-      journalEntryId: id,
-      pattern,
-      card: emptyCard(new Date('2026-01-01')),
-      status: 'active',
-      ...over,
-    });
+  it('prioritises recurring patterns and never serves flagged, legacy or non-active items', () => {
+    const mk = (id: string, pattern: string | undefined, over: Partial<ErrorItem> = {}): ErrorItem =>
+      makeItem({
+        id,
+        journalEntryId: id,
+        pattern,
+        card: emptyCard(new Date('2026-01-01')),
+        ...over,
+      });
     const all = [
       mk('a', 'solo'),
       mk('b', '了-placement', { card: emptyCard(new Date('2026-02-01')) }),
       mk('c', '了-placement'),
       mk('d', '了-placement', { flagged: true }),
       mk('f', undefined),
+      mk('legacy', 'solo', { version: undefined, status: 'pending_rebuild' }),
+      mk('blocked', 'solo', { status: 'blocked' }),
     ];
     const due = selectDueErrorItems(all, now, 10);
     expect(due.map((d) => d.id)).toEqual(['c', 'b', 'a', 'f']);
@@ -369,12 +342,7 @@ describe('error bank', () => {
 });
 
 describe('mixed session', () => {
-  const errorItem = buildErrorItems(
-    'e1',
-    '我昨天去了台灣。',
-    [{ issue: issue({ span: [2, 4], correction: '今天', pattern: 'p' }), index: 0 }],
-    now,
-  ).map((i): ErrorItem => ({ ...i, status: 'active' }))[0]!;
+  const errorItem = makeItem({ pattern: 'p' });
   const dueCard = (hw: string, over: Partial<SkillCard> = {}): SkillCard => ({
     item: { kind: 'word', id: wordId(hw) },
     skill: 'recognition',

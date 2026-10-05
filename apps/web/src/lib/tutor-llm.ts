@@ -4,6 +4,10 @@ import {
   DefineResponseSchema,
   JournalCheckResponseSchema,
   JournalExplainResponseSchema,
+  JournalVerifyResponseSchema,
+  JournalSolveResponseSchema,
+  ModelSentenceReviewSchema,
+  ProviderNameSchema,
   JournalReviewSchema,
   SentenceGenResponseSchema,
   TurnResponseSchema,
@@ -15,6 +19,13 @@ import {
   type JournalExplainResponse,
   type JournalReview,
   type JournalReviewRequest,
+  type JournalSentenceFixRequest,
+  type JournalSolveRequest,
+  type JournalSolveResponse,
+  type JournalVerifyRequest,
+  type JournalVerifyResponse,
+  type ModelSentenceReview,
+  type ProviderName,
   type SentenceGenRequest,
   type SentenceGenResponse,
   type TurnRequest,
@@ -40,21 +51,38 @@ export class FetchTutorLLM implements TutorLLM {
   constructor(private readonly base: string = proxyBase()) {}
 
   private async post(route: string, body: unknown): Promise<unknown> {
-    const res = await fetch(`${this.base}${route}`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', ...authHeaders() },
-      body: JSON.stringify(body),
-    });
-    if (res.status === 401) handleUnauthorized();
+    return (await this.postWithMeta(route, body)).json;
+  }
 
-    if (!res.ok) {
-      const errBody = await res.json().catch(() => ({}));
-      throw new ProxyTurnError(
-        (errBody as { error?: string }).error ?? `HTTP ${res.status}`,
-        res.status,
-      );
+  /** Also returns which provider answered (the proxy's `x-served-by`). A
+   * short rate-limit wait is retried: the journal pipeline makes several calls. */
+  private async postWithMeta(
+    route: string,
+    body: unknown,
+  ): Promise<{ json: unknown; servedBy?: ProviderName }> {
+    for (let attempt = 0; ; attempt++) {
+      const res = await fetch(`${this.base}${route}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', ...authHeaders() },
+        body: JSON.stringify(body),
+      });
+      if (res.status === 401) handleUnauthorized();
+
+      if (!res.ok) {
+        const errBody = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          retryAfterMs?: number;
+        };
+        const wait = errBody.retryAfterMs;
+        if (res.status === 429 && wait !== undefined && wait <= 30_000 && attempt < 3) {
+          await new Promise((r) => setTimeout(r, wait + 50));
+          continue;
+        }
+        throw new ProxyTurnError(errBody.error ?? `HTTP ${res.status}`, res.status);
+      }
+      const served = ProviderNameSchema.safeParse(res.headers.get('x-served-by'));
+      return { json: await res.json(), servedBy: served.success ? served.data : undefined };
     }
-    return res.json();
   }
 
   // Every response is validated again client-side even though the proxy
@@ -68,7 +96,23 @@ export class FetchTutorLLM implements TutorLLM {
   }
 
   async reviewJournal(req: JournalReviewRequest): Promise<JournalReview> {
-    return JournalReviewSchema.parse(await this.post('/v1/journal-review', req));
+    const { json, servedBy } = await this.postWithMeta('/v1/journal-review', req);
+    return { ...JournalReviewSchema.parse(json), servedBy };
+  }
+
+  async fixJournalSentence(
+    req: JournalSentenceFixRequest,
+  ): Promise<{ review: ModelSentenceReview; servedBy?: ProviderName }> {
+    const { json, servedBy } = await this.postWithMeta('/v1/journal-sentence-fix', req);
+    return { review: ModelSentenceReviewSchema.parse(json), servedBy };
+  }
+
+  async verifyJournalSentence(req: JournalVerifyRequest): Promise<JournalVerifyResponse> {
+    return JournalVerifyResponseSchema.parse(await this.post('/v1/journal-verify', req));
+  }
+
+  async solveJournalCloze(req: JournalSolveRequest): Promise<JournalSolveResponse> {
+    return JournalSolveResponseSchema.parse(await this.post('/v1/journal-solve', req));
   }
 
   async checkJournalFix(req: JournalCheckRequest): Promise<JournalCheckResponse> {

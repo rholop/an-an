@@ -56,3 +56,22 @@
 
 .cloze-bonus { margin-top: 1rem; padding: 1rem; border-radius: 8px; background: rgba(127, 127, 127, 0.08); }
 .cloze-bonus-answer { margin-top: 0.5rem; font-weight: bold; }
+
+/* Phase 17: journal review cards */
+.cloze-mark {
+  border-radius: 3px;
+  padding: 0 2px;
+}
+.cloze-mark--wrong {
+  background: rgba(211, 47, 47, 0.2);
+}
+.cloze-mark--right {
+  background: rgba(46, 125, 50, 0.25);
+}
+.cloze-token {
+  min-height: 44px;
+  min-width: 44px;
+  margin: 2px;
+  font: inherit;
+  cursor: pointer;
+}

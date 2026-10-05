@@ -1,11 +1,10 @@
 import {
-  journalSentencesFromEntry,
+  clozeSourceSentences,
   type ChatLineSource,
   type JournalSentenceSource,
   type Scenario,
   type SkillCard,
 } from '@anan/core';
-import { loadSentenceVerdicts, sentenceCheckKey } from '../lib/journal-cloze-check.js';
 import type { AnanDB } from './schema.js';
 
 /** Count of cards due on each of the next `days` calendar days (today
@@ -89,30 +88,27 @@ export async function allChatLines(db: AnanDB, scenarios: Scenario[]): Promise<C
   return lines;
 }
 
-/** Phase 5 §9 + Phase 16: the learner's own correctly-written journal
- * sentences, shaped for core's selectClozeSource(). Entries without a review
- * contribute nothing, nor does any sentence a review raised an issue about.
- * A sentence is only offered once it has passed the Part B check (rules plus
- * one naturalness check, stored as a verdict), and never if it was reported. */
+/** Phase 5 §9, rebuilt in Phase 17 Part E: the learner's own journal sentences
+ * as a plain cloze source. Only sentences that passed Part B are offered: a
+ * sentence with no edits as written, or the verified corrected version of one
+ * that had edits. A sentence under a flagged correction, or one the learner
+ * reported, is never offered. Entries not yet processed contribute nothing. */
 export async function allJournalSentences(
   db: AnanDB,
   excluded: ReadonlySet<string> = new Set(),
 ): Promise<JournalSentenceSource[]> {
-  const [entries, reviews, verdicts] = await Promise.all([
-    db.journalEntries.toArray(),
-    db.journalReviews.toArray(),
-    loadSentenceVerdicts(db),
-  ]);
-  const reviewByEntry = new Map(reviews.map((r) => [r.entryId, r]));
-  return entries
-    .filter((e) => e.status === 'finished')
-    .flatMap((e) => {
-      const review = reviewByEntry.get(e.id);
-      return journalSentencesFromEntry(
-        e.text,
-        review ? review.issues.map((i) => i.span) : null,
-        e.finishedAt ?? e.createdAt,
-      );
-    })
-    .filter((s) => !excluded.has(s.zh) && verdicts.get(sentenceCheckKey(s.zh))?.ok === true);
+  const [entries, reviews] = await Promise.all([db.journalEntries.toArray(), db.journalReviews.toArray()]);
+  const entryById = new Map(entries.map((e) => [e.id, e]));
+  const out: JournalSentenceSource[] = [];
+  for (const review of reviews) {
+    const entry = entryById.get(review.entryId);
+    if (!entry || entry.status !== 'finished') continue;
+    const flagged = review.flagged.flatMap((i) => (review.issues[i] ? [review.issues[i]!.span] : []));
+    const usable = (review.verifiedSentences ?? []).filter(
+      (v) => !flagged.some(([a, b]) => a < v.end && v.start < b),
+    );
+    for (const s of clozeSourceSentences(usable))
+      if (!excluded.has(s.zh)) out.push({ zh: s.zh, at: entry.finishedAt ?? entry.createdAt });
+  }
+  return out;
 }

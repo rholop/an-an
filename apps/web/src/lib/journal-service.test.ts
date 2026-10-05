@@ -1,6 +1,12 @@
 import Dexie from 'dexie';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { buildSession, Lexicon, type JournalReview, type Word } from '@anan/core';
+import {
+  buildSession,
+  Lexicon,
+  type JournalReview,
+  type ModelSentenceReview,
+  type Word,
+} from '@anan/core';
 import { exportBackup, importBackup } from '../db/backup.js';
 import { DexieLearnerRepo } from '../db/learner-repo.js';
 import { allJournalSentences } from '../db/queries.js';
@@ -69,6 +75,18 @@ const issue = (
   confidence: 'high' as const,
   ...over,
 });
+/** Phase 17: the fully corrected version of each numbered sentence the service sends. */
+const sentencesFor = (
+  req: { sentences?: string[] },
+  fixes: Record<string, string>,
+  edits: Record<string, ModelSentenceReview['edits']> = {},
+) =>
+  (req.sentences ?? []).map((zh, index) => {
+    let corrected = zh;
+    for (const [a, b] of Object.entries(fixes)) corrected = corrected.replace(a, b);
+    return { index, corrected, en: 'English.', edits: corrected === zh ? [] : (edits[zh] ?? []) };
+  });
+
 const review = (over: Partial<JournalReview>): JournalReview => ({
   issues: [],
   natural_rewrite: '',
@@ -134,6 +152,8 @@ describe('JournalService.submit', () => {
         },
         flagged: false,
         createdAt: new Date('2026-02-20'),
+        status: 'active' as const,
+        version: 2 as const,
       })),
     );
     await svc.submit({ text: '我去咖啡。', learnerLevel: 'N2', promptWordIds: ['w-go'] }, now);
@@ -318,10 +338,30 @@ describe('self-correction and reveal', () => {
 
 describe('finish: error bank and evidence', () => {
   const text = '今天我去地鐵，我喜歡咖啡，我買了手機。';
+  const sentenceEdits = [
+    {
+      before: '地鐵',
+      after: '捷運',
+      contextBefore: '去',
+      kind: 'mainland_style' as const,
+      pattern: 'mainland-vocab',
+      itemRef: { kind: 'word' as const, id: 'w-mrt' },
+      explanationEn: 'Taiwan says 捷運.',
+    },
+    {
+      before: '了',
+      after: '',
+      contextBefore: '買',
+      kind: 'extra_word' as const,
+      pattern: '了-placement',
+      explanationEn: 'No 了 here.',
+    },
+  ];
   const llm = () =>
     new FakeTutorLLM(undefined, {
-      review: () =>
+      review: (req) =>
         review({
+          sentences: sentencesFor(req, { 地鐵: '捷運', 買了: '買' }, { [text]: sentenceEdits }),
           issues: [
             issue(text, '地鐵', '捷運', {
               type: 'mainland_style',
@@ -347,9 +387,9 @@ describe('finish: error bank and evidence', () => {
     const { entry } = await svc.submit({ text, learnerLevel: 'L1' }, now);
     expect(await svc.toggleFlag(entry.id, 1)).toBe(true);
     const { errorItemCount, evidence } = await svc.finish(entry.id, now);
-    expect(errorItemCount).toBe(1);
-    const items = await db.errorItems.toArray();
-    expect(items.map((i) => i.pattern)).toEqual(['mainland-vocab']);
+    // a doubted correction casts doubt on the whole corrected sentence: no items from it
+    expect(errorItemCount).toBe(0);
+    expect(await db.errorItems.toArray()).toEqual([]);
     expect(evidence.some((e) => e.item.id === 'w-buy')).toBe(false);
     expect(await journalFlagStats(db)).toEqual({ flagged: 1, shown: 2 });
   });
@@ -400,26 +440,140 @@ describe('finish: error bank and evidence', () => {
     await svc.finish(entry.id, now);
     const items = await db.errorItems.toArray();
     expect(items).toHaveLength(2);
-    expect(items.find((i) => i.pattern === 'mainland-vocab')).toMatchObject({
-      original: '今天我去地鐵，我喜歡咖啡，我買了手機。',
-      corrected: expect.stringContaining('捷運'),
-      journalEntryId: entry.id,
-    });
+    // every item is built on the FULLY corrected sentence and is ready to show
+    for (const i of items) {
+      expect(i).toMatchObject({
+        version: 2,
+        status: 'active',
+        original: '今天我去地鐵，我喜歡咖啡，我買了手機。',
+        corrected: '今天我去捷運，我喜歡咖啡，我買手機。',
+        journalEntryId: entry.id,
+      });
+    }
+    expect(items.map((i) => i.exercise!.kind).sort()).toEqual(['choice', 'extra_word']);
+    expect(items.map((i) => i.pattern).sort()).toEqual(['mainland-vocab', '了-placement']);
+    expect((await svc.getReview(entry.id))!.itemsBuiltAt).toBeInstanceOf(Date);
     expect(await db.evidence.count()).toBe(3); // 2 misuse + 1 used_well, once
     await expect(svc.toggleFlag(entry.id, 0)).rejects.toBeInstanceOf(JournalError);
   });
 
-  it('only finished entries feed cloze, minus sentences with issues', async () => {
+  it('only finished entries feed cloze, and only as checked sentences: as written if it had no edits, else the verified corrected version', async () => {
     const t = '我喜歡咖啡。今天我去地鐵。';
     const svc = service(
       new FakeTutorLLM(undefined, {
-        review: () => review({ issues: [issue(t, '地鐵', '捷運', { type: 'mainland_style' })] }),
+        review: (req) =>
+          review({
+            issues: [issue(t, '地鐵', '捷運', { type: 'mainland_style' })],
+            sentences: sentencesFor(req, { 地鐵: '捷運' }),
+          }),
       }),
     );
     const { entry } = await svc.submit({ text: t, learnerLevel: 'L1' }, now);
     expect(await allJournalSentences(db)).toEqual([]);
     await svc.finish(entry.id, now);
-    expect((await allJournalSentences(db)).map((s) => s.zh)).toEqual(['我喜歡咖啡。']);
+    expect((await allJournalSentences(db)).map((s) => s.zh)).toEqual(['我喜歡咖啡。', '今天我去捷運。']);
+    // never the learner's uncorrected text
+    expect((await allJournalSentences(db)).some((s) => s.zh.includes('地鐵'))).toBe(false);
+    expect(await allJournalSentences(db, new Set(['我喜歡咖啡。']))).toHaveLength(1);
+  });
+
+  it('a correction the checker will not approve produces no item and no cloze source', async () => {
+    const t = '今天我去地鐵。';
+    const svc = service(
+      new FakeTutorLLM(undefined, {
+        review: (req) =>
+          review({
+            issues: [issue(t, '地鐵', '捷運', { type: 'mainland_style' })],
+            sentences: sentencesFor(req, { 地鐵: '捷運' }),
+          }),
+        verify: () => ({ ok: false, problem: 'unnatural', meaningMatches: true }),
+        fixSentence: () => ({ index: 0, corrected: '今天我去捷運。', en: 'x', edits: [] }),
+      }),
+    );
+    const { entry } = await svc.submit({ text: t, learnerLevel: 'L1' }, now);
+    await svc.finish(entry.id, now);
+    expect(await db.errorItems.count()).toBe(0);
+    expect(await allJournalSentences(db)).toEqual([]);
+    // checked and rejected: done, not retried forever
+    expect((await svc.getReview(entry.id))!.itemsBuiltAt).toBeInstanceOf(Date);
+  });
+
+  it('an unreachable checker leaves the entry pending, and the next run finishes it', async () => {
+    const t = '今天我去地鐵。';
+    let down = true;
+    const fake = new FakeTutorLLM(undefined, {
+      review: (req) =>
+        review({
+          issues: [issue(t, '地鐵', '捷運', { type: 'mainland_style' })],
+          sentences: sentencesFor(req, { 地鐵: '捷運' }),
+        }),
+      verify: () => {
+        if (down) throw new Error('offline');
+        return { ok: true, problem: '', meaningMatches: true };
+      },
+    });
+    const svc = service(fake);
+    const { entry } = await svc.submit({ text: t, learnerLevel: 'L1' }, now);
+    expect((await svc.finish(entry.id, now)).errorItemCount).toBe(0);
+    expect((await svc.getReview(entry.id))!.itemsBuiltAt).toBeUndefined();
+    expect(await allJournalSentences(db)).toEqual([]);
+    down = false;
+    expect(await svc.rebuildPending(now)).toEqual({ done: 1, waiting: 0 });
+    expect((await allJournalSentences(db)).map((s) => s.zh)).toEqual(['今天我去捷運。']);
+  });
+
+  it('migration: an old one-span-patched item is rebuilt (schedule kept) or blocked, never shown as it was', async () => {
+    const t = '今天我去地鐵。';
+    const fake = new FakeTutorLLM(undefined, {
+      review: (req) =>
+        review({
+          issues: [issue(t, '地鐵', '捷運', { type: 'mainland_style' })],
+          sentences: sentencesFor(req, { 地鐵: '捷運' }, {
+            [t]: [
+              {
+                before: '地鐵',
+                after: '捷運',
+                contextBefore: '去',
+                kind: 'mainland_style',
+                explanationEn: 'Taiwan says 捷運.',
+              },
+            ],
+          }),
+        }),
+    });
+    const svc = service(fake);
+    const { entry } = await svc.submit({ text: t, learnerLevel: 'L1' }, now);
+    // pretend this entry was finished before Phase 17: old item, no items built
+    await db.journalEntries.update(entry.id, { status: 'finished', finishedAt: now });
+    await db.journalReviews.update(entry.id, { sentences: undefined });
+    const old = (id: string, answerAt: [number, number], over: object = {}) => ({
+      id,
+      journalEntryId: entry.id,
+      original: t,
+      corrected: '今天我去捷運。',
+      span: [4, 6] as [number, number],
+      blank: answerAt,
+      type: 'mainland_style' as const,
+      card: { due: now, stability: 3, difficulty: 5, elapsed_days: 0, scheduled_days: 0, learning_steps: 0, reps: 4, lapses: 0, state: 2 },
+      flagged: false,
+      createdAt: new Date('2026-01-01'),
+      status: 'pending_rebuild' as const,
+      ...over,
+    });
+    await db.errorItems.bulkPut([
+      old(`${entry.id}:0`, [4, 6]), // blanked 捷運: same word as the rebuilt item
+      old(`${entry.id}:9`, [1, 2], { original: '我去台灣。', corrected: '我去台灣。' }), // no counterpart
+    ]);
+    expect(await svc.rebuildPending(now)).toEqual({ done: 1, waiting: 0 });
+    const items = await db.errorItems.toArray();
+    const rebuilt = items.filter((i) => i.version === 2);
+    expect(rebuilt).toHaveLength(1);
+    expect(rebuilt[0]!.card.reps).toBe(4); // schedule carried over
+    expect(items.find((i) => i.id === `${entry.id}:0`)!.status).toBe('deleted'); // replaced
+    const blocked = items.find((i) => i.id === `${entry.id}:9`)!;
+    expect(blocked.status).toBe('blocked');
+    expect(blocked.blockedReason).toMatch(/^rebuild:/);
+    expect(items.some((i) => i.version !== 2 && i.status === 'active')).toBe(false);
   });
 });
 

@@ -1,4 +1,10 @@
-import { EditKindSchema, LevelSchema, SentenceTokenSchema } from '@anan/core';
+import {
+  EditKindSchema,
+  LevelSchema,
+  SentenceTokenSchema,
+  type RawSentenceReview,
+  type VerifiedSentenceRef,
+} from '@anan/core';
 import { z } from 'zod';
 
 const ItemRefSchema = z.object({ kind: z.enum(['word', 'grammar']), id: z.string() });
@@ -164,6 +170,16 @@ export const JournalReviewRowSchema = z.object({
   wordsUsed: z.array(z.string()),
   errorsPer100Chars: z.number().nullable(),
   createdAt: z.coerce.date(),
+  // Phase 17: stored sentence reviews; shaped by core, passed through here.
+  sentences: z.array(z.custom<RawSentenceReview>()).optional(),
+  verifiedSentences: z
+    .array(
+      z
+        .custom<VerifiedSentenceRef>()
+        .transform((v) => ({ ...v, checkedAt: new Date(v.checkedAt as unknown as string) })),
+    )
+    .optional(),
+  itemsBuiltAt: z.coerce.date().optional(),
 });
 
 export const ErrorItemSchema = z.object({

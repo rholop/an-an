@@ -24,9 +24,11 @@ export interface SourceReport extends ClozeReport {
 
 export const SOURCE_REPORT_PREFIX = 'clozeReport:';
 
-/** Only `active` journal items are shown. */
-export const isShowableErrorItem = (i: Pick<ErrorItem, 'status' | 'flagged'>): boolean =>
-  i.status === 'active' && !i.flagged;
+/** Only `active` items built by Phase 17 (`version: 2`) are shown. The older
+ * one-span-patched items are never shown: the migration rebuilds or blocks them. */
+export const isShowableErrorItem = (
+  i: Pick<ErrorItem, 'status' | 'flagged' | 'version'>,
+): boolean => i.status === 'active' && !i.flagged && i.version === 2;
 
 export function reportErrorItem(item: ErrorItem, report: ClozeReport): ErrorItem {
   return { ...item, status: 'reported', report };

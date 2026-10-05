@@ -3,8 +3,9 @@ import {
   buildErrorCloze,
   CLOZE_REPORT_REASONS,
   checkErrorItem,
+  patchExerciseSentence,
+  verifySentenceText,
   type ErrorItem,
-  type JournalSentenceVerdict,
   type SourceReport,
 } from '@anan/core';
 import { db } from '../db/instance.js';
@@ -16,7 +17,8 @@ import {
   restoreJournalItem,
   restoreSource,
 } from '../lib/cloze-reports.js';
-import { allowedLatinNames, loadSentenceVerdicts } from '../lib/journal-cloze-check.js';
+import { allowedLatinNames } from '../lib/journal-cloze-check.js';
+import { getProtectedTerms } from '../lib/journal-protected.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
 
@@ -30,8 +32,6 @@ interface Row {
   note?: string;
   item?: ErrorItem;
   source?: SourceReport;
-  verdictKey?: string;
-  verdict?: JournalSentenceVerdict;
 }
 
 const fmt = (d: Date) => d.toLocaleDateString();
@@ -45,10 +45,9 @@ export function ReportedPage() {
   const [message, setMessage] = useState('');
 
   const load = useCallback(async () => {
-    const [items, sources, verdicts, entries] = await Promise.all([
+    const [items, sources, entries] = await Promise.all([
       db.errorItems.filter((i) => i.status === 'reported' || i.status === 'blocked').toArray(),
       loadSourceReports(db),
-      loadSentenceVerdicts(db),
       db.journalEntries.toArray(),
     ]);
     const entryDate = new Map(entries.map((e) => [e.id, e.createdAt]));
@@ -72,18 +71,6 @@ export function ReportedPage() {
         why: reasonLabel(s.reason),
         note: s.note,
         source: s,
-      });
-    }
-    for (const [key, v] of verdicts) {
-      if (v.ok) continue;
-      const date = v.entryId ? entryDate.get(v.entryId) : undefined;
-      out.push({
-        key,
-        zh: v.zh,
-        where: `journal sentence${date ? ` of ${fmt(date)}` : ''}`,
-        why: `Blocked: ${v.reason ?? 'failed the check'}`,
-        verdictKey: key,
-        verdict: v,
       });
     }
     setRows(out);
@@ -159,13 +146,29 @@ export function ReportedPage() {
                     {r.note ? ` — “${r.note}”` : ''}
                   </small>
                 </p>
-                {r.item && lexiconState.status === 'ready' && (
+                {r.item &&
+                  r.item.version === 2 &&
+                  (r.item.exercise?.kind === 'cloze' || r.item.exercise?.kind === 'choice') &&
+                  lexiconState.status === 'ready' && (
                   <FixIt
                     item={r.item}
                     busy={busy === r.key}
                     onSave={(next) => run(r.key, () => fixItem(r.item!, next, lexiconState.lexicon))}
                   />
                 )}
+                {r.item && r.item.version !== 2 && (
+                  <button
+                    disabled={busy === r.key}
+                    onClick={() =>
+                      void run(r.key, () =>
+                        db.errorItems.put({ ...r.item!, status: 'pending_rebuild', blockedReason: undefined }).then(() => undefined),
+                      )
+                    }
+                  >
+                    Try rebuilding again
+                  </button>
+                )}
+                {!(r.item && r.item.version !== 2) && (
                 <button
                   disabled={busy === r.key}
                   onClick={() =>
@@ -176,16 +179,13 @@ export function ReportedPage() {
                         await alsoInOtherProfiles(r.source.sourceKind, r.source.profileId, (o) =>
                           restoreSource(o, r.source!.zh),
                         );
-                      } else if (r.verdictKey && r.verdict)
-                        await db.settings.put({
-                          key: r.verdictKey,
-                          value: { ...r.verdict, ok: true, reason: undefined },
-                        });
+                      }
                     })
                   }
                 >
                   It was fine
                 </button>
+                )}
                 <button
                   disabled={busy === r.key}
                   onClick={() =>
@@ -196,12 +196,7 @@ export function ReportedPage() {
                         await alsoInOtherProfiles(r.source.sourceKind, r.source.profileId, (o) =>
                           deleteSource(o, r.source!.zh),
                         );
-                      } else if (r.verdictKey && r.verdict)
-                        // stays excluded: a reported-then-deleted sentence is never offered
-                        await db.settings.put({
-                          key: r.verdictKey,
-                          value: { ...r.verdict, ok: false, reason: 'deleted' },
-                        });
+                      }
                     })
                   }
                 >
@@ -281,26 +276,24 @@ async function fixItem(
   lexicon: import('@anan/core').Lexicon,
 ): Promise<void> {
   const answer = buildErrorCloze(item).answer;
-  const at = corrected.indexOf(answer);
-  if (at === -1 || corrected.indexOf(answer, at + 1) !== -1)
-    throw new Error(`The sentence must contain “${answer}” exactly once.`);
+  const patched = patchExerciseSentence(item, corrected);
+  if (!patched) throw new Error(`The sentence must contain “${answer}” exactly once.`);
+  const llm = new FetchTutorLLM();
+  const protectedTerms = await getProtectedTerms(db);
+  // the edit goes through Part B before the item comes back: the rules and an
+  // independent check of the whole sentence, then the usual blank rules
+  const sentence = await verifySentenceText({ lexicon, llm, protectedTerms }, corrected, { en: item.en });
+  if (!sentence.ok) throw new Error(sentence.problem || 'Failed the check.');
   const candidate: ErrorItem = {
-    ...item,
-    corrected,
-    blank: [at, at + answer.length],
+    ...patched,
     status: 'pending_check',
     report: undefined,
     blockedReason: undefined,
   };
   const checked = await checkErrorItem(candidate, {
     lexicon,
-    llm: new FetchTutorLLM(),
     allowedNames: await allowedLatinNames(db),
   });
-  if (checked.status === 'active') {
-    await db.errorItems.put(checked);
-    return;
-  }
   if (checked.status === 'blocked') throw new Error(checked.blockedReason ?? 'Failed the check.');
-  throw new Error("Couldn't run the naturalness check just now. Try again later.");
+  await db.errorItems.put({ ...checked, status: 'active' });
 }

@@ -4,104 +4,97 @@ import {
   checkJournalClozeRules,
   type ClozeCheckLLM,
 } from '../cloze/check-journal-cloze.js';
+import { emptyCard } from '../learner/fsrs-instance.js';
 import { buildFixtureLexicon } from '../test-fixtures/lexicon-fixture.js';
-import { buildErrorCloze, buildErrorItems, checkErrorItem } from './error-bank.js';
+import { journalLexicon, scriptedJournalLLM } from '../test-fixtures/journal-llm.js';
+import { buildSentenceItems } from './buildItems.js';
+import { checkErrorItem } from './error-bank.js';
+import { prepareSentences } from './pipeline.js';
 import { sentenceAround, splitReviewSentences } from './sentences.js';
 import { journalSentencesFromEntry } from './sources.js';
-import type { JournalIssue } from './types.js';
+import type { ErrorItem } from './types.js';
+import { verifyCorrected } from './verifyCorrected.js';
 
 const lexicon = buildFixtureLexicon();
 const now = new Date('2026-03-01T10:00:00Z');
-const issue = (
-  text: string,
-  wrong: string,
-  correction: string,
-  over: Partial<JournalIssue> = {},
-): JournalIssue => {
-  const i = text.indexOf(wrong);
-  return {
-    span: [i, i + wrong.length],
-    type: 'error',
-    correction,
-    explanationEn: 'because',
-    confidence: 'high',
-    ...over,
-  };
-};
 const ok: ClozeCheckLLM = { checkCloze: async () => ({ ok: true }) };
 
-// Each describe below is one suspected cause from docs/cloze-reports.md.
+// Each describe below is one suspected cause from docs/cloze-reports.md. Phase 16
+// reproduced them against the old builder; Phase 17 replaced that builder, and
+// the same fixtures now run through the new pipeline.
+const jl = journalLexicon();
+const deps = (llm = scriptedJournalLLM()) => ({
+  lexicon: jl,
+  llm,
+  protectedTerms: [] as string[],
+  learnerLevel: 'L1' as const,
+  now,
+});
+async function itemsFor(original: string, corrected: string, llm = scriptedJournalLLM()) {
+  const vs = await verifyCorrected(deps(llm), {
+    original,
+    start: 0,
+    end: original.length,
+    review: { index: 0, corrected, en: 'English.', edits: [] },
+    now,
+  });
+  return { vs, ...(await buildSentenceItems(deps(llm), 'e', 0, vs)) };
+}
 
 describe('cause: several corrections in one sentence', () => {
-  const text = '昨天我去了台灣，我喜歡咖啡，我買了一個東西。';
-  const issues = [
-    { issue: issue(text, '昨天', '今天'), index: 0 },
-    { issue: issue(text, '喜歡', '愛'), index: 1 },
-    { issue: issue(text, '一個', '兩個'), index: 2 },
-  ];
-  const items = buildErrorItems('e', text, issues, now, { lexicon });
+  const original = '昨天我去了台灣，我喜歡咖啡。';
+  const corrected = '今天我去了台灣，我很喜歡咖啡。';
+  const solve = (req: { sentence: string }) =>
+    req.sentence.startsWith('＿＿＿＿') ? { answers: ['今天'], confident: true } : { answers: ['很'], confident: true };
 
-  it('shows the sentence with ALL corrections applied, never half-fixed', () => {
-    expect(items).toHaveLength(3);
-    for (const it of items) expect(it.corrected).toBe('今天我去了台灣，我愛咖啡，我買了兩個東西。');
+  it('shows the sentence with ALL corrections applied, never half-fixed', async () => {
+    const { items } = await itemsFor(original, corrected, scriptedJournalLLM({ solve }));
+    expect(items.length).toBe(2);
+    for (const it of items) expect(it.corrected).toBe(corrected);
   });
-
-  it('puts every blank on its own corrected text (no offset drift)', () => {
-    expect(items.map((i) => buildErrorCloze(i).answer)).toEqual(['今天', '愛', '兩個']);
+  it('puts every blank on its own corrected text (no offset drift)', async () => {
+    const { items } = await itemsFor(original, corrected, scriptedJournalLLM({ solve }));
+    expect(items.map((i) => i.exercise!.answer).sort()).toEqual(['今天', '很']);
     for (const it of items) {
-      const c = buildErrorCloze(it);
-      expect(c.sentence.slice(0, c.blankStart) + c.answer + c.sentence.slice(c.blankEnd)).toBe(
-        it.corrected,
-      );
+      const ex = it.exercise!;
+      expect(it.corrected.slice(ex.blankStart, ex.blankEnd)).toBe(ex.answer);
     }
-  });
-
-  it('gives the same result whatever order the issues arrive in', () => {
-    const rev = buildErrorItems('e', text, [...issues].reverse(), now, { lexicon });
-    expect(rev.map((i) => i.corrected)).toEqual(items.map((i) => i.corrected));
   });
 });
 
 describe('cause: a span that splits a word', () => {
-  // the model blamed 很喜, which ends in the middle of the word 喜歡
-  const text = '我很喜歡咖啡。';
-  it('widens the blank to the whole word', () => {
-    const [it] = buildErrorItems(
-      'e',
-      text,
-      [{ issue: issue(text, '很喜', '不喜'), index: 0 }],
-      now,
-      { lexicon },
+  it('a correction that leaves a half-word is rejected, not shown', async () => {
+    const { vs, items } = await itemsFor(
+      '我很喜歡咖啡。',
+      '我很喜愛咖啡。',
+      scriptedJournalLLM({ fix: () => ({ index: 0, corrected: '我很喜愛咖啡。', en: 'x', edits: [] }) }),
     );
-    const c = buildErrorCloze(it!);
-    expect(c.sentence).toBe('我不喜歡咖啡。');
-    expect(c.answer).toBe('不喜歡');
-    // the blank never starts or ends inside a token
-    expect(checkJournalClozeRules({ ...c, sentence: c.sentence }, { lexicon })).toEqual([]);
+    expect(vs.status).toBe('rejected');
+    expect(items).toEqual([]);
+  });
+  it('blanks always cover whole tokens', async () => {
+    const { items } = await itemsFor(
+      '我昨天去了台灣。',
+      '我今天去了台灣。',
+      scriptedJournalLLM({ solve: () => ({ answers: ['今天'], confident: true }) }),
+    );
+    expect(items[0]!.exercise!.answer).toBe('今天');
   });
 });
 
-describe('cause: a span that crosses a sentence boundary', () => {
-  it('pulls in every sentence it touches, and the check refuses the multi-sentence result', async () => {
-    const text = '我去了。台灣很好。';
-    const [it] = buildErrorItems(
-      'e',
-      text,
-      [{ issue: issue(text, '了。台', '了！台'), index: 0 }],
-      now,
-      { lexicon },
-    );
-    expect(it!.original).toBe('我去了。台灣很好。');
-    expect(it!.status).toBe('blocked');
-    expect(it!.blockedReason).toMatch(/single sentence/);
+describe('cause: crossing a sentence boundary', () => {
+  it('sentences are split by code and reviewed one by one; a two-sentence correction is rejected', async () => {
+    expect(prepareSentences('我去了。台灣很好。').map((p) => p.original)).toEqual(['我去了。', '台灣很好。']);
+    const { vs } = await itemsFor('我去了台灣', '我去了。台灣很好。', scriptedJournalLLM({ fix: () => ({ index: 0, corrected: '我去了。台灣很好。', en: 'x', edits: [] }) }));
+    expect(vs.status).toBe('rejected');
   });
 });
 
 describe('cause: sentence splitting inside quotes', () => {
   const text = '他說：「我去。你呢？」我說好。';
   it('keeps a quotation in one sentence', () => {
-    const spans = splitReviewSentences(text).map(([a, b]) => text.slice(a, b));
-    expect(spans).toEqual(['他說：「我去。你呢？」', '我說好。']);
+    expect(splitReviewSentences(text).map(([a, b]) => text.slice(a, b))).toEqual(['他說：「我去。你呢？」', '我說好。']);
+    expect(prepareSentences(text)).toHaveLength(2);
   });
   it('sentenceAround never cuts a quote in half', () => {
     const [s, e] = sentenceAround(text, [5, 6]);
@@ -121,30 +114,28 @@ describe('cause: the learner\'s uncorrected text used as a cloze source', () => 
 });
 
 describe('cause: brackets', () => {
-  it('blocks a sentence that still holds a [gap] or its translation markers', () => {
-    const text = '我去 [gym] 運動。';
-    const [it] = buildErrorItems('e', text, [{ issue: issue(text, '我', '你'), index: 0 }], now, {
-      lexicon,
-    });
-    expect(it!.status).toBe('blocked');
-    expect(it!.blockedReason).toMatch(/bracket/);
+  it('a sentence holding a [gap] is never reviewed, and a correction that keeps one is rejected', async () => {
+    expect(prepareSentences('我去 [gym] 運動。')).toEqual([]);
+    const { vs, items } = await itemsFor('我去運動。', '我去 [gym] 運動。', scriptedJournalLLM({ fix: () => ({ index: 0, corrected: '我去 [gym] 運動。', en: 'x', edits: [] }) }));
+    expect(vs.status).toBe('rejected');
+    expect(items).toEqual([]);
   });
 });
 
 describe('cause: emoji / rare characters (UTF-16 vs character offsets)', () => {
-  it('blocks items whose offsets cannot be trusted after an emoji', () => {
-    const text = '今天好😀。我昨天去了台灣。';
-    const [it] = buildErrorItems(
-      'e',
-      text,
-      [{ issue: issue(text, '昨天', '今天'), index: 0 }],
-      now,
-      { lexicon },
-    );
-    expect(it!.status).toBe('blocked');
-    expect(it!.blockedReason).toMatch(/unreliable|emoji/);
+  it('a correction containing an emoji or non-BMP character is rejected', async () => {
+    for (const corrected of ['我愛咖啡😀。', '我愛𠮷野家。']) {
+      const { vs, items } = await itemsFor('我愛咖啡。', corrected, scriptedJournalLLM({ fix: () => ({ index: 0, corrected, en: 'x', edits: [] }) }));
+      expect(vs.status, corrected).toBe('rejected');
+      expect(items).toEqual([]);
+    }
   });
-  it('blocks any sentence that itself contains an emoji or a non-BMP character', () => {
+  it('no model offsets are involved, so an emoji earlier in the entry cannot shift an edit', async () => {
+    const text = '今天好😀。我昨天去了台灣。';
+    const second = prepareSentences(text)[1]!;
+    expect(text.slice(second.start, second.end)).toBe('我昨天去了台灣。');
+  });
+  it('blocks any cloze sentence that itself contains an emoji or a non-BMP character', () => {
     for (const sentence of ['我愛咖啡😀。', '我愛𠮷野家。']) {
       const reasons = checkJournalClozeRules(
         { sentence, blankStart: 1, blankEnd: 2, answer: sentence.slice(1, 2) },
@@ -209,22 +200,30 @@ describe('checkJournalCloze (rules + one naturalness check)', () => {
   });
 });
 
-describe('checkErrorItem', () => {
-  const text = '我昨天去了台灣。';
-  const [item] = buildErrorItems('e', text, [{ issue: issue(text, '昨天', '今天'), index: 0 }], now, {
-    lexicon,
-  });
+describe('checkErrorItem (Reported page "Fix it")', () => {
+  const item: ErrorItem = {
+    id: 'e:0',
+    journalEntryId: 'e',
+    original: '我昨天去了台灣。',
+    corrected: '我今天去了台灣。',
+    span: [1, 3],
+    blank: [1, 3],
+    type: 'error',
+    card: emptyCard(now),
+    flagged: false,
+    createdAt: now,
+    status: 'pending_check',
+  };
   it('activates a checked item, blocks a refused one, keeps an unchecked one pending', async () => {
-    expect(item!.status).toBe('pending_check');
-    expect((await checkErrorItem(item!, { lexicon, llm: ok })).status).toBe('active');
+    expect((await checkErrorItem(item, { lexicon, llm: ok })).status).toBe('active');
     const no: ClozeCheckLLM = { checkCloze: async () => ({ ok: false, reason: 'odd' }) };
-    const blocked = await checkErrorItem(item!, { lexicon, llm: no });
+    const blocked = await checkErrorItem(item, { lexicon, llm: no });
     expect(blocked.status).toBe('blocked');
     expect(blocked.blockedReason).toBe('odd');
-    expect((await checkErrorItem(item!, { lexicon })).status).toBe('pending_check');
+    expect((await checkErrorItem(item, { lexicon })).status).toBe('pending_check');
   });
   it('leaves reported items alone', async () => {
-    const reported = { ...item!, status: 'reported' as const };
+    const reported = { ...item, status: 'reported' as const };
     expect(await checkErrorItem(reported, { lexicon, llm: ok })).toBe(reported);
   });
 });

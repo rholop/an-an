@@ -9,7 +9,6 @@ import {
   type SkillCard,
   levelIndex,
   buildClozeExercise,
-  buildErrorCloze,
   buildLePlacementExercise,
   buildMainlandVsTaiwanExercise,
   buildMultipleChoiceOptions,
@@ -17,7 +16,6 @@ import {
   buildMixedSession,
   buildWordBankOptions,
   gradeClozeAnswer,
-  gradeErrorAnswer,
   reviewErrorItem,
   selectDueErrorItems,
   type ChoiceOption,
@@ -40,9 +38,16 @@ import {
   restoreJournalItem,
   restoreSource,
 } from '../lib/cloze-reports.js';
-import { runJournalClozeChecks } from '../lib/journal-cloze-check.js';
+import { JournalService } from '../lib/journal-service.js';
+import { getProtectedTerms } from '../lib/journal-protected.js';
+import { ErrorExerciseView, type ErrorOutcome } from './ErrorExerciseView.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
-import type { ClozeReportReason } from '@anan/core';
+import {
+  reconsiderAnswer,
+  type ClozeReportReason,
+  type ItemAnswer,
+  type Reconsidered,
+} from '@anan/core';
 import { ListenRunner } from './ListenPage.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
@@ -131,12 +136,13 @@ export function ClozePage() {
     };
   }, [lexiconState.status, scenariosState.status, reloadKey]);
 
-  // Phase 16 Part B: check anything pending (old items, new items, journal
-  // sentences) once per visit; unchecked material stays hidden meanwhile.
+  // Phase 17 Part E: rebuild old journal items and process entries not yet
+  // processed (needs the proxy). Unprocessed material stays hidden meanwhile.
   useEffect(() => {
     if (lexiconState.status !== 'ready') return;
     let cancelled = false;
-    runJournalClozeChecks(db, lexiconState.lexicon, new FetchTutorLLM())
+    new JournalService(db, lexiconState.lexicon, learnerService, new FetchTutorLLM())
+      .rebuildPending()
       .then(() => !cancelled && setReloadKey((k) => k + 1))
       .catch(() => undefined);
     return () => {
@@ -280,18 +286,49 @@ export function ClozePage() {
   /** Phase 5 §7: an error-bank answer reschedules the error item's own FSRS
    * card. It deliberately writes no learner Evidence — an error item is a
    * sentence-level drill, not a vocabulary-item review. */
-  async function recordErrorOutcome(error: ErrorItem, outcome: 'correct' | 'wrong') {
+  async function recordErrorOutcome(error: ErrorItem, outcome: ErrorOutcome) {
     const at = new Date();
     await db.errorItems.put(reviewErrorItem(error, outcome, at));
     answered.current.set(index, {
-      outcome: outcome === 'correct' ? 'error-correct' : 'error-wrong',
+      outcome: outcome === 'wrong' ? 'error-wrong' : 'error-correct',
     });
     if (outcome === 'correct') await gameService.onErrorFixed(error.id, at);
     setTally((t) => ({
-      ...t,
       correct: t.correct + (outcome === 'correct' ? 1 : 0),
+      hinted: t.hinted + (outcome === 'hint' ? 1 : 0),
       wrong: t.wrong + (outcome === 'wrong' ? 1 : 0),
     }));
+  }
+
+  /** Phase 17 Part D: the learner's answer was accepted after all ("I think mine
+   * is right too", or a Fix-my-sentence rewrite that checked out). The item,
+   * which now accepts that answer, is rescheduled from the card it had BEFORE
+   * this session touched it, so the wrong grade is undone exactly. */
+  async function regradeError(before: ErrorItem, updated: ErrorItem) {
+    const at = new Date();
+    const prior = answered.current.get(index);
+    await db.errorItems.put(reviewErrorItem({ ...updated, card: before.card }, 'correct', at));
+    await gameService.onErrorFixed(before.id, at);
+    answered.current.set(index, { outcome: 'error-correct' });
+    setTally((t) => ({
+      ...t,
+      correct: t.correct + 1,
+      wrong: t.wrong - (prior?.outcome === 'error-wrong' ? 1 : 0),
+    }));
+  }
+
+  async function reconsider(item: ErrorItem, answer: ItemAnswer): Promise<Reconsidered> {
+    if (lexiconState.status !== 'ready')
+      return { accepted: false, reason: 'The lexicon is still loading.' };
+    return reconsiderAnswer(
+      {
+        lexicon: lexiconState.lexicon,
+        llm: new FetchTutorLLM(),
+        protectedTerms: await getProtectedTerms(db),
+      },
+      item,
+      answer,
+    );
   }
 
   function next() {
@@ -445,10 +482,13 @@ export function ClozePage() {
           {entry.error.pattern && <span className="cloze-badge">{entry.error.pattern}</span>}
         </div>
         {noticeEl}
-        <ErrorClozeView
+        <ErrorExerciseView
           key={entry.error.id}
-          error={entry.error}
+          item={entry.error}
+          lexicon={lexiconState.lexicon}
+          reconsider={reconsider}
           onAnswer={(outcome) => recordErrorOutcome(entry.error, outcome)}
+          onRegrade={(updated) => void regradeError(entry.error, updated)}
           onNext={next}
         />
         <ReportButton onReport={(reason, note) => void reportCurrent(entry, reason, note)} />
@@ -537,64 +577,6 @@ function ExerciseView({
       onAnswer={handleAnswer}
       onNext={onNext}
     />
-  );
-}
-
-function ErrorClozeView({
-  error,
-  onAnswer,
-  onNext,
-}: {
-  error: ErrorItem;
-  onAnswer: (o: 'correct' | 'wrong') => void;
-  onNext: () => void;
-}) {
-  const cloze = buildErrorCloze(error);
-  const [typed, setTyped] = useState('');
-  const [answered, setAnswered] = useState<'correct' | 'wrong' | null>(null);
-
-  function submit() {
-    if (answered || !typed.trim()) return;
-    const outcome = gradeErrorAnswer(typed, error);
-    setAnswered(outcome);
-    onAnswer(outcome);
-  }
-
-  return (
-    <div className="cloze-exercise">
-      <div className="cloze-source-label">from a sentence you corrected in your journal</div>
-      <SentenceWithBlank sentence={cloze.sentence} start={cloze.blankStart} end={cloze.blankEnd} />
-      <p className="cloze-prompt">Fill in the blank with the corrected wording.</p>
-      <div className="cloze-input-row">
-        <input
-          value={typed}
-          onChange={(e) => setTyped(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
-          disabled={answered !== null}
-          placeholder="中文…"
-          aria-label="Corrected wording"
-          lang="zh-Hant-TW"
-          enterKeyHint="done"
-          autoComplete="off"
-          autoCapitalize="off"
-          autoCorrect="off"
-          spellCheck={false}
-        />
-        <button onClick={submit} disabled={answered !== null || !typed.trim()}>
-          Submit
-        </button>
-      </div>
-      {answered && (
-        <div className={`cloze-feedback cloze-feedback--${answered}`}>
-          <p>
-            {answered === 'correct'
-              ? '✓ Correct!'
-              : `✗ Not quite — the corrected sentence is ${cloze.sentence}`}
-          </p>
-          <button onClick={onNext}>Next</button>
-        </div>
-      )}
-    </div>
   );
 }
 

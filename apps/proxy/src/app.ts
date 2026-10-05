@@ -17,6 +17,12 @@ import {
   JournalExplainRequestSchema,
   JournalExplainResponseSchema,
   JournalReviewRequestSchema,
+  JournalSentenceFixRequestSchema,
+  ModelSentenceReviewSchema,
+  JournalSolveRequestSchema,
+  JournalSolveResponseSchema,
+  JournalVerifyRequestSchema,
+  JournalVerifyResponseSchema,
   JournalReviewSchema,
   SentenceGenRequestSchema,
   TurnRequestSchema,
@@ -33,6 +39,9 @@ import {
   JOURNAL_CHECK_JSON_SCHEMA,
   JOURNAL_EXPLAIN_JSON_SCHEMA,
   JOURNAL_REVIEW_JSON_SCHEMA,
+  JOURNAL_SENTENCE_FIX_JSON_SCHEMA,
+  JOURNAL_SOLVE_JSON_SCHEMA,
+  JOURNAL_VERIFY_JSON_SCHEMA,
 } from './json-schema.js';
 import {
   buildEffectiveSystemPrompt,
@@ -42,6 +51,12 @@ import {
 } from './orchestrator.js';
 import {
   buildClozeCheckPrompt,
+  buildSentenceFixPrompt,
+  buildSolvePrompt,
+  buildVerifyPrompt,
+  sentenceFixUserMessage,
+  solveUserMessage,
+  verifyUserMessage,
   buildJournalCheckPrompt,
   clozeCheckUserMessage,
   buildJournalExplainPrompt,
@@ -89,7 +104,7 @@ export function createApp(deps: AppDeps): Hono {
   const log = deps.log ?? ((entry) => console.log(JSON.stringify(entry)));
   const app = new Hono();
 
-  app.use('*', cors({ origin: deps.env.CORS_ORIGIN }));
+  app.use('*', cors({ origin: deps.env.CORS_ORIGIN, exposeHeaders: ['x-served-by'] }));
 
   app.get('/v1/health', (c) => c.json({ ok: true }));
 
@@ -338,6 +353,7 @@ export function createApp(deps: AppDeps): Hono {
     jsonSchema: object,
     build: (req: Req) => { systemPrompt: string; userMessage: string },
     orchestrator: JsonOrchestrator = deps.journal.orchestrator,
+    avoid?: (req: Req) => 'gemini' | 'openai' | undefined,
   ) {
     const installId = c.req.header('x-install-id');
     if (!installId) return c.json({ error: 'missing X-Install-Id header' }, 400);
@@ -367,16 +383,20 @@ export function createApp(deps: AppDeps): Hono {
       );
 
     try {
-      const { result, log: runLog } = await orchestrator.run({
-        task: route,
-        jsonSchema,
-        parse: (raw) => responseSchema.parse(raw),
-        ...build(parsed.data),
-      });
+      const { result, log: runLog } = await orchestrator.run(
+        {
+          task: route,
+          jsonSchema,
+          parse: (raw) => responseSchema.parse(raw),
+          ...build(parsed.data),
+        },
+        { avoidProvider: avoid?.(parsed.data) },
+      );
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
       log({ route, installId, totalTokens, ...runLog });
       c.header('x-total-tokens', String(totalTokens));
+      c.header('x-served-by', runLog.provider);
       return c.json(result.response);
     } catch (err) {
       log({ route, installId, error: String(err) });
@@ -422,6 +442,53 @@ export function createApp(deps: AppDeps): Hono {
       (req) => ({
         systemPrompt: buildJournalExplainPrompt(deps.journal.prompts.explain, req),
         userMessage: journalExplainUserMessage(req),
+      }),
+    ),
+  );
+
+  // Phase 17: the retry of one corrected sentence, the independent checker
+  // (never given the original; prefers the provider that did NOT correct), and
+  // the cloze solver test.
+  app.post('/v1/journal-sentence-fix', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-sentence-fix',
+      JournalSentenceFixRequestSchema,
+      ModelSentenceReviewSchema,
+      JOURNAL_SENTENCE_FIX_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildSentenceFixPrompt(deps.journal.prompts.sentenceFix, req),
+        userMessage: sentenceFixUserMessage(req),
+      }),
+    ),
+  );
+
+  app.post('/v1/journal-verify', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-verify',
+      JournalVerifyRequestSchema,
+      JournalVerifyResponseSchema,
+      JOURNAL_VERIFY_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildVerifyPrompt(deps.journal.prompts.verify),
+        userMessage: verifyUserMessage(req),
+      }),
+      undefined,
+      (req) => req.avoidProvider,
+    ),
+  );
+
+  app.post('/v1/journal-solve', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-solve',
+      JournalSolveRequestSchema,
+      JournalSolveResponseSchema,
+      JOURNAL_SOLVE_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildSolvePrompt(deps.journal.prompts.solve),
+        userMessage: solveUserMessage(req),
       }),
     ),
   );

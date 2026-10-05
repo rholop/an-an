@@ -4,9 +4,6 @@ import {
   selectDueErrorItems,
   type ErrorItem,
   type Evidence,
-  Lexicon,
-  type ClozeCheckLLM,
-  type Word,
 } from '@anan/core';
 import { DexieLearnerRepo } from '../db/learner-repo.js';
 import { AnanDB } from '../db/schema.js';
@@ -20,29 +17,12 @@ import {
   restoreJournalItem,
   restoreSource,
 } from './cloze-reports.js';
-import { runJournalClozeChecks, sentenceCheckKey } from './journal-cloze-check.js';
-import { allJournalSentences } from '../db/queries.js';
 import { LearnerService } from './learner-service.js';
 
 let db: AnanDB;
 let service: LearnerService;
 let repo: DexieLearnerRepo;
 const now = new Date('2026-03-01T10:00:00Z');
-const word = (headword: string): Word => ({
-  id: `w-${headword}`,
-  headword,
-  variants: [],
-  pos: ['N'],
-  level: 'N1',
-  source: 'tocfl',
-  pinyin: '',
-  pinyinNumeric: '',
-  zhuyin: '',
-  glossEn: '',
-  chars: [...headword],
-  tags: [],
-});
-const lexicon = new Lexicon(['我', '今天', '昨天', '去', '了', '台灣', '喜歡', '咖啡'].map(word));
 const who = (reason: 'garbled' | 'other' = 'garbled') => ({ reason, profileId: 'rowan', note: 'n' });
 
 beforeEach(() => {
@@ -100,6 +80,7 @@ function errorItem(over: Partial<ErrorItem> = {}): ErrorItem {
     flagged: false,
     createdAt: now,
     status: 'active',
+    version: 2,
     ...over,
   };
 }
@@ -142,73 +123,5 @@ describe('reporting any other source', () => {
     expect(await reportCounts(db)).toEqual({ 'bank:garbled': 1 });
     await restoreSource(db, src.zh);
     expect((await excludedZh(db)).has(src.zh)).toBe(false);
-  });
-});
-
-describe('journal clozes are checked before they can be shown', () => {
-  const ok: ClozeCheckLLM = { checkCloze: async () => ({ ok: true }) };
-  const no: ClozeCheckLLM = { checkCloze: async () => ({ ok: false, reason: 'odd' }) };
-  const down: ClozeCheckLLM = {
-    checkCloze: async () => {
-      throw new Error('offline');
-    },
-  };
-
-  it('blocks the known-bad old items, activates good ones, and keeps unchecked ones pending', async () => {
-    await db.errorItems.bulkPut([
-      errorItem({ id: 'good', status: 'pending_check' }),
-      // the garbled kind: another mistake left in, a half-word blank, a gap
-      errorItem({ id: 'gap', status: undefined, corrected: '我今天去 [gym]。', blank: [1, 3] }),
-      errorItem({ id: 'half', status: 'pending_check', blank: [2, 3] }),
-    ]);
-    const summary = await runJournalClozeChecks(db, lexicon, ok, now);
-    expect((await db.errorItems.get('good'))!.status).toBe('active');
-    const gap = (await db.errorItems.get('gap'))!;
-    expect(gap.status).toBe('blocked');
-    expect(gap.blockedReason).toMatch(/bracket/);
-    expect((await db.errorItems.get('half'))!.status).toBe('blocked');
-    expect(summary.items).toEqual({ active: 1, blocked: 2, pending: 0 });
-
-    // a refusing checker blocks; an unreachable one leaves the item hidden
-    await db.errorItems.put(errorItem({ id: 'later', status: 'pending_check' }));
-    await runJournalClozeChecks(db, lexicon, down, now);
-    expect((await db.errorItems.get('later'))!.status).toBe('pending_check');
-    expect(selectDueErrorItems(await db.errorItems.toArray(), now, 10).map((i) => i.id)).toEqual(['good']);
-    await runJournalClozeChecks(db, lexicon, no, now);
-    expect((await db.errorItems.get('later'))!.status).toBe('blocked');
-  });
-
-  it('only offers journal sentences once checked, and never reported ones', async () => {
-    await db.journalEntries.put({
-      id: 'j1',
-      text: '我喜歡咖啡。',
-      promptWordIds: [],
-      createdAt: now,
-      status: 'finished',
-      finishedAt: now,
-    });
-    await db.journalReviews.put({
-      entryId: 'j1',
-      learnerLevel: 'L1',
-      issues: [],
-      naturalRewrite: '',
-      brackets: [],
-      usedWell: [],
-      rejectedCount: 0,
-      selfFix: {},
-      flagged: [],
-      explainMore: {},
-      levelHeadline: '',
-      wordsUsed: [],
-      errorsPer100Chars: 0,
-      createdAt: now,
-    });
-    expect(await allJournalSentences(db)).toEqual([]); // not checked yet
-    await runJournalClozeChecks(db, lexicon, down, now);
-    expect(await allJournalSentences(db)).toEqual([]); // model down: still pending
-    await runJournalClozeChecks(db, lexicon, ok, now);
-    expect((await allJournalSentences(db)).map((s) => s.zh)).toEqual(['我喜歡咖啡。']);
-    expect((await db.settings.get(sentenceCheckKey('我喜歡咖啡。')))?.value).toMatchObject({ ok: true });
-    expect(await allJournalSentences(db, new Set(['我喜歡咖啡。']))).toEqual([]);
   });
 });

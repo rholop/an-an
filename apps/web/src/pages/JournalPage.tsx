@@ -33,6 +33,7 @@ import { useTextbook } from '../lib/textbook-data.js';
 import { useStudyFocus } from '../lib/study.js';
 import { SHEET_QUERY, useMediaQuery } from '../lib/useMediaQuery.js';
 import { useSetting } from '../lib/useSetting.js';
+import { ProtectedTerms } from '../components/ProtectedTerms.js';
 import './JournalPage.css';
 
 const TYPE_LABEL: Record<JournalIssue['type'], string> = {
@@ -223,6 +224,7 @@ export function JournalPage({
     <AnnotationContext.Provider value={{ lexicon: lexiconState.lexicon, script }}>
       <div className="journal-page">
         <h1>Journal</h1>
+        <ProtectedTerms lexicon={lexiconState.lexicon} />
         <p className="journal-disclaimer">
           An AI tutor suggests the corrections here. It is often right, but not always — if
           something looks wrong or unnatural to you, flag it and it won&apos;t be added to your
