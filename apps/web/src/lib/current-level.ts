@@ -61,7 +61,11 @@ export async function setCurrentLevel(level: Level): Promise<void> {
 export async function initCurrentLevelIfUnset(lexicon: Lexicon): Promise<void> {
   await load();
   if (explicit) return;
+  const forProfile = currentSession()?.profileId;
   const cards = await allTouchedCards(db);
+  // The learner may have picked a level, or the profile may have switched, while progress was being read:
+  // a stale first-run guess must never overwrite either (it would land in the other profile's database).
+  if (explicit || currentSession()?.profileId !== forProfile) return;
   const derived = currentFrontierLevel(
     lexicon.allWords(),
     cards.filter((c) => c.skill === 'recognition'),
