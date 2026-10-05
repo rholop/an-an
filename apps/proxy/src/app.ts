@@ -6,6 +6,8 @@ import { gunzipSync, gzipSync } from 'node:zlib';
 import { AudioKindSchema, isProfileId } from '@anan/core';
 import { z } from 'zod';
 import {
+  ClozeCheckRequestSchema,
+  ClozeCheckResponseSchema,
   DefineRequestSchema,
   DefineResponseSchema,
   GlossAdjudicationRequestSchema,
@@ -25,6 +27,7 @@ import { requireSiteCode } from './site-code.js';
 import type { SyncStore } from './sync-store.js';
 import type { TextbookPrivateKind, TextbookStore } from './textbook-store.js';
 import {
+  CLOZE_CHECK_JSON_SCHEMA,
   DEFINE_JSON_SCHEMA,
   GLOSS_JSON_SCHEMA,
   JOURNAL_CHECK_JSON_SCHEMA,
@@ -38,7 +41,9 @@ import {
   type SentenceOrchestrator,
 } from './orchestrator.js';
 import {
+  buildClozeCheckPrompt,
   buildJournalCheckPrompt,
+  clozeCheckUserMessage,
   buildJournalExplainPrompt,
   buildJournalReviewPrompt,
   defineUserMessage,
@@ -417,6 +422,21 @@ export function createApp(deps: AppDeps): Hono {
       (req) => ({
         systemPrompt: buildJournalExplainPrompt(deps.journal.prompts.explain, req),
         userMessage: journalExplainUserMessage(req),
+      }),
+    ),
+  );
+
+  // Phase 16 Part B: one naturalness check of a full corrected sentence.
+  app.post('/v1/cloze-check', (c) =>
+    journalRoute(
+      c,
+      '/v1/cloze-check',
+      ClozeCheckRequestSchema,
+      ClozeCheckResponseSchema,
+      CLOZE_CHECK_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildClozeCheckPrompt(deps.journal.prompts.clozeCheck),
+        userMessage: clozeCheckUserMessage(req),
       }),
     ),
   );

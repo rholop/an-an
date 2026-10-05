@@ -251,7 +251,13 @@ export function validateJournalReview(
   }
 
   return {
-    review: { issues: kept, natural_rewrite: naturalRewrite, brackets, used_well: usedWell },
+    review: {
+      issues: kept,
+      natural_rewrite: naturalRewrite,
+      brackets,
+      used_well: usedWell,
+      sentences: parsed.data.sentences,
+    },
     rejected,
   };
 }

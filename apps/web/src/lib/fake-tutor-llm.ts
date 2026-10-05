@@ -24,6 +24,7 @@ export interface FakeJournalScript {
   review?: (req: JournalReviewRequest) => JournalReview;
   check?: (req: JournalCheckRequest) => JournalCheckResponse;
   explain?: (req: JournalExplainRequest) => JournalExplainResponse;
+  clozeCheck?: (req: { sentence: string }) => { ok: boolean; reason?: string };
 }
 
 /** No-network TutorLLM for dev (no API keys configured) and tests. A script
@@ -60,6 +61,11 @@ export class FakeTutorLLM implements TutorLLM {
   async reviewJournal(req: JournalReviewRequest): Promise<JournalReview> {
     this.journalCalls.review++;
     return (this.journal.review ?? FakeTutorLLM.defaultJournalReview)(req);
+  }
+
+  /** Phase 16: the naturalness check. Passes everything unless scripted. */
+  async checkCloze(req: { sentence: string }): Promise<{ ok: boolean; reason?: string }> {
+    return (this.journal.clozeCheck ?? (() => ({ ok: true })))(req);
   }
 
   async defineWord(req: DefineRequest): Promise<DefineResponse> {

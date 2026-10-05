@@ -5,6 +5,7 @@ import {
   type Scenario,
   type SkillCard,
 } from '@anan/core';
+import { loadSentenceVerdicts, sentenceCheckKey } from '../lib/journal-cloze-check.js';
 import type { AnanDB } from './schema.js';
 
 /** Count of cards due on each of the next `days` calendar days (today
@@ -88,14 +89,19 @@ export async function allChatLines(db: AnanDB, scenarios: Scenario[]): Promise<C
   return lines;
 }
 
-/** Phase 5 §9: the learner's own correctly-written journal sentences, shaped
- * for core's selectClozeSource(). Entries without a review (or whose review
- * hasn't been finished) contribute nothing, and any sentence a review raised
- * an issue about is left out. */
-export async function allJournalSentences(db: AnanDB): Promise<JournalSentenceSource[]> {
-  const [entries, reviews] = await Promise.all([
+/** Phase 5 §9 + Phase 16: the learner's own correctly-written journal
+ * sentences, shaped for core's selectClozeSource(). Entries without a review
+ * contribute nothing, nor does any sentence a review raised an issue about.
+ * A sentence is only offered once it has passed the Part B check (rules plus
+ * one naturalness check, stored as a verdict), and never if it was reported. */
+export async function allJournalSentences(
+  db: AnanDB,
+  excluded: ReadonlySet<string> = new Set(),
+): Promise<JournalSentenceSource[]> {
+  const [entries, reviews, verdicts] = await Promise.all([
     db.journalEntries.toArray(),
     db.journalReviews.toArray(),
+    loadSentenceVerdicts(db),
   ]);
   const reviewByEntry = new Map(reviews.map((r) => [r.entryId, r]));
   return entries
@@ -107,5 +113,6 @@ export async function allJournalSentences(db: AnanDB): Promise<JournalSentenceSo
         review ? review.issues.map((i) => i.span) : null,
         e.finishedAt ?? e.createdAt,
       );
-    });
+    })
+    .filter((s) => !excluded.has(s.zh) && verdicts.get(sentenceCheckKey(s.zh))?.ok === true);
 }

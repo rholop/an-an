@@ -480,6 +480,21 @@ describe('journal routes', () => {
     expect(adapter.calls).toBe(1);
   });
 
+  it('POST /v1/cloze-check validates the request and answers with ok/reason', async () => {
+    const app = buildApp({
+      journalOrchestrator: fakeJournalOrchestrator(() => ({ ok: false, reason: 'garbled' })),
+    });
+    const res = await post(app, '/v1/cloze-check', { sentence: '我昨天去了台灣。' });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: false, reason: 'garbled' });
+    expect((await post(app, '/v1/cloze-check', { sentence: '' })).status).toBe(400);
+    expect((await post(app, '/v1/cloze-check', { sentence: 'x' }, {})).status).toBe(400);
+    const bad = buildApp({
+      journalOrchestrator: fakeJournalOrchestrator(() => ({ ok: 'maybe' })),
+    });
+    expect((await post(bad, '/v1/cloze-check', { sentence: '我去。' })).status).toBe(502);
+  });
+
   it('POST /v1/journal-check and /v1/journal-explain validate and answer', async () => {
     const app = buildApp({
       journalOrchestrator: fakeJournalOrchestrator((task) =>

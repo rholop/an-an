@@ -207,3 +207,10 @@ export const DEFINE_JSON_SCHEMA = {
   },
   required: ['pinyin', 'glossEn'],
 } as const;
+
+/** ClozeCheckResponse (POST /v1/cloze-check — phase doc 16 Part B). */
+export const CLOZE_CHECK_JSON_SCHEMA = {
+  type: 'object',
+  properties: { ok: { type: 'boolean' }, reason: { type: 'string' } },
+  required: ['ok'],
+} as const;

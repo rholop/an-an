@@ -317,15 +317,15 @@ describe('error bank', () => {
     expect(buildErrorCloze(short!).answer).toBe('愛');
   });
 
-  it('skips sentences that still hold an English gap', () => {
-    expect(
-      buildErrorItems(
-        'e',
-        '我去 [gym]。',
-        [{ issue: issue({ span: [0, 1], correction: '你' }), index: 0 }],
-        now,
-      ),
-    ).toEqual([]);
+  it('blocks (never shows) sentences that still hold an English gap', () => {
+    const [it] = buildErrorItems(
+      'e',
+      '我去 [gym]。',
+      [{ issue: issue({ span: [0, 1], correction: '你' }), index: 0 }],
+      now,
+    );
+    expect(it!.status).toBe('blocked');
+    expect(it!.blockedReason).toMatch(/bracket/);
   });
 
   it('grades typed answers and reschedules with FSRS', () => {
@@ -349,6 +349,7 @@ describe('error bank', () => {
       journalEntryId: id,
       pattern,
       card: emptyCard(new Date('2026-01-01')),
+      status: 'active',
       ...over,
     });
     const all = [
@@ -373,7 +374,7 @@ describe('mixed session', () => {
     '我昨天去了台灣。',
     [{ issue: issue({ span: [2, 4], correction: '今天', pattern: 'p' }), index: 0 }],
     now,
-  )[0]!;
+  ).map((i): ErrorItem => ({ ...i, status: 'active' }))[0]!;
   const dueCard = (hw: string, over: Partial<SkillCard> = {}): SkillCard => ({
     item: { kind: 'word', id: wordId(hw) },
     skill: 'recognition',

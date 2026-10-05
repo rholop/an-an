@@ -361,6 +361,21 @@ export class AnanDB extends Dexie {
         await tx.table('meta').put({ key: 'readerEnabledAt', value: new Date() });
       });
 
+    // v7 (Phase 16): every journal cloze item is checked before it can be
+    // shown. Items that exist already have not been checked, so they wait as
+    // `pending_check` (hidden) until the check passes or blocks them. No
+    // index changes: `status` is only ever filtered in memory.
+    this.version(7)
+      .stores({})
+      .upgrade(async (tx) => {
+        await tx
+          .table('errorItems')
+          .toCollection()
+          .modify((row: { status?: string }) => {
+            row.status ??= 'pending_check';
+          });
+      });
+
     this.installHooks();
   }
 

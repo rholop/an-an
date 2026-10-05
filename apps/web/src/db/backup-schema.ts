@@ -1,4 +1,4 @@
-import { LevelSchema, SentenceTokenSchema } from '@anan/core';
+import { EditKindSchema, LevelSchema, SentenceTokenSchema } from '@anan/core';
 import { z } from 'zod';
 
 const ItemRefSchema = z.object({ kind: z.enum(['word', 'grammar']), id: z.string() });
@@ -179,6 +179,34 @@ export const ErrorItemSchema = z.object({
   card: FsrsCardSchema,
   flagged: z.boolean(),
   createdAt: z.coerce.date(),
+  // Phase 16
+  status: z
+    .enum(['active', 'pending_check', 'blocked', 'reported', 'deleted', 'pending_rebuild'])
+    .optional(),
+  blockedReason: z.string().optional(),
+  report: z
+    .object({
+      reason: z.enum([
+        'garbled',
+        'wrong_answer',
+        'other_answer_fits',
+        'blank_misplaced',
+        'english_wrong',
+        'other',
+      ]),
+      note: z.string().optional(),
+      reportedAt: z.coerce.date(),
+      profileId: z.string(),
+    })
+    .optional(),
+  blank: SpanSchema.optional(),
+  // Phase 17
+  version: z.literal(2).optional(),
+  en: z.string().optional(),
+  explanationEn: z.string().optional(),
+  editKind: EditKindSchema.optional(),
+  marks: z.object({ original: z.array(SpanSchema), corrected: z.array(SpanSchema) }).optional(),
+  exercise: z.any().optional(),
 });
 
 export const ConversationRowSchema = z.object({

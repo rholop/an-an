@@ -22,6 +22,7 @@ import {
 } from '@anan/core';
 import type { AnanDB, JournalEntryRow, JournalReviewRow, ResolvedBracket } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
+import { allowedLatinNames, runJournalClozeChecks } from './journal-cloze-check.js';
 
 export interface JournalServiceConfig {
   maxIssues: number;
@@ -351,7 +352,13 @@ export class JournalService {
       .map((issue, index) => ({ issue, index }))
       .filter(({ index }) => !review.flagged.includes(index));
 
-    const errorItems = buildErrorItems(entryId, entry.text, kept, now);
+    // Phase 16: lexicon-aware (blank on whole tokens), all corrections of a
+    // sentence applied at once; items start pending_check or blocked.
+    const allowedNames = await allowedLatinNames(this.db);
+    const errorItems = buildErrorItems(entryId, entry.text, kept, now, {
+      lexicon: this.lexicon,
+      allowedNames,
+    });
 
     const promptWords = entry.promptWordIds
       .map((id) => this.lexicon.byId(id))
@@ -387,6 +394,9 @@ export class JournalService {
       },
     );
     if (evidence.length > 0) await this.learnerService.recordBulk(evidence, now);
+    // Phase 16 Part B: the naturalness check. Unreachable model = items and
+    // sentences stay pending (hidden) and are retried on the next run.
+    await runJournalClozeChecks(this.db, this.lexicon, this.tutorLLM, now).catch(() => undefined);
     if (this.onFinished) {
       const selfFixed = kept
         .filter(({ index }) => review.selfFix[index]?.fixed === true)

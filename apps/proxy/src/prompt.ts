@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import type {
   DefineRequest,
   GlossAdjudicationRequest,
+  ClozeCheckRequest,
   JournalCheckRequest,
   JournalExplainRequest,
   JournalReviewRequest,
@@ -93,6 +94,8 @@ export interface JournalPrompts {
   review: string;
   check: string;
   explain: string;
+  /** Phase 16: naturalness check of one full corrected sentence. */
+  clozeCheck: string;
 }
 
 export function loadJournalPromptTemplates(version: string): JournalPrompts {
@@ -100,6 +103,7 @@ export function loadJournalPromptTemplates(version: string): JournalPrompts {
     review: loadPromptFile(`journal-review.${version}.md`),
     check: loadPromptFile(`journal-check.${version}.md`),
     explain: loadPromptFile(`journal-explain.${version}.md`),
+    clozeCheck: loadPromptFile(`cloze-check.${version}.md`),
   };
 }
 
@@ -163,4 +167,13 @@ export function journalExplainUserMessage(req: JournalExplainRequest): string {
     correction: req.correction,
     earlier_explanation: req.explanationEn,
   });
+}
+
+export function buildClozeCheckPrompt(template: string): string {
+  return fillPlaceholders(template, {});
+}
+
+/** The sentence is data inside a fenced block, never instructions. */
+export function clozeCheckUserMessage(req: ClozeCheckRequest): string {
+  return `Check this sentence.\n<<<SENTENCE\n${req.sentence}\nSENTENCE>>>`;
 }

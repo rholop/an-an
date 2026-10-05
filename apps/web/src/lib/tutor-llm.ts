@@ -1,5 +1,6 @@
 import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
 import {
+  ClozeCheckResponseSchema,
   DefineResponseSchema,
   JournalCheckResponseSchema,
   JournalExplainResponseSchema,
@@ -72,6 +73,10 @@ export class FetchTutorLLM implements TutorLLM {
 
   async checkJournalFix(req: JournalCheckRequest): Promise<JournalCheckResponse> {
     return JournalCheckResponseSchema.parse(await this.post('/v1/journal-check', req));
+  }
+
+  async checkCloze(req: { sentence: string }): Promise<{ ok: boolean; reason?: string }> {
+    return ClozeCheckResponseSchema.parse(await this.post('/v1/cloze-check', req));
   }
 
   async defineWord(req: DefineRequest): Promise<DefineResponse> {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   classScope,
   lessonIndex,
@@ -30,7 +30,19 @@ import {
   type SessionEntry,
   type SessionItem,
 } from '@anan/core';
-import { db, gameService, learnerService } from '../db/instance.js';
+import { currentSession, db, gameService, learnerService } from '../db/instance.js';
+import { ReportButton, ReportNotice } from '../components/ReportSheet.js';
+import {
+  alsoInOtherProfiles,
+  excludedZh,
+  reportJournalItem,
+  reportSource,
+  restoreJournalItem,
+  restoreSource,
+} from '../lib/cloze-reports.js';
+import { runJournalClozeChecks } from '../lib/journal-cloze-check.js';
+import { FetchTutorLLM } from '../lib/tutor-llm.js';
+import type { ClozeReportReason } from '@anan/core';
 import { ListenRunner } from './ListenPage.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
@@ -79,6 +91,16 @@ export function ClozePage() {
   const [chatLines, setChatLines] = useState<Awaited<ReturnType<typeof allChatLines>> | null>(null);
   const [journalSentences, setJournalSentences] = useState<JournalSentenceSource[] | null>(null);
   const [errorItems, setErrorItems] = useState<ErrorItem[] | null>(null);
+  // Phase 16: sentences reported earlier — never offered as a cloze again.
+  const [excluded, setExcluded] = useState<Set<string> | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  // Phase 16: "Thanks, this one won't come back." + Undo, and what each answered
+  // card needs to be taken back exactly.
+  const [notice, setNotice] = useState<{ undo: () => Promise<void> } | null>(null);
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const answered = useRef(
+    new Map<number, { outcome: Outcome | 'error-correct' | 'error-wrong'; undo?: () => Promise<void>; redo?: () => Promise<void> }>(),
+  );
   // Phase 7: the global "My level" — never hides due reviews, only steers
   // sentence-level preference and the new-item pool.
   const { level: learnerLevel } = useCurrentLevel();
@@ -88,14 +110,16 @@ export function ClozePage() {
     let cancelled = false;
     (async () => {
       const now = new Date();
+      const ex = await excludedZh(db);
       const [due, known, lines, journal, errors] = await Promise.all([
         learnerService.dueCards(now, 200),
         learnerService.knownSet('review'),
         allChatLines(db, scenariosState.scenarios),
-        allJournalSentences(db),
+        allJournalSentences(db, ex),
         db.errorItems.toArray(),
       ]);
       if (cancelled) return;
+      setExcluded(ex);
       setJournalSentences(journal);
       setErrorItems(errors);
       setDueCards(due);
@@ -105,7 +129,20 @@ export function ClozePage() {
     return () => {
       cancelled = true;
     };
-  }, [lexiconState.status, scenariosState.status]);
+  }, [lexiconState.status, scenariosState.status, reloadKey]);
+
+  // Phase 16 Part B: check anything pending (old items, new items, journal
+  // sentences) once per visit; unchecked material stays hidden meanwhile.
+  useEffect(() => {
+    if (lexiconState.status !== 'ready') return;
+    let cancelled = false;
+    runJournalClozeChecks(db, lexiconState.lexicon, new FetchTutorLLM())
+      .then(() => !cancelled && setReloadKey((k) => k + 1))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [lexiconState.status]);
 
   const neededLevels = useMemo(() => {
     if (!dueCards || lexiconState.status !== 'ready') return [];
@@ -143,6 +180,7 @@ export function ClozePage() {
     knownIds !== null &&
     chatLines !== null &&
     journalSentences !== null &&
+    excluded !== null &&
     errorItems !== null;
   const dueErrorCount = errorItems
     ? selectDueErrorItems(errorItems, new Date(), Infinity).length
@@ -158,6 +196,7 @@ export function ClozePage() {
       learnerLevel,
       journalSentences: journalSentences!,
       chatLines: chatLines!,
+      excludeZh: excluded!,
       // Phase 14: textbook-first picks, and sentences tagged with the active lesson lead the bank.
       ...(studyFocus?.enabled
         ? {
@@ -185,6 +224,7 @@ export function ClozePage() {
       errorItems: errorItems!,
       now: new Date(),
     });
+    answered.current.clear();
     setSession(built);
     setSlots(new Map());
     setDoneSlots(new Set());
@@ -216,10 +256,20 @@ export function ClozePage() {
 
   async function recordOutcome(item: SessionItem, outcome: Outcome) {
     const now = new Date();
-    await learnerService.record(
-      { item: item.card.item, skill: item.card.skill, kind: evidenceKindFor(outcome), at: now },
-      now,
-    );
+    const evidence = {
+      item: item.card.item,
+      skill: item.card.skill,
+      kind: evidenceKindFor(outcome),
+      at: now,
+    };
+    const handle = await learnerService.recordUndoable(evidence, now);
+    answered.current.set(index, {
+      outcome,
+      undo: handle.undo,
+      redo: async () => {
+        await learnerService.record(evidence, now);
+      },
+    });
     setTally((t) => ({
       correct: t.correct + (outcome === 'correct' ? 1 : 0),
       hinted: t.hinted + (outcome === 'correct_wrong_tone' ? 1 : 0),
@@ -233,6 +283,9 @@ export function ClozePage() {
   async function recordErrorOutcome(error: ErrorItem, outcome: 'correct' | 'wrong') {
     const at = new Date();
     await db.errorItems.put(reviewErrorItem(error, outcome, at));
+    answered.current.set(index, {
+      outcome: outcome === 'correct' ? 'error-correct' : 'error-wrong',
+    });
     if (outcome === 'correct') await gameService.onErrorFixed(error.id, at);
     setTally((t) => ({
       ...t,
@@ -244,6 +297,68 @@ export function ClozePage() {
   function next() {
     setIndex((i) => i + 1);
   }
+
+  /** Phase 16 Part C: the card leaves the session at once; an answer already
+   * given is undone (evidence removed, card restored exactly), so a bad cloze
+   * never counts as a lapse. The word itself stays in review and gets another
+   * sentence next time. */
+  async function reportCurrent(entry: SessionEntry, reason: ClozeReportReason, note: string) {
+    const at = new Date();
+    const profileId = currentSession()?.profileId ?? 'unknown';
+    const given = answered.current.get(index);
+    answered.current.delete(index);
+    if (given) {
+      setTally((t) => ({
+        correct: t.correct - (given.outcome === 'correct' || given.outcome === 'error-correct' ? 1 : 0),
+        hinted: t.hinted - (given.outcome === 'correct_wrong_tone' ? 1 : 0),
+        wrong: t.wrong - (given.outcome === 'wrong' || given.outcome === 'error-wrong' ? 1 : 0),
+      }));
+    }
+    let undoReport: () => Promise<void>;
+    if (entry.kind === 'error') {
+      // `entry.error` is the item as it was before this session touched it,
+      // so writing it back restores its card exactly.
+      await reportJournalItem(db, entry.error, { reason, note, profileId }, at);
+      undoReport = () => restoreJournalItem(db, entry.error);
+    } else {
+      await given?.undo?.();
+      const src = entry.item.source!;
+      const meta = { zh: src.zh, sourceKind: src.sourceKind as 'journal' | 'chat' | 'bank', sourceLabel: src.sourceLabel };
+      await reportSource(db, meta, { reason, note, profileId }, at);
+      await alsoInOtherProfiles(meta.sourceKind, profileId, (other) =>
+        reportSource(other, meta, { reason, note, profileId }, at),
+      );
+      undoReport = async () => {
+        await restoreSource(db, meta.zh);
+        await alsoInOtherProfiles(meta.sourceKind, profileId, (other) => restoreSource(other, meta.zh));
+        await given?.redo?.();
+      };
+    }
+    clearTimeout(noticeTimer.current);
+    setNotice({
+      undo: async () => {
+        await undoReport();
+        if (given) setTally((t) => ({
+          correct: t.correct + (given.outcome === 'correct' || given.outcome === 'error-correct' ? 1 : 0),
+          hinted: t.hinted + (given.outcome === 'correct_wrong_tone' ? 1 : 0),
+          wrong: t.wrong + (given.outcome === 'wrong' || given.outcome === 'error-wrong' ? 1 : 0),
+        }));
+      },
+    });
+    noticeTimer.current = setTimeout(() => setNotice(null), 8000);
+    setIndex((i) => i + 1);
+  }
+
+  const noticeEl = notice && (
+    <ReportNotice
+      onUndo={() => {
+        const n = notice;
+        setNotice(null);
+        void n.undo();
+      }}
+      onGone={() => setNotice(null)}
+    />
+  );
 
   if (lexiconState.status === 'loading' || scenariosState.status === 'loading')
     return <p>Loading…</p>;
@@ -303,6 +418,7 @@ export function ClozePage() {
   if (!entry) {
     return (
       <div className="cloze-page">
+        {noticeEl}
         <h1>Session complete</h1>
         <ul className="cloze-summary">
           <li>{tally.correct} correct, no hint</li>
@@ -328,12 +444,14 @@ export function ClozePage() {
           <span className="cloze-badge">From your journal</span>
           {entry.error.pattern && <span className="cloze-badge">{entry.error.pattern}</span>}
         </div>
+        {noticeEl}
         <ErrorClozeView
           key={entry.error.id}
           error={entry.error}
           onAnswer={(outcome) => recordErrorOutcome(entry.error, outcome)}
           onNext={next}
         />
+        <ReportButton onReport={(reason, note) => void reportCurrent(entry, reason, note)} />
       </div>
     );
   }
@@ -349,6 +467,7 @@ export function ClozePage() {
         <span className="cloze-badge">Rung {item.card.clozeRung}</span>
         <span className="cloze-badge">{item.card.skill}</span>
       </div>
+      {noticeEl}
       {item.source && <div className="cloze-source-label">{item.source.sourceLabel}</div>}
 
       <ExerciseView
@@ -358,6 +477,9 @@ export function ClozePage() {
         onAnswer={(outcome) => recordOutcome(item, outcome)}
         onNext={next}
       />
+      {item.source && (
+        <ReportButton onReport={(reason, note) => void reportCurrent(entry, reason, note)} />
+      )}
     </div>
   );
 }

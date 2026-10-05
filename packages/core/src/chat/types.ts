@@ -105,6 +105,8 @@ export interface TutorLLM {
   /** Phase 7: runtime definition for a word that is NOT in the lexicon only.
    * The result is shown labelled "AI-generated" and queued for review. */
   defineWord(req: DefineRequest): Promise<DefineResponse>;
+  /** Phase 16: is this full corrected sentence natural Taiwan Mandarin? */
+  checkCloze(req: { sentence: string }): Promise<{ ok: boolean; reason?: string }>;
   /** Phase 9: on-demand example sentences for the reader (POST /v1/sentences).
    * Optional so implementations that never generate (tests) needn't stub it. */
   generateSentences?(req: SentenceGenRequest): Promise<SentenceGenResponse>;

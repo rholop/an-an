@@ -26,6 +26,22 @@ export class DexieLearnerRepo implements LearnerRepo {
     await this.db.evidence.bulkAdd(events);
   }
 
+  /** Phase 16: like appendEvidence, but returns the stored row ids (for undo). */
+  async appendEvidenceKeys(events: Evidence[]): Promise<number[]> {
+    if (events.length === 0) return [];
+    return (await this.db.evidence.bulkAdd(events, { allKeys: true })) as number[];
+  }
+
+  /** Phase 16: removes one evidence row and puts a card back exactly as it was
+   * (or deletes it when it didn't exist before). */
+  async undoEvidence(evidenceId: number, item: ItemRef, skill: Skill, prior: SkillCard | undefined): Promise<void> {
+    await this.db.transaction('rw', this.db.items, this.db.evidence, async () => {
+      await this.db.evidence.delete(evidenceId);
+      if (prior) await this.db.items.put({ ...prior, pk: itemPk(item, skill) });
+      else await this.db.items.delete(itemPk(item, skill));
+    });
+  }
+
   async dueCards(now: Date, limit: number): Promise<SkillCard[]> {
     // Phase 15: listening cards are their own queue (`dueListeningCards`), never part of plain review.
     const rows = await this.db.items

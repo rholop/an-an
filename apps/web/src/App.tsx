@@ -60,6 +60,9 @@ const ProgressPage = lazy(() =>
 const ReviewPage = lazy(() =>
   import('./pages/ReviewPage.js').then((m) => ({ default: m.ReviewPage })),
 );
+const ReportedPage = lazy(() =>
+  import('./pages/ReportedPage.js').then((m) => ({ default: m.ReportedPage })),
+);
 const ZhuyinTestPage = lazy(() =>
   import('./pages/ZhuyinTestPage.js').then((m) => ({ default: m.ZhuyinTestPage })),
 );
@@ -76,6 +79,7 @@ export type Route =
   | 'placement'
   | 'anki-import'
   | 'credits'
+  | 'reported'
   | 'audio-review'
   | 'zhuyin-test';
 
@@ -250,6 +254,9 @@ export function App() {
         <button onClick={() => setRoute('anki-import')} disabled={route === 'anki-import'}>
           Anki import
         </button>
+        <button onClick={() => setRoute('reported')} disabled={route === 'reported'}>
+          Reported clozes
+        </button>
         <button onClick={() => setRoute('credits')} disabled={route === 'credits'}>
           Credits
         </button>
@@ -274,6 +281,7 @@ export function App() {
           {route === 'placement' && <PlacementPage />}
           {route === 'anki-import' && <AnkiImportPage />}
           {route === 'credits' && <CreditsPage />}
+          {route === 'reported' && <ReportedPage />}
           {route === 'audio-review' && <AudioReviewPage />}
           {route === 'zhuyin-test' && <ZhuyinTestPage />}
         </Suspense>
