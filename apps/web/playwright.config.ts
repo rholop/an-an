@@ -4,6 +4,8 @@ import { syncDir } from './e2e/sync-dir.js';
 export default defineConfig({
   testDir: './e2e',
   timeout: 15000,
+  // One retry on CI only: the phone suite shares two slow runners and a lone timeout was not reproducible locally.
+  retries: process.env.CI ? 1 : 0,
   globalSetup: './e2e/global-setup.ts',
   webServer: [
     {
