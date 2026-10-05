@@ -6,10 +6,12 @@ import {
   makeClipLookup,
   type AudioKind,
   type ClipLookup,
+  type Evidence,
   type Lexicon,
   type SkillCard,
 } from '@anan/core';
 import { db, learnerService } from '../db/instance.js';
+import type { AnanDB } from '../db/schema.js';
 import { allTouchedCards } from '../db/queries.js';
 import { audioBase, useAudioState } from './audio.js';
 import { useSetting } from './useSetting.js';
@@ -52,12 +54,32 @@ function testSwitchOff(): boolean {
  * Creates listening cards for items whose recognition card reached `review` and which have a
  * usable word clip (Phase 15). Returns every listening card afterwards.
  */
-export async function ensureListeningCards(hasClip: ClipLookup, now: Date = new Date()): Promise<SkillCard[]> {
-  const cards = await allTouchedCards(db);
+export async function ensureListeningCards(
+  hasClip: ClipLookup,
+  now: Date = new Date(),
+  deps: { db: AnanDB; putCard: (c: SkillCard) => Promise<unknown> } = { db, putCard: (c) => learnerService.putCard(c) },
+): Promise<SkillCard[]> {
+  const cards = await allTouchedCards(deps.db);
   const create = listeningCardsToCreate(cards, hasClip);
-  for (const id of create) await learnerService.putCard(blankListeningCard(id, now));
-  const rows = await db.items.filter((r) => r.skill === 'listening').toArray();
+  for (const id of create) await deps.putCard(blankListeningCard(id, now));
+  const rows = await deps.db.items.filter((r) => r.skill === 'listening').toArray();
   return rows.map(({ pk: _pk, ...c }) => c);
+}
+
+/** Records an exercise's evidence for items that have a listening card; an empty list ("Sounds wrong") writes nothing. */
+export async function recordListeningEvidence(
+  record: (e: Evidence, now: Date) => Promise<unknown>,
+  cardIds: ReadonlySet<string>,
+  evidence: readonly { wordId: string; kind: Evidence['kind'] }[],
+  now: Date,
+): Promise<number> {
+  let n = 0;
+  for (const e of evidence)
+    if (cardIds.has(e.wordId)) {
+      await record({ item: { kind: 'word', id: e.wordId }, skill: 'listening', kind: e.kind, at: now }, now);
+      n++;
+    }
+  return n;
 }
 
 /** Warm the service-worker cache so a Listen session works offline (best effort). */

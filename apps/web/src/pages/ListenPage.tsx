@@ -12,7 +12,7 @@ import {
 } from '@anan/core';
 import { ListenExercise, type ListenResult } from '../components/ListenExercise.js';
 import { learnerService } from '../db/instance.js';
-import { ensureListeningCards, prefetchClips, useListeningClips, useListeningEnabled } from '../lib/listening.js';
+import { ensureListeningCards, recordListeningEvidence, prefetchClips, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
@@ -66,9 +66,7 @@ export function ListenRunner({
   const advance = useCallback(
     async (r: ListenResult) => {
       const now = new Date();
-      for (const e of r.evidence)
-        if (cardIds.has(e.wordId))
-          await learnerService.record({ item: { kind: 'word', id: e.wordId }, skill: 'listening', kind: e.kind, at: now }, now);
+      await recordListeningEvidence((e, at) => learnerService.record(e, at), cardIds, r.evidence, now);
       const t = {
         done: tally.done + (r.skipped ? 0 : 1),
         correct: tally.correct + (r.correct ? 1 : 0),
