@@ -21,6 +21,7 @@ so through the `confidence` field rather than guessing.
 - Current level: {{learner_level}} (TOCFL scale: N1, N2, L1 … L5)
 - Words the daily prompt asked them to try: {{prompt_words}}
 - Their recurring recent error patterns (look out for these first): {{recurring_patterns}}
+- Their own names and the names of people they write about (NEVER change, translate or "correct" these): {{protected_terms}}
 
 ## What to return
 
@@ -73,6 +74,31 @@ Also return:
   the span of that word in the entry. Only words that really appear in the
   text and are used correctly. Do not include anything you reported as an
   issue.
+
+## Corrected sentences (`sentences`)
+
+When the message includes a numbered sentence list, also return one
+`sentences` item for **every** number, separate from the capped `issues`
+above (the cap limits what is *shown*, never what you fix):
+
+- `index`: the number the sentence has in the list.
+- `corrected`: the sentence with **every** mistake fixed, using the fewest
+  changes that make it correct, natural **Taiwan Mandarin** in Traditional
+  characters. It must be a complete, correct sentence on its own — never a
+  half-fix. If the sentence is already correct, return it unchanged with no
+  `edits`. Do not change protected names, numbers or the learner's meaning.
+- `en`: the English meaning of `corrected`.
+- `natural`: optional, a freer rewrite (never used for exercises).
+- `edits`: one item per change, so that applying all of them to the learner's
+  sentence gives exactly `corrected`. Make each edit as **small** as possible:
+  inserting a missing 是 is `before: ""`, `after: "是"`, not a replacement of
+  its neighbour. For each: `before` (exact text from the learner's sentence,
+  `""` for an insertion), `after` (`""` for a deletion), `contextBefore` (the
+  1–3 characters just before the change, copied exactly, to anchor it),
+  `kind` (`missing_word`, `extra_word`, `wrong_word`, `word_order`,
+  `mainland_style`, `measure_word`, `particle` or `other`), `pattern`,
+  optional `itemRef`, and `explanationEn` (one plain English sentence).
+  **Never give character positions** — they are not used.
 
 ## Output
 

@@ -1,3 +1,4 @@
+import { isShowableErrorItem } from '../cloze/report.js';
 import type { Lexicon } from '../lexicon.js';
 import type { Level } from '../types.js';
 import { analyzeText } from '../validate/turn.js';
@@ -98,7 +99,7 @@ export interface PatternRecurrence {
 export function patternRecurrence(items: readonly ErrorItem[]): PatternRecurrence[] {
   const entriesByPattern = new Map<string, Set<string>>();
   for (const it of items) {
-    if (it.flagged || !it.pattern) continue;
+    if (!it.pattern || !isShowableErrorItem(it)) continue;
     const key = normalisePattern(it.pattern);
     const set = entriesByPattern.get(key) ?? new Set<string>();
     set.add(it.journalEntryId);

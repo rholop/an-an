@@ -1,5 +1,5 @@
 import type { JournalSentenceSource } from '../cloze/source.js';
-import { splitSentences } from './sentences.js';
+import { splitReviewSentences } from './sentences.js';
 import type { Span } from './types.js';
 
 /**
@@ -15,7 +15,7 @@ export function journalSentencesFromEntry(
   at: Date,
 ): JournalSentenceSource[] {
   if (issueSpans === null) return [];
-  return splitSentences(text)
+  return splitReviewSentences(text)
     .filter(([s, e]) => !issueSpans.some(([a, b]) => a < e && s < b))
     .map(([s, e]) => text.slice(s, e).trim())
     .filter((zh) => zh.length >= 4 && !/[[［\]］]/.test(zh))

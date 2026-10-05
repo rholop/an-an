@@ -23,6 +23,7 @@ const MORE: { route: Route; label: string }[] = [
   { route: 'placement', label: 'Placement' },
   { route: 'anki-import', label: 'Anki import' },
   { route: 'audio-review', label: 'Audio review' },
+  { route: 'reported', label: 'Reported clozes' },
   { route: 'credits', label: 'Credits' },
   { route: 'zhuyin-test', label: 'Zhuyin rendering test' },
 ];

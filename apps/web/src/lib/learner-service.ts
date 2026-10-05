@@ -10,6 +10,16 @@ import {
   type SkillCard,
 } from '@anan/core';
 
+interface UndoableRepo {
+  appendEvidenceKeys(events: Evidence[]): Promise<number[]>;
+  undoEvidence(
+    evidenceId: number,
+    item: Evidence['item'],
+    skill: Evidence['skill'],
+    prior: SkillCard | undefined,
+  ): Promise<void>;
+}
+
 /**
  * Thin orchestration layer around the pure `applyEvidence` + a `LearnerRepo`:
  * fetch the current card, apply one evidence event, persist the result and
@@ -40,6 +50,30 @@ export class LearnerService {
     await this.repo.appendEvidence([evidence]);
     if (this.onRecorded) await this.onRecorded(evidence, current).catch(() => undefined);
     return result.card;
+  }
+
+  /** Phase 16: `record`, but keeps what is needed to take it back exactly. A
+   * repo without undo support (a test double) records normally and can't undo. */
+  async recordUndoable(
+    evidence: Evidence,
+    now: Date = new Date(),
+  ): Promise<{ card: SkillCard | undefined; undo: () => Promise<void> }> {
+    const repo = this.repo as Partial<UndoableRepo> & LearnerRepo;
+    if (!repo.appendEvidenceKeys || !repo.undoEvidence) {
+      return { card: await this.record(evidence, now), undo: async () => undefined };
+    }
+    const prior = await repo.getCard(evidence.item, evidence.skill);
+    const result = applyEvidence(prior, evidence, now, this.config, this.fsrsInstance);
+    if (result.card) await repo.putCards([result.card]);
+    const [id] = await repo.appendEvidenceKeys([evidence]);
+    if (this.onRecorded) await this.onRecorded(evidence, prior).catch(() => undefined);
+    return {
+      card: result.card,
+      undo: async () => {
+        if (id !== undefined)
+          await repo.undoEvidence!(id, evidence.item, evidence.skill, prior);
+      },
+    };
   }
 
   /** Same as `record`, batched: one parallel read pass, one bulk write pass

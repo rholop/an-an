@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   classScope,
   lessonIndex,
@@ -9,7 +9,6 @@ import {
   type SkillCard,
   levelIndex,
   buildClozeExercise,
-  buildErrorCloze,
   buildLePlacementExercise,
   buildMainlandVsTaiwanExercise,
   buildMultipleChoiceOptions,
@@ -17,7 +16,6 @@ import {
   buildMixedSession,
   buildWordBankOptions,
   gradeClozeAnswer,
-  gradeErrorAnswer,
   reviewErrorItem,
   selectDueErrorItems,
   type ChoiceOption,
@@ -30,7 +28,26 @@ import {
   type SessionEntry,
   type SessionItem,
 } from '@anan/core';
-import { db, gameService, learnerService } from '../db/instance.js';
+import { currentSession, db, gameService, learnerService } from '../db/instance.js';
+import { ReportButton, ReportNotice } from '../components/ReportSheet.js';
+import {
+  alsoInOtherProfiles,
+  excludedZh,
+  reportJournalItem,
+  reportSource,
+  restoreJournalItem,
+  restoreSource,
+} from '../lib/cloze-reports.js';
+import { JournalService } from '../lib/journal-service.js';
+import { getProtectedTerms } from '../lib/journal-protected.js';
+import { ErrorExerciseView, type ErrorOutcome } from './ErrorExerciseView.js';
+import { FetchTutorLLM } from '../lib/tutor-llm.js';
+import {
+  reconsiderAnswer,
+  type ClozeReportReason,
+  type ItemAnswer,
+  type Reconsidered,
+} from '@anan/core';
 import { ListenRunner } from './ListenPage.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
@@ -79,6 +96,16 @@ export function ClozePage() {
   const [chatLines, setChatLines] = useState<Awaited<ReturnType<typeof allChatLines>> | null>(null);
   const [journalSentences, setJournalSentences] = useState<JournalSentenceSource[] | null>(null);
   const [errorItems, setErrorItems] = useState<ErrorItem[] | null>(null);
+  // Phase 16: sentences reported earlier — never offered as a cloze again.
+  const [excluded, setExcluded] = useState<Set<string> | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  // Phase 16: "Thanks, this one won't come back." + Undo, and what each answered
+  // card needs to be taken back exactly.
+  const [notice, setNotice] = useState<{ undo: () => Promise<void> } | null>(null);
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const answered = useRef(
+    new Map<number, { outcome: Outcome | 'error-correct' | 'error-wrong'; undo?: () => Promise<void>; redo?: () => Promise<void> }>(),
+  );
   // Phase 7: the global "My level" — never hides due reviews, only steers
   // sentence-level preference and the new-item pool.
   const { level: learnerLevel } = useCurrentLevel();
@@ -88,14 +115,16 @@ export function ClozePage() {
     let cancelled = false;
     (async () => {
       const now = new Date();
+      const ex = await excludedZh(db);
       const [due, known, lines, journal, errors] = await Promise.all([
         learnerService.dueCards(now, 200),
         learnerService.knownSet('review'),
         allChatLines(db, scenariosState.scenarios),
-        allJournalSentences(db),
+        allJournalSentences(db, ex),
         db.errorItems.toArray(),
       ]);
       if (cancelled) return;
+      setExcluded(ex);
       setJournalSentences(journal);
       setErrorItems(errors);
       setDueCards(due);
@@ -105,7 +134,21 @@ export function ClozePage() {
     return () => {
       cancelled = true;
     };
-  }, [lexiconState.status, scenariosState.status]);
+  }, [lexiconState.status, scenariosState.status, reloadKey]);
+
+  // Phase 17 Part E: rebuild old journal items and process entries not yet
+  // processed (needs the proxy). Unprocessed material stays hidden meanwhile.
+  useEffect(() => {
+    if (lexiconState.status !== 'ready') return;
+    let cancelled = false;
+    new JournalService(db, lexiconState.lexicon, learnerService, new FetchTutorLLM())
+      .rebuildPending()
+      .then(() => !cancelled && setReloadKey((k) => k + 1))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [lexiconState.status]);
 
   const neededLevels = useMemo(() => {
     if (!dueCards || lexiconState.status !== 'ready') return [];
@@ -143,6 +186,7 @@ export function ClozePage() {
     knownIds !== null &&
     chatLines !== null &&
     journalSentences !== null &&
+    excluded !== null &&
     errorItems !== null;
   const dueErrorCount = errorItems
     ? selectDueErrorItems(errorItems, new Date(), Infinity).length
@@ -158,6 +202,7 @@ export function ClozePage() {
       learnerLevel,
       journalSentences: journalSentences!,
       chatLines: chatLines!,
+      excludeZh: excluded!,
       // Phase 14: textbook-first picks, and sentences tagged with the active lesson lead the bank.
       ...(studyFocus?.enabled
         ? {
@@ -185,6 +230,7 @@ export function ClozePage() {
       errorItems: errorItems!,
       now: new Date(),
     });
+    answered.current.clear();
     setSession(built);
     setSlots(new Map());
     setDoneSlots(new Set());
@@ -216,10 +262,20 @@ export function ClozePage() {
 
   async function recordOutcome(item: SessionItem, outcome: Outcome) {
     const now = new Date();
-    await learnerService.record(
-      { item: item.card.item, skill: item.card.skill, kind: evidenceKindFor(outcome), at: now },
-      now,
-    );
+    const evidence = {
+      item: item.card.item,
+      skill: item.card.skill,
+      kind: evidenceKindFor(outcome),
+      at: now,
+    };
+    const handle = await learnerService.recordUndoable(evidence, now);
+    answered.current.set(index, {
+      outcome,
+      undo: handle.undo,
+      redo: async () => {
+        await learnerService.record(evidence, now);
+      },
+    });
     setTally((t) => ({
       correct: t.correct + (outcome === 'correct' ? 1 : 0),
       hinted: t.hinted + (outcome === 'correct_wrong_tone' ? 1 : 0),
@@ -230,20 +286,116 @@ export function ClozePage() {
   /** Phase 5 §7: an error-bank answer reschedules the error item's own FSRS
    * card. It deliberately writes no learner Evidence — an error item is a
    * sentence-level drill, not a vocabulary-item review. */
-  async function recordErrorOutcome(error: ErrorItem, outcome: 'correct' | 'wrong') {
+  async function recordErrorOutcome(error: ErrorItem, outcome: ErrorOutcome) {
     const at = new Date();
     await db.errorItems.put(reviewErrorItem(error, outcome, at));
+    answered.current.set(index, {
+      outcome: outcome === 'wrong' ? 'error-wrong' : 'error-correct',
+    });
     if (outcome === 'correct') await gameService.onErrorFixed(error.id, at);
     setTally((t) => ({
-      ...t,
       correct: t.correct + (outcome === 'correct' ? 1 : 0),
+      hinted: t.hinted + (outcome === 'hint' ? 1 : 0),
       wrong: t.wrong + (outcome === 'wrong' ? 1 : 0),
     }));
+  }
+
+  /** Phase 17 Part D: the learner's answer was accepted after all ("I think mine
+   * is right too", or a Fix-my-sentence rewrite that checked out). The item,
+   * which now accepts that answer, is rescheduled from the card it had BEFORE
+   * this session touched it, so the wrong grade is undone exactly. */
+  async function regradeError(before: ErrorItem, updated: ErrorItem) {
+    const at = new Date();
+    const prior = answered.current.get(index);
+    await db.errorItems.put(reviewErrorItem({ ...updated, card: before.card }, 'correct', at));
+    await gameService.onErrorFixed(before.id, at);
+    answered.current.set(index, { outcome: 'error-correct' });
+    setTally((t) => ({
+      ...t,
+      correct: t.correct + 1,
+      wrong: t.wrong - (prior?.outcome === 'error-wrong' ? 1 : 0),
+    }));
+  }
+
+  async function reconsider(item: ErrorItem, answer: ItemAnswer): Promise<Reconsidered> {
+    if (lexiconState.status !== 'ready')
+      return { accepted: false, reason: 'The lexicon is still loading.' };
+    return reconsiderAnswer(
+      {
+        lexicon: lexiconState.lexicon,
+        llm: new FetchTutorLLM(),
+        protectedTerms: await getProtectedTerms(db),
+      },
+      item,
+      answer,
+    );
   }
 
   function next() {
     setIndex((i) => i + 1);
   }
+
+  /** Phase 16 Part C: the card leaves the session at once; an answer already
+   * given is undone (evidence removed, card restored exactly), so a bad cloze
+   * never counts as a lapse. The word itself stays in review and gets another
+   * sentence next time. */
+  async function reportCurrent(entry: SessionEntry, reason: ClozeReportReason, note: string) {
+    const at = new Date();
+    const profileId = currentSession()?.profileId ?? 'unknown';
+    const given = answered.current.get(index);
+    answered.current.delete(index);
+    if (given) {
+      setTally((t) => ({
+        correct: t.correct - (given.outcome === 'correct' || given.outcome === 'error-correct' ? 1 : 0),
+        hinted: t.hinted - (given.outcome === 'correct_wrong_tone' ? 1 : 0),
+        wrong: t.wrong - (given.outcome === 'wrong' || given.outcome === 'error-wrong' ? 1 : 0),
+      }));
+    }
+    let undoReport: () => Promise<void>;
+    if (entry.kind === 'error') {
+      // `entry.error` is the item as it was before this session touched it,
+      // so writing it back restores its card exactly.
+      await reportJournalItem(db, entry.error, { reason, note, profileId }, at);
+      undoReport = () => restoreJournalItem(db, entry.error);
+    } else {
+      await given?.undo?.();
+      const src = entry.item.source!;
+      const meta = { zh: src.zh, sourceKind: src.sourceKind as 'journal' | 'chat' | 'bank', sourceLabel: src.sourceLabel };
+      await reportSource(db, meta, { reason, note, profileId }, at);
+      await alsoInOtherProfiles(meta.sourceKind, profileId, (other) =>
+        reportSource(other, meta, { reason, note, profileId }, at),
+      );
+      undoReport = async () => {
+        await restoreSource(db, meta.zh);
+        await alsoInOtherProfiles(meta.sourceKind, profileId, (other) => restoreSource(other, meta.zh));
+        await given?.redo?.();
+      };
+    }
+    clearTimeout(noticeTimer.current);
+    setNotice({
+      undo: async () => {
+        await undoReport();
+        if (given) setTally((t) => ({
+          correct: t.correct + (given.outcome === 'correct' || given.outcome === 'error-correct' ? 1 : 0),
+          hinted: t.hinted + (given.outcome === 'correct_wrong_tone' ? 1 : 0),
+          wrong: t.wrong + (given.outcome === 'wrong' || given.outcome === 'error-wrong' ? 1 : 0),
+        }));
+      },
+    });
+    noticeTimer.current = setTimeout(() => setNotice(null), 8000);
+    setIndex((i) => i + 1);
+  }
+
+  const noticeEl = notice && (
+    <ReportNotice
+      onUndo={() => {
+        const n = notice;
+        setNotice(null);
+        void n.undo();
+      }}
+      onGone={() => setNotice(null)}
+    />
+  );
 
   if (lexiconState.status === 'loading' || scenariosState.status === 'loading')
     return <p>Loading…</p>;
@@ -303,6 +455,7 @@ export function ClozePage() {
   if (!entry) {
     return (
       <div className="cloze-page">
+        {noticeEl}
         <h1>Session complete</h1>
         <ul className="cloze-summary">
           <li>{tally.correct} correct, no hint</li>
@@ -328,12 +481,17 @@ export function ClozePage() {
           <span className="cloze-badge">From your journal</span>
           {entry.error.pattern && <span className="cloze-badge">{entry.error.pattern}</span>}
         </div>
-        <ErrorClozeView
+        {noticeEl}
+        <ErrorExerciseView
           key={entry.error.id}
-          error={entry.error}
+          item={entry.error}
+          lexicon={lexiconState.lexicon}
+          reconsider={reconsider}
           onAnswer={(outcome) => recordErrorOutcome(entry.error, outcome)}
+          onRegrade={(updated) => void regradeError(entry.error, updated)}
           onNext={next}
         />
+        <ReportButton onReport={(reason, note) => void reportCurrent(entry, reason, note)} />
       </div>
     );
   }
@@ -349,6 +507,7 @@ export function ClozePage() {
         <span className="cloze-badge">Rung {item.card.clozeRung}</span>
         <span className="cloze-badge">{item.card.skill}</span>
       </div>
+      {noticeEl}
       {item.source && <div className="cloze-source-label">{item.source.sourceLabel}</div>}
 
       <ExerciseView
@@ -358,6 +517,9 @@ export function ClozePage() {
         onAnswer={(outcome) => recordOutcome(item, outcome)}
         onNext={next}
       />
+      {item.source && (
+        <ReportButton onReport={(reason, note) => void reportCurrent(entry, reason, note)} />
+      )}
     </div>
   );
 }
@@ -415,64 +577,6 @@ function ExerciseView({
       onAnswer={handleAnswer}
       onNext={onNext}
     />
-  );
-}
-
-function ErrorClozeView({
-  error,
-  onAnswer,
-  onNext,
-}: {
-  error: ErrorItem;
-  onAnswer: (o: 'correct' | 'wrong') => void;
-  onNext: () => void;
-}) {
-  const cloze = buildErrorCloze(error);
-  const [typed, setTyped] = useState('');
-  const [answered, setAnswered] = useState<'correct' | 'wrong' | null>(null);
-
-  function submit() {
-    if (answered || !typed.trim()) return;
-    const outcome = gradeErrorAnswer(typed, error);
-    setAnswered(outcome);
-    onAnswer(outcome);
-  }
-
-  return (
-    <div className="cloze-exercise">
-      <div className="cloze-source-label">from a sentence you corrected in your journal</div>
-      <SentenceWithBlank sentence={cloze.sentence} start={cloze.blankStart} end={cloze.blankEnd} />
-      <p className="cloze-prompt">Fill in the blank with the corrected wording.</p>
-      <div className="cloze-input-row">
-        <input
-          value={typed}
-          onChange={(e) => setTyped(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
-          disabled={answered !== null}
-          placeholder="中文…"
-          aria-label="Corrected wording"
-          lang="zh-Hant-TW"
-          enterKeyHint="done"
-          autoComplete="off"
-          autoCapitalize="off"
-          autoCorrect="off"
-          spellCheck={false}
-        />
-        <button onClick={submit} disabled={answered !== null || !typed.trim()}>
-          Submit
-        </button>
-      </div>
-      {answered && (
-        <div className={`cloze-feedback cloze-feedback--${answered}`}>
-          <p>
-            {answered === 'correct'
-              ? '✓ Correct!'
-              : `✗ Not quite — the corrected sentence is ${cloze.sentence}`}
-          </p>
-          <button onClick={onNext}>Next</button>
-        </div>
-      )}
-    </div>
   );
 }
 

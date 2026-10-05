@@ -193,9 +193,16 @@ export function createSentenceOrchestrator(
   };
 }
 
+export interface JsonRunOptions {
+  /** Phase 17: use the other provider when it is configured, so one model's
+   * mistake isn't approved by itself (the checker avoids the corrector). */
+  avoidProvider?: 'gemini' | 'openai';
+}
+
 export interface JsonOrchestrator {
   run<T>(
     req: JsonTaskRequest<T>,
+    opts?: JsonRunOptions,
   ): Promise<{ result: JsonTaskResult<T>; log: OrchestratorLogEntry }>;
 }
 
@@ -212,8 +219,16 @@ export function createJsonOrchestrator(
   logAttempt: AttemptLogger = defaultAttemptLogger,
 ): JsonOrchestrator {
   return {
-    async run<T>(req: JsonTaskRequest<T>) {
-      const cacheKey = PromptCache.keyFor(`${req.task}\n${req.systemPrompt}`, req.userMessage);
+    async run<T>(req: JsonTaskRequest<T>, opts: JsonRunOptions = {}) {
+      // Swap the order when asked to avoid the usual first choice — but only
+      // if the other one can actually answer.
+      const swap =
+        opts.avoidProvider === primary.name && fallback.configured !== false && fallback !== primary;
+      const [first, second] = swap ? [fallback, primary] : [primary, fallback];
+      const cacheKey = PromptCache.keyFor(
+        `${req.task}\n${swap ? 'swap\n' : ''}${req.systemPrompt}`,
+        req.userMessage,
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         return {
@@ -228,8 +243,8 @@ export function createJsonOrchestrator(
       }
 
       const { result, fallbackReason } = await withFallback(
-        primary,
-        fallback,
+        first,
+        second,
         (adapter) => adapter.generateJson(req),
         logAttempt,
       );

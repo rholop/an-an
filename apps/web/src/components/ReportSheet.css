@@ -1,0 +1,90 @@
+.report-button {
+  min-height: 44px;
+  padding: 0 14px;
+  margin-top: 12px;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  opacity: 0.75;
+  cursor: pointer;
+  font: inherit;
+}
+.report-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+}
+.report-sheet {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: Canvas;
+  color: CanvasText;
+  border-radius: 16px 16px 0 0;
+  padding: 16px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+.report-sheet h2 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+}
+.report-note {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+.report-note textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 16px; /* no iOS zoom */
+}
+.report-reasons {
+  display: grid;
+  gap: 8px;
+}
+.report-reasons button,
+.report-cancel {
+  min-height: 48px;
+  text-align: left;
+  padding: 0 14px;
+  font: inherit;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.report-cancel {
+  width: 100%;
+  margin-top: 8px;
+  text-align: center;
+}
+.report-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  background: rgba(46, 125, 50, 0.15);
+}
+.report-undo,
+.report-dismiss {
+  min-height: 44px;
+  min-width: 44px;
+  background: none;
+  border: none;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  color: inherit;
+}
+.report-dismiss {
+  margin-left: auto;
+  text-decoration: none;
+}

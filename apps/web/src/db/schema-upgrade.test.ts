@@ -44,14 +44,14 @@ async function seedV5(dbName: string): Promise<void> {
   old.close();
 }
 
-describe('schema v6 (phase 9)', () => {
+describe('schema upgrades (v6 phase 9, v8 phase 17)', () => {
   it('upgrades a v5 database: nothing is lost and the reader tables exist', async () => {
     name = `anan-upgrade-${Math.random()}`;
     await seedV5(name);
 
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(6);
+    expect(db.verno).toBe(8);
     expect(await db.settings.get('currentLevel')).toMatchObject({ value: 'L2' });
     expect(await db.evidence.toArray()).toHaveLength(1);
     expect((await db.meta.get('readerEnabledAt'))?.value).toBeInstanceOf(Date);
@@ -71,6 +71,43 @@ describe('schema v6 (phase 9)', () => {
     expect(await db.liveSentences.count()).toBe(1);
     // the in-place table is stamped by its hook, like every other mergeable table
     expect((await db.readerShown.get('live-1'))?.updatedAt).toBeInstanceOf(Date);
+    db.close();
+  });
+});
+
+describe('schema v8 (phase 17)', () => {
+  it('puts every existing journal item on hold until it has been rebuilt, but keeps reported ones', async () => {
+    name = `anan-upgrade-${Math.random()}`;
+    await seedV5(name);
+    const old = new Dexie(name);
+    old.version(5).stores({
+      items: 'pk, state, [item.id+skill], card.due, card.lapses, leech',
+      evidence: '++id, at, [item.id], kind, uid',
+      settings: 'key',
+      meta: 'key',
+      customWords: 'id, headword',
+      conversations: '++id, scenarioId, startedAt, uid',
+      turns: '++id, conversationId, at, uid',
+      journalEntries: 'id, createdAt, status',
+      journalReviews: 'entryId, createdAt',
+      errorItems: 'id, journalEntryId, card.due, pattern',
+      rewardEvents: 'id, at, kind',
+      glossReports: '++id, wordId, at, uid',
+      aiGlosses: 'key, at',
+    });
+    await old.open();
+    await old.table('errorItems').bulkPut([
+      { id: 'e1:0', journalEntryId: 'e1', flagged: false },
+      { id: 'e1:1', journalEntryId: 'e1', flagged: false, status: 'reported' },
+      { id: 'e1:2', journalEntryId: 'e1', flagged: false, version: 2, status: 'active' },
+    ]);
+    old.close();
+
+    const db = new AnanDB(name);
+    await db.open();
+    expect((await db.errorItems.get('e1:0'))?.status).toBe('pending_rebuild');
+    expect((await db.errorItems.get('e1:1'))?.status).toBe('reported');
+    expect((await db.errorItems.get('e1:2'))?.status).toBe('active');
     db.close();
   });
 });

@@ -107,6 +107,47 @@ const SPAN_SCHEMA = {
   maxItems: 2,
 } as const;
 
+/** One fully corrected sentence (Phase 17 Part A). No offsets: code finds each
+ * edit by searching for contextBefore + before. */
+const MODEL_SENTENCE_REVIEW_SCHEMA = {
+  type: 'object',
+  properties: {
+    index: { type: 'integer' },
+    corrected: { type: 'string' },
+    natural: { type: 'string' },
+    en: { type: 'string' },
+    edits: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          before: { type: 'string' },
+          after: { type: 'string' },
+          contextBefore: { type: 'string' },
+          kind: {
+            type: 'string',
+            enum: [
+              'missing_word',
+              'extra_word',
+              'wrong_word',
+              'word_order',
+              'mainland_style',
+              'measure_word',
+              'particle',
+              'other',
+            ],
+          },
+          pattern: { type: 'string' },
+          itemRef: ITEM_REF_SCHEMA,
+          explanationEn: { type: 'string' },
+        },
+        required: ['before', 'after', 'contextBefore', 'kind', 'explanationEn'],
+      },
+    },
+  },
+  required: ['index', 'corrected', 'en', 'edits'],
+} as const;
+
 /** JournalReview (POST /v1/journal-review — phase doc 05 §3). */
 export const JOURNAL_REVIEW_JSON_SCHEMA = {
   type: 'object',
@@ -144,6 +185,7 @@ export const JOURNAL_REVIEW_JSON_SCHEMA = {
         required: ['itemRef', 'span'],
       },
     },
+    sentences: { type: 'array', items: MODEL_SENTENCE_REVIEW_SCHEMA },
   },
   required: ['issues', 'natural_rewrite', 'brackets', 'used_well'],
 } as const;
@@ -206,4 +248,35 @@ export const DEFINE_JSON_SCHEMA = {
     noteEn: { type: 'string' },
   },
   required: ['pinyin', 'glossEn'],
+} as const;
+
+/** ClozeCheckResponse (POST /v1/cloze-check — phase doc 16 Part B). */
+export const CLOZE_CHECK_JSON_SCHEMA = {
+  type: 'object',
+  properties: { ok: { type: 'boolean' }, reason: { type: 'string' } },
+  required: ['ok'],
+} as const;
+
+/** Phase 17: POST /v1/journal-sentence-fix returns one sentence review. */
+export const JOURNAL_SENTENCE_FIX_JSON_SCHEMA = MODEL_SENTENCE_REVIEW_SCHEMA;
+
+/** Phase 17: POST /v1/journal-verify. */
+export const JOURNAL_VERIFY_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    ok: { type: 'boolean' },
+    problem: { type: 'string' },
+    meaningMatches: { type: 'boolean' },
+  },
+  required: ['ok', 'problem', 'meaningMatches'],
+} as const;
+
+/** Phase 17: POST /v1/journal-solve. */
+export const JOURNAL_SOLVE_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    answers: { type: 'array', items: { type: 'string' } },
+    confident: { type: 'boolean' },
+  },
+  required: ['answers', 'confident'],
 } as const;

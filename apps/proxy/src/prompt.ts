@@ -4,7 +4,11 @@ import { fileURLToPath } from 'node:url';
 import type {
   DefineRequest,
   GlossAdjudicationRequest,
+  ClozeCheckRequest,
   JournalCheckRequest,
+  JournalSentenceFixRequest,
+  JournalSolveRequest,
+  JournalVerifyRequest,
   JournalExplainRequest,
   JournalReviewRequest,
   Scenario,
@@ -93,6 +97,12 @@ export interface JournalPrompts {
   review: string;
   check: string;
   explain: string;
+  /** Phase 16: naturalness check of one full corrected sentence. */
+  clozeCheck: string;
+  /** Phase 17: retry of one corrected sentence, the independent checker, the solver. */
+  sentenceFix: string;
+  verify: string;
+  solve: string;
 }
 
 export function loadJournalPromptTemplates(version: string): JournalPrompts {
@@ -100,6 +110,10 @@ export function loadJournalPromptTemplates(version: string): JournalPrompts {
     review: loadPromptFile(`journal-review.${version}.md`),
     check: loadPromptFile(`journal-check.${version}.md`),
     explain: loadPromptFile(`journal-explain.${version}.md`),
+    clozeCheck: loadPromptFile(`cloze-check.${version}.md`),
+    sentenceFix: loadPromptFile(`journal-sentence-fix.${version}.md`),
+    verify: loadPromptFile(`journal-verify.${version}.md`),
+    solve: loadPromptFile(`journal-solve.${version}.md`),
   };
 }
 
@@ -109,6 +123,7 @@ export function buildJournalReviewPrompt(template: string, req: JournalReviewReq
     max_issues: String(req.maxIssues),
     prompt_words: listOrNone(req.promptWords, '(none)'),
     recurring_patterns: listOrNone(req.recurringPatterns, '(none recorded yet)'),
+    protected_terms: listOrNone(req.protectedTerms ?? [], '(none)'),
   });
 }
 
@@ -144,7 +159,49 @@ export function buildJournalExplainPrompt(template: string, req: JournalExplainR
  * never into the system prompt — it is data to analyse, not instructions
  * (a journal entry reading "ignore your rules" must stay a journal entry). */
 export function journalReviewUserMessage(req: JournalReviewRequest): string {
-  return `Review this journal entry. Offsets are JavaScript string indices (0-based, end exclusive) into the text between the markers.\n<<<ENTRY\n${req.text}\nENTRY>>>`;
+  const sentences = req.sentences ?? [];
+  const list =
+    sentences.length > 0
+      ? `\n\nThe entry split into numbered sentences (return one \`sentences\` item per number, using these numbers as \`index\`):\n<<<SENTENCES\n${sentences.map((s, i) => `[${i}] ${s}`).join('\n')}\nSENTENCES>>>`
+      : '';
+  const only = req.sentencesOnly
+    ? '\n\nOnly the `sentences` list is wanted: return `issues`, `brackets` and `used_well` as empty lists and `natural_rewrite` as an empty string.'
+    : '';
+  return `Review this journal entry. Offsets are JavaScript string indices (0-based, end exclusive) into the text between the markers.\n<<<ENTRY\n${req.text}\nENTRY>>>${list}${only}`;
+}
+
+export function buildSentenceFixPrompt(template: string, req: JournalSentenceFixRequest): string {
+  return fillPlaceholders(template, {
+    learner_level: req.learnerLevel,
+    protected_terms: listOrNone(req.protectedTerms, '(none)'),
+  });
+}
+
+export function sentenceFixUserMessage(req: JournalSentenceFixRequest): string {
+  return JSON.stringify({
+    learner_sentence: req.original,
+    rejected_correction: req.rejected,
+    problem: req.problem,
+  });
+}
+
+export function buildVerifyPrompt(template: string): string {
+  return fillPlaceholders(template, {});
+}
+
+/** The checker never receives the learner's original sentence. */
+export function verifyUserMessage(req: JournalVerifyRequest): string {
+  return req.en
+    ? `Sentence:\n<<<ZH\n${req.zh}\nZH>>>\nIntended English meaning: ${req.en}`
+    : `Sentence:\n<<<ZH\n${req.zh}\nZH>>>`;
+}
+
+export function buildSolvePrompt(template: string): string {
+  return fillPlaceholders(template, {});
+}
+
+export function solveUserMessage(req: JournalSolveRequest): string {
+  return JSON.stringify({ sentence_with_blank: req.sentence, english: req.en, hint: req.hint });
 }
 
 export function journalCheckUserMessage(req: JournalCheckRequest): string {
@@ -163,4 +220,13 @@ export function journalExplainUserMessage(req: JournalExplainRequest): string {
     correction: req.correction,
     earlier_explanation: req.explanationEn,
   });
+}
+
+export function buildClozeCheckPrompt(template: string): string {
+  return fillPlaceholders(template, {});
+}
+
+/** The sentence is data inside a fenced block, never instructions. */
+export function clozeCheckUserMessage(req: ClozeCheckRequest): string {
+  return `Check this sentence.\n<<<SENTENCE\n${req.sentence}\nSENTENCE>>>`;
 }

@@ -1,6 +1,15 @@
 import {
+  attachModelReviews,
+  blockErrorItem,
   buildCustomWord,
-  buildErrorItems,
+  buildEntryItems,
+  carryOverSchedule,
+  isLegacyErrorItem,
+  prepareSentences,
+  verifyEntrySentences,
+  type ErrorItem,
+  type SentenceCache,
+  type VerifiedSentence,
   checkTaiwanness,
   compareSelfFix,
   errorsPer100Chars,
@@ -22,6 +31,7 @@ import {
 } from '@anan/core';
 import type { AnanDB, JournalEntryRow, JournalReviewRow, ResolvedBracket } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
+import { getProtectedTerms } from './journal-protected.js';
 
 export interface JournalServiceConfig {
   maxIssues: number;
@@ -109,12 +119,18 @@ export class JournalService {
       .toArray();
     const recurringPatterns = topErrorPatterns(recentErrors, this.config.recentPatternLimit);
 
+    // Phase 17 Part A: split by code, so `original` always matches the entry,
+    // and send the learner's own names as protected terms.
+    const prepared = prepareSentences(text);
+    const protectedTerms = await getProtectedTerms(this.db);
     const raw = await this.tutorLLM.reviewJournal({
       text,
       learnerLevel: input.learnerLevel,
       promptWords: promptWords.map((w) => w.headword),
       recurringPatterns,
       maxIssues: this.config.maxIssues,
+      sentences: prepared.map((p) => p.original),
+      protectedTerms,
     });
     const { review, rejected } = validateJournalReview(raw, {
       lexicon: this.lexicon,
@@ -154,6 +170,7 @@ export class JournalService {
       wordsUsed: levels.wordsUsed,
       errorsPer100Chars: errorsPer100Chars(review.issues.length, text),
       createdAt: now,
+      sentences: attachModelReviews(prepared, raw.sentences, raw.servedBy),
     };
     await this.db.transaction('rw', this.db.journalEntries, this.db.journalReviews, async () => {
       await this.db.journalEntries.add(entry);
@@ -351,8 +368,6 @@ export class JournalService {
       .map((issue, index) => ({ issue, index }))
       .filter(({ index }) => !review.flagged.includes(index));
 
-    const errorItems = buildErrorItems(entryId, entry.text, kept, now);
-
     const promptWords = entry.promptWordIds
       .map((id) => this.lexicon.byId(id))
       .filter((w): w is Word => Boolean(w));
@@ -375,11 +390,9 @@ export class JournalService {
 
     await this.db.transaction(
       'rw',
-      this.db.errorItems,
       this.db.journalEntries,
       this.db.journalReviews,
       async () => {
-        if (errorItems.length > 0) await this.db.errorItems.bulkPut(errorItems);
         await this.db.journalEntries.update(entryId, { status: 'finished', finishedAt: now });
         await this.db.journalReviews.update(entryId, {
           errorsPer100Chars: errorsPer100Chars(kept.length, entry.text),
@@ -387,13 +400,155 @@ export class JournalService {
       },
     );
     if (evidence.length > 0) await this.learnerService.recordBulk(evidence, now);
+    // Phase 17: fully corrected sentences -> checked -> review items. If a model
+    // can't be reached the entry is retried later (nothing wrong is ever shown).
+    const built = await this.processEntry(entryId, now).catch(() => ({ items: 0, complete: false }));
     if (this.onFinished) {
       const selfFixed = kept
         .filter(({ index }) => review.selfFix[index]?.fixed === true)
         .map(({ index }) => index);
       await this.onFinished(entryId, selfFixed, now);
     }
-    return { errorItemCount: errorItems.length, evidence };
+    return { errorItemCount: built.items, evidence };
+  }
+
+  /** The sentence cache is the verified sentences already stored on review rows. */
+  private async sentenceCache(): Promise<SentenceCache & { fresh: Map<string, VerifiedSentence> }> {
+    const known = new Map<string, VerifiedSentence>();
+    await this.db.journalReviews.each((r) => {
+      for (const v of r.verifiedSentences ?? []) known.set(v.id, v);
+    });
+    const fresh = new Map<string, VerifiedSentence>();
+    return {
+      fresh,
+      get: async (key) => known.get(key) ?? fresh.get(key),
+      set: async (key, v) => void fresh.set(key, v),
+    };
+  }
+
+  /**
+   * Phase 17 Parts A-C for one finished entry: the stored fully corrected
+   * sentences (fetched now for an entry that has none, e.g. one written before
+   * Phase 17) -> Part B check -> items. Nothing is written unless every
+   * sentence could be checked and built, so an unreachable model just means
+   * "try again later". Old one-span-patched items of the entry are replaced
+   * (schedule carried over where the tested word is the same) or blocked with
+   * the reason, and the new items replace them in one transaction.
+   */
+  async processEntry(
+    entryId: string,
+    now: Date = new Date(),
+  ): Promise<{ items: number; complete: boolean }> {
+    const [entry, review] = await Promise.all([this.getEntry(entryId), this.getReview(entryId)]);
+    if (!entry || !review) throw new JournalError('Unknown entry.');
+    const protectedTerms = await getProtectedTerms(this.db);
+
+    let raws = review.sentences;
+    if (!raws) {
+      const prepared = prepareSentences(entry.text);
+      const res = await this.tutorLLM.reviewJournal({
+        text: entry.text,
+        learnerLevel: review.learnerLevel,
+        promptWords: [],
+        recurringPatterns: [],
+        maxIssues: 1,
+        sentences: prepared.map((p) => p.original),
+        protectedTerms,
+        sentencesOnly: true,
+      });
+      raws = attachModelReviews(prepared, res.sentences, res.servedBy);
+    }
+
+    const cache = await this.sentenceCache();
+    const deps = {
+      lexicon: this.lexicon,
+      llm: this.tutorLLM,
+      protectedTerms,
+      learnerLevel: review.learnerLevel,
+      now,
+    };
+    const verified = await verifyEntrySentences({ ...deps, cache }, raws);
+    // a sentence the learner's flag called wrong never feeds the bank
+    const flaggedSpans = review.flagged.flatMap((i) => (review.issues[i] ? [review.issues[i]!.span] : []));
+    const eligible = verified.sentences.filter(
+      (v) => !flaggedSpans.some(([a, b]) => a < v.end && v.start < b),
+    );
+    const built = await buildEntryItems(deps, entryId, eligible);
+    const complete = verified.pending.length === 0 && built.failed.length === 0;
+
+    const existing = await this.db.errorItems.where('journalEntryId').equals(entryId).toArray();
+    const legacy = existing.filter(
+      (i) => isLegacyErrorItem(i) && i.status !== 'reported' && i.status !== 'deleted',
+    );
+    const have = new Set(existing.filter((i) => !isLegacyErrorItem(i)).map((i) => i.id));
+    const fresh: ErrorItem[] = built.items.filter((i) => !have.has(i.id));
+
+    const reasonFor = (old: ErrorItem): string => {
+      const sentence = verified.sentences.find(
+        (v) => old.original.includes(v.original) || v.original.includes(old.original),
+      );
+      if (!sentence) return 'rebuild: the sentence could not be found again';
+      if (sentence.status === 'rejected') return `rebuild: ${sentence.reason ?? 'no fully correct version could be verified'}`;
+      if (sentence.edits.length === 0) return 'rebuild: the sentence was already correct';
+      const dropped = built.dropped.find((d) => d.sentenceId === sentence.id);
+      return `rebuild: ${dropped?.reason ?? 'no exercise could be built for this change'}`;
+    };
+
+    await this.db.transaction('rw', this.db.errorItems, this.db.journalReviews, async () => {
+      if (complete) {
+        const outcome = carryOverSchedule(legacy, fresh, reasonFor);
+        if (outcome.items.length > 0) await this.db.errorItems.bulkPut(outcome.items);
+        const blocked = new Map(outcome.blocked.map((b) => [b.id, b.reason]));
+        for (const old of legacy) {
+          const reason = blocked.get(old.id);
+          await this.db.errorItems.put(
+            reason !== undefined
+              ? blockErrorItem(old, reason)
+              : { ...old, status: 'deleted', blockedReason: 'replaced by rebuilt items' },
+          );
+        }
+      }
+      await this.db.journalReviews.update(entryId, {
+        sentences: raws,
+        verifiedSentences: verified.sentences,
+        ...(complete ? { itemsBuiltAt: now } : {}),
+      });
+    });
+    return {
+      items: complete ? fresh.filter((i) => i.status === 'active').length : 0,
+      complete,
+    };
+  }
+
+  /**
+   * Part E: every finished entry that hasn't had its items built (written
+   * before Phase 17, or interrupted) is processed now. Old items are replaced
+   * or blocked; none of them are ever shown meanwhile.
+   */
+  async rebuildPending(now: Date = new Date()): Promise<{ done: number; waiting: number }> {
+    const reviews = await this.db.journalReviews.filter((r) => !r.itemsBuiltAt).toArray();
+    let done = 0;
+    let waiting = 0;
+    for (const r of reviews) {
+      const entry = await this.getEntry(r.entryId);
+      if (!entry || entry.status !== 'finished') continue;
+      try {
+        const out = await this.processEntry(r.entryId, now);
+        if (out.complete) done++;
+        else waiting++;
+      } catch {
+        waiting++;
+      }
+    }
+    // old items whose entry is gone can't be rebuilt
+    const orphans = await this.db.errorItems
+      .filter((i) => isLegacyErrorItem(i) && i.status !== 'reported' && i.status !== 'deleted' && i.status !== 'blocked')
+      .toArray();
+    for (const old of orphans) {
+      if (!(await this.getEntry(old.journalEntryId)))
+        await this.db.errorItems.put(blockErrorItem(old, 'rebuild: the journal entry no longer exists'));
+    }
+    return { done, waiting };
   }
 }
 

@@ -7,6 +7,12 @@ import type {
   JournalExplainResponse,
   JournalReview,
   JournalReviewRequest,
+  JournalSentenceFixRequest,
+  JournalSolveRequest,
+  JournalSolveResponse,
+  JournalVerifyRequest,
+  JournalVerifyResponse,
+  ModelSentenceReview,
   SentenceGenRequest,
   SentenceGenResponse,
   TurnRequest,
@@ -24,6 +30,10 @@ export interface FakeJournalScript {
   review?: (req: JournalReviewRequest) => JournalReview;
   check?: (req: JournalCheckRequest) => JournalCheckResponse;
   explain?: (req: JournalExplainRequest) => JournalExplainResponse;
+  clozeCheck?: (req: { sentence: string }) => { ok: boolean; reason?: string };
+  fixSentence?: (req: JournalSentenceFixRequest) => ModelSentenceReview;
+  verify?: (req: JournalVerifyRequest) => JournalVerifyResponse;
+  solve?: (req: JournalSolveRequest) => JournalSolveResponse;
 }
 
 /** No-network TutorLLM for dev (no API keys configured) and tests. A script
@@ -62,6 +72,30 @@ export class FakeTutorLLM implements TutorLLM {
     return (this.journal.review ?? FakeTutorLLM.defaultJournalReview)(req);
   }
 
+  /** Phase 17: no-network defaults. The checker passes everything; the solver
+   * can't see the answer, so it is never confident (blanks it can't decide are
+   * dropped, as the real flow would). */
+  async fixJournalSentence(
+    req: JournalSentenceFixRequest,
+  ): Promise<{ review: ModelSentenceReview; servedBy?: 'gemini' | 'openai' }> {
+    const review = this.journal.fixSentence?.(req);
+    if (!review) throw new Error('no fix scripted');
+    return { review, servedBy: 'gemini' };
+  }
+
+  async verifyJournalSentence(req: JournalVerifyRequest): Promise<JournalVerifyResponse> {
+    return (this.journal.verify ?? (() => ({ ok: true, problem: '', meaningMatches: true })))(req);
+  }
+
+  async solveJournalCloze(req: JournalSolveRequest): Promise<JournalSolveResponse> {
+    return (this.journal.solve ?? (() => ({ answers: [], confident: false })))(req);
+  }
+
+  /** Phase 16: the naturalness check. Passes everything unless scripted. */
+  async checkCloze(req: { sentence: string }): Promise<{ ok: boolean; reason?: string }> {
+    return (this.journal.clozeCheck ?? (() => ({ ok: true })))(req);
+  }
+
   async defineWord(req: DefineRequest): Promise<DefineResponse> {
     return { pinyin: 'xīn cí', glossEn: `fake definition of ${req.word}` };
   }
@@ -96,6 +130,28 @@ export class FakeTutorLLM implements TutorLLM {
       natural_rewrite: req.text.replace('地鐵', '捷運').replace('[gym]', '健身房'),
       brackets: req.text.includes('[gym]') ? [{ en: 'gym', zh: '健身房' }] : [],
       used_well: [],
+      // Phase 17: every numbered sentence, fixed the same way as the issue above.
+      sentences: (req.sentences ?? []).map((zh, index) => {
+        const corrected = zh.replace('地鐵', '捷運');
+        return {
+          index,
+          corrected,
+          en: 'A sentence.',
+          edits:
+            corrected === zh
+              ? []
+              : [
+                  {
+                    before: '地鐵',
+                    after: '捷運',
+                    contextBefore: zh.slice(Math.max(0, zh.indexOf('地鐵') - 2), zh.indexOf('地鐵')),
+                    kind: 'mainland_style' as const,
+                    pattern: 'mainland-vocab',
+                    explanationEn: 'In Taiwan the metro is usually called 捷運.',
+                  },
+                ],
+        };
+      }),
     };
   };
 

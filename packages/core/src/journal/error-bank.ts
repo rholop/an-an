@@ -1,50 +1,22 @@
 import { Rating, type FSRS } from 'ts-fsrs';
-import { buildFsrs, computeItemState, emptyCard } from '../learner/fsrs-instance.js';
+import { buildFsrs, computeItemState } from '../learner/fsrs-instance.js';
 import { DEFAULT_LEARNER_CONFIG, type LearnerConfig } from '../learner/types.js';
 import type { ItemState } from '../types.js';
-import { sentenceAround } from './sentences.js';
-import type { ErrorItem, JournalIssue, Span } from './types.js';
+import {
+  checkJournalCloze,
+  type ClozeCheckLLM,
+  type ClozeCheckOptions,
+} from '../cloze/check-journal-cloze.js';
+import { blockErrorItem, isShowableErrorItem } from '../cloze/report.js';
+import type { ErrorItem, Span } from './types.js';
 
-export interface IssueForBank {
-  issue: JournalIssue;
-  /** Index into the review's issue list — keeps the ErrorItem id stable. */
-  index: number;
-}
-
-/** Phase 5 §7: one ErrorItem per non-flagged issue. Sentences containing an
- * unresolved `[English gap]` are skipped — they'd make a confusing cloze. */
-export function buildErrorItems(
-  journalEntryId: string,
-  text: string,
-  issues: IssueForBank[],
-  now: Date,
-): ErrorItem[] {
-  const items: ErrorItem[] = [];
-  for (const { issue, index } of issues) {
-    const [s, e] = sentenceAround(text, issue.span);
-    const original = text.slice(s, e);
-    if (/[[［\]］]/.test(original)) continue;
-    const span: Span = [issue.span[0] - s, issue.span[1] - s];
-    items.push({
-      id: `${journalEntryId}:${index}`,
-      journalEntryId,
-      original,
-      corrected: original.slice(0, span[0]) + issue.correction + original.slice(span[1]),
-      span,
-      type: issue.type,
-      pattern: issue.pattern,
-      itemRef: issue.itemRef,
-      card: emptyCard(now),
-      flagged: false,
-      createdAt: now,
-    });
-  }
-  return items;
-}
-
-/** Where the corrected text sits inside `corrected`: everything outside the
- * span is identical in both sentences, so only the end needs recomputing. */
-export function errorBlankSpan(item: Pick<ErrorItem, 'original' | 'corrected' | 'span'>): Span {
+/** Where the blank sits in `corrected`. Items built with other corrections in
+ * the same sentence carry it explicitly; older ones derive it from the span
+ * (everything outside the span was identical). */
+export function errorBlankSpan(
+  item: Pick<ErrorItem, 'original' | 'corrected' | 'span'> & { blank?: Span },
+): Span {
+  if (item.blank) return item.blank;
   return [item.span[0], item.corrected.length - (item.original.length - item.span[1])];
 }
 
@@ -65,14 +37,35 @@ export function buildErrorCloze(item: ErrorItem): ErrorCloze {
   };
 }
 
-const STRIP = /[\s，。、！？,.!?；;：:「」『』"'（）()]/g;
-const normalise = (s: string) => s.normalize('NFKC').replace(STRIP, '');
-
-export type ErrorOutcome = 'correct' | 'wrong';
-
-export function gradeErrorAnswer(typed: string, item: ErrorItem): ErrorOutcome {
-  return normalise(typed) === normalise(buildErrorCloze(item).answer) ? 'correct' : 'wrong';
+/** Phase 16 Part B for one stored item: rules, then the cached naturalness
+ * check. Returns the item with its new status; an unreachable model leaves it
+ * `pending_check` (hidden) to be retried later. Already blocked/reported/
+ * deleted items are returned untouched. */
+export async function checkErrorItem(
+  item: ErrorItem,
+  opts: ClozeCheckOptions & { llm?: ClozeCheckLLM },
+): Promise<ErrorItem> {
+  if (item.status && item.status !== 'pending_check' && item.status !== 'active') return item;
+  const cloze = buildErrorCloze(item);
+  const verdict = await checkJournalCloze(
+    {
+      sentence: cloze.sentence,
+      blankStart: cloze.blankStart,
+      blankEnd: cloze.blankEnd,
+      answer: cloze.answer,
+    },
+    opts,
+  );
+  if (verdict.status === 'ok') {
+    const { blockedReason: _r, ...rest } = item;
+    return { ...rest, status: 'active' };
+  }
+  if (verdict.status === 'blocked') return blockErrorItem(item, verdict.reason);
+  return { ...item, status: 'pending_check' };
 }
+
+/** 'hint' = right word, wrong tone: a Hard, not a lapse. */
+export type ErrorOutcome = 'correct' | 'hint' | 'wrong';
 
 /** Applies one cloze answer to the item's own FSRS card (no SkillCard — an
  * error item is a sentence, not a word/sense). */
@@ -86,7 +79,7 @@ export function reviewErrorItem(
   const { card } = fsrsInstance.next(
     item.card,
     now,
-    outcome === 'correct' ? Rating.Good : Rating.Again,
+    outcome === 'correct' ? Rating.Good : outcome === 'hint' ? Rating.Hard : Rating.Again,
   );
   return { ...item, card };
 }
@@ -104,7 +97,7 @@ export const normalisePattern = (p: string) => p.trim().toLowerCase();
 export function patternCounts(items: readonly ErrorItem[]): Map<string, number> {
   const counts = new Map<string, number>();
   for (const it of items) {
-    if (it.flagged || !it.pattern) continue;
+    if (!it.pattern || !isShowableErrorItem(it)) continue;
     const key = normalisePattern(it.pattern);
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
@@ -137,7 +130,7 @@ export function selectDueErrorItems(
     return c >= RECURRING_PATTERN_MIN ? c : 0;
   };
   return items
-    .filter((i) => !i.flagged && i.card.due <= now)
+    .filter((i) => isShowableErrorItem(i) && i.card.due <= now)
     .sort((a, b) => weight(b) - weight(a) || a.card.due.getTime() - b.card.due.getTime())
     .slice(0, limit);
 }

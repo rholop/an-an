@@ -27,6 +27,7 @@ import {
   type TutorLLM,
 } from '@anan/core';
 import { allChatLines, allJournalSentences, allTouchedCards } from '../db/queries.js';
+import { excludedZh } from './cloze-reports.js';
 import type { AnanDB, LiveSentenceRow } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
 
@@ -214,7 +215,7 @@ export class ReaderService {
     const [live, chat, journal] = await Promise.all([
       db.liveSentences.toArray(),
       allChatLines(db, [...this.deps.scenarios]),
-      allJournalSentences(db),
+      excludedZh(db).then((ex) => allJournalSentences(db, ex)),
     ]);
     const shown = await this.shownMap(req.sessionIds ?? new Set(), now);
     const own = [...readerSentencesFromJournal(journal), ...readerSentencesFromChat(chat)];

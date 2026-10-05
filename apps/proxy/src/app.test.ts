@@ -480,6 +480,167 @@ describe('journal routes', () => {
     expect(adapter.calls).toBe(1);
   });
 
+  describe('Phase 17 routes', () => {
+    const spyAdapter = (name: 'gemini' | 'openai', respond: () => unknown, seen: string[]) => {
+      const inner = new FakeJsonAdapter(name, { kind: 'success', respond });
+      return {
+        name,
+        generateJson: <T>(req: Parameters<typeof inner.generateJson<T>>[0]) => {
+          seen.push(`${name}|${req.userMessage}`);
+          return inner.generateJson(req);
+        },
+      };
+    };
+
+    it('journal-review sends the numbered sentences and the protected names, and the entry stays user data', async () => {
+      const seen: { system: string; user: string }[] = [];
+      const inner = new FakeJsonAdapter('gemini', { kind: 'success', respond: () => fakeJournalReview });
+      const spy = {
+        name: 'gemini' as const,
+        generateJson: <T>(req: Parameters<typeof inner.generateJson<T>>[0]) => {
+          seen.push({ system: req.systemPrompt, user: req.userMessage });
+          return inner.generateJson(req);
+        },
+      };
+      const app = buildApp({
+        journalOrchestrator: createJsonOrchestrator(spy, inner, new PromptCache<JsonTaskResult<unknown>>()),
+      });
+      const res = await post(app, '/v1/journal-review', {
+        ...reviewReq,
+        sentences: ['我的姓印名字印羅恩。', '我去台灣。'],
+        protectedTerms: ['印', '羅恩'],
+      });
+      expect(res.status).toBe(200);
+      expect(seen[0]!.user).toContain('[0] 我的姓印名字印羅恩。');
+      expect(seen[0]!.user).toContain('[1] 我去台灣。');
+      expect(seen[0]!.system).toContain('印、羅恩');
+      expect(seen[0]!.system).not.toContain('我的姓印名字印羅恩');
+      expect(seen[0]!.system).toContain('Never give character positions');
+    });
+
+    it('journal-review accepts and returns per-sentence reviews with no offsets', async () => {
+      const sentences = [
+        {
+          index: 0,
+          corrected: '我姓印，名字叫羅恩。',
+          en: 'My surname is Yin and my name is Rowan.',
+          edits: [{ before: '的', after: '', contextBefore: '我', kind: 'extra_word', explanationEn: 'No 的.' }],
+        },
+      ];
+      const app = buildApp({
+        journalOrchestrator: fakeJournalOrchestrator(() => ({ ...fakeJournalReview, sentences })),
+      });
+      const body = (await (await post(app, '/v1/journal-review', reviewReq)).json()) as {
+        sentences: typeof sentences;
+      };
+      expect(body.sentences[0]!.edits[0]!.kind).toBe('extra_word');
+      // a malformed edit kind is refused rather than passed on
+      const bad = buildApp({
+        journalOrchestrator: fakeJournalOrchestrator(() => ({
+          ...fakeJournalReview,
+          sentences: [{ ...sentences[0], edits: [{ ...sentences[0]!.edits[0], kind: 'nope' }] }],
+        })),
+      });
+      expect((await post(bad, '/v1/journal-review', reviewReq)).status).toBe(502);
+    });
+
+    it('journal-verify never receives the original, and prefers the provider that did not write the correction', async () => {
+      const seen: string[] = [];
+      const ok = () => ({ ok: true, problem: '', meaningMatches: true });
+      const app = buildApp({
+        journalOrchestrator: createJsonOrchestrator(
+          spyAdapter('gemini', ok, seen),
+          spyAdapter('openai', ok, seen),
+          new PromptCache<JsonTaskResult<unknown>>(),
+        ),
+      });
+      const res = await post(app, '/v1/journal-verify', {
+        zh: '我姓印，名字叫羅恩。',
+        en: 'My surname is Yin.',
+        avoidProvider: 'gemini',
+      });
+      expect(res.status).toBe(200);
+      expect(res.headers.get('x-served-by')).toBe('openai');
+      expect(seen).toHaveLength(1);
+      expect(seen[0]).toContain('openai|');
+      expect(seen[0]).toContain('我姓印，名字叫羅恩。');
+      expect(seen[0]).toContain('My surname is Yin.');
+      // without a preference the usual first choice answers
+      const again = await post(app, '/v1/journal-verify', { zh: '我去台灣。' });
+      expect(again.headers.get('x-served-by')).toBe('gemini');
+      expect((await post(app, '/v1/journal-verify', { zh: '' })).status).toBe(400);
+    });
+
+    it('avoiding a provider that is the only one configured still gets an answer', async () => {
+      const ok = () => ({ ok: true, problem: '', meaningMatches: true });
+      const app = buildApp({
+        journalOrchestrator: createJsonOrchestrator(
+          new FakeJsonAdapter('gemini', { kind: 'success', respond: ok }),
+          { name: 'openai', configured: false, generateJson: async () => { throw new Error('off'); } },
+          new PromptCache<JsonTaskResult<unknown>>(),
+        ),
+      });
+      const res = await post(app, '/v1/journal-verify', { zh: '我去台灣。', avoidProvider: 'gemini' });
+      expect(res.status).toBe(200);
+      expect(res.headers.get('x-served-by')).toBe('gemini');
+    });
+
+    it('journal-solve gets the blank, the English and the hint, and never an answer', async () => {
+      const seen: string[] = [];
+      const app = buildApp({
+        journalOrchestrator: createJsonOrchestrator(
+          spyAdapter('gemini', () => ({ answers: ['是'], confident: true }), seen),
+          spyAdapter('openai', () => ({ answers: ['是'], confident: true }), seen),
+          new PromptCache<JsonTaskResult<unknown>>(),
+        ),
+      });
+      const res = await post(app, '/v1/journal-solve', {
+        sentence: '我的姓＿＿＿＿印。',
+        en: 'My surname is Yin.',
+        hint: 'A word is missing here.',
+      });
+      expect(await res.json()).toEqual({ answers: ['是'], confident: true });
+      expect(seen[0]).toContain('＿＿＿＿');
+      expect(seen[0]).toContain('A word is missing here.');
+      expect((await post(app, '/v1/journal-solve', { sentence: 'x' })).status).toBe(400);
+    });
+
+    it('journal-sentence-fix returns one sentence review', async () => {
+      const app = buildApp({
+        journalOrchestrator: fakeJournalOrchestrator(() => ({
+          index: 0,
+          corrected: '我姓印。',
+          en: 'My surname is Yin.',
+          edits: [],
+        })),
+      });
+      const res = await post(app, '/v1/journal-sentence-fix', {
+        original: '我的姓印。',
+        rejected: '我的姓是印印。',
+        problem: 'unnatural',
+        learnerLevel: 'L1',
+        protectedTerms: ['印'],
+      });
+      expect(res.status).toBe(200);
+      expect(((await res.json()) as { corrected: string }).corrected).toBe('我姓印。');
+    });
+  });
+
+  it('POST /v1/cloze-check validates the request and answers with ok/reason', async () => {
+    const app = buildApp({
+      journalOrchestrator: fakeJournalOrchestrator(() => ({ ok: false, reason: 'garbled' })),
+    });
+    const res = await post(app, '/v1/cloze-check', { sentence: '我昨天去了台灣。' });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: false, reason: 'garbled' });
+    expect((await post(app, '/v1/cloze-check', { sentence: '' })).status).toBe(400);
+    expect((await post(app, '/v1/cloze-check', { sentence: 'x' }, {})).status).toBe(400);
+    const bad = buildApp({
+      journalOrchestrator: fakeJournalOrchestrator(() => ({ ok: 'maybe' })),
+    });
+    expect((await post(bad, '/v1/cloze-check', { sentence: '我去。' })).status).toBe(502);
+  });
+
   it('POST /v1/journal-check and /v1/journal-explain validate and answer', async () => {
     const app = buildApp({
       journalOrchestrator: fakeJournalOrchestrator((task) =>
