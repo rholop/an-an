@@ -59,6 +59,23 @@ export interface ValidatorReportRow {
   unknownCount: number;
   attempts: number;
   pass: boolean;
+  /** Phase 18 (open chat): how the reply split into tiers. */
+  tiers?: OpenChatTierReportRow;
+}
+
+/** Phase 18: per-turn tier mix of an open-chat reply, for the dev drawer, the end summary and Phase 4. */
+export interface OpenChatTierReportRow {
+  a: number;
+  b: number;
+  c: number;
+  allowed: number;
+  shareA: number;
+  /** Used at least one word from the upcoming lessons. */
+  usesUpcoming: boolean;
+  /** Word ids of the tier B / C / upcoming words used (for "new words met"). */
+  bIds: string[];
+  cIds: string[];
+  upcomingIds: string[];
 }
 
 export interface ConversationRow {
@@ -77,6 +94,13 @@ export interface ConversationRow {
   stuckCount: number;
   /** Phase 6: English fallback was on for any learner turn. */
   englishFallbackUsed: boolean;
+  /** Phase 18: 'open' for Open chat (scenarioId 'open-chat', npcId 'anan'); absent = scenario. */
+  kind?: 'open';
+  /** Phase 18: what the chat is about right now (changes with "New topic"). */
+  topic?: string;
+  /** Phase 18: running summary of older turns, and how many turns it covers. */
+  summary?: string;
+  summarizedUpTo?: number;
 }
 
 /** Phase 6: the reward ledger. Rows are RewardEvents from core; `id` is
@@ -106,6 +130,8 @@ export interface TurnRow {
    * PRECEDING learner turn's English (englishFallback mode). */
   recastZh?: string;
   validatorReport?: ValidatorReportRow;
+  /** Phase 18: inline English glosses for the tier B/C words of an open-chat reply. */
+  glosses?: { text: string; gloss: string }[];
   at: Date;
 }
 

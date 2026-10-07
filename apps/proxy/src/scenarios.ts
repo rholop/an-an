@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ScenarioFileSchema, type Scenario } from '@anan/core';
+import {
+  OpenChatPersonaFileSchema,
+  ScenarioFileSchema,
+  type OpenChatPersona,
+  type Scenario,
+} from '@anan/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Deploy layout note: this walks up from dist/src (or src in dev) to the
@@ -25,4 +30,11 @@ export function loadScenarioStore(scenariosJsonPath?: string): ScenarioStore {
     get: (id) => byId.get(id),
     all: () => parsed.scenarios,
   };
+}
+
+/** Phase 18: the open-chat persona 安安, from data/build/open-chat.json (built from
+ * data/scenarios/open-chat.yaml). The client never supplies it. */
+export function loadOpenChatPersona(personaJsonPath?: string): OpenChatPersona {
+  const filePath = personaJsonPath ?? path.join(REPO_ROOT, 'data/build/open-chat.json');
+  return OpenChatPersonaFileSchema.parse(JSON.parse(readFileSync(filePath, 'utf8'))).persona;
 }

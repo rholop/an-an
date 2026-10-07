@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadScenarios } from './lib/scenario-source.js';
+import { loadOpenChatPersona, loadScenarios } from './lib/scenario-source.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
@@ -33,6 +33,16 @@ function main(): void {
   const out = { meta: { version: 'v1', buildDate, contentHash }, scenarios };
   writeFileSync(outPath, JSON.stringify(out, null, 2), 'utf8');
   console.log(`Wrote ${scenarios.length} scenarios to ${outPath}`);
+
+  // Phase 18: the open-chat persona (安安) compiles to its own file.
+  const persona = loadOpenChatPersona(SCENARIOS_DIR);
+  const personaPath = path.join(BUILD_DIR, 'open-chat.json');
+  writeFileSync(
+    personaPath,
+    JSON.stringify({ meta: { version: 'v1', buildDate }, persona }, null, 2),
+    'utf8',
+  );
+  console.log(`Wrote the open-chat persona to ${personaPath}`);
 }
 
 main();

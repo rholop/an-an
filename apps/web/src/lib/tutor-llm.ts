@@ -10,6 +10,7 @@ import {
   ProviderNameSchema,
   JournalReviewSchema,
   SentenceGenResponseSchema,
+  TopicWordsResponseSchema,
   TurnResponseSchema,
   type DefineRequest,
   type DefineResponse,
@@ -25,9 +26,12 @@ import {
   type JournalVerifyRequest,
   type JournalVerifyResponse,
   type ModelSentenceReview,
+  type OpenTurnRequest,
   type ProviderName,
   type SentenceGenRequest,
   type SentenceGenResponse,
+  type TopicWordsRequest,
+  type TopicWordsResponse,
   type TurnRequest,
   type TurnResponse,
   type TutorLLM,
@@ -93,6 +97,15 @@ export class FetchTutorLLM implements TutorLLM {
 
   async generateTurn(req: TurnRequest): Promise<TurnResponse> {
     return TurnResponseSchema.parse(await this.post('/v1/turn', req));
+  }
+
+  /** Phase 18: the same route, `mode: 'open'`. */
+  async generateOpenTurn(req: OpenTurnRequest): Promise<TurnResponse> {
+    return TurnResponseSchema.parse(await this.post('/v1/turn', req));
+  }
+
+  async generateTopicWords(req: TopicWordsRequest): Promise<TopicWordsResponse> {
+    return TopicWordsResponseSchema.parse(await this.post('/v1/topic-words', req));
   }
 
   async reviewJournal(req: JournalReviewRequest): Promise<JournalReview> {

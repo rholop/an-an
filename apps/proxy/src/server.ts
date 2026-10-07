@@ -21,6 +21,7 @@ import type {
 import {
   loadGlossPromptTemplates,
   loadJournalPromptTemplates,
+  loadOpenChatPromptTemplates,
   loadPromptTemplate,
   loadSentenceGenPromptTemplate,
 } from './prompt.js';
@@ -28,7 +29,7 @@ import { RateLimiter } from './rate-limit.js';
 import { FileAudioStore } from './audio-store.js';
 import { FileTextbookStore } from './textbook-store.js';
 import { FileSyncStore } from './sync-store.js';
-import { loadScenarioStore } from './scenarios.js';
+import { loadOpenChatPersona, loadScenarioStore } from './scenarios.js';
 
 // Load apps/proxy/.env if present (src/ and dist/ are both one level below it).
 // Real environment variables win; loadEnvFile never overrides existing ones.
@@ -118,6 +119,20 @@ const app = createApp({
       new PromptCache<JsonTaskResult<unknown>>(),
     ),
   },
+  openChat: (() => {
+    const prompts = loadOpenChatPromptTemplates(env.PROMPT_VERSION);
+    return {
+      persona: loadOpenChatPersona(),
+      promptTemplate: prompts.turn,
+      topicWordsPrompt: prompts.topicWords,
+      // A topic's word list rarely changes: keep it for a day, per process.
+      topicWordsOrchestrator: createJsonOrchestrator(
+        geminiJournal,
+        openaiJournal,
+        new PromptCache<JsonTaskResult<unknown>>(24 * 60 * 60_000),
+      ),
+    };
+  })(),
   siteCode: env.SITE_CODE,
   sync: new FileSyncStore(env.SYNC_DIR ?? fileURLToPath(new URL('../sync-data', import.meta.url))),
   audio: new FileAudioStore(env.AUDIO_DIR ?? fileURLToPath(new URL('../audio-data', import.meta.url))),

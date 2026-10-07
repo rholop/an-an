@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { LevelSchema } from './level-schema.js';
 import type { DefineRequest, DefineResponse } from '../gloss/schema.js';
 import type { SentenceGenRequest, SentenceGenResponse } from '../cloze/sentence.js';
+import type { OpenTurnRequest, TopicWordsRequest, TopicWordsResponse } from './openChat.js';
 import type {
   JournalCheckRequest,
   JournalCheckResponse,
@@ -125,4 +126,8 @@ export interface TutorLLM {
   /** Phase 9: on-demand example sentences for the reader (POST /v1/sentences).
    * Optional so implementations that never generate (tests) needn't stub it. */
   generateSentences?(req: SentenceGenRequest): Promise<SentenceGenResponse>;
+  /** Phase 18: one Open chat turn (POST /v1/turn with `mode: 'open'`). Optional like the above. */
+  generateOpenTurn?(req: OpenTurnRequest): Promise<TurnResponse>;
+  /** Phase 18: ~60 words for a topic (POST /v1/topic-words). */
+  generateTopicWords?(req: TopicWordsRequest): Promise<TopicWordsResponse>;
 }

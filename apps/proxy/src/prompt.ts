@@ -11,10 +11,14 @@ import type {
   JournalVerifyRequest,
   JournalExplainRequest,
   JournalReviewRequest,
+  OpenChatPersona,
+  OpenTurnRequest,
   Scenario,
   SentenceGenRequest,
+  TopicWordsRequest,
   TurnRequest,
 } from '@anan/core';
+import { OPEN_CHAT_CONFIG } from '@anan/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
@@ -229,4 +233,56 @@ export function buildClozeCheckPrompt(template: string): string {
 /** The sentence is data inside a fenced block, never instructions. */
 export function clozeCheckUserMessage(req: ClozeCheckRequest): string {
   return `Check this sentence.\n<<<SENTENCE\n${req.sentence}\nSENTENCE>>>`;
+}
+
+// ---- Phase 18: open chat ------------------------------------------------------
+
+export function loadOpenChatPromptTemplates(version: string): { turn: string; topicWords: string } {
+  return {
+    turn: loadPromptFile(`open-chat.${version}.md`),
+    topicWords: loadPromptFile(`topic-words.${version}.md`),
+  };
+}
+
+/** Fills data/prompts/open-chat.*.md from the persona (resolved server-side) and the request. */
+export function buildOpenSystemPrompt(
+  template: string,
+  persona: OpenChatPersona,
+  req: OpenTurnRequest,
+): string {
+  const compact = req.learnerLevel === 'N1' || req.learnerLevel === 'N2' || req.learnerLevel === 'L1';
+  return fillPlaceholders(template, {
+    npc_name: persona.name,
+    npc_personality: persona.personality,
+    npc_speech_style: persona.speechStyle,
+    npc_particles: listOrNone(persona.particles, '(none specified)'),
+    setting: persona.setting,
+    learner_level: req.learnerLevel,
+    topic: req.topic.trim() ? req.topic.trim() : '(none chosen: ask a simple question to start)',
+    summary: req.summary?.trim() ? req.summary.trim() : '(nothing yet)',
+    turn_length: compact ? '1–2 short sentences.' : '1–3 short sentences.',
+    tier_a: listOrNone(req.tiers.a, '(none provided: use only very common words)'),
+    tier_b: listOrNone(req.tiers.b, '(none)'),
+    tier_c: listOrNone(req.tiers.cAllowed, '(none: do not introduce any new word)'),
+    grammar: listOrNone(req.grammar ?? [], '(none)'),
+    hard_topic: req.hardTopic
+      ? '**This is a harder topic.** Keep it simple, introduce at most ONE new tier C word per reply, and you may say in easy Chinese that the topic is a bit hard.'
+      : 'Introduce a new tier C word only when the topic really needs it, and then only one.',
+    scaffolding: req.scaffolding,
+    english_fallback: req.englishFallback ? 'true' : 'false',
+  });
+}
+
+/** The topic is data inside a JSON message, never part of the instructions. Normalised so
+ * "Food " and "food" share one cache entry. */
+export function normalizeTopic(topic: string): string {
+  return topic.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+export function topicWordsUserMessage(req: TopicWordsRequest): string {
+  return JSON.stringify({
+    topic: normalizeTopic(req.topic),
+    level: req.level,
+    count: OPEN_CHAT_CONFIG.topicWordCount,
+  });
 }

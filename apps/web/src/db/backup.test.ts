@@ -154,3 +154,47 @@ describe('reader tables (phase 9)', () => {
     await expect(importBackup(db, backup)).rejects.toThrow();
   });
 });
+
+describe('open chat rows (phase 18)', () => {
+  it('kind, topic, summary and the per-turn tier report survive an export/import round trip', async () => {
+    const at = new Date('2026-10-07T10:00:00Z');
+    const id = (await db.conversations.add({
+      scenarioId: 'open-chat',
+      npcId: 'anan',
+      startedAt: at,
+      goalStepsDone: [],
+      completed: false,
+      stuckCount: 0,
+      englishFallbackUsed: false,
+      kind: 'open',
+      topic: 'food you like',
+      summary: 'Learner: 我喜歡吃飯',
+      summarizedUpTo: 13,
+    })) as number;
+    await db.turns.add({
+      conversationId: id,
+      role: 'npc',
+      zh: '你喜歡吃什麼？',
+      validatorReport: {
+        coverage: 0.9,
+        maxLevel: null,
+        unknownCount: 1,
+        attempts: 2,
+        pass: false,
+        tiers: { a: 4, b: 1, c: 0, allowed: 1, shareA: 0.8, usesUpcoming: true, bIds: ['w1'], cIds: [], upcomingIds: ['w2'] },
+      },
+      glosses: [{ text: '什麼', gloss: 'what' }],
+      at,
+    });
+    const backup = JSON.parse(JSON.stringify(await exportBackup(db)));
+    await db.conversations.clear();
+    await db.turns.clear();
+    await importBackup(db, backup);
+    expect(await db.conversations.toArray()).toEqual([
+      expect.objectContaining({ kind: 'open', topic: 'food you like', summary: 'Learner: 我喜歡吃飯', summarizedUpTo: 13 }),
+    ]);
+    const [turn] = await db.turns.toArray();
+    expect(turn!.validatorReport?.tiers).toMatchObject({ usesUpcoming: true, upcomingIds: ['w2'] });
+    expect(turn!.glosses).toEqual([{ text: '什麼', gloss: 'what' }]);
+  });
+});

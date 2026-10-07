@@ -32,6 +32,7 @@ import { useLexicon } from '../lib/useLexicon.js';
 import { useMyClass, peekMyClass } from '../lib/my-class.js';
 import { useTextbook } from '../lib/textbook-data.js';
 import { getStudyFocusNow, useStudyFocus } from '../lib/study.js';
+import { OpenChatEntryCard, OpenChatView } from './OpenChat.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSetting } from '../lib/useSetting.js';
 import './ChatPage.css';
@@ -124,6 +125,8 @@ export function ChatPage({
     };
   }, [lexiconState, scenariosState, mapKey, learnerLevel]);
 
+  // Phase 18: Open chat is its own mode next to the scenarios.
+  const [openChat, setOpenChat] = useState(false);
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [conversation, setConversation] = useState<ConversationRow | null>(null);
@@ -316,12 +319,30 @@ export function ChatPage({
     );
   }
 
+  if (openChat && lexiconState.status === 'ready') {
+    return (
+      <OpenChatView
+        lexicon={lexiconState.lexicon}
+        tutorLLM={tutorLLM}
+        chatService={chatService}
+        books={textbookState.status === 'ready' ? textbookState.books : []}
+        learnerLevel={learnerLevel}
+        cardsByWordId={cardsByWordId}
+        refreshCards={refreshCards}
+        onExit={() => setOpenChat(false)}
+      />
+    );
+  }
+
   if (!scenario || conversationId === null) {
     return (
       <div className="chat-page">
         <h1>An'an chat</h1>
         <p className="chat-level-note">Your level: {learnerLevel}</p>
         <LevelChips selected={levelFilter} onChange={setLevelFilter} current={learnerLevel} />
+        <div className="open-chat-entry">
+          <OpenChatEntryCard onOpen={() => setOpenChat(true)} />
+        </div>
         {pinnedIds.length > 0 && (
           <section className="chat-pinned-section" aria-label="Current lesson" data-testid="pinned-scenarios">
             <h2 lang="zh-Hant">

@@ -24,8 +24,12 @@ import {
   JournalVerifyRequestSchema,
   JournalVerifyResponseSchema,
   JournalReviewSchema,
+  OpenTurnRequestSchema,
   SentenceGenRequestSchema,
+  TopicWordsRequestSchema,
+  TopicWordsResponseSchema,
   TurnRequestSchema,
+  type OpenChatPersona,
 } from '@anan/core';
 import type { Env } from './env.js';
 import { renderFlaggedMarkdown, type AudioStore } from './audio-store.js';
@@ -42,6 +46,7 @@ import {
   JOURNAL_SENTENCE_FIX_JSON_SCHEMA,
   JOURNAL_SOLVE_JSON_SCHEMA,
   JOURNAL_VERIFY_JSON_SCHEMA,
+  TOPIC_WORDS_JSON_SCHEMA,
 } from './json-schema.js';
 import {
   buildEffectiveSystemPrompt,
@@ -65,7 +70,9 @@ import {
   glossAdjudicateUserMessage,
   type GlossPrompts,
   buildSentenceGenPrompt,
+  buildOpenSystemPrompt,
   buildSystemPrompt,
+  topicWordsUserMessage,
   journalCheckUserMessage,
   journalExplainUserMessage,
   journalReviewUserMessage,
@@ -93,6 +100,13 @@ export interface AppDeps {
   audio: AudioStore;
   /** Phase 12: private textbook text (dialogues, examples). */
   textbook?: TextbookStore;
+  /** Phase 18: open chat (the persona 安安, its prompt, and the cached topic-word list). */
+  openChat?: {
+    persona: OpenChatPersona;
+    promptTemplate: string;
+    topicWordsPrompt: string;
+    topicWordsOrchestrator: JsonOrchestrator;
+  };
   rateLimiter: RateLimiter;
   log?: (entry: Record<string, unknown>) => void;
 }
@@ -250,6 +264,31 @@ export function createApp(deps: AppDeps): Hono {
       body = await c.req.json();
     } catch {
       return c.json({ error: 'invalid JSON body' }, 400);
+    }
+
+    // Phase 18: `mode: 'open'` carries { topic, tiers, summary? } instead of scenario fields.
+    if (typeof body === 'object' && body !== null && (body as { mode?: unknown }).mode === 'open') {
+      const openParsed = OpenTurnRequestSchema.safeParse(body);
+      if (!openParsed.success) {
+        return c.json({ error: 'invalid open TurnRequest', details: openParsed.error.flatten() }, 400);
+      }
+      if (!deps.openChat) return c.json({ error: 'open chat is not configured' }, 501);
+      const openRequest = openParsed.data;
+      const openPrompt = buildEffectiveSystemPrompt(
+        buildOpenSystemPrompt(deps.openChat.promptTemplate, deps.openChat.persona, openRequest),
+        openRequest.feedback,
+      );
+      try {
+        const { result, log: runLog } = await deps.orchestrator.run(openPrompt, openRequest.history);
+        const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
+        deps.rateLimiter.recordUsage(installId, totalTokens);
+        log({ route: '/v1/turn', mode: 'open', installId, totalTokens, ...runLog });
+        c.header('x-served-by', runLog.provider);
+        return c.json(result.response);
+      } catch (err) {
+        log({ route: '/v1/turn', mode: 'open', installId, error: String(err) });
+        return c.json({ error: 'turn generation failed' }, 502);
+      }
     }
 
     const parsed = TurnRequestSchema.safeParse(body);
@@ -507,6 +546,23 @@ export function createApp(deps: AppDeps): Hono {
       }),
     ),
   );
+
+  // Phase 18: ~60 words a Taiwanese speaker would use about a topic. Cached by topic + level
+  // (the orchestrator keys on the normalised user message), behind the household code like
+  // every AI route.
+  app.post('/v1/topic-words', (c) => {
+    const oc = deps.openChat;
+    if (!oc) return c.json({ error: 'open chat is not configured' }, 501);
+    return journalRoute(
+      c,
+      '/v1/topic-words',
+      TopicWordsRequestSchema,
+      TopicWordsResponseSchema,
+      TOPIC_WORDS_JSON_SCHEMA,
+      (req) => ({ systemPrompt: oc.topicWordsPrompt, userMessage: topicWordsUserMessage(req) }),
+      oc.topicWordsOrchestrator,
+    );
+  });
 
   app.post('/v1/gloss', (c) =>
     journalRoute(

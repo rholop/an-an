@@ -121,7 +121,7 @@ every `/v1/turn` call fails with a 502.
 ## Local development
 
 ```bash
-pnpm pipeline:build          # builds data/build/{lexicon,scenarios}.json
+pnpm pipeline:build          # builds data/build/{lexicon,scenarios,open-chat}.json (the proxy needs open-chat.json at startup)
 cp apps/proxy/.env.example apps/proxy/.env   # fill in at least one API key
 pnpm --filter @anan/proxy dev                 # tsx watch, http://localhost:3002
 ```

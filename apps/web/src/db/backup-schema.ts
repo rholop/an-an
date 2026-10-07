@@ -237,6 +237,10 @@ export const ConversationRowSchema = z.object({
   completed: z.boolean().default(false),
   stuckCount: z.number().default(0),
   englishFallbackUsed: z.boolean().default(false),
+  kind: z.literal('open').optional(),
+  topic: z.string().optional(),
+  summary: z.string().optional(),
+  summarizedUpTo: z.number().optional(),
 });
 
 export const TurnRowSchema = z.object({
@@ -256,8 +260,22 @@ export const TurnRowSchema = z.object({
       unknownCount: z.number(),
       attempts: z.number(),
       pass: z.boolean(),
+      tiers: z
+        .object({
+          a: z.number(),
+          b: z.number(),
+          c: z.number(),
+          allowed: z.number(),
+          shareA: z.number(),
+          usesUpcoming: z.boolean(),
+          bIds: z.array(z.string()),
+          cIds: z.array(z.string()),
+          upcomingIds: z.array(z.string()),
+        })
+        .optional(),
     })
     .optional(),
+  glosses: z.array(z.object({ text: z.string(), gloss: z.string() })).optional(),
   at: z.coerce.date(),
 });
 

@@ -280,3 +280,12 @@ export const JOURNAL_SOLVE_JSON_SCHEMA = {
   },
   required: ['answers', 'confident'],
 } as const;
+
+/** TopicWordsResponse (POST /v1/topic-words — phase doc 18). */
+export const TOPIC_WORDS_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    words: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['words'],
+} as const;

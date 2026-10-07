@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { loadScenarios } from './scenario-source.js';
+import { loadOpenChatPersona, loadScenarios } from './scenario-source.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCENARIOS_DIR = path.resolve(__dirname, '../../../../data/scenarios');
@@ -65,5 +65,19 @@ describe('loadScenarios: the real data/scenarios/*.yaml files', () => {
       expect(s.goalSteps.length).toBeLessThanOrEqual(5);
       expect(s.vocabExtras.length).toBeGreaterThanOrEqual(5);
     }
+  });
+});
+
+describe('Phase 18: the open-chat persona', () => {
+  it('open-chat.yaml is not a scenario: the scenario build skips it', () => {
+    expect(loadScenarios(SCENARIOS_DIR).map((s) => s.id)).not.toContain('anan');
+  });
+
+  it('loads 安安 with a personality, a speech style and particles', () => {
+    const p = loadOpenChatPersona(SCENARIOS_DIR);
+    expect(p).toMatchObject({ id: 'anan', name: '安安' });
+    expect(p.personality.length).toBeGreaterThan(20);
+    expect(p.speechStyle.length).toBeGreaterThan(20);
+    expect(p.particles.length).toBeGreaterThan(0);
   });
 });

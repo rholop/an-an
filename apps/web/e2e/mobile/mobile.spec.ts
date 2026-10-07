@@ -237,6 +237,43 @@ test.describe('keyboards and inputs', () => {
     expect(last.y + last.height).toBeGreaterThan(0);
   });
 
+  test('open chat: the topic box sits above the keyboard and every chip is a real tap target', async ({
+    page,
+  }) => {
+    await prepareContext(page, 'signed-in', 'light');
+    await openApp(page, 'chat');
+    await page.getByLabel('Use fake tutor (dev, no API key needed)').check();
+    await page.getByTestId('open-chat-card').click();
+    await expect(page.getByTestId('open-chat-topic')).toBeVisible();
+    const { height } = page.viewportSize()!;
+    const visible = height - 300; // iOS keyboard covers the bottom ~300px
+    await page.evaluate((vvh) => {
+      document.documentElement.style.setProperty('--vvh', `${vvh}px`);
+      document.documentElement.classList.add('kb-open');
+    }, visible);
+    await page.waitForTimeout(250);
+    const box = (await page.getByTestId('open-chat-topic-input').boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(visible + 1);
+    expect(
+      parseFloat(
+        await page.getByTestId('open-chat-topic-input').evaluate((el) => getComputedStyle(el).fontSize),
+      ),
+    ).toBeGreaterThanOrEqual(16);
+    const chips = page.getByTestId('open-chat-chips').locator('.chat-chip');
+    for (const b of await chips.evaluateAll((els) =>
+      els.map((e) => e.getBoundingClientRect().height),
+    ))
+      expect(b).toBeGreaterThanOrEqual(44);
+    await page.getByTestId('open-chat-topic-input').fill('food');
+    await page.getByRole('button', { name: 'Start' }).click();
+    await expect(page.locator('.chat-input')).toBeVisible();
+    const input = (await page.locator('.chat-input').boundingBox())!;
+    expect(input.y + input.height).toBeLessThanOrEqual(visible + 1);
+    const stuck = (await page.getByRole('button', { name: "I'm stuck" }).boundingBox())!;
+    expect(stuck.y + stuck.height).toBeLessThanOrEqual(visible + 1);
+  });
+
   test('chat: input is 16px+ (no iOS zoom), suggestions scroll in one row, "I\'m stuck" is reachable without scrolling', async ({
     page,
   }) => {

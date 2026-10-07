@@ -13,14 +13,19 @@ import type {
   JournalVerifyRequest,
   JournalVerifyResponse,
   ModelSentenceReview,
+  OpenTurnRequest,
   SentenceGenRequest,
   SentenceGenResponse,
+  TopicWordsRequest,
+  TopicWordsResponse,
   TurnRequest,
   TurnResponse,
   TutorLLM,
 } from '@anan/core';
 
 export type FakeSentenceScript = (req: SentenceGenRequest) => SentenceGenResponse;
+
+export type FakeOpenScript = (req: OpenTurnRequest, callIndex: number) => TurnResponse;
 
 export type FakeTurnScript = (req: TurnRequest, callIndex: number) => TurnResponse;
 
@@ -45,7 +50,36 @@ export class FakeTutorLLM implements TutorLLM {
     private readonly script: FakeTurnScript = FakeTutorLLM.defaultScript,
     private readonly journal: FakeJournalScript = {},
     private readonly sentences: FakeSentenceScript = FakeTutorLLM.defaultSentences,
+    private readonly openScript: FakeOpenScript = FakeTutorLLM.defaultOpenScript,
+    private readonly topicWords: (req: TopicWordsRequest) => string[] = () => ['吃', '飯', '喝', '咖啡'],
   ) {}
+
+  /** Phase 18 calls, for "was the LLM asked?" assertions. */
+  readonly openCalls: OpenTurnRequest[] = [];
+  topicWordCalls = 0;
+
+  async generateOpenTurn(req: OpenTurnRequest): Promise<TurnResponse> {
+    const response = this.openScript(req, this.openCalls.length);
+    this.openCalls.push(req);
+    return response;
+  }
+
+  async generateTopicWords(req: TopicWordsRequest): Promise<TopicWordsResponse> {
+    this.topicWordCalls++;
+    return { words: this.topicWords(req) };
+  }
+
+  static defaultOpenScript: FakeOpenScript = (req) => ({
+    reply_zh: req.topic ? '好啊！你喜歡吃什麼？' : '你今天做了什麼？',
+    reply_en: req.topic ? 'Sure! What do you like to eat?' : 'What did you do today?',
+    tokens: [],
+    targets_used: [],
+    suggested_replies: [
+      { zh: '我喜歡吃飯。', en: 'I like rice.' },
+      { zh: '我不知道。', en: "I don't know." },
+    ],
+    goal_progress: [],
+  });
 
   /** Calls to generateSentences, for "was the LLM asked?" assertions. */
   sentenceCalls = 0;

@@ -103,6 +103,8 @@ export interface StudyFocus {
   reached: number;
   /** Lessons that have just become mastered relative to `reached` input (for the celebration). */
   justMastered: Array<Extract<StepRef, { kind: 'lesson' }>>;
+  /** Phase 18: lesson ids held back by an unmastered lower TOCFL level (they don't count as "upcoming"). */
+  gatedLessonIds?: string[];
 }
 
 const itemKey = (i: ItemRef) => `${i.kind}:${i.id}`;
@@ -374,6 +376,10 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
     nextStep,
     reached: p,
     justMastered,
+    gatedLessonIds: steps
+      .filter((s): s is Extract<StepRef, { kind: 'lesson' }> => s.kind === 'lesson')
+      .filter((s) => firstUnmasteredLevelBelow(s.level) !== undefined)
+      .map((s) => s.lessonId),
   };
 }
 

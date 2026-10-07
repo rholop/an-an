@@ -80,8 +80,9 @@ export async function allChatLines(db: AnanDB, scenarios: Scenario[]): Promise<C
       zh: turn.zh,
       en: turn.en,
       role: turn.role,
-      scenarioTitle: scenario?.title ?? conv?.scenarioId ?? 'a past conversation',
-      npcName: scenario?.npc.name,
+      scenarioTitle:
+        conv?.kind === 'open' ? 'Open chat' : (scenario?.title ?? conv?.scenarioId ?? 'a past conversation'),
+      npcName: conv?.kind === 'open' ? '安安' : scenario?.npc.name,
       at: turn.at,
     });
   }

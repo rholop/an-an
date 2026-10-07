@@ -33,7 +33,8 @@ export async function conversationRecords(db: AnanDB): Promise<StoredConversatio
   for (const t of turns)
     if (t.role === 'learner')
       learnerTurns.set(t.conversationId, (learnerTurns.get(t.conversationId) ?? 0) + 1);
-  return conversations.map((c) => ({
+  // Phase 18: open chats have no goals or stars; they never count as scenario attempts.
+  return conversations.filter((c) => c.kind !== 'open').map((c) => ({
     scenarioId: c.scenarioId,
     startedAt: c.startedAt,
     endedAt: c.endedAt,

@@ -1,0 +1,96 @@
+/* Not a .chat-scenario-card: it is not a scenario, and scenario counts/filters must not include it. */
+.open-chat-entry {
+  margin-top: 1rem;
+}
+.open-chat-card {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px dashed rgba(127, 127, 127, 0.5);
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.open-chat-card-title {
+  font-weight: bold;
+}
+.open-chat-card-sub {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.open-chat-privacy {
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.open-topic-picker h2 {
+  font-size: 1.05rem;
+  margin: 0.75rem 0 0.5rem;
+}
+.open-topic-chips {
+  margin-bottom: 0.75rem;
+}
+.open-just-chat {
+  font-weight: bold;
+}
+.open-topic-row {
+  flex-wrap: wrap;
+}
+.open-topic-picker--compact h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+}
+
+.open-chat-glosses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+.open-chat-met {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+}
+.open-chat-looked {
+  opacity: 0.6;
+  font-size: 0.8rem;
+}
+
+/* The topic screen is the same pinned column as a conversation on phones: the text box sits
+   at the bottom (above the keyboard), the chips scroll above it. */
+@media (max-width: 639.98px) {
+  .open-chat-topic .open-topic-picker {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  .open-chat-topic .open-topic-row {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    padding: 0.4rem 0 calc(0.4rem + env(safe-area-inset-bottom, 0px));
+    background: Canvas;
+    border-top: 1px solid rgba(127, 127, 127, 0.3);
+  }
+  .kb-open .open-chat-topic .open-topic-row {
+    padding-bottom: 0.4rem;
+  }
+  .open-topic-chips {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  .open-topic-chips .chat-chip {
+    min-height: 44px;
+  }
+}
