@@ -50,7 +50,29 @@ export const SkillCardSchema = z.object({
     imported: z.boolean().optional(),
     probablyKnown: z.boolean().optional(),
     priority: z.boolean().optional(),
+    // Phase 20 (additive): Nope flags.
+    markedKnown: z.boolean().optional(),
+    markedKnownAt: z.coerce.date().optional(),
+    excluded: z.boolean().optional(),
+    snoozed: z.boolean().optional(),
+    snoozedWhen: z.object({ level: LevelSchema.optional(), lessonId: z.string().optional() }).optional(),
   }),
+  source: z
+    .enum([
+      'anki',
+      'placement',
+      'chat_lookup',
+      'reader_lookup',
+      'chat_leak',
+      'journal',
+      'textbook',
+      'study_order',
+      'cloze',
+      'listening',
+      'added',
+      'other',
+    ])
+    .optional(),
   updatedAt: z.coerce.date(),
 });
 
@@ -74,6 +96,8 @@ const EvidenceKindSchema = z.enum([
   'listening_correct',
   'listening_correct_replayed',
   'listening_wrong',
+  'review_nope',
+  'review_restore',
 ]);
 
 export const EvidenceSchema = z.object({
@@ -87,6 +111,9 @@ export const EvidenceSchema = z.object({
       source: z.enum(['chat', 'journal', 'cloze', 'review', 'placement', 'reader', 'textbook']),
       refId: z.string().optional(),
       selfFixed: z.boolean().optional(),
+      choice: z.enum(['not_now', 'known', 'never']).optional(),
+      noIntroduce: z.boolean().optional(),
+      snoozedWhen: z.object({ level: LevelSchema.optional(), lessonId: z.string().optional() }).optional(),
     })
     .optional(),
 });

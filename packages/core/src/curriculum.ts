@@ -1,4 +1,5 @@
 import { computeCharStats, transparency, type SkillCard } from './learner/index.js';
+import { newItemInBounds } from './learner/review-pile.js';
 import type { Lexicon } from './lexicon.js';
 import type { Level, Word } from './types.js';
 import { LEVEL_IDS } from './levels.config.js';
@@ -125,13 +126,16 @@ export function nextNewItems(
   const inScope = (w: Word) => !scope || tagsInScope(w.tags, scope);
   const lessonOf = (w: Word) => (scope ? homeLessonOfTags(w.tags, scope.course)?.ordinal : undefined);
 
+  // Phase 20: new picks stay in bounds — TOCFL, textbook and the learner's own words; never the
+  // 17k level-less MOE compounds, names, or other supplementary entries.
   const mainPool = words.filter(
-    (w) => (w.level === frontier || w.level === null) && notIntroduced(w) && inScope(w),
+    (w) =>
+      (w.level === frontier || w.source === 'custom') && newItemInBounds(w) && notIntroduced(w) && inScope(w),
   );
   const trickleEligible =
     levelCoverage(frontier, words, cards) >= config.levelAdvanceThreshold && nextLevel;
   const tricklePool = trickleEligible
-    ? words.filter((w) => w.level === nextLevel && notIntroduced(w) && inScope(w))
+    ? words.filter((w) => w.level === nextLevel && newItemInBounds(w) && notIntroduced(w) && inScope(w))
     : [];
 
   const trickleCount = trickleEligible ? Math.round(n * config.nextLevelTrickleShare) : 0;
@@ -143,7 +147,9 @@ export function nextNewItems(
   let picked: Word[];
   if (scope) {
     // Textbook words regardless of level: the class is the frontier.
-    const tbPool = words.filter((w) => notIntroduced(w) && lessonOf(w) !== undefined && inScope(w));
+    const tbPool = words.filter(
+      (w) => notIntroduced(w) && lessonOf(w) !== undefined && inScope(w) && newItemInBounds(w),
+    );
     const covered = sortCandidates(
       tbPool.filter((w) => lessonOf(w)! <= scope.currentLesson),
       cards,

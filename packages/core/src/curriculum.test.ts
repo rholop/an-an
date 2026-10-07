@@ -116,9 +116,11 @@ describe('nextNewItems', () => {
     expect(picked.some((w) => w.id === 'n1-1')).toBe(false);
   });
 
-  it('supplement words (level: null) are always in the pool', () => {
+  // Phase 20: supplementary (level-less MOE) entries made the review pile obscure; new picks
+  // now come only from TOCFL, textbook and the learner's own words.
+  it('never picks supplement words (level: null) as new items', () => {
     const picked = nextNewItems([], lexicon, 10);
-    expect(picked.some((w) => w.id === 'supp-1')).toBe(true);
+    expect(picked.some((w) => w.id === 'supp-1')).toBe(false);
   });
 
   it('prefers words tagged with a scenario context tag', () => {

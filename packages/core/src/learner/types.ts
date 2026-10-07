@@ -1,5 +1,20 @@
 import type { Card } from 'ts-fsrs';
-import type { Evidence, ItemRef, ItemState, Skill } from '../types.js';
+import type { Evidence, ItemRef, ItemState, Level, Skill } from '../types.js';
+
+/** Phase 20: how a card came to exist (backfilled from the evidence log for older cards). */
+export type CardSource =
+  | 'anki'
+  | 'placement'
+  | 'chat_lookup'
+  | 'reader_lookup'
+  | 'chat_leak'
+  | 'journal'
+  | 'textbook'
+  | 'study_order'
+  | 'cloze'
+  | 'listening'
+  | 'added'
+  | 'other';
 
 export type LeechTreatment =
   'new_context' | 'char_breakdown' | 'mnemonic_prompt' | 'contrast_confusable';
@@ -43,7 +58,19 @@ export interface SkillCard {
      * (`[gym]`). Not-yet-reviewed cards with this flag jump the queue in
      * buildSession. */
     priority?: boolean;
+    /** Phase 20 "I already know it": scheduled far ahead; counts as known. */
+    markedKnown?: boolean;
+    /** When it was marked known (lesson mastery needs a review after this). */
+    markedKnownAt?: Date;
+    /** Phase 20 "Never show this": out of review, new items, cloze, chat targets, journal prompts. */
+    excluded?: boolean;
+    /** Phase 20 "Not now": back to the unstudied pool until its level/lesson becomes active. */
+    snoozed?: boolean;
+    /** Where the learner was when they snoozed it (it wakes when that changes to the word's own). */
+    snoozedWhen?: { level?: Level; lessonId?: string };
   };
+  /** Phase 20: how the card was created. Absent on cards from before Phase 20 until backfilled. */
+  source?: CardSource;
   updatedAt: Date;
 }
 

@@ -43,3 +43,5 @@ export * from './curriculum/priority.config.js';
 export * from './study/queue.js';
 export * from './listening/index.js';
 export * from './session/orderSession.js';
+export * from './learner/review-pile.js';
+export * from './learner/review-pile.config.js';

@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AddToReview } from './AddToReview.js';
 import { createPortal } from 'react-dom';
 import {
   lessonBadge,
@@ -262,6 +263,7 @@ function Popover({
           )}
         </div>
       )}
+      {at.wordId && <AddToReview wordId={at.wordId} />}
       {onReport && (
         <button className="an-popover-report" onClick={onReport}>
           Report this definition

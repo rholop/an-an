@@ -51,7 +51,7 @@ describe('schema upgrades (v6 phase 9, v8 phase 17)', () => {
 
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(8);
+    expect(db.verno).toBe(9);
     expect(await db.settings.get('currentLevel')).toMatchObject({ value: 'L2' });
     expect(await db.evidence.toArray()).toHaveLength(1);
     expect((await db.meta.get('readerEnabledAt'))?.value).toBeInstanceOf(Date);
@@ -108,6 +108,47 @@ describe('schema v8 (phase 17)', () => {
     expect((await db.errorItems.get('e1:0'))?.status).toBe('pending_rebuild');
     expect((await db.errorItems.get('e1:1'))?.status).toBe('reported');
     expect((await db.errorItems.get('e1:2'))?.status).toBe('active');
+    db.close();
+  });
+});
+
+describe('schema v9 (phase 20)', () => {
+  it('backfills each card’s source from its first evidence and re-spreads unreviewed bulk cards', async () => {
+    name = `anan-upgrade-${Math.random()}`;
+    await seedV5(name);
+    const old = new Dexie(name);
+    await old.open(); // dynamic mode: the v5 tables as they are
+    const due = new Date('2026-10-10T00:00:00Z');
+    const card = (id: string, imported: boolean) => ({
+      pk: `word:${id}:recognition`,
+      item: { kind: 'word', id },
+      skill: 'recognition',
+      card: { due, stability: 3, difficulty: 5, elapsed_days: 0, scheduled_days: 3, learning_steps: 0, reps: 1, lapses: 0, state: 2, last_review: due },
+      state: 'review',
+      lapses: 0,
+      leech: false,
+      leechTreatmentsTried: [],
+      familiarity: 0,
+      readingDependence: 0,
+      flags: imported ? { imported: true } : {},
+      updatedAt: due,
+    });
+    await old.table('items').bulkPut([...Array.from({ length: 200 }, (_, i) => card(`imp-${i}`, true)), card('w1', false)]);
+    old.close();
+
+    const db = new AnanDB(name);
+    await db.open();
+    expect(db.verno).toBe(9);
+    const rows = await db.items.toArray();
+    expect(rows.find((r) => r.item.id === 'w1')!.source).toBe('study_order');
+    const imported = rows.filter((r) => r.item.id.startsWith('imp-'));
+    expect(imported.every((r) => r.source === 'anki')).toBe(true);
+    const perDay = new Map<string, number>();
+    for (const r of imported) {
+      const d = new Date(r.card.due).toISOString().slice(0, 10);
+      perDay.set(d, (perDay.get(d) ?? 0) + 1);
+    }
+    expect(Math.max(...perDay.values())).toBeLessThanOrEqual(40);
     db.close();
   });
 });

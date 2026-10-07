@@ -16,7 +16,8 @@
     "curriculum:import": "tsx src/curriculum-import.ts",
     "curriculum:content": "tsx src/build-textbook-content.ts",
     "curriculum:build": "tsx src/curriculum-import.ts all && tsx src/build-textbook-content.ts all && tsx src/build-lexicon.ts && tsx src/build-scenarios.ts",
-    "curriculum:plan": "tsx src/curriculum-plan.ts"
+    "curriculum:plan": "tsx src/curriculum-plan.ts",
+    "review-pile": "tsx src/review-pile-report.ts"
   },
   "dependencies": {
     "@anan/core": "workspace:*",

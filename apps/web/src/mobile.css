@@ -138,6 +138,14 @@ body {
     min-width: 0;
     padding: 0.6rem 0.1rem;
   }
+  /* Phase 20: Nope gets its own full-width row under the grades / under Show answer */
+  :root .review-buttons .nope-btn {
+    grid-column: 1 / -1;
+  }
+  :root .review-reveal-row {
+    display: grid;
+    gap: 0.4rem;
+  }
   :root .review-reveal {
     width: 100%;
     min-height: 52px;

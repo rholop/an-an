@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { cardSourceFor, isUnreviewedBulkCard, spreadBulkDue } from '@anan/core';
 import type {
   ErrorItem,
   RawSentenceReview,
@@ -428,6 +429,32 @@ export class AnanDB extends Dexie {
             if (row.status === 'reported' || row.status === 'deleted') return;
             row.status = 'pending_rebuild';
           });
+      });
+
+    // v9 (Phase 20): every card learns where it came from (backfilled from the earliest
+    // evidence on it), and cards a bulk action created that were never reviewed in the app since
+    // (Anki import, placement) are re-spread so they stop falling due on one day. No index changes.
+    this.version(9)
+      .stores({})
+      .upgrade(async (tx) => {
+        const first = new Map<string, Evidence>();
+        await tx
+          .table('evidence')
+          .orderBy('at')
+          .each((e: Evidence) => {
+            const k = `${e.item.kind}:${e.item.id}|${e.skill}`;
+            if (!first.has(k)) first.set(k, e);
+          });
+        const items = tx.table('items');
+        const rows = (await items.toArray()) as Array<SkillCard & { pk: string }>;
+        for (const r of rows) {
+          if (r.source) continue;
+          const e = first.get(`${r.item.kind}:${r.item.id}|${r.skill}`);
+          r.source = e ? cardSourceFor(e) : r.flags.imported ? 'anki' : r.flags.probablyKnown ? 'placement' : 'other';
+        }
+        const bulk = rows.filter(isUnreviewedBulkCard);
+        const spread = new Map(spreadBulkDue(bulk, new Date()).map((c) => [itemPk(c.item, c.skill), c]));
+        await items.bulkPut(rows.map((r) => ({ ...r, ...(spread.get(r.pk) ?? {}), pk: r.pk })));
       });
 
     this.installHooks();

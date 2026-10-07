@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { useLookupGateRegistration } from './lib/lookup-gate.js';
 import {
   bookNumber,
   classLevelHint,
@@ -63,6 +64,9 @@ const ReviewPage = lazy(() =>
 const ReportedPage = lazy(() =>
   import('./pages/ReportedPage.js').then((m) => ({ default: m.ReportedPage })),
 );
+const ReviewSettingsPage = lazy(() =>
+  import('./pages/ReviewSettingsPage.js').then((m) => ({ default: m.ReviewSettingsPage })),
+);
 const ZhuyinTestPage = lazy(() =>
   import('./pages/ZhuyinTestPage.js').then((m) => ({ default: m.ZhuyinTestPage })),
 );
@@ -81,7 +85,8 @@ export type Route =
   | 'credits'
   | 'reported'
   | 'audio-review'
-  | 'zhuyin-test';
+  | 'zhuyin-test'
+  | 'review-settings';
 
 /** Phase 7 §2: the header level picker (visible on every screen) plus the
  * "Ready to try L3?" prompt — a suggestion only, never an automatic switch. */
@@ -205,6 +210,7 @@ export function App() {
   );
   const myClass = useMyClass();
   useStudyContextRegistration();
+  useLookupGateRegistration();
   const [moreOpen, setMoreOpen] = useState(false);
   // The tab bar only exists on a phone-width screen (the CSS hides it above 640px too,
   // but then it would still be in the page and duplicate the top nav's labels).
@@ -248,6 +254,9 @@ export function App() {
         >
           Textbook{myClass.enabled ? ` · ${myClass.textbookId === 'laixue-1' ? '' : bookNumber(LAIXUE_COURSE, myClass.textbookId) + '.'}L${myClass.currentLesson}` : ''}
         </button>
+        <button onClick={() => setRoute('review-settings')} disabled={route === 'review-settings'}>
+          Review settings
+        </button>
         <button onClick={() => setRoute('placement')} disabled={route === 'placement'}>
           Placement
         </button>
@@ -284,6 +293,7 @@ export function App() {
           {route === 'reported' && <ReportedPage />}
           {route === 'audio-review' && <AudioReviewPage />}
           {route === 'zhuyin-test' && <ZhuyinTestPage />}
+          {route === 'review-settings' && <ReviewSettingsPage />}
         </Suspense>
       </main>
       {isPhoneWidth && (

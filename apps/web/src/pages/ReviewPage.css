@@ -50,3 +50,6 @@
 .leech-char-reading { font-size: 0.75rem; font-family: ui-monospace, monospace; }
 .leech-char-gloss { font-size: 0.7rem; opacity: 0.8; max-width: 90px; }
 .leech-stub-note { margin-top: 0.5rem; font-size: 0.7rem; opacity: 0.6; font-style: italic; }
+
+/* Phase 20: Nope sits beside Show answer and after the grade buttons. */
+.review-reveal-row { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }

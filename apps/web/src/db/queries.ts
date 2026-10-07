@@ -1,5 +1,6 @@
 import {
   clozeSourceSentences,
+  isActiveCard,
   type ChatLineSource,
   type JournalSentenceSource,
   type Scenario,
@@ -22,14 +23,23 @@ export async function dueForecast(db: AnanDB, now: Date, days = 7): Promise<numb
   for (let i = 0; i < days; i++) {
     const from = dayStart(i);
     const to = dayStart(i + 1);
-    const count = await db.items
-      .where('card.due')
-      .between(from, to, true, false)
-      .filter((r) => r.skill !== 'listening')
-      .count();
+    // Today includes everything overdue. Phase 20: removed cards ("Not now", "Never show") don't count.
+    const range = i === 0 ? db.items.where('card.due').below(to) : db.items.where('card.due').between(from, to, true, false);
+    const count = await range.filter((r) => r.skill !== 'listening' && isActiveCard(r)).count();
     counts.push(count);
   }
   return counts;
+}
+
+/** Phase 20: reviews already done today (they count toward the daily cap). */
+export async function reviewsDoneToday(db: AnanDB, now: Date): Promise<number> {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  return db.evidence
+    .where('at')
+    .between(start, now, true, true)
+    .filter((e) => e.kind === 'review_again' || e.kind === 'review_hard' || e.kind === 'review_good' || e.kind === 'review_easy')
+    .count();
 }
 
 /** All cards ever touched (any state past 'unseen'), for consumers that need

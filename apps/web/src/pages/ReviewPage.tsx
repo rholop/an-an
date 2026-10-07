@@ -10,18 +10,22 @@ import {
   newSessionSeed,
   placeExtras,
   planListenSession,
-  planReviewSession,
   requeueAgain,
   sessionMeta,
   type PlanItem,
 } from '@anan/core';
-import { buildReviewSession } from '../lib/review-session.js';
+import { buildReviewSession, pickReviewCards } from '../lib/review-session.js';
+import { NopeButton, NopeToast } from '../components/Nope.js';
+import { nopeWord, wakeSnoozed } from '../lib/nope.js';
+import { getReviewSettings } from '../lib/review-settings.js';
+import type { NopeChoice } from '@anan/core';
+import type { NopeHandle } from '../lib/learner-service.js';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { ListenPage, ListenRunner } from './ListenPage.js';
 import { db, learnerService } from '../db/instance.js';
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
-import { dueForecast } from '../db/queries.js';
+import { dueForecast, reviewsDoneToday } from '../db/queries.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import './ReviewPage.css';
@@ -75,17 +79,51 @@ export function ReviewPage({
   const [doneSlots, setDoneSlots] = useState<Set<number>>(new Set());
   const [slotCardIds, setSlotCardIds] = useState<Set<string>>(new Set());
   const [seed, setSeed] = useState<string>('');
+  // Phase 20: the daily cap's effect on this session, and the last Nope (for Undo / Change).
+  const [capNote, setCapNote] = useState<{ held: number; cap: number; newReason?: string } | null>(null);
+  const [nope, setNope] = useState<{
+    handle: NopeHandle;
+    item: SkillCard['item'];
+    word: string;
+    prevQueue: SkillCard[];
+    prevIndex: number;
+  } | null>(null);
 
   const loadQueue = useCallback(async () => {
     const now = new Date();
-    const due = focusCards ?? (await learnerService.dueCards(now, 200));
     // Phase 14: with the study order on (and not a custom focus list) a few NEW items from the
     // active step lead the session and due cards are ordered textbook-first (never dropped).
     // Phase 19: the order itself (siblings apart, seeded shuffle, directions mixed) is the shared one.
+    // Phase 20: at most the daily cap per day (study order first, then the most likely forgotten);
+    // no new cards in a backlog, half while one builds. Removed cards are never due.
     const focus = focusCards ? undefined : await getStudyFocusNow(now);
-    const fresh = focus?.enabled
-      ? planReviewSession(due, focus, lessonIndex(getStudyBooks())).newItems.map((item) => newCard(item, now))
-      : [];
+    let due: SkillCard[];
+    let fresh: SkillCard[] = [];
+    if (focusCards) {
+      due = focusCards.filter((c) => !c.flags.excluded && !c.flags.snoozed);
+      setCapNote(null);
+    } else {
+      const [all, doneToday, rs] = await Promise.all([
+        learnerService.dueCards(now, 5000),
+        reviewsDoneToday(db, now),
+        getReviewSettings(),
+      ]);
+      const picked = pickReviewCards({
+        due: all,
+        doneToday,
+        cap: rs.dailyCap,
+        ...(focus ? { focus } : {}),
+        lessonIdx: lessonIndex(getStudyBooks()),
+        now,
+      });
+      due = picked.due;
+      fresh = picked.newItems.map((item) => newCard(item, now));
+      setCapNote(
+        picked.held > 0 || picked.newReason
+          ? { held: picked.held, cap: rs.dailyCap, ...(picked.newReason ? { newReason: picked.newReason } : {}) }
+          : null,
+      );
+    }
     const sessionSeed = newSessionSeed('review');
     const next = buildReviewSession({
       due,
@@ -107,6 +145,11 @@ export function ReviewPage({
   useEffect(() => {
     loadQueue();
   }, [loadQueue]);
+
+  // Phase 20: "Not now" words whose level or lesson became active come back (from the next session).
+  useEffect(() => {
+    if (lexiconState.status === 'ready') void wakeSnoozed(lexiconState.lexicon).catch(() => 0);
+  }, [lexiconState.status]);
 
   useEffect(() => {
     if (focusCards || !queue || !listeningOn || !clips.ready || lexiconState.status !== 'ready') return;
@@ -149,8 +192,39 @@ export function ReviewPage({
   if (listening)
     return <ListenPage onExit={() => setListening(false)} exitLabel="← Back to review" />;
 
+  /** Phase 20: one tap takes the whole word out of review (all its cards in this session too). */
+  async function sayNope(choice: NopeChoice = 'not_now') {
+    if (!current || !queue) return;
+    const item = current.item;
+    const w = item.kind === 'word' ? lexicon.byId(item.id) : undefined;
+    const prevQueue = queue;
+    const prevIndex = index;
+    const handle = await nopeWord(item, choice);
+    const same = (c: SkillCard) => c.item.kind === item.kind && c.item.id === item.id;
+    setQueue(prevQueue.filter((c, i) => i < prevIndex || !same(c)));
+    setRevealed(false);
+    setNope({ handle, item, word: w?.headword ?? item.id, prevQueue, prevIndex });
+  }
+
+  async function undoNope() {
+    if (!nope) return;
+    await nope.handle.undo();
+    setQueue(nope.prevQueue);
+    setIndex(nope.prevIndex);
+    setRevealed(false);
+    setNope(null);
+  }
+
+  async function changeNope(choice: NopeChoice) {
+    if (!nope) return;
+    await nope.handle.undo();
+    const handle = await nopeWord(nope.item, choice);
+    setNope({ ...nope, handle });
+  }
+
   async function rate(grade: Grade) {
     if (!current) return;
+    setNope(null);
     const evidence: Evidence = {
       item: current.item,
       skill: current.skill,
@@ -187,6 +261,24 @@ export function ReviewPage({
         {forecast && <span className="review-forecast"> · next 7 days: {forecast.join(', ')}</span>}
       </p>
 
+      {capNote && (
+        <p className="review-cap-note" data-testid="review-cap-note">
+          {capNote.held > 0 &&
+            `Today's ${capNote.cap} most important reviews; ${capNote.held} more stay due for later (daily cap, Settings → Review). `}
+          {capNote.newReason}
+        </p>
+      )}
+
+      {nope && (
+        <NopeToast
+          word={nope.word}
+          choice={nope.handle.choice}
+          onUndo={() => void undoNope()}
+          onChange={(c) => void changeNope(c)}
+          onClose={() => setNope(null)}
+        />
+      )}
+
       {listeningOn && clips.ready && !focusCards && (
         <button onClick={() => setListening(true)} data-testid="listen-session-btn">
           🎧 Listen session
@@ -215,6 +307,7 @@ export function ReviewPage({
           revealed={revealed}
           onReveal={() => setRevealed(true)}
           onRate={rate}
+          onNope={() => void sayNope()}
           devPosition={import.meta.env.DEV ? `#${index + 1} of ${queue.length} · seed ${seed}` : undefined}
         />
       )}
@@ -230,6 +323,7 @@ function ReviewCard({
   revealed,
   onReveal,
   onRate,
+  onNope,
   devPosition,
 }: {
   card: SkillCard;
@@ -239,6 +333,8 @@ function ReviewCard({
   revealed: boolean;
   onReveal: () => void;
   onRate: (grade: Grade) => void;
+  /** Phase 20: take this word out of review. */
+  onNope: () => void;
   /** Phase 19 Part C (dev builds): the card's place in the session, to check spacing by eye. */
   devPosition?: string;
 }) {
@@ -290,14 +386,18 @@ function ReviewCard({
                   {label}
                 </button>
               ))}
+              <NopeButton onNope={onNope} />
             </div>
           </div>
         </>
       ) : (
         <div className="review-actions">
-          <button className="review-reveal" onClick={onReveal}>
-            Show answer
-          </button>
+          <div className="review-reveal-row">
+            <button className="review-reveal" onClick={onReveal}>
+              Show answer
+            </button>
+            <NopeButton onNope={onNope} />
+          </div>
         </div>
       )}
     </div>

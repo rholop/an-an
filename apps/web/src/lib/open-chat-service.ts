@@ -17,6 +17,7 @@ import {
   summarizeOpenChat,
   validateOpenChatTurn,
   type Evidence,
+  CHAT_LEAK_REF,
   type Lexicon,
   type Level,
   type MyClassPosition,
@@ -288,6 +289,7 @@ export class OpenChatService {
           skill: 'recognition' as const,
           kind: 'chat_lookup_gloss' as const,
           at: now,
+          context: { source: 'chat' as const, refId: CHAT_LEAK_REF },
         }));
       if (introduce.length > 0) await this.learnerService.recordBulk(introduce, now);
     }
@@ -386,15 +388,8 @@ export class OpenChatService {
     };
   }
 
-  /** "Add to review" for the chosen words: the same introduce effect as a lookup. */
+  /** "Add to review" for the chosen words: the learner asked for them, so no level gate (Phase 20). */
   async addToReview(wordIds: readonly string[], now: Date = new Date()): Promise<void> {
-    const events: Evidence[] = wordIds.map((id) => ({
-      item: { kind: 'word' as const, id },
-      skill: 'recognition' as const,
-      kind: 'chat_lookup_gloss' as const,
-      at: now,
-      context: { source: 'chat' as const },
-    }));
-    if (events.length > 0) await this.learnerService.recordBulk(events, now);
+    for (const id of wordIds) await this.learnerService.restore({ kind: 'word', id }, now);
   }
 }

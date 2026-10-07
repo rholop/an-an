@@ -1,4 +1,5 @@
 import {
+  CHAT_LEAK_REF,
   analyzeText,
   derivedCompoundIds,
   lessonScopedWordIds,
@@ -337,6 +338,7 @@ export class ChatService {
           skill: 'recognition',
           kind: 'chat_lookup_gloss',
           at: now,
+          context: { source: 'chat', refId: CHAT_LEAK_REF },
         }));
       if (introduceEvents.length > 0) await this.learnerService.recordBulk(introduceEvents, now);
     }

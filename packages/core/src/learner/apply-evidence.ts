@@ -2,6 +2,8 @@ import { Rating, State, type Card, type FSRS, type Grade } from 'ts-fsrs';
 import { nextLadderState, type ClozeOutcome } from '../cloze/ladder.js';
 import type { Evidence } from '../types.js';
 import { buildFsrs, computeItemState, emptyCard } from './fsrs-instance.js';
+import { REVIEW_PILE_CONFIG } from './review-pile.config.js';
+import { cardSourceFor } from './review-pile.js';
 import {
   DEFAULT_LEARNER_CONFIG,
   type LearnerConfig,
@@ -25,6 +27,7 @@ function blankSkillCard(evidence: Evidence, card: Card, now: Date): SkillCard {
     familiarity: 0,
     readingDependence: 0,
     flags: {},
+    source: cardSourceFor(evidence),
     updatedAt: now,
   };
 }
@@ -156,8 +159,68 @@ function applyLookupGloss(
   }
   if (current)
     return { card: { ...current, updatedAt: now }, appliedEffect: 'ignored:already-introduced' };
+  // Phase 20: a lookup of a word outside the learner's bounds is logged but makes no card
+  // ("Add to review" in the popover does that).
+  if (evidence.context?.noIntroduce) return { card: undefined, appliedEffect: 'ignored:out-of-bounds-lookup' };
   const base = blankSkillCard(evidence, emptyCard(now), now);
   return { card: { ...base, state: 'introduced' }, appliedEffect: 'introduce' };
+}
+
+/** Phase 20 review_nope: only flags (and, for "I already know it", the due date). Never a lapse,
+ * never a rating; a card that doesn't exist stays absent. */
+function applyNope(current: SkillCard | undefined, evidence: Evidence, now: Date, config: LearnerConfig): ModelUpdate {
+  if (!current) return { card: undefined, appliedEffect: 'ignored:nope-without-card' };
+  const choice = evidence.context?.choice ?? 'not_now';
+  const flags = { ...current.flags };
+  delete flags.snoozed;
+  delete flags.snoozedWhen;
+  delete flags.excluded;
+  if (choice === 'never') {
+    return { card: { ...current, flags: { ...flags, excluded: true }, updatedAt: now }, appliedEffect: 'nope:never' };
+  }
+  if (choice === 'not_now') {
+    const when = evidence.context?.snoozedWhen;
+    return {
+      card: { ...current, flags: { ...flags, snoozed: true, ...(when ? { snoozedWhen: when } : {}) }, updatedAt: now },
+      appliedEffect: 'nope:not-now',
+    };
+  }
+  const days = REVIEW_PILE_CONFIG.knownStabilityDays;
+  const card: Card = {
+    ...current.card,
+    state: State.Review,
+    stability: Math.max(current.card.stability, days),
+    scheduled_days: days,
+    due: new Date(now.getTime() + days * 86_400_000),
+    last_review: now,
+  };
+  return {
+    card: {
+      ...withCard(current, card, now, config),
+      lapses: current.lapses,
+      leech: current.leech,
+      flags: { ...flags, markedKnown: true, markedKnownAt: now },
+    },
+    appliedEffect: 'nope:known',
+  };
+}
+
+/** Phase 20 review_restore: back into review. Removed (not now / never / known) → due now;
+ * no card yet ("Add to review") → introduced. */
+function applyRestore(current: SkillCard | undefined, evidence: Evidence, now: Date): ModelUpdate {
+  if (!current) {
+    const base = blankSkillCard(evidence, emptyCard(now), now);
+    return { card: { ...base, state: 'introduced' }, appliedEffect: 'introduce (added)' };
+  }
+  const flags = { ...current.flags };
+  const wasKnown = flags.markedKnown;
+  delete flags.snoozed;
+  delete flags.snoozedWhen;
+  delete flags.excluded;
+  delete flags.markedKnown;
+  delete flags.markedKnownAt;
+  const card = wasKnown ? { ...current.card, due: now } : current.card;
+  return { card: { ...current, card, flags, updatedAt: now }, appliedEffect: 'restore' };
 }
 
 /** chat_hover_reading: never touches meaning/FSRS; only nudges
@@ -275,6 +338,9 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   listening_correct: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
   listening_correct_replayed: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
   listening_wrong: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Again, cfg, f),
+
+  review_nope: (c, e, n, cfg) => applyNope(c, e, n, cfg),
+  review_restore: (c, e, n) => applyRestore(c, e, n),
 };
 
 /**

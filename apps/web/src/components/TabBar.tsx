@@ -20,6 +20,7 @@ const MORE: { route: Route; label: string }[] = [
   { route: 'cloze', label: 'Cloze' },
   { route: 'progress', label: 'Progress' },
   { route: 'textbook', label: 'Textbook' },
+  { route: 'review-settings', label: 'Review settings' },
   { route: 'placement', label: 'Placement' },
   { route: 'anki-import', label: 'Anki import' },
   { route: 'audio-review', label: 'Audio review' },

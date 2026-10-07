@@ -1,4 +1,4 @@
-import type { Evidence, ItemRef, ItemState, LearnerRepo, Skill, SkillCard } from '@anan/core';
+import { isActiveCard, type Evidence, type ItemRef, type ItemState, type LearnerRepo, type Skill, type SkillCard } from '@anan/core';
 import { type AnanDB, itemPk } from './schema.js';
 
 const ITEM_STATE_ORDER: ItemState[] = ['unseen', 'introduced', 'learning', 'review', 'mature'];
@@ -44,10 +44,12 @@ export class DexieLearnerRepo implements LearnerRepo {
 
   async dueCards(now: Date, limit: number): Promise<SkillCard[]> {
     // Phase 15: listening cards are their own queue (`dueListeningCards`), never part of plain review.
+    // Phase 20: "Not now" and "Never show" cards are out of every queue. (The daily cap is applied
+    // by the review session, which knows the study order.)
     const rows = await this.db.items
       .where('card.due')
       .belowOrEqual(now)
-      .filter((r) => r.skill !== 'listening')
+      .filter((r) => r.skill !== 'listening' && isActiveCard(r))
       .limit(limit)
       .toArray();
     return rows.map(stripPk);
@@ -57,17 +59,29 @@ export class DexieLearnerRepo implements LearnerRepo {
     const rows = await this.db.items
       .where('card.due')
       .belowOrEqual(now)
-      .filter((r) => r.skill === 'listening')
+      .filter((r) => r.skill === 'listening' && isActiveCard(r))
       .limit(limit)
       .toArray();
     return rows.map(stripPk);
+  }
+
+  /** Phase 20: every card of one item (all skills). */
+  async cardsOfItem(item: ItemRef): Promise<SkillCard[]> {
+    const skills: Skill[] = ['recognition', 'production', 'listening'];
+    const rows = await this.db.items.bulkGet(skills.map((s) => itemPk(item, s)));
+    return rows.filter((r): r is NonNullable<typeof r> => !!r).map(stripPk);
+  }
+
+  async allCards(): Promise<SkillCard[]> {
+    return (await this.db.items.toArray()).map(stripPk);
   }
 
   async knownSet(minState: ItemState): Promise<Set<string>> {
     const minIdx = ITEM_STATE_ORDER.indexOf(minState);
     const ids = new Set<string>();
     await this.db.items.each((row) => {
-      if (row.skill !== 'listening' && ITEM_STATE_ORDER.indexOf(row.state) >= minIdx) ids.add(row.item.id);
+      if (row.skill === 'listening') return;
+      if (ITEM_STATE_ORDER.indexOf(row.state) >= minIdx || row.flags.markedKnown) ids.add(row.item.id);
     });
     return ids;
   }

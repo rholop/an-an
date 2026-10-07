@@ -340,3 +340,31 @@ describe('review plan (Phase 14)', () => {
     expect(studyTargetWordIds({ ...f, enabled: false }, 5)).toEqual([]);
   });
 });
+
+describe('Phase 20: removed words and lesson mastery', () => {
+  const [a, b] = lessonItems('laixue-1').words; // laixue-1 lesson 1: w1a, w1b (+ grammar)
+  it('a word marked Not now or Never show leaves the lesson count instead of blocking it', () => {
+    const base = getStudyFocus(profile(), now).mastery!;
+    expect(base.total).toBe(3);
+    const snoozed = getStudyFocus(
+      profile({ cards: [card(a!, 'recognition', 0, { flags: { snoozed: true } })] }),
+      now,
+    ).mastery!;
+    expect(snoozed.total).toBe(2);
+    const never = getStudyFocus(
+      profile({ cards: [card(b!, 'recognition', 0, { flags: { excluded: true } })] }),
+      now,
+    ).mastery!;
+    expect(never.total).toBe(2);
+  });
+
+  it('"I already know it" counts as mastered only after a later review passes', () => {
+    const mark = new Date('2026-10-01');
+    const known = (last: Date) => [
+      card(a!, 'recognition', 60, { flags: { markedKnown: true, markedKnownAt: mark }, card: { ...createEmptyCard(mark), stability: 60, last_review: last } as SkillCard['card'] }),
+      card(a!, 'production', 60, { flags: { markedKnown: true, markedKnownAt: mark }, card: { ...createEmptyCard(mark), stability: 60, last_review: last } as SkillCard['card'] }),
+    ];
+    expect(getStudyFocus(profile({ cards: known(mark) }), now).mastery!.mastered).toBe(0);
+    expect(getStudyFocus(profile({ cards: known(new Date('2026-10-03')) }), now).mastery!.mastered).toBe(1);
+  });
+});

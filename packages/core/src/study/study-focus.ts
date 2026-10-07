@@ -174,6 +174,12 @@ class MasteryIndex {
   card(i: ItemRef, skill: 'recognition' | 'production'): SkillCard | undefined {
     return this.bySkill.get(`${itemKey(i)}|${skill}`);
   }
+  /** Phase 20: "Not now" / "Never show" words leave lesson and level counts (they can't block progress). */
+  removed(i: ItemRef): boolean {
+    if (i.kind !== 'word') return false;
+    const cards = [this.card(i, 'recognition'), this.card(i, 'production')].filter((c): c is SkillCard => !!c);
+    return cards.some((c) => c.flags.excluded || c.flags.snoozed);
+  }
   hasCard(i: ItemRef): boolean {
     return !!this.card(i, 'recognition') || !!this.card(i, 'production');
   }
@@ -186,6 +192,11 @@ class MasteryIndex {
     const r = this.card(i, 'recognition');
     const pr = this.card(i, 'production');
     if (r?.leech || pr?.leech) return false;
+    // Phase 20: "I already know it" counts only once a later review has passed.
+    const unproven = (c: SkillCard | undefined) =>
+      !!c?.flags.markedKnown &&
+      !(c.card.last_review && c.flags.markedKnownAt && new Date(c.card.last_review) > new Date(c.flags.markedKnownAt));
+    if (unproven(r) || unproven(pr)) return false;
     if (
       r &&
       pr &&
@@ -226,7 +237,8 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
   const levelWords = new Map<Level, Word[]>();
   for (const lv of LEVEL_IDS) levelWords.set(lv, wordsOfLevel(allWords, lv));
 
-  const itemsOfStep = (s: StepRef): ItemRef[] => {
+  const itemsOfStep = (s: StepRef): ItemRef[] => allItemsOfStep(s).filter((i) => !idx.removed(i));
+  const allItemsOfStep = (s: StepRef): ItemRef[] => {
     if (s.kind === 'lesson') {
       const l = lessonById.get(s.lessonId)!;
       return [

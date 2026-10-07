@@ -1,0 +1,32 @@
+.nope-btn {
+  min-height: 44px;
+  min-width: 64px;
+}
+
+.nope-toast {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border, #ccc);
+  border-radius: 8px;
+  background: var(--surface-2, rgba(127, 127, 127, 0.08));
+}
+
+.nope-toast-actions,
+.nope-toast-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.nope-toast-actions button,
+.nope-toast-choices button {
+  min-height: 44px;
+}
+
+.nope-toast-choices button[aria-pressed='true'] {
+  font-weight: 600;
+}

@@ -22,6 +22,7 @@ import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useStudyFocus } from '../lib/study.js';
 import { NowStudying } from '../components/NowStudying.js';
+import { DueForecast } from '../components/DueForecast.js';
 import { ReviewPage } from './ReviewPage.js';
 import './GardenPage.css';
 
@@ -125,6 +126,7 @@ export function GardenPage() {
     <div className="garden-page">
       <h1>Word garden</h1>
       <NowStudying />
+      <DueForecast />
       <p className="garden-meta">
         {shownPlants.length === 0
           ? snapshot.plants.length === 0

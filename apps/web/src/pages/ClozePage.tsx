@@ -49,6 +49,12 @@ import {
   type Reconsidered,
 } from '@anan/core';
 import { ListenRunner } from './ListenPage.js';
+import { NopeButton, NopeToast } from '../components/Nope.js';
+import { nopeWord } from '../lib/nope.js';
+import { useReviewSettings } from '../lib/review-settings.js';
+import { DEFAULT_SESSION_CONFIG, newItemAllowance } from '@anan/core';
+import type { NopeHandle } from '../lib/learner-service.js';
+import type { NopeChoice } from '@anan/core';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import {
   describePlanItem,
@@ -184,6 +190,9 @@ export function ClozePage() {
   const textbookSentences = useTextbookSentences(myClass.enabled);
 
   const [session, setSession] = useState<SessionEntry[] | null>(null);
+  const reviewSettings = useReviewSettings();
+  // Phase 20: the last Nope in this session (Undo / Change).
+  const [nope, setNope] = useState<{ handle: NopeHandle; item: SkillCard['item']; word: string; prev: SessionEntry[]; prevIndex: number } | null>(null);
   const [index, setIndex] = useState(0);
   const [tally, setTally] = useState({ correct: 0, hinted: 0, wrong: 0 });
   const [showBonus, setShowBonus] = useState(false);
@@ -214,7 +223,10 @@ export function ClozePage() {
   function startSession() {
     if (!ready || lexiconState.status !== 'ready' || sentenceBankState.status !== 'ready') return;
     const seed = newSessionSeed('cloze');
+    // Phase 20: no new cards while reviews are backed up, half while a backlog builds.
+    const maxNewItems = newItemAllowance(dueCards!.length, DEFAULT_SESSION_CONFIG.maxNewItems, reviewSettings.dailyCap).allowed;
     const built = buildMixedSession(dueCards!, {
+      config: { maxNewItems },
       seed,
       recent: recentShown(),
       lexicon: lexiconState.lexicon,
@@ -522,6 +534,34 @@ export function ClozePage() {
 
   const item = entry.item;
 
+  /** Phase 20: one tap takes the word out of review, with all its cards left in this session. */
+  async function sayNope(choice: NopeChoice = 'not_now') {
+    if (!session) return;
+    const ref = item.card.item;
+    const handle = await nopeWord(ref, choice);
+    const same = (e: SessionEntry) => e.kind === 'card' && e.item.card.item.id === ref.id && e.item.card.item.kind === ref.kind;
+    setNope({ handle, item: ref, word: item.word.headword, prev: session, prevIndex: index });
+    setSession(session.filter((e, i) => i < index || !same(e)));
+  }
+
+  const nopeEl = nope && (
+    <NopeToast
+      word={nope.word}
+      choice={nope.handle.choice}
+      onUndo={() =>
+        void nope.handle.undo().then(() => {
+          setSession(nope.prev);
+          setIndex(nope.prevIndex);
+          setNope(null);
+        })
+      }
+      onChange={(c) =>
+        void nope.handle.undo().then(async () => setNope({ ...nope, handle: await nopeWord(nope.item, c) }))
+      }
+      onClose={() => setNope(null)}
+    />
+  );
+
   return (
     <div className="cloze-page">
       <div className="cloze-header">
@@ -541,6 +581,8 @@ export function ClozePage() {
         onAnswer={(outcome) => recordOutcome(item, outcome)}
         onNext={next}
       />
+      {nopeEl}
+      <NopeButton onNope={() => void sayNope()} />
       {item.source && (
         <ReportButton onReport={(reason, note) => void reportCurrent(entry, reason, note)} />
       )}

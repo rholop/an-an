@@ -1,0 +1,246 @@
+import { useEffect, useMemo, useState } from 'react';
+import {
+  LEVEL_IDS,
+  pileReport,
+  SOURCE_LABELS,
+  type CardSource,
+  type CleanupGroup,
+  type Lexicon,
+  type NopeChoice,
+  type SkillCard,
+} from '@anan/core';
+import { learnerRepo, learnerService } from '../db/instance.js';
+import { useCurrentLevel } from '../lib/current-level.js';
+import { markStudyDirty } from '../lib/study-dirty.js';
+import { NOPE_LABELS, nopeSnapshot } from '../lib/nope.js';
+import { applyCleanup, cleanupPreview, removedWords } from '../lib/review-cleanup.js';
+import { updateReviewSettings, useReviewSettings } from '../lib/review-settings.js';
+import { useLexicon } from '../lib/useLexicon.js';
+import './ReviewSettingsPage.css';
+
+/**
+ * Phase 20: Settings → Review. The daily cap, where the review pile comes from, bulk clean-up,
+ * and the Removed words list (every Nope, with Restore).
+ */
+export function ReviewSettingsPage() {
+  const lexiconState = useLexicon();
+  const { level } = useCurrentLevel();
+  const settings = useReviewSettings();
+  const [cards, setCards] = useState<SkillCard[] | null>(null);
+  const [tick, setTick] = useState(0);
+  const refresh = () => {
+    markStudyDirty();
+    setTick((t) => t + 1);
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    learnerRepo.allCards().then((c) => !cancelled && setCards(c));
+    return () => {
+      cancelled = true;
+    };
+  }, [tick]);
+
+  const lexicon = lexiconState.status === 'ready' ? lexiconState.lexicon : undefined;
+  const report = useMemo(
+    () => (cards && lexicon ? pileReport(cards, (id) => lexicon.byId(id), level) : undefined),
+    [cards, lexicon, level],
+  );
+
+  return (
+    <div className="review-settings">
+      <h1>Review settings</h1>
+
+      <section>
+        <h2>Daily review cap</h2>
+        <label>
+          At most{' '}
+          <input
+            type="number"
+            min={10}
+            max={500}
+            value={settings.dailyCap}
+            onChange={(e) => void updateReviewSettings({ dailyCap: Number(e.target.value) })}
+            data-testid="daily-cap"
+          />{' '}
+          reviews a day
+        </label>
+        <p className="review-settings-muted">
+          When more are due, review shows the most important first (your current lesson and level, then the words
+          you're most likely to forget). The rest stay due for later. New words pause until you catch up.
+        </p>
+      </section>
+
+      {!report ? (
+        <p>Loading…</p>
+      ) : (
+        <>
+          <PileSummary report={report} />
+          <Cleanup report={report} onDone={refresh} />
+          <Removed cards={cards!} lexicon={lexicon!} onDone={refresh} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function PileSummary({ report }: { report: ReturnType<typeof pileReport> }) {
+  const sources = Object.entries(report.bySource).sort((a, b) => b[1] - a[1]) as Array<[CardSource, number]>;
+  const levels = [...LEVEL_IDS, 'textbook', 'custom', 'none'] as const;
+  return (
+    <section data-testid="pile-summary">
+      <h2>Where your review pile comes from</h2>
+      <ul>
+        {sources.map(([s, n]) => (
+          <li key={s}>
+            {n} from {SOURCE_LABELS[s]}
+          </li>
+        ))}
+      </ul>
+      <p>
+        {report.aboveLevel} above your level · {report.notInAnyList} not in any list ·{' '}
+        {levels
+          .filter((l) => report.byLevel[l])
+          .map((l) => `${l === 'none' ? 'no list' : l}: ${report.byLevel[l]}`)
+          .join(' · ')}
+      </p>
+      {report.busiestDays.length > 0 && (
+        <p className="review-settings-muted">
+          Busiest days: {report.busiestDays.slice(0, 3).map((d) => `${d.day} (${d.count})`).join(', ')}
+        </p>
+      )}
+    </section>
+  );
+}
+
+function Cleanup({ report, onDone }: { report: ReturnType<typeof pileReport>; onDone: () => void }) {
+  const groups: Array<{ label: string; group: CleanupGroup }> = [
+    { label: 'Everything above your level', group: { kind: 'above_level' } },
+    { label: 'Everything not in any list', group: { kind: 'no_list' } },
+    ...(Object.keys(report.bySource) as CardSource[]).map((source) => ({
+      label: `Everything from ${SOURCE_LABELS[source]}`,
+      group: { kind: 'source' as const, source },
+    })),
+  ];
+  const [picked, setPicked] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [last, setLast] = useState<{ count: number; undo: () => Promise<void> } | null>(null);
+  const preview = picked !== null ? cleanupPreview(report, groups[picked]!.group) : undefined;
+
+  return (
+    <section data-testid="cleanup">
+      <h2>Clean up my review pile</h2>
+      <p className="review-settings-muted">Moves a whole group to “Not now”. Everything can be restored below.</p>
+      <ul className="review-settings-groups">
+        {groups.map((g, i) => {
+          const n = cleanupPreview(report, g.group).ids.length;
+          return (
+            <li key={g.label}>
+              <button disabled={n === 0 || busy} onClick={() => setPicked(i)} aria-pressed={picked === i}>
+                {g.label} ({n})
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {preview && (
+        <div className="review-settings-preview" data-testid="cleanup-preview">
+          <p>
+            This removes <strong>{preview.ids.length}</strong> words from review, e.g.{' '}
+            <span lang="zh-Hant">{preview.sample.join('、')}</span>
+            {preview.ids.length > preview.sample.length ? '…' : ''}
+          </p>
+          <button
+            disabled={busy}
+            data-testid="cleanup-apply"
+            onClick={async () => {
+              setBusy(true);
+              const snoozedWhen = await nopeSnapshot();
+              const done = await applyCleanup(learnerService, preview.ids, { snoozedWhen });
+              setLast(done);
+              setPicked(null);
+              setBusy(false);
+              onDone();
+            }}
+          >
+            Move {preview.ids.length} to Not now
+          </button>{' '}
+          <button onClick={() => setPicked(null)}>Cancel</button>
+        </div>
+      )}
+      {last && (
+        <p role="status">
+          Removed {last.count} words.{' '}
+          <button
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              await last.undo();
+              setLast(null);
+              setBusy(false);
+              onDone();
+            }}
+          >
+            Undo
+          </button>
+        </p>
+      )}
+    </section>
+  );
+}
+
+function Removed({
+  cards,
+  lexicon,
+  onDone,
+}: {
+  cards: SkillCard[];
+  lexicon: Lexicon;
+  onDone: () => void;
+}) {
+  const [q, setQ] = useState('');
+  const [filter, setFilter] = useState<NopeChoice | 'all'>('all');
+  const rows = removedWords(cards)
+    .map((r) => ({ ...r, word: r.item.kind === 'word' ? lexicon.byId(r.item.id) : undefined }))
+    .filter((r) => filter === 'all' || r.choice === filter)
+    .filter((r) => !q || (r.word?.headword ?? r.item.id).includes(q) || (r.word?.glossEn ?? '').toLowerCase().includes(q.toLowerCase()));
+  return (
+    <section data-testid="removed-words">
+      <h2>Removed words</h2>
+      <div className="review-settings-filters">
+        <input type="search" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search removed words" />
+        <select value={filter} onChange={(e) => setFilter(e.target.value as NopeChoice | 'all')} aria-label="Filter">
+          <option value="all">All</option>
+          {(Object.keys(NOPE_LABELS) as NopeChoice[]).map((c) => (
+            <option key={c} value={c}>
+              {NOPE_LABELS[c]}
+            </option>
+          ))}
+        </select>
+      </div>
+      {rows.length === 0 ? (
+        <p className="review-settings-muted">Nothing removed.</p>
+      ) : (
+        <ul className="review-settings-removed">
+          {rows.slice(0, 300).map((r) => (
+            <li key={`${r.item.kind}:${r.item.id}`}>
+              <span lang="zh-Hant">{r.word?.headword ?? r.item.id}</span>{' '}
+              <span className="review-settings-muted">
+                {r.word?.glossEn} · {NOPE_LABELS[r.choice]}
+              </span>{' '}
+              <button
+                onClick={async () => {
+                  await learnerService.restore(r.item);
+                  onDone();
+                }}
+              >
+                Restore
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {rows.length > 300 && <p className="review-settings-muted">Showing 300 of {rows.length}; search to narrow.</p>}
+    </section>
+  );
+}

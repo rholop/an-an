@@ -88,12 +88,25 @@ export interface Evidence {
     | 'listening_correct'
     /** Correct after 2+ replays, at slow speed, or right syllables with a wrong tone (Hard). */
     | 'listening_correct_replayed'
-    | 'listening_wrong';
+    | 'listening_wrong'
+    /** Phase 20: the learner said "nope" to a card (see `context.choice`). Never a lapse. */
+    | 'review_nope'
+    /** Phase 20: brought back into review (Removed words → Restore, or "Add to review"). */
+    | 'review_restore';
   at: Date;
   context?: {
     source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook';
     refId?: string;
     /** Phase 5: a journal_misuse the learner corrected themselves. */
     selfFixed?: boolean;
+    /** Phase 20: which "nope" (review_nope). */
+    choice?: NopeChoice;
+    /** Phase 20: a lookup of a word outside the learner's bounds: logged, but no card is created. */
+    noIntroduce?: boolean;
+    /** Phase 20: where the learner was when they said "Not now" (when it may come back). */
+    snoozedWhen?: { level?: Level; lessonId?: string };
   };
 }
+
+/** Phase 20: Not now (back to the unstudied pool), I already know it, Never show this. */
+export type NopeChoice = 'not_now' | 'known' | 'never';
