@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { GrammarItem, Lesson, Lexicon, SentenceBankEntry } from '@anan/core';
-import { buildGrammarCloze } from '@anan/core';
+import { buildGrammarCloze, newSessionSeed, orderSession, sessionMeta, type OrderedSession } from '@anan/core';
+import { logSessionOrder } from '../lib/session-recent.js';
 import { peekStudySettings, updateStudySettings } from '../lib/study.js';
 
 /** Phase 14 settings: "Mark lesson as already known". Each core word is asked once for recognition
@@ -28,7 +29,8 @@ export function buildQuickCheck(
   lexicon: Lexicon,
   grammar: readonly GrammarItem[],
   sentences: readonly SentenceBankEntry[],
-): Q[] {
+  seed: string = newSessionSeed('quick-check'),
+): OrderedSession<Q> {
   const proper = new Set(lesson.properNouns);
   const words = [...new Set(lesson.vocab)].filter((id) => !proper.has(id)).flatMap((id) => lexicon.byId(id) ?? []);
   const qs: Q[] = [];
@@ -62,7 +64,19 @@ export function buildQuickCheck(
       }
     }
   }
-  return qs;
+  // Phase 19: built word by word (recognition then production), so without this each word's
+  // second question followed its first and gave the answer away, in book order.
+  return orderSession(
+    qs,
+    (q) =>
+      q.item.kind === 'grammar'
+        ? { keys: [`grammar:${q.item.id}`, `zh:${q.answer}`] }
+        : {
+            keys: [`word:${q.item.id}`, `zh:${q.skill === 'recognition' ? q.prompt : q.answer}`],
+            direction: q.skill === 'recognition' ? 'zh-en' : 'en-zh',
+          },
+    { seed },
+  );
 }
 
 export function QuickKnownCheck({
@@ -78,7 +92,12 @@ export function QuickKnownCheck({
   sentences: readonly SentenceBankEntry[];
   onClose: () => void;
 }) {
-  const qs = useMemo(() => buildQuickCheck(lesson, lexicon, grammar, sentences), [lesson, lexicon, grammar, sentences]);
+  const qs = useMemo(() => {
+    const ordered = buildQuickCheck(lesson, lexicon, grammar, sentences);
+    const meta = sessionMeta(ordered);
+    logSessionOrder('quick-check', meta?.seed, ordered.length, meta?.deferred.length ?? 0);
+    return ordered;
+  }, [lesson, lexicon, grammar, sentences]);
   const [i, setI] = useState(0);
   const [failed, setFailed] = useState<Set<string>>(new Set());
   const [marked, setMarked] = useState<number | null>(null);

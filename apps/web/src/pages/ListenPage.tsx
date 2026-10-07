@@ -10,6 +10,8 @@ import {
   type SentenceBankEntry,
   type SkillCard,
 } from '@anan/core';
+import { newSessionSeed, sessionMeta } from '@anan/core';
+import { logSessionOrder, recentShown } from '../lib/session-recent.js';
 import { ListenExercise, type ListenResult } from '../components/ListenExercise.js';
 import { learnerService } from '../db/instance.js';
 import { ensureListeningCards, recordListeningEvidence, prefetchClips, useListeningClips, useListeningEnabled } from '../lib/listening.js';
@@ -150,7 +152,10 @@ export function ListenPage({
       const practiced = listening.filter((c: SkillCard) => c.card.reps > 0 && c.card.due <= now);
       const fresh = listening.filter((c) => c.card.reps === 0).map((c) => c.item.id);
       const lessonFresh = onlyWordIds ? [...onlyWordIds].filter((id) => !listening.some((c) => c.item.id === id)) : [];
+      const seed = newSessionSeed('listen');
       const p = planListenSession({
+        seed,
+        recent: recentShown(now),
         lexicon: lexiconState.lexicon,
         dueListening: practiced,
         newWordIds: [...fresh, ...lessonFresh],
@@ -161,6 +166,7 @@ export function ListenPage({
         ...(size ? { size } : {}),
       });
       if (cancelled) return;
+      logSessionOrder('listen', seed, p.length, sessionMeta(p)?.deferred.length ?? 0);
       setCardIds(new Set(listening.map((c) => c.item.id)));
       setPlan(p);
       // So the session works offline: warm the service-worker cache with every clip it needs.

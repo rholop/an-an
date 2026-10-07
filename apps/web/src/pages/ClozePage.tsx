@@ -49,6 +49,23 @@ import {
   type Reconsidered,
 } from '@anan/core';
 import { ListenRunner } from './ListenPage.js';
+import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
+import {
+  describePlanItem,
+  itemKey,
+  newSessionSeed,
+  placeExtras,
+  sessionMeta,
+  type SessionCard,
+  type SessionEntry as OrderedEntry,
+} from '@anan/core';
+
+/** Phase 19: a cloze entry's sibling keys (for placing listening extras). */
+function describeClozeEntry(e: OrderedEntry): SessionCard {
+  return e.kind === 'card'
+    ? { keys: [itemKey(e.item.card.item), `zh:${e.item.word.headword}`] }
+    : { keys: [`error:${e.error.id}`, ...(e.error.itemRef ? [itemKey(e.error.itemRef)] : [])] };
+}
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { useCurrentLevel } from '../lib/current-level.js';
@@ -196,7 +213,10 @@ export function ClozePage() {
 
   function startSession() {
     if (!ready || lexiconState.status !== 'ready' || sentenceBankState.status !== 'ready') return;
+    const seed = newSessionSeed('cloze');
     const built = buildMixedSession(dueCards!, {
+      seed,
+      recent: recentShown(),
       lexicon: lexiconState.lexicon,
       knownIds: knownIds!,
       learnerLevel,
@@ -230,17 +250,19 @@ export function ClozePage() {
       errorItems: errorItems!,
       now: new Date(),
     });
+    logSessionOrder('cloze', seed, built.length, sessionMeta(built)?.deferred.length ?? 0);
     answered.current.clear();
     setSession(built);
     setSlots(new Map());
     setDoneSlots(new Set());
-    if (listeningOn && clips.ready) void buildListeningSlots(built.length, lexiconState.lexicon);
+    if (listeningOn && clips.ready) void buildListeningSlots(built, lexiconState.lexicon);
     setIndex(0);
     setTally({ correct: 0, hinted: 0, wrong: 0 });
     setShowBonus(false);
   }
 
-  async function buildListeningSlots(length: number, lexicon: Lexicon) {
+  async function buildListeningSlots(built: readonly OrderedEntry[], lexicon: Lexicon) {
+    const length = built.length;
     const now = new Date();
     const cards = await ensureListeningCards(clips.hasClip, now);
     const practiced = cards.filter((c) => c.card.reps > 0 && c.card.due <= now);
@@ -254,14 +276,15 @@ export function ClozePage() {
       sentences: [],
       size: n,
     });
-    const next = new Map<number, PlanItem>();
-    plan.forEach((p, k) => next.set(Math.max(1, Math.round(((k + 1) * length) / (plan.length + 1))), p));
+    // Phase 19: spread through the session, never within the gap of a cloze on the same word.
+    const next = placeExtras(built, plan, describeClozeEntry, describePlanItem);
     setSlotCardIds(new Set(cards.map((c) => c.item.id)));
     setSlots(next);
   }
 
   async function recordOutcome(item: SessionItem, outcome: Outcome) {
     const now = new Date();
+    noteShown(describeClozeEntry({ kind: 'card', item }).keys, now);
     const evidence = {
       item: item.card.item,
       skill: item.card.skill,
@@ -288,6 +311,7 @@ export function ClozePage() {
    * sentence-level drill, not a vocabulary-item review. */
   async function recordErrorOutcome(error: ErrorItem, outcome: ErrorOutcome) {
     const at = new Date();
+    noteShown(describeClozeEntry({ kind: 'error', error }).keys, at);
     await db.errorItems.put(reviewErrorItem(error, outcome, at));
     answered.current.set(index, {
       outcome: outcome === 'wrong' ? 'error-wrong' : 'error-correct',

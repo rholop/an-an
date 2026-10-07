@@ -118,6 +118,7 @@ Phases may add fields but must not rename or remove these.
 | 16 | Report a bad cloze; check journal clozes before they are shown | `docs/cloze-reports.md` |
 | 17 | Journal clozes rebuilt from fully corrected, independently checked sentences | `docs/journal-cloze.md` |
 | 18 | Open chat about any topic, words weighted to what you know and the next three lessons | `docs/open-chat.md` |
+| 19 | Flashcards always mixed: one shared session order, a word's cards never side by side | `docs/flashcard-order.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

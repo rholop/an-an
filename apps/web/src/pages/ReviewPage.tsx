@@ -1,7 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Evidence, GrammarItem, Lexicon, SkillCard, Word } from '@anan/core';
 import { homeLessonOfTags, lessonBadge, nextLeechTreatment } from '@anan/core';
-import { emptyCard, LISTENING_CONFIG, lessonIndex, planListenSession, planReviewSession, type PlanItem } from '@anan/core';
+import {
+  describePlanItem,
+  describeSkillCard,
+  emptyCard,
+  LISTENING_CONFIG,
+  lessonIndex,
+  newSessionSeed,
+  placeExtras,
+  planListenSession,
+  planReviewSession,
+  requeueAgain,
+  sessionMeta,
+  type PlanItem,
+} from '@anan/core';
+import { buildReviewSession } from '../lib/review-session.js';
+import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { ListenPage, ListenRunner } from './ListenPage.js';
 import { db, learnerService } from '../db/instance.js';
@@ -28,15 +43,6 @@ function newCard(item: SkillCard['item'], now: Date): SkillCard {
     flags: {},
     updatedAt: now,
   };
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j]!, copy[i]!];
-  }
-  return copy;
 }
 
 type Grade = 'again' | 'hard' | 'good' | 'easy';
@@ -68,22 +74,29 @@ export function ReviewPage({
   const [slots, setSlots] = useState<Map<number, PlanItem>>(new Map());
   const [doneSlots, setDoneSlots] = useState<Set<number>>(new Set());
   const [slotCardIds, setSlotCardIds] = useState<Set<string>>(new Set());
+  const [seed, setSeed] = useState<string>('');
 
   const loadQueue = useCallback(async () => {
     const now = new Date();
     const due = focusCards ?? (await learnerService.dueCards(now, 200));
-    // Phase 14: with the study order on (and not a custom focus list) the shuffled due cards are
-    // ordered textbook-first (never dropped) and a few NEW items from the active step lead the session.
-    const shuffled = shuffle(due); // interleaved across topics: due order has no topical structure
-    let next: SkillCard[] = shuffled;
-    if (!focusCards) {
-      const focus = await getStudyFocusNow(now);
-      if (focus?.enabled) {
-        const plan = planReviewSession(shuffled, focus, lessonIndex(getStudyBooks()));
-        const fresh = plan.newItems.map((item) => newCard(item, now));
-        next = [...fresh, ...plan.ordered];
-      }
-    }
+    // Phase 14: with the study order on (and not a custom focus list) a few NEW items from the
+    // active step lead the session and due cards are ordered textbook-first (never dropped).
+    // Phase 19: the order itself (siblings apart, seeded shuffle, directions mixed) is the shared one.
+    const focus = focusCards ? undefined : await getStudyFocusNow(now);
+    const fresh = focus?.enabled
+      ? planReviewSession(due, focus, lessonIndex(getStudyBooks())).newItems.map((item) => newCard(item, now))
+      : [];
+    const sessionSeed = newSessionSeed('review');
+    const next = buildReviewSession({
+      due,
+      fresh,
+      ...(focus ? { focus } : {}),
+      lessonIdx: lessonIndex(getStudyBooks()),
+      seed: sessionSeed,
+      recent: recentShown(now),
+    });
+    logSessionOrder('review', sessionSeed, next.length, sessionMeta(next)?.deferred.length ?? 0);
+    setSeed(sessionSeed);
     setQueue(next);
     setIndex(0);
     setRevealed(false);
@@ -112,9 +125,8 @@ export function ReviewPage({
         sentences: [],
         size: n,
       });
-      // spread over the session, never first
-      const next = new Map<number, PlanItem>();
-      plan.forEach((p, k) => next.set(Math.max(1, Math.round(((k + 1) * queue.length) / (plan.length + 1))), p));
+      // spread over the session, never first, and never within the gap of a card on the same word
+      const next = placeExtras(queue, plan, describeSkillCard, describePlanItem);
       if (cancelled) return;
       setSlotCardIds(new Set(cards.map((c) => c.item.id)));
       setDoneSlots(new Set());
@@ -123,8 +135,8 @@ export function ReviewPage({
     return () => {
       cancelled = true;
     };
-    // built once per queue
-  }, [queue, listeningOn, clips.ready]);
+    // built once per session (an "Again" re-queue changes the queue, not the session)
+  }, [seed, listeningOn, clips.ready]);
 
   if (lexiconState.status === 'loading' || queue === null) return <p>Loading…</p>;
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
@@ -146,6 +158,22 @@ export function ReviewPage({
       at: new Date(),
     };
     await learnerService.record(evidence, evidence.at);
+    // Phase 19: answered cards count as "just shown" for the next session's sibling gap.
+    const w = current.item.kind === 'word' ? lexicon.byId(current.item.id) : undefined;
+    noteShown([`${current.item.kind}:${current.item.id}`, ...(w ? [`zh:${w.headword}`] : [])]);
+    // Phase 19 rule 6: "Again" comes back later in this session (≥5 cards on, away from siblings).
+    if (grade === 'again' && queue) {
+      const q = requeueAgain(queue, index, describeSkillCard);
+      if (q.length !== queue.length) {
+        // Listening slots after the inserted card move down one with the cards around them.
+        const at = q.findIndex((c, i) => c !== queue[i]);
+        const shift = (k: number) => (k >= at ? k + 1 : k);
+        setSlots((m) => new Map([...m].map(([k, v]) => [shift(k), v])));
+        setDoneSlots((d) => new Set([...d].map(shift)));
+        setQueue(q);
+        setTotalDue((n) => n + 1);
+      }
+    }
     setRevealed(false);
     setIndex((i) => i + 1);
   }
@@ -187,6 +215,7 @@ export function ReviewPage({
           revealed={revealed}
           onReveal={() => setRevealed(true)}
           onRate={rate}
+          devPosition={import.meta.env.DEV ? `#${index + 1} of ${queue.length} · seed ${seed}` : undefined}
         />
       )}
     </div>
@@ -201,6 +230,7 @@ function ReviewCard({
   revealed,
   onReveal,
   onRate,
+  devPosition,
 }: {
   card: SkillCard;
   word: Word | undefined;
@@ -209,6 +239,8 @@ function ReviewCard({
   revealed: boolean;
   onReveal: () => void;
   onRate: (grade: Grade) => void;
+  /** Phase 19 Part C (dev builds): the card's place in the session, to check spacing by eye. */
+  devPosition?: string;
 }) {
   // Phase 12: grammar patterns are schedulable items too — pattern on the front,
   // the app's own explanation on the back.
@@ -228,6 +260,7 @@ function ReviewCard({
     <div className="review-card">
       <div className="review-card-skill">
         {grammar ? 'grammar' : card.skill}
+        {devPosition && <span data-testid="dev-session-position"> · {devPosition}</span>}
         {lesson !== undefined && (
           <span className="textbook-badge" lang="zh-Hant">
             {lessonBadge(lesson.n, lesson.bookId)}

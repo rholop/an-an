@@ -8,6 +8,7 @@ import {
   selectDueErrorItems,
 } from '../journal/error-bank.js';
 import type { Word } from '../types.js';
+import { itemKey, orderSession, type OrderedSession, type SessionCard } from '../session/orderSession.js';
 import {
   selectClozeSource,
   type ClozeSourceCandidate,
@@ -67,7 +68,23 @@ export interface BuildSessionOptions extends SelectClozeSourceOptions {
   /** Phase 14: lower rank = picked first among new / review cards (stable, after the shuffle).
    * Absent = the pre-Phase-14 session exactly. */
   rank?: (card: SkillCard) => number;
+  /** Phase 19: seed for the session order (the session id). Default: drawn from `rng`. */
+  seed?: string;
+  /** Phase 19: keys of the cards shown just before (see orderSession's `recent`). */
+  recent?: readonly (readonly string[])[];
 }
+
+const describeItem = (item: SessionItem): SessionCard => ({
+  keys: [itemKey(item.card.item), `zh:${item.word.headword}`],
+});
+
+function describeEntry(e: SessionEntry): SessionCard {
+  if (e.kind === 'card') return describeItem(e.item);
+  return { keys: [`error:${e.error.id}`, ...(e.error.itemRef ? [itemKey(e.error.itemRef)] : [])] };
+}
+
+const seedFrom = (options: BuildSessionOptions, rng: () => number) =>
+  options.seed ?? `cloze-${Math.floor(rng() * 2 ** 32).toString(36)}`;
 
 /**
  * Phase 4 §6 session builder: caps new items, fills the rest from due
@@ -77,7 +94,7 @@ export interface BuildSessionOptions extends SelectClozeSourceOptions {
  * the UI can show where it came from. Only word items are supported (no
  * grammar-pattern cloze yet); grammar cards in `dueCards` are skipped.
  */
-export function buildSession(dueCards: SkillCard[], options: BuildSessionOptions): SessionItem[] {
+export function buildSession(dueCards: SkillCard[], options: BuildSessionOptions): OrderedSession<SessionItem> {
   const rng = options.rng ?? Math.random;
   const config = { ...DEFAULT_SESSION_CONFIG, ...options.config };
 
@@ -115,7 +132,8 @@ export function buildSession(dueCards: SkillCard[], options: BuildSessionOptions
     const source = selectClozeSource(word, options);
     items.push({ card, word, exerciseKind: exerciseKindForRung(card.clozeRung), source });
   }
-  return items;
+  // Phase 19: the shared order — a word's recognition and production clozes never side by side.
+  return orderSession(items, describeItem, { seed: seedFrom(options, rng), recent: options.recent });
 }
 
 export type SessionEntry =
@@ -135,7 +153,7 @@ export interface BuildMixedSessionOptions extends BuildSessionOptions {
 export function buildMixedSession(
   dueCards: SkillCard[],
   options: BuildMixedSessionOptions,
-): SessionEntry[] {
+): OrderedSession<SessionEntry> {
   const rng = options.rng ?? Math.random;
   const config = { ...DEFAULT_SESSION_CONFIG, ...options.config };
   const errors = selectDueErrorItems(options.errorItems, options.now, config.maxErrorItems);
@@ -150,12 +168,16 @@ export function buildMixedSession(
   );
   const rest = errors.filter((e) => !recurring.includes(e));
 
-  const mixed: SessionEntry[] = shuffle(
-    [
-      ...cards.map((item): SessionEntry => ({ kind: 'card', item })),
-      ...rest.map((error): SessionEntry => ({ kind: 'error', error })),
-    ],
-    rng,
+  // Phase 19: recurring-pattern error items lead (band 0), the rest is the shared order.
+  const entries: Array<{ e: SessionEntry; band: number }> = [
+    ...recurring.map((error) => ({ e: { kind: 'error', error } as SessionEntry, band: 0 })),
+    ...cards.map((item) => ({ e: { kind: 'card', item } as SessionEntry, band: 1 })),
+    ...rest.map((error) => ({ e: { kind: 'error', error } as SessionEntry, band: 1 })),
+  ];
+  const bandOf = new Map(entries.map((x) => [x.e, x.band]));
+  return orderSession(
+    entries.map((x) => x.e),
+    (e) => ({ ...describeEntry(e), band: bandOf.get(e) ?? 1 }),
+    { seed: seedFrom(options, rng), recent: options.recent },
   );
-  return [...recurring.map((error): SessionEntry => ({ kind: 'error', error })), ...mixed];
 }

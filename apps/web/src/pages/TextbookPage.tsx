@@ -19,6 +19,8 @@ import {
   type SkillCard,
   type Textbook,
   type Word,
+  newSessionSeed,
+  sessionMeta,
 } from '@anan/core';
 import { AnnotatedInline, AnnotatedWord, useReadingScript } from '../components/AnnotatedInline.js';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
@@ -26,7 +28,9 @@ import { db, learnerService } from '../db/instance.js';
 import { allTouchedCards } from '../db/queries.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { setMyClass, useMyClass } from '../lib/my-class.js';
-import { buildGrammarExercises, type GrammarExercise } from '../lib/textbook-session.js';
+import { buildGrammarExercises, describeGrammarExercise, type GrammarExercise } from '../lib/textbook-session.js';
+import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
+import { lessonVocabCards } from '../lib/review-session.js';
 import {
   fetchPrivateTextbook,
   useTextbook,
@@ -627,13 +631,8 @@ function VocabStep({ lesson, onDone }: { lesson: Lesson; onDone: () => void }) {
   const [cards, setCards] = useState<SkillCard[] | null>(null);
   useEffect(() => {
     (async () => {
-      const ids = new Set([...lesson.vocab, ...(lesson.grammarWords ?? [])]);
       const due = await learnerService.dueCards(new Date(), 2000);
-      setCards(
-        due
-          .filter((c) => c.item.kind === 'word' && c.skill === 'recognition' && ids.has(c.item.id))
-          .slice(0, 25),
-      );
+      setCards(lessonVocabCards(due, lesson));
     })();
   }, [lesson]);
   if (!cards) return <p>Loading…</p>;
@@ -671,9 +670,13 @@ function GrammarStep({
   const script = useReadingScript();
   const { level } = useCurrentLevel();
   void level;
-  const [exercises] = useState<GrammarExercise[]>(() =>
-    buildGrammarExercises(lesson, data.grammarItems, sentences, { bookId }),
-  );
+  // Phase 19: the gap runs on from the vocabulary step (rule 7) via the recently shown cards.
+  const [exercises] = useState<GrammarExercise[]>(() => {
+    const seed = newSessionSeed('grammar');
+    const ex = buildGrammarExercises(lesson, data.grammarItems, sentences, { bookId, seed, recent: recentShown() });
+    logSessionOrder('lesson-grammar', seed, ex.length, sessionMeta(ex)?.deferred.length ?? 0);
+    return ex;
+  });
   const [privateEx, setPrivateEx] = useState<PrivateExample[]>([]);
   const [idx, setIdx] = useState(0);
   const [tally, setTally] = useState({ right: 0, wrong: 0 });
@@ -692,6 +695,7 @@ function GrammarStep({
 
   async function record(grammarId: string, correct: boolean) {
     const now = new Date();
+    if (current) noteShown(describeGrammarExercise(current).keys, now);
     await learnerService.record(
       {
         item: { kind: 'grammar', id: grammarId },

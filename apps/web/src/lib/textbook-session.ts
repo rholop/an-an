@@ -3,6 +3,10 @@ import {
   courseOrdinal,
   homeLessonOfTags,
   LAIXUE_COURSE,
+  newSessionSeed,
+  orderSession,
+  type OrderedSession,
+  type SessionCard,
   type GrammarClozeExercise,
   type GrammarItem,
   type Lesson,
@@ -32,8 +36,16 @@ export function buildGrammarExercises(
   lesson: Pick<Lesson, 'n' | 'grammar'>,
   grammarItems: readonly GrammarItem[],
   sentences: readonly SentenceBankEntry[],
-  opts: { perPoint?: number; max?: number; rng?: () => number; bookId?: string } = {},
-): GrammarExercise[] {
+  opts: {
+    perPoint?: number;
+    max?: number;
+    rng?: () => number;
+    bookId?: string;
+    /** Phase 19: session id for the order; `recent` = keys shown at the end of the vocab step. */
+    seed?: string;
+    recent?: readonly (readonly string[])[];
+  } = {},
+): OrderedSession<GrammarExercise> {
   const rng = opts.rng ?? Math.random;
   const perPoint = opts.perPoint ?? 2;
   const max = opts.max ?? 8;
@@ -68,5 +80,14 @@ export function buildGrammarExercises(
       }
     }
   }
-  return shuffle(out, rng).slice(0, max);
+  // Phase 19: two exercises on one grammar point are siblings, so the shared order keeps them
+  // apart (or leaves the second for next time); the gap also runs on from the vocab step.
+  return orderSession(shuffle(out, rng).slice(0, max), describeGrammarExercise, {
+    seed: opts.seed ?? newSessionSeed('grammar'),
+    recent: opts.recent,
+  });
+}
+
+export function describeGrammarExercise(e: GrammarExercise): SessionCard {
+  return { keys: [`grammar:${e.grammarId}`, ...(e.type === 'cloze' ? [`zh:${e.answer}`] : [])] };
 }

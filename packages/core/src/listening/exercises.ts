@@ -4,6 +4,7 @@ import type { Lexicon } from '../lexicon.js';
 import type { SentenceBankEntry } from '../cloze/sentence.js';
 import { levelIndex, type Level } from '../levels.config.js';
 import type { Word } from '../types.js';
+import { orderSession, type OrderedSession, type SessionCard } from '../session/orderSession.js';
 import { LISTENING_CONFIG, type ExerciseType, type ListeningConfig } from './config.js';
 import type { ClipLookup } from './clips.js';
 import { toneCheckEligible, toneless, tonePattern, wordTones } from './tones.js';
@@ -230,6 +231,15 @@ export interface ListenPlanInput {
   /** Restrict a round to some words (a textbook lesson's listening round). */
   onlyWordIds?: ReadonlySet<string>;
   size?: number;
+  /** Phase 19: seed for the session order (the session id). Default: drawn from `rng`. */
+  seed?: string;
+  /** Phase 19: keys of the cards shown just before (see orderSession's `recent`). */
+  recent?: readonly (readonly string[])[];
+}
+
+/** Phase 19: a listening exercise is a sibling of every other card on the same word(s). */
+export function describePlanItem(p: PlanItem): SessionCard {
+  return { keys: p.wordIds.map((id) => `word:${id}`) };
 }
 
 export interface PlanItem {
@@ -250,7 +260,7 @@ export function unlockedTypes(stability: number, config: ListeningConfig = LISTE
   return out;
 }
 
-export function planListenSession(input: ListenPlanInput): PlanItem[] {
+export function planListenSession(input: ListenPlanInput): OrderedSession<PlanItem> {
   const rng = input.rng ?? Math.random;
   const config = input.config ?? LISTENING_CONFIG;
   const size = input.size ?? config.sessionSize;
@@ -307,7 +317,13 @@ export function planListenSession(input: ListenPlanInput): PlanItem[] {
       break;
     }
   }
-  return plan;
+  // Phase 19: the shared order. Due cards before new ones and study order still decide the
+  // bands; inside a band the order is a seeded shuffle.
+  const band = new Map(plan.map((p) => [p, (p.card ? 0 : 1_000_000) + rank(p.wordIds[0]!)]));
+  return orderSession(plan, (p) => ({ ...describePlanItem(p), band: band.get(p) ?? 0 }), {
+    seed: input.seed ?? `listen-${Math.floor(rng() * 2 ** 32).toString(36)}`,
+    recent: input.recent,
+  });
 }
 
 /** ~20% of a normal review/cloze session's slots are listening exercises once the item has a listening card. */
