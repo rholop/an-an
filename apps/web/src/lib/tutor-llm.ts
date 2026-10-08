@@ -10,6 +10,8 @@ import {
   ProviderNameSchema,
   JournalReviewSchema,
   SentenceGenResponseSchema,
+  StoryCheckResponseSchema,
+  StoryResponseSchema,
   TopicWordsResponseSchema,
   TurnResponseSchema,
   type DefineRequest,
@@ -30,6 +32,11 @@ import {
   type ProviderName,
   type SentenceGenRequest,
   type SentenceGenResponse,
+  type StoryCheckRequest,
+  type StoryCheckResponse,
+  type StoryLLM,
+  type StoryRequest,
+  type StoryResponse,
   type TopicWordsRequest,
   type TopicWordsResponse,
   type TurnRequest,
@@ -51,7 +58,7 @@ export class ProxyTurnError extends Error {
 
 /** apps/web's implementation of core's TutorLLM — fetch to apps/proxy. Never
  * holds an API key (CLAUDE.md §"No LLM API keys in the browser, ever"). */
-export class FetchTutorLLM implements TutorLLM {
+export class FetchTutorLLM implements TutorLLM, StoryLLM {
   constructor(private readonly base: string = proxyBase()) {}
 
   private async post(route: string, body: unknown): Promise<unknown> {
@@ -146,5 +153,16 @@ export class FetchTutorLLM implements TutorLLM {
 
   async explainJournalIssue(req: JournalExplainRequest): Promise<JournalExplainResponse> {
     return JournalExplainResponseSchema.parse(await this.post('/v1/journal-explain', req));
+  }
+
+  /** Phase 24: a graded story (Gemini first, OpenAI fallback) and which provider wrote it. */
+  async writeStory(req: StoryRequest): Promise<{ story: StoryResponse; servedBy?: ProviderName }> {
+    const { json, servedBy } = await this.postWithMeta('/v1/story', req);
+    return { story: StoryResponseSchema.parse(json), servedBy };
+  }
+
+  /** Phase 24: the independent read, by the other provider (`avoidProvider`). */
+  async checkStory(req: StoryCheckRequest): Promise<StoryCheckResponse> {
+    return StoryCheckResponseSchema.parse(await this.post('/v1/story-check', req));
   }
 }

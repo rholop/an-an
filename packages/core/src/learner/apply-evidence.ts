@@ -424,6 +424,8 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   journal_misuse: applyJournalMisuse,
 
   chat_read_no_lookup: (c, e, n, cfg, f) => applyReadNoLookup(c, e, n, cfg, f),
+  // Phase 24: the same weak signal from a graded story (never a full FSRS review on its own)
+  story_read_no_lookup: (c, e, n, cfg, f) => applyReadNoLookup(c, e, n, cfg, f),
   chat_lookup_gloss: (c, e, n, cfg, f) => applyLookupGloss(c, e, n, cfg, f),
   chat_hover_reading: (c, _e, n, cfg) => applyHoverReading(c, n, cfg),
 

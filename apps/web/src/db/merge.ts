@@ -221,6 +221,13 @@ export function mergeBackups(local: Backup, remote: Backup): Backup {
       (r) => r.sentenceId,
       (r) => t(r.at),
     ),
+    // Phase 24: a story read (or re-read) on either device keeps the later copy
+    stories: mergeByKey(
+      local.stories,
+      remote.stories,
+      (s) => s.id,
+      (s) => t(s.updatedAt),
+    ),
   };
 }
 
@@ -244,6 +251,7 @@ export function sameContent(a: Backup, b: Backup): boolean {
       x.aiGlosses.map((g) => g.key).sort(),
       x.liveSentences.map((s) => s.id).sort(),
       x.readerShown.map((r) => [r.sentenceId, t(r.at)]).sort(),
+      x.stories.map((s) => [s.id, t(s.updatedAt)]).sort(),
     ]);
   return norm(a) === norm(b);
 }

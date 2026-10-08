@@ -9,6 +9,7 @@ import {
   type Plant,
   type Plot,
   type SkillCard,
+  type StoryRecord,
   type Wilt,
   type Word,
 } from '@anan/core';
@@ -28,6 +29,9 @@ import { DueForecast, HomeReviewActions } from '../components/DueForecast.js';
 import { EmptySprout, PlantLegend, StageIcon } from '../components/PlantIcons.js';
 import { loadSessionCards, useReviewStatus } from '../lib/review-status.js';
 import { WaterAllPage } from './WaterAllPage.js';
+import { HomeStoryLine } from './StoriesSection.js';
+import { StoryView } from './StoryView.js';
+import { useOptionalStoryService } from '../lib/stories.js';
 import { ReviewPage } from './ReviewPage.js';
 import './GardenPage.css';
 
@@ -60,8 +64,9 @@ export function GardenPage() {
   const [textbookOnly, setTextbookOnly] = useState(false);
   const [focus, setFocus] = useState<SkillCard[] | null>(null);
   // Phase 22: Home's "Water all", "Review all" and "Review early" (Phase 23: the next session now).
-  const [session, setSession] = useState<'water-all' | 'review-all' | { early: SkillCard[] } | null>(null);
+  const [session, setSession] = useState<'water-all' | 'review-all' | { early: SkillCard[] } | { story: StoryRecord } | null>(null);
   const reviewState = useReviewStatus();
+  const stories = useOptionalStoryService(lexiconState.status === 'ready' ? lexiconState.lexicon : null);
   // Phase 14: tiles that belong to the active study step are highlighted.
   const { focus: studyFocus } = useStudyFocus();
   const activeIds = new Set(
@@ -97,7 +102,18 @@ export function GardenPage() {
   if (session === 'water-all') return <WaterAllPage onExit={backHome} />;
   if (session === 'review-all')
     return <ReviewPage reviewAll title="Review all" exitLabel="← Back to home" onExit={backHome} />;
-  if (session && typeof session === 'object')
+  if (session && typeof session === 'object' && 'story' in session && lexiconState.status === 'ready')
+    return (
+      <StoryView
+        story={session.story}
+        service={stories!}
+        lexicon={lexiconState.lexicon}
+        level={level}
+        exitLabel="← Back to home"
+        onExit={backHome}
+      />
+    );
+  if (session && typeof session === 'object' && 'early' in session)
     return <ReviewPage focusCards={session.early} keepEvery title="Review early" exitLabel="← Back to home" onExit={backHome} />;
   if (focus) {
     return <ReviewPage focusCards={focus} keepEvery onExit={backHome} />;
@@ -134,6 +150,7 @@ export function GardenPage() {
           void loadSessionCards(new Date(), { early: true }).then(({ cards }) => setSession({ early: cards }))
         }
       />
+      {stories && <HomeStoryLine service={stories} level={level} onOpen={(story) => setSession({ story })} />}
       <DueForecast loaded={reviewState} />
       {snapshot.plants.length === 0 && <EmptySprout />}
       <p className="garden-meta">

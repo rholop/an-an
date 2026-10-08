@@ -51,7 +51,9 @@ describe('schema upgrades (v6 phase 9, v8 phase 17)', () => {
 
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(9);
+    expect(db.verno).toBe(10);
+    // Phase 24 (v10): the story library exists and starts empty
+    expect(await db.stories.count()).toBe(0);
     expect(await db.settings.get('currentLevel')).toMatchObject({ value: 'L2' });
     expect(await db.evidence.toArray()).toHaveLength(1);
     expect((await db.meta.get('readerEnabledAt'))?.value).toBeInstanceOf(Date);
@@ -138,7 +140,7 @@ describe('schema v9 (phase 20)', () => {
 
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(9);
+    expect(db.verno).toBe(10);
     const rows = await db.items.toArray();
     expect(rows.find((r) => r.item.id === 'w1')!.source).toBe('study_order');
     const imported = rows.filter((r) => r.item.id.startsWith('imp-'));

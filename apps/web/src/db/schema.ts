@@ -12,6 +12,7 @@ import type {
   SentenceBankEntry,
   Skill,
   SkillCard,
+  StoryRecord,
   TurnToken,
   UsedWell,
   Word,
@@ -20,7 +21,7 @@ import type {
 /** Schema version for export/import compatibility checks — bump whenever a
  * Dexie `.version()` changes the stored shape in a way old backups can't
  * satisfy. Independent of the lexicon version (data/build/lexicon.v*.json). */
-export const DB_SCHEMA_VERSION = 6;
+export const DB_SCHEMA_VERSION = 7;
 
 export function itemPk(item: ItemRef, skill: Skill): string {
   return `${item.kind}:${item.id}:${skill}`;
@@ -231,6 +232,9 @@ export interface AiGlossRow {
  * cheaper; merged between devices by union. */
 export type LiveSentenceRow = SentenceBankEntry & { source: 'generated-live'; createdAt: Date };
 
+/** Phase 24: a graded story in the profile's library (core `StoryRecord`; synced). */
+export type StoryRow = StoryRecord;
+
 /** Phase 9: when the reader last showed a sentence to this profile (for "not
  * the same sentence within 7 days"). One row per sentence id; the later `at` wins. */
 export interface ReaderShownRow {
@@ -252,6 +256,7 @@ const STAMPED_TABLES = [
   'errorItems',
   'conversations',
   'readerShown',
+  'stories',
 ] as const;
 /** The stamped tables AS OF schema v5. The v5 upgrade must only touch tables
  * that exist at v5, so it uses this frozen list — never the live
@@ -284,6 +289,7 @@ const ALL_TABLES = [
   'aiGlosses',
   'liveSentences',
   'readerShown',
+  'stories',
 ] as const;
 
 const newUid = (): string => globalThis.crypto.randomUUID();
@@ -311,6 +317,8 @@ export class AnanDB extends Dexie {
   /** Phase 9: reader sentences. */
   liveSentences!: EntityTable<LiveSentenceRow, 'id'>;
   readerShown!: EntityTable<ReaderShownRow, 'sentenceId'>;
+  /** Phase 24: the story library. */
+  stories!: EntityTable<StoryRow, 'id'>;
 
   constructor(name = 'anan') {
     super(name);
@@ -460,6 +468,9 @@ export class AnanDB extends Dexie {
         const spread = new Map(spreadBulkDue(bulk, new Date()).map((c) => [itemPk(c.item, c.skill), c]));
         await items.bulkPut(rows.map((r) => ({ ...r, ...(spread.get(r.pk) ?? {}), pk: r.pk })));
       });
+
+    // v10 (Phase 24): the graded-story library. Purely additive.
+    this.version(10).stores({ stories: 'id, createdAt, lessonId, readAt' });
 
     this.installHooks();
   }

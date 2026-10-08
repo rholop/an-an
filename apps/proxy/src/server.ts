@@ -22,6 +22,7 @@ import {
   loadGlossPromptTemplates,
   loadJournalPromptTemplates,
   loadOpenChatPromptTemplates,
+  loadStoryPromptTemplates,
   loadPromptTemplate,
   loadSentenceGenPromptTemplate,
 } from './prompt.js';
@@ -133,6 +134,10 @@ const app = createApp({
       ),
     };
   })(),
+  story: {
+    prompts: loadStoryPromptTemplates(env.PROMPT_VERSION),
+    orchestrator: createJsonOrchestrator(geminiJournal, openaiJournal, new PromptCache<JsonTaskResult<unknown>>()),
+  },
   siteCode: env.SITE_CODE,
   sync: new FileSyncStore(env.SYNC_DIR ?? fileURLToPath(new URL('../sync-data', import.meta.url))),
   audio: new FileAudioStore(env.AUDIO_DIR ?? fileURLToPath(new URL('../audio-data', import.meta.url))),

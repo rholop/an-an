@@ -19,7 +19,8 @@
     "curriculum:build": "pnpm --filter @anan/data-pipeline curriculum:build",
     "curriculum:plan": "pnpm --filter @anan/data-pipeline curriculum:plan",
     "curriculum:content": "pnpm --filter @anan/data-pipeline curriculum:content",
-    "eval:journal": "pnpm --filter @anan/proxy journal-cloze-eval"
+    "eval:journal": "pnpm --filter @anan/proxy journal-cloze-eval",
+    "eval:stories": "pnpm --filter @anan/proxy stories-eval"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

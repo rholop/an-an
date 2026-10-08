@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
+  StoryCheckRequest,
+  StoryRequest,
   DefineRequest,
   GlossAdjudicationRequest,
   ClozeCheckRequest,
@@ -285,4 +287,53 @@ export function topicWordsUserMessage(req: TopicWordsRequest): string {
     level: req.level,
     count: OPEN_CHAT_CONFIG.topicWordCount,
   });
+}
+
+// ---- Phase 24: graded stories -------------------------------------------------------------
+
+export function loadStoryPromptTemplates(version: string): { write: string; check: string } {
+  return { write: loadPromptFile(`story.${version}.md`), check: loadPromptFile(`story-check.${version}.md`) };
+}
+
+const NOVICE = new Set(['N1', 'N2']);
+
+export function buildStoryPrompt(template: string, req: StoryRequest): string {
+  return fillPlaceholders(template, {
+    learner_level: req.learnerLevel,
+    rung1_share: `${Math.round(req.budget.rung1Share * 100)}%`,
+    rung3: String(req.budget.rung3),
+    rung4: String(req.budget.rung4),
+    rung5: String(req.budget.rung5),
+    grammar: listOrNone(req.grammar, '(basic sentence patterns only)'),
+    grammar_next: listOrNone(req.grammarNext, '(none)'),
+    length_min: String(req.length.min),
+    length_max: String(req.length.max),
+    sentence_style: NOVICE.has(req.learnerLevel)
+      ? 'Very short, simple sentences (5–12 characters each).'
+      : 'Short, clear sentences.',
+  });
+}
+
+export function storyUserMessage(req: StoryRequest): string {
+  const lines = [
+    `Topic: ${req.topic}`,
+    `Names: ${req.names.join('、') || '(none: use 小明 or 小美)'}`,
+    `Rung 1 (known): ${req.rungs.r1.join('、') || '(none)'}`,
+    `Rung 2 (this lesson): ${req.rungs.r2.join('、') || '(none)'}`,
+    `Rung 3 (next lesson): ${req.rungs.r3.join('、') || '(none)'}`,
+    `Rung 4 (the lesson after): ${req.rungs.r4.join('、') || '(none)'}`,
+    `Rung 5 (current level): ${req.rungs.r5.join('、') || '(none)'}`,
+  ];
+  if (req.previous)
+    lines.push(`Continue this story with the same characters. Previous episode "${req.previous.title}": ${req.previous.summaryEn}`);
+  if (req.feedback) lines.push(`Your last version was rejected: ${req.feedback}`);
+  return lines.join('\n');
+}
+
+export function storyCheckUserMessage(req: StoryCheckRequest): string {
+  const story = req.paragraphs.join('\n\n');
+  const qs = req.questions
+    .map((q, i) => `${i + 1}. ${q.q}\n${q.options.map((o, j) => `   ${j}) ${o}`).join('\n')}`)
+    .join('\n');
+  return `Story:\n<<<ZH\n${story}\nZH>>>\nEnglish summary: ${req.summaryEn}\nQuestions:\n${qs || '(none)'}`;
 }

@@ -114,10 +114,12 @@ export interface Evidence {
     /** Wrong sounds or wrong word (Again). */
     | 'reading_wrong'
     /** Phase 23: the recognition card reached learning, so the word's reading card is created (New). */
-    | 'reading_unlocked';
+    | 'reading_unlocked'
+    /** Phase 24: a due or learning word read in a story without a lookup (weak, like chat_read_no_lookup). */
+    | 'story_read_no_lookup';
   at: Date;
   context?: {
-    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook' | 'pinyin';
+    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook' | 'pinyin' | 'story';
     refId?: string;
     /** Phase 5: a journal_misuse the learner corrected themselves. */
     selfFixed?: boolean;

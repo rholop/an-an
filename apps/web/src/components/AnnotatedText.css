@@ -139,6 +139,14 @@
 
 
 /* Phase 7: above the learner's chosen level — shown with a background AND a dotted underline, so it never depends on colour alone. */
+.an-token--new {
+  /* Phase 24: a story's new words (rungs 2–5): a light underline, no gloss until tapped */
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
 .an-token--above {
   background: color-mix(in srgb, var(--warn) 22%, transparent);
   text-decoration: underline dotted;

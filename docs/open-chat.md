@@ -36,6 +36,10 @@ towards words you know and the next three textbook lessons. Replaces Phase 3's n
 
 ## Notes and deliberate choices
 
+- Phase 24: the tiers are now a view of the shared vocabulary ladder (`core/progress/vocabLadder.ts`):
+  tier A = rungs 1–4 (learned, due, learning, catch-up, this lesson, the next two), tier B = rung 5
+  (the current level and below), tier C = rung 6. Graded stories use the same ladder.
+
 - Tier B includes the levels below the picked one (config flag). Read literally, an unseen N1
   word would be tier C for an L2 learner and the NPC could hardly speak.
 - The 85% rule is strict on short replies: one tier B word in a five-word reply is 80%. In

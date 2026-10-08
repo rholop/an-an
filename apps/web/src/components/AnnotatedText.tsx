@@ -62,7 +62,10 @@ export interface AnnotatedTextProps {
   /** The surrounding sentence, stored with a report. */
   contextText?: string;
   /** Phase 21: where a lookup happened, when the page gives no `onLookup` (every popover records). */
-  lookupSource?: 'reader' | 'textbook' | 'journal' | 'chat' | 'cloze' | 'review';
+  lookupSource?: 'reader' | 'textbook' | 'journal' | 'chat' | 'cloze' | 'review' | 'story';
+  /** Phase 24: words to underline lightly (a story's rung 2–5 words), by word id or text. They
+   * show no hover gloss: the meaning appears only when tapped. */
+  newWords?: ReadonlySet<string>;
 }
 
 const tokenId = (t: Token) => `${t.start}-${t.end}`;
@@ -294,6 +297,7 @@ export function AnnotatedText({
   onReportGloss: onReportProp,
   contextText,
   lookupSource,
+  newWords,
 }: AnnotatedTextProps) {
   // Phase 21: every popover records lookups and can report a definition, page handler or not;
   // repeated opens of the same word in one text count as one lookup.
@@ -360,9 +364,9 @@ export function AnnotatedText({
         const showAnnotation =
           mode === 'always' || mode === 'tone-only' || (mode === 'auto' && !autoHover);
         const isOpen = openId === id;
-        const above = Boolean(
-          currentLevel && at.level && levelIndex(at.level) > levelIndex(currentLevel),
-        );
+        const isNew = Boolean(newWords && (newWords.has(at.token.text) || (at.wordId && newWords.has(at.wordId))));
+        const above =
+          !isNew && Boolean(currentLevel && at.level && levelIndex(at.level) > levelIndex(currentLevel));
 
         const inner =
           mode === 'off' ? (
@@ -380,11 +384,11 @@ export function AnnotatedText({
         return (
           <span
             key={id}
-            className={`an-token ${levelClass} ${hoverLike ? 'an-token--hover-mode' : ''} ${above ? 'an-token--above' : ''}`}
+            className={`an-token ${levelClass} ${hoverLike ? 'an-token--hover-mode' : ''} ${above ? 'an-token--above' : ''} ${isNew ? 'an-token--new' : ''}`}
             // Hovering any character shows its definition (a plain tooltip: it never
             // counts as a lookup — only a click does).
             title={
-              isOpen
+              isOpen || isNew
                 ? undefined
                 : [at.gloss, above ? `${at.level} — above your level (${currentLevel})` : undefined]
                     .filter(Boolean)

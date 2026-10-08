@@ -173,3 +173,22 @@ export const NEW_WORDS_MET = 'New words you met';
 export const BACK_TO_CHATS = '← Chats';
 export const messagesFromYou = (n: number): string => `${n} message${n === 1 ? '' : 's'} from you`;
 export const UNRELIABLE_REPLY = "Couldn't get a reliable reply, try again";
+
+// --- Phase 24: graded stories ---------------------------------------------------------------
+export const STORIES = 'Stories';
+export const NEXT_STORY = 'Next story';
+export const STORY_UNAVAILABLE = "Couldn't write a good story right now";
+export const STORY_WRITING = 'Writing a story…';
+export const READ_AGAIN = 'Read again';
+export const EASIER_NOW = "You'll find this one easier now";
+export const STORY_DIFFICULTY = { easier: 'Easier', middle: 'Just right', harder: 'Harder' } as const;
+/** "A 2-minute story using Lesson 3 words" (Home and the Stories section). */
+export const storyPitch = (minutes: number, lesson?: { n: number; bookId: string }): string =>
+  `A ${minutes}-minute story${lesson ? ` using ${lessonShort(lesson.n)} words` : ''}`;
+/** After reading: "You read 214 characters · 96% words you know". */
+export const storyReadLine = (chars: number, knownShare: number): string =>
+  `You read ${chars} characters · ${pct(knownShare)} words you know`;
+/** Progress: "Characters read this week: 214 · 2 stories finished". */
+export const storyWeekLine = (chars: number, finished: number): string =>
+  `Characters read this week: ${chars} · ${finished} ${finished === 1 ? 'story' : 'stories'} finished`;
+export const storyScoreLine = (right: number, of: number): string => `${right} of ${of} right`;

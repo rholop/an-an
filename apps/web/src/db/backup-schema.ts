@@ -58,7 +58,9 @@ export const SkillCardSchema = z.object({
     markedKnownAt: z.coerce.date().optional(),
     excluded: z.boolean().optional(),
     snoozed: z.boolean().optional(),
-    snoozedWhen: z.object({ level: LevelSchema.optional(), lessonId: z.string().optional() }).optional(),
+    snoozedWhen: z
+      .object({ level: LevelSchema.optional(), lessonId: z.string().optional() })
+      .optional(),
     // Phase 21 (additive): "I already know this" quick check.
     knownChecked: z.boolean().optional(),
     knownCheckedAt: z.coerce.date().optional(),
@@ -91,6 +93,7 @@ const EvidenceKindSchema = z.enum([
   'journal_correct_use',
   'journal_misuse',
   'chat_read_no_lookup',
+  'story_read_no_lookup',
   'chat_lookup_gloss',
   'chat_hover_reading',
   'review_again',
@@ -128,12 +131,24 @@ export const EvidenceSchema = z.object({
   at: z.coerce.date(),
   context: z
     .object({
-      source: z.enum(['chat', 'journal', 'cloze', 'review', 'placement', 'reader', 'textbook', 'pinyin']),
+      source: z.enum([
+        'chat',
+        'journal',
+        'cloze',
+        'review',
+        'placement',
+        'reader',
+        'textbook',
+        'pinyin',
+        'story',
+      ]),
       refId: z.string().optional(),
       selfFixed: z.boolean().optional(),
       choice: z.enum(['not_now', 'known', 'never']).optional(),
       noIntroduce: z.boolean().optional(),
-      snoozedWhen: z.object({ level: LevelSchema.optional(), lessonId: z.string().optional() }).optional(),
+      snoozedWhen: z
+        .object({ level: LevelSchema.optional(), lessonId: z.string().optional() })
+        .optional(),
       // Phase 21: the card before an undone answer, and a cloze rung set without a rating.
       restore: z.unknown().optional(),
       rung: z.number().optional(),
@@ -384,6 +399,56 @@ export const ReaderShownRowSchema = z.object({
   updatedAt: z.coerce.date().optional(),
 });
 
+const StoryQuestionRowSchema = z.object({
+  q_zh: z.string(),
+  q_en: z.string(),
+  options: z.array(z.object({ zh: z.string(), en: z.string() })),
+  answer: z.number().int(),
+});
+
+/** Phase 24: a story in the library (core `StoryRecord`). */
+export const StoryRowSchema = z.object({
+  uid: z.string().optional(),
+  id: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  level: LevelSchema,
+  difficulty: z.enum(['easier', 'middle', 'harder']),
+  topic: z.string(),
+  lessonId: z.string().optional(),
+  seriesId: z.string().optional(),
+  episode: z.number().optional(),
+  titleZh: z.string(),
+  titleEn: z.string(),
+  paragraphs: z.array(z.object({ zh: z.string(), en: z.string() })),
+  summaryEn: z.string(),
+  glosses: z.array(z.object({ zh: z.string(), en: z.string() })),
+  characters: z.array(z.string()),
+  questions: z.array(StoryQuestionRowSchema),
+  newWords: z.array(
+    z.object({
+      wordId: z.string().optional(),
+      text: z.string(),
+      rung: z.union([
+        z.literal(1),
+        z.literal(2),
+        z.literal(3),
+        z.literal(4),
+        z.literal(5),
+        z.literal(6),
+      ]),
+    }),
+  ),
+  wordIds: z.array(z.string()),
+  chars: z.number(),
+  rung1Share: z.number(),
+  readAt: z.coerce.date().optional(),
+  score: z.object({ right: z.number(), of: z.number() }).optional(),
+  readCount: z.number().optional(),
+  readDates: z.array(z.coerce.date()).optional(),
+  report: z.object({ reason: z.string(), note: z.string().optional(), at: z.coerce.date() }).optional(),
+});
+
 export const BackupSchema = z.object({
   schemaVersion: z.number().int(),
   lexiconVersion: z.string().optional(),
@@ -408,6 +473,8 @@ export const BackupSchema = z.object({
   // Phase 9 (schemaVersion 6): reader sentences.
   liveSentences: z.array(LiveSentenceRowSchema).default([]),
   readerShown: z.array(ReaderShownRowSchema).default([]),
+  // Phase 24 (schemaVersion 7): the story library.
+  stories: z.array(StoryRowSchema).default([]),
   // Phase 8 (schemaVersion 5): when each settings/meta key last changed, so
   // two devices can keep the later edit. Absent in older backups.
   settingsUpdatedAt: z.record(z.string(), z.coerce.date()).default({}),

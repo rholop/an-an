@@ -289,3 +289,65 @@ export const TOPIC_WORDS_JSON_SCHEMA = {
   },
   required: ['words'],
 } as const;
+
+/** Phase 24: StoryResponse (POST /v1/story). */
+export const STORY_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    title_zh: { type: 'string' },
+    title_en: { type: 'string' },
+    paragraphs: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { zh: { type: 'string' }, en: { type: 'string' } },
+        required: ['zh', 'en'],
+      },
+    },
+    summary_en: { type: 'string' },
+    glosses: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { zh: { type: 'string' }, en: { type: 'string' } },
+        required: ['zh', 'en'],
+      },
+    },
+    characters: { type: 'array', items: { type: 'string' } },
+    questions: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          q_zh: { type: 'string' },
+          q_en: { type: 'string' },
+          options: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: { zh: { type: 'string' }, en: { type: 'string' } },
+              required: ['zh', 'en'],
+            },
+          },
+          answer: { type: 'integer' },
+        },
+        required: ['q_zh', 'q_en', 'options', 'answer'],
+      },
+    },
+  },
+  required: ['title_zh', 'title_en', 'paragraphs', 'summary_en', 'glosses', 'characters', 'questions'],
+} as const;
+
+/** Phase 24: StoryCheckResponse (POST /v1/story-check). */
+export const STORY_CHECK_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    natural: { type: 'boolean' },
+    coherent: { type: 'boolean' },
+    taiwan: { type: 'boolean' },
+    summaryMatches: { type: 'boolean' },
+    problems: { type: 'array', items: { type: 'string' } },
+    correctOptions: { type: 'array', items: { type: 'array', items: { type: 'integer' } } },
+  },
+  required: ['natural', 'coherent', 'taiwan', 'summaryMatches', 'problems', 'correctOptions'],
+} as const;

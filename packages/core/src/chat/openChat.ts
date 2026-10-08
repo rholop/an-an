@@ -7,10 +7,10 @@ import type { Lexicon } from '../lexicon.js';
 import { levelIndex, type Level } from '../levels.config.js';
 import { segment, type HintToken } from '../segment.js';
 import { checkTaiwanness } from '../taiwanness.js';
-import { courseOrdinal, LAIXUE_COURSE } from '../textbook/course.js';
 import { derivedCompoundIds } from '../textbook/scope.js';
-import type { Lesson, Textbook } from '../textbook/types.js';
+import type { Textbook } from '../textbook/types.js';
 import type { StudyFocus } from '../study/study-focus.js';
+import { vocabLadder, type VocabLadder } from '../progress/vocabLadder.js';
 import type { TurnResponse } from './types.js';
 import { locateHints } from '../validate/turn.js';
 import { glossFor } from '../gloss/context.js';
@@ -114,73 +114,29 @@ export interface Upcoming {
 
 const NONE: Upcoming = { source: 'none', lessons: [], wordIds: [], grammarIds: [] };
 
-function lessonCore(l: Lesson): string[] {
-  const proper = new Set(l.properNouns);
-  return [...new Set([...l.vocab, ...(l.grammarWords ?? [])])].filter((id) => !proper.has(id));
-}
-
-function describe(l: Lesson, bookId: string): UpcomingLesson {
-  return { lessonId: l.id, bookId, n: l.n, topic: l.topic, titleEn: l.titleEn };
-}
-
-function fromLessons(
-  source: UpcomingSource,
-  picked: Array<{ lesson: Lesson; bookId: string }>,
-): Upcoming {
-  return {
-    source,
-    lessons: picked.map((p) => describe(p.lesson, p.bookId)),
-    wordIds: [...new Set(picked.flatMap((p) => lessonCore(p.lesson)))],
-    grammarIds: [...new Set(picked.flatMap((p) => p.lesson.grammar))],
-  };
-}
-
-/** Every lesson of the imported books, in course order. */
-function lessonsInCourseOrder(
-  books: readonly Textbook[],
-): Array<{ lesson: Lesson; bookId: string; ordinal: number }> {
-  const out: Array<{ lesson: Lesson; bookId: string; ordinal: number }> = [];
-  for (const b of books) {
-    for (const l of b.lessons) {
-      const ordinal = courseOrdinal(LAIXUE_COURSE, b.id, l.n);
-      if (ordinal !== undefined) out.push({ lesson: l, bookId: b.id, ordinal });
-    }
-  }
-  return out.sort((a, b) => a.ordinal - b.ordinal);
-}
-
 /**
- * The "next three lessons" of Part A.
- * - The active lesson plus the next two in study order. Phase 21: lessons already mastered or
- *   gated behind an unmastered TOCFL level are skipped (they don't use up a place). When the
- *   active step is "the rest of a TOCFL level", that level's unmastered words take the place of lessons.
- * - Study order off, or no textbook: nothing. Phase 21: priority never comes from My class
- *   directly; the study focus already follows the class.
+ * The "next three lessons" of Part A. Phase 24: read off the shared vocabulary ladder
+ * (`vocabLadder`): the active lesson and the two after it in study order, skipping mastered and
+ * TOCFL-gated lessons; a "rest of a level" step uses that level's unmastered words instead.
+ * Study order off, or no textbook: nothing.
  */
 export function upcomingContent(
   profile: Pick<OpenChatProfile, 'books' | 'studyFocus'>,
   config: Pick<OpenChatConfig, 'upcomingLessons' | 'levelStepWordCap'> = OPEN_CHAT_CONFIG,
 ): Upcoming {
-  if (profile.books.length === 0) return NONE;
-  const ordered = lessonsInCourseOrder(profile.books);
-  const focus = profile.studyFocus;
-  if (!focus?.enabled || !focus.activeStep) return NONE;
-  const step = focus.activeStep;
-  if (step.kind === 'level') {
-    const wordIds = focus.focusItems
-      .filter((i) => i.kind === 'word')
-      .map((i) => i.id)
-      .slice(0, config.levelStepWordCap);
-    return { source: 'level-step', lessons: [], wordIds, grammarIds: [] };
-  }
-  const at = ordered.findIndex((o) => o.lesson.id === step.lessonId);
-  if (at < 0) return NONE;
-  const skip = new Set([...(focus.gatedLessonIds ?? []), ...(focus.masteredLessonIds ?? [])]);
-  const window = [
-    ordered[at]!,
-    ...ordered.slice(at + 1).filter((o) => !skip.has(o.lesson.id)),
-  ].slice(0, config.upcomingLessons);
-  return fromLessons('study-order', window);
+  const ladder = vocabLadder(
+    { lexicon: { allWords: () => [] }, level: 'N1', knownIds: new Set(), dueIds: new Set(), learningIds: new Set(), ...profile },
+    { levelStepWordCap: config.levelStepWordCap },
+  );
+  return upcomingOf(ladder, config);
+}
+
+function upcomingOf(ladder: VocabLadder, config: Pick<OpenChatConfig, 'upcomingLessons'>): Upcoming {
+  if (ladder.source === 'none') return NONE;
+  const lessons = [ladder.lessons.active, ladder.lessons.next, ladder.lessons.after]
+    .filter((l): l is UpcomingLesson => !!l)
+    .slice(0, config.upcomingLessons);
+  return { source: ladder.source, lessons, wordIds: ladder.upcomingWordIds, grammarIds: ladder.grammar.upcoming };
 }
 
 // ---- tiers -------------------------------------------------------------------
@@ -233,27 +189,21 @@ export function buildOpenChatVocab(
 ): OpenChatVocab {
   void _now;
   const lex = profile.lexicon;
-  const upcoming = upcomingContent(profile, config);
+  // Phase 24: tiers are read off the shared vocabulary ladder. A = rungs 1–4 (known, due,
+  // learning, catch-up, and the next three lessons), B = rung 5 (the picked level), C = rung 6.
+  const ladder = vocabLadder(profile, {
+    rung5IncludesLowerLevels: config.tierBIncludesLowerLevels,
+    levelStepWordCap: config.levelStepWordCap,
+  });
+  const upcoming = upcomingOf(ladder, config);
   const upcomingIds = new Set(upcoming.wordIds);
 
-  const a = new Set<string>([
-    ...profile.knownIds,
-    ...profile.dueIds,
-    ...profile.learningIds,
-    ...upcomingIds,
-  ]);
+  const a = new Set<string>([...ladder.ids[1], ...ladder.ids[2], ...ladder.ids[3], ...ladder.ids[4]]);
   // Obvious parts/compounds of the upcoming words are as good as the words themselves.
   if (upcomingIds.size > 0) {
     for (const id of derivedCompoundIds(lex, upcomingIds)) a.add(id);
   }
-
-  const picked = levelIndex(profile.level);
-  const b = new Set<string>();
-  for (const w of lex.allWords()) {
-    if (a.has(w.id) || w.source !== 'tocfl' || w.level === null) continue;
-    const li = levelIndex(w.level);
-    if (config.tierBIncludesLowerLevels ? li <= picked : li === picked) b.add(w.id);
-  }
+  const b = new Set<string>([...ladder.ids[5]].filter((id) => !a.has(id)));
 
   const tierOfWord = (id: string): OpenChatTier => (a.has(id) ? 'A' : b.has(id) ? 'B' : 'C');
   const tierOfHeadword = (hw: string): OpenChatTier => {

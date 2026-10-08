@@ -12,7 +12,8 @@
     "scripted-run": "tsx scripts/scripted-run.ts",
     "journal-eval": "tsx scripts/journal-eval.ts",
     "sync-rollback": "tsx scripts/sync-rollback.ts",
-    "journal-cloze-eval": "tsx scripts/journal-cloze-eval.ts"
+    "journal-cloze-eval": "tsx scripts/journal-cloze-eval.ts",
+    "stories-eval": "tsx scripts/stories-eval.ts"
   },
   "dependencies": {
     "@anan/core": "workspace:*",

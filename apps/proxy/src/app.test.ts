@@ -9,6 +9,7 @@ import {
   loadJournalPromptTemplates,
   loadPromptTemplate,
   loadSentenceGenPromptTemplate,
+  loadStoryPromptTemplates,
 } from './prompt.js';
 import { RateLimiter } from './rate-limit.js';
 import type { ScenarioStore } from './scenarios.js';
@@ -128,6 +129,7 @@ function buildApp(
     sentenceOrchestrator?: SentenceOrchestrator;
     journalOrchestrator?: JsonOrchestrator;
     glossOrchestrator?: JsonOrchestrator;
+    storyOrchestrator?: JsonOrchestrator;
     sync?: SyncStore;
     /** Send `x-site-code: tofu` automatically (default). Pass false to test 401s. */
     autoCode?: boolean;
@@ -150,6 +152,10 @@ function buildApp(
       orchestrator:
         overrides.glossOrchestrator ??
         fakeJournalOrchestrator((task) => (task === '/v1/define' ? fakeDefine : fakeGloss)),
+    },
+    story: {
+      prompts: loadStoryPromptTemplates('v1'),
+      ...(overrides.storyOrchestrator ? { orchestrator: overrides.storyOrchestrator } : {}),
     },
     siteCode: 'tofu',
     sync: overrides.sync ?? new MemorySyncStore(),
@@ -950,5 +956,98 @@ describe('textbook text (phase 12)', () => {
     expect((await app.request('/v1/textbook/laixue-1/examples')).status).toBe(404);
     expect((await app.request('/v1/textbook/laixue-1/pages')).status).toBe(404);
     expect((await app.request('/v1/textbook/..%2F..%2Fetc/dialogues')).status).toBe(404);
+  });
+});
+
+describe('Phase 24 graded stories', () => {
+  const post = (app: ReturnType<typeof buildApp>, route: string, body: unknown) =>
+    app.request(route, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-install-id': 'c1' },
+      body: JSON.stringify(body),
+    });
+  const story = {
+    title_zh: '喝茶',
+    title_en: 'Tea',
+    paragraphs: [{ zh: '我今天想喝茶。', en: 'Today I want to drink tea.' }],
+    summary_en: 'Someone wants tea.',
+    glosses: [],
+    characters: ['王明文'],
+    questions: [{ q_zh: '他想喝什麼？', q_en: 'What does he want?', options: [{ zh: '茶', en: 'tea' }, { zh: '水', en: 'water' }, { zh: '咖啡', en: 'coffee' }], answer: 0 }],
+  };
+  const req = {
+    topic: 'tea',
+    learnerLevel: 'N1',
+    length: { min: 80, max: 150 },
+    rungs: { r1: ['我', '喝', '茶'], r2: ['咖啡'], r3: ['便利商店'], r4: [], r5: [] },
+    budget: { rung1Share: 0.95, rung3: 3, rung4: 1, rung5: 1 },
+    grammar: ['V + 了'],
+    grammarNext: [],
+    names: ['王明文'],
+  };
+
+  it('POST /v1/story sends the rung lists, budget, names and grammar; the response is schema-checked', async () => {
+    const seen: { system: string; user: string }[] = [];
+    const respond = (r: { systemPrompt: string; userMessage: string }) => {
+      seen.push({ system: r.systemPrompt, user: r.userMessage });
+      return story;
+    };
+    const app = buildApp({
+      storyOrchestrator: createJsonOrchestrator(
+        new FakeJsonAdapter('gemini', { kind: 'success', respond }),
+        new FakeJsonAdapter('openai', { kind: 'success', respond }),
+        new PromptCache<JsonTaskResult<unknown>>(),
+      ),
+    });
+    const res = await post(app, '/v1/story', req);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ title_zh: '喝茶' });
+    expect(seen[0]!.user).toContain('Rung 2 (this lesson): 咖啡');
+    expect(seen[0]!.user).toContain('Names: 王明文');
+    expect(seen[0]!.system).toContain('at least 95%');
+    expect(seen[0]!.system).toContain('80–150');
+    expect(seen[0]!.system).toContain('V + 了');
+    // the same request is cached (never paid for twice)
+    await post(app, '/v1/story', req);
+    expect(seen).toHaveLength(1);
+    expect((await post(app, '/v1/story', { ...req, topic: '' })).status).toBe(400);
+  });
+
+  it('POST /v1/story-check reads only the story (no prompt, no lists) on the other provider', async () => {
+    const seen: string[] = [];
+    const check = { natural: true, coherent: true, taiwan: true, summaryMatches: true, problems: [], correctOptions: [[0]] };
+    const spy = (name: 'gemini' | 'openai') => {
+      const inner = new FakeJsonAdapter(name, { kind: 'success', respond: () => check });
+      return {
+        name,
+        generateJson: <T>(r: Parameters<typeof inner.generateJson<T>>[0]) => {
+          seen.push(`${name}|${r.systemPrompt}|${r.userMessage}`);
+          return inner.generateJson(r);
+        },
+      };
+    };
+    const app = buildApp({
+      storyOrchestrator: createJsonOrchestrator(spy('gemini'), spy('openai'), new PromptCache<JsonTaskResult<unknown>>()),
+    });
+    const res = await post(app, '/v1/story-check', {
+      paragraphs: ['我今天想喝茶。'],
+      summaryEn: 'Someone wants tea.',
+      questions: [{ q: '他想喝什麼？', options: ['茶', '水', '咖啡'] }],
+      avoidProvider: 'gemini',
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('x-served-by')).toBe('openai');
+    expect(seen[0]).toContain('我今天想喝茶。');
+    expect(seen[0]).not.toContain('Rung');
+  });
+
+  it('needs the household code', async () => {
+    const app = buildApp({ autoCode: false });
+    const res = await app.request('/v1/story', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-install-id': 'c1' },
+      body: JSON.stringify(req),
+    });
+    expect(res.status).toBe(401);
   });
 });

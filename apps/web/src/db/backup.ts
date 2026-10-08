@@ -24,6 +24,7 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     aiGlosses,
     liveSentences,
     readerShown,
+    stories,
   ] = await Promise.all([
     db.items.toArray(),
     db.evidence.toArray(),
@@ -40,6 +41,7 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     db.aiGlosses.toArray(),
     db.liveSentences.toArray(),
     db.readerShown.toArray(),
+    db.stories.toArray(),
   ]);
   const stamps = (rows: { key: string; updatedAt?: Date }[]) =>
     Object.fromEntries(rows.flatMap((r) => (r.updatedAt ? [[r.key, r.updatedAt] as const] : [])));
@@ -62,6 +64,7 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     aiGlosses,
     liveSentences,
     readerShown,
+    stories,
     settingsUpdatedAt: stamps(settings),
     metaUpdatedAt: stamps(meta),
   };
@@ -95,6 +98,7 @@ async function replaceAll(db: AnanDB, parsed: Backup): Promise<void> {
     db.aiGlosses,
     db.liveSentences,
     db.readerShown,
+    db.stories,
   ];
   await db.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()));
@@ -123,6 +127,7 @@ async function replaceAll(db: AnanDB, parsed: Backup): Promise<void> {
     if (parsed.aiGlosses.length > 0) await db.aiGlosses.bulkPut(parsed.aiGlosses);
     if (parsed.liveSentences.length > 0) await db.liveSentences.bulkPut(parsed.liveSentences);
     if (parsed.readerShown.length > 0) await db.readerShown.bulkPut(parsed.readerShown);
+    if (parsed.stories.length > 0) await db.stories.bulkPut(parsed.stories);
   });
 }
 

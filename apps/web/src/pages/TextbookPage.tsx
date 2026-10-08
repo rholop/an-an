@@ -16,6 +16,7 @@ import {
   type Lesson,
   type LessonProgress,
   type Lexicon,
+  type StoryRecord,
   type SentenceBankEntry,
   type SkillCard,
   type Textbook,
@@ -45,6 +46,9 @@ import {
   listeningLine,
   NEXT,
   STUDY_THIS_LESSON,
+  NEXT_STORY,
+  STORY_UNAVAILABLE,
+  STORY_WRITING,
   TERM,
   UNDO,
   yourClassLabel,
@@ -76,6 +80,9 @@ import { useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { allListeningCards } from '../db/queries.js';
 import { JournalPage } from './JournalPage.js';
 import { ReviewPage } from './ReviewPage.js';
+import { StoryView } from './StoryView.js';
+import { useCurrentLevel } from '../lib/current-level.js';
+import { canWriteStories, useStoryDifficulty, useStoryService } from '../lib/stories.js';
 import './TextbookPage.css';
 
 type View =
@@ -570,13 +577,15 @@ function Dialogue({
 // Study this lesson: vocab → grammar cloze/reorder → scenario → journal.
 // ---------------------------------------------------------------------------
 
-type Step = 'vocab' | 'grammar' | 'listening' | 'scenario' | 'journal';
+type Step = 'vocab' | 'grammar' | 'listening' | 'scenario' | 'journal' | 'story';
 const STEPS: Array<{ id: Step; label: string }> = [
   { id: 'vocab', label: 'Vocabulary review' },
   { id: 'grammar', label: 'Grammar practice' },
   { id: 'listening', label: 'Listening round' },
   { id: 'scenario', label: 'Chat scenario' },
   { id: 'journal', label: 'Journal prompt' },
+  // Phase 24: optional, at the end
+  { id: 'story', label: 'A short story (optional)' },
 ];
 
 function StudySession({
@@ -606,7 +615,9 @@ function StudySession({
           ? lesson.scenarios.length > 0
           : s.id === 'journal'
             ? lesson.journalPrompts.length > 0
-            : true,
+            : s.id === 'story'
+              ? canWriteStories()
+              : true,
       ),
     [lesson, listeningOn, clips],
   );
@@ -665,6 +676,44 @@ function StudySession({
           onDone={next}
         />
       )}
+      {step.id === 'story' && <StoryStep lexicon={lexicon} onDone={next} />}
+    </div>
+  );
+}
+
+/** Phase 24: the optional story step: a story using this lesson's words (a ready one when there is one). */
+function StoryStep({ lexicon, onDone }: { lexicon: Lexicon; onDone: () => void }) {
+  const { level } = useCurrentLevel();
+  const service = useStoryService(lexicon);
+  const [difficulty] = useStoryDifficulty();
+  const [story, setStory] = useState<StoryRecord | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  if (story)
+    return <StoryView story={story} service={service} lexicon={lexicon} level={level} exitLabel={`${NEXT} →`} onExit={onDone} />;
+  return (
+    <div className="textbook-story-step" data-testid="study-story-step">
+      <p>Read a short story made from this lesson&apos;s words and the ones you already know.</p>
+      <button
+        type="button"
+        className="btn-primary"
+        disabled={busy}
+        aria-busy={busy}
+        onClick={async () => {
+          setBusy(true);
+          setError(null);
+          try {
+            setStory(await service.next(level, difficulty));
+          } catch {
+            setError(STORY_UNAVAILABLE);
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? STORY_WRITING : `${NEXT_STORY} →`}
+      </button>
+      {error && <p role="status">{error}</p>}
     </div>
   );
 }

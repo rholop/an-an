@@ -1,0 +1,89 @@
+/* Phase 24: graded stories (the Stories section and the story screen). Tap targets ≥ 44px. */
+.story-view { max-width: 42rem; margin: 0 auto; display: flex; flex-direction: column; gap: 0.9rem; }
+.story-back { align-self: flex-start; min-height: 44px; }
+.story-header h1 { margin: 0; font-size: 1.8rem; }
+.story-sub { margin: 0.2rem 0 0; color: var(--text-muted); }
+.story-paragraph {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.9rem;
+  font-size: 1.25rem;
+  line-height: 2;
+}
+.story-paragraph-tools { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; justify-content: flex-end; }
+.story-english-toggle { min-height: 44px; font-size: 0.95rem; }
+.story-english { margin: 0.4rem 0 0; font-size: 1rem; line-height: 1.5; color: var(--text-muted); }
+.story-glosses { display: flex; flex-wrap: wrap; gap: 0.8rem; color: var(--text-muted); margin: 0; }
+.story-primary { min-height: 44px; align-self: flex-start; }
+.story-questions { display: flex; flex-direction: column; gap: 0.9rem; }
+.story-q-english { min-height: 44px; display: flex; align-items: center; gap: 0.4rem; }
+.story-question { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.story-question legend { font-size: 1.15rem; padding: 0 0.3rem; }
+.story-q-en { color: var(--text-muted); font-size: 0.9rem; }
+.story-option {
+  min-height: 44px;
+  text-align: left;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: inherit;
+  font-size: 1.1rem;
+}
+.story-option:disabled { opacity: 1; cursor: default; }
+.story-option--picked { border-color: var(--focus); border-width: 2px; }
+.story-option--right { border-color: var(--accent); border-width: 2px; }
+.story-option--wrong { border-color: var(--danger); border-width: 2px; }
+.story-feedback { margin: 0; color: var(--accent); }
+.story-summary { display: flex; flex-direction: column; gap: 0.6rem; }
+.story-summary-line { font-size: 1.1rem; margin: 0; }
+.story-score { margin: 0; color: var(--text-muted); }
+.story-new-words { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.story-new-words label { min-height: 44px; display: flex; align-items: center; gap: 0.4rem; }
+.story-gloss { color: var(--text-muted); }
+.story-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.story-actions button, .story-summary > button { min-height: 44px; }
+
+/* The Stories section at the top of the Reader */
+.stories-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0.8rem 0.9rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.stories-section h2 { margin: 0; }
+.stories-pitch { margin: 0; color: var(--text-muted); }
+.stories-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.stories-row button, .stories-row input { min-height: 44px; }
+.stories-topic-input { flex: 1; min-width: 10rem; }
+.stories-chip { border-radius: 999px; }
+.stories-topics > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+.stories-chip[aria-checked='true'] { border-color: var(--focus); border-width: 2px; }
+.stories-library { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+.stories-item {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: inherit;
+}
+.stories-item-title { flex: 1; font-size: 1.1rem; }
+.stories-badge { font-size: 0.8rem; color: var(--text-muted); }
+.stories-unread { font-size: 0.8rem; color: var(--water); font-weight: 600; }
+.stories-easier { margin: 0; color: var(--info-text); }
+.stories-error { margin: 0; color: var(--danger-text); }
+
+/* Home's "Today's story" line */
+.home-story { margin: 0.4rem 0 0.8rem; }
+.home-story button { min-height: 44px; text-align: left; }

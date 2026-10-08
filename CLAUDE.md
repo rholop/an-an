@@ -95,10 +95,11 @@ interface Evidence {             // everything that updates the learner model
     | 'cloze_correct_nohint' | 'cloze_correct_hint' | 'cloze_wrong'
     | 'journal_correct_use' | 'journal_misuse'
     | 'chat_read_no_lookup' | 'chat_lookup_gloss' | 'chat_hover_reading'
+    | 'story_read_no_lookup'   // Phase 24: a due/learning word read in a story without a lookup
     | 'review_again' | 'review_hard' | 'review_good' | 'review_easy'
     | 'anki_import_seen' | 'placement_known' | 'placement_unknown';
   at: Date;
-  context?: { source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement'; refId?: string };
+  context?: { source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'story'; refId?: string };
 }
 ```
 
@@ -124,6 +125,7 @@ compares a card's `state` or `stability` to decide them (an architecture test en
 | **Tricky** | A leech: counts as Learned, never Mastered | `ProgressIndex` |
 | **Comprehensible** | Known ∪ due ∪ learning (chat, reader and open-chat coverage) | `learnerService.wordSets` |
 | **Current lesson** | The study focus's active lesson (`getStudyFocus`), which follows My class | `study/study-focus.ts` |
+| **Vocabulary ladder** | Rung 1 learned/due/learning/catch-up · 2 active lesson · 3 next lesson · 4 the lesson after · 5 current level · 6 everything else. Stories and open chat both rank words with it | `vocabLadder` (`core/progress/vocabLadder.ts`) |
 | **Your class** | The My class setting. Labels and visibility only, never priority | `useClassScope` / `currentClassScope` |
 
 **Colours (Phase 22):** every colour is a token in `apps/web/src/theme.css` (light = Solarized
@@ -159,6 +161,7 @@ Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
 | 21 | Now studying follows your class; one meaning for progress, due, new and labels everywhere | Shared terms above |
 | 22 | Home "💧 Water all" and "Review all", matching due counts, Garden light/dark theme tokens (`apps/web/src/theme.css`), plant icons, nav with More | `22-home-buttons-and-garden-theme.md` |
 | 23 | Morning and evening review sessions (profile time zone, cap per session), Review faces (Meaning, Pick, Recall, Say it) with look-alike options, "Pinyin & tones" tab (7 tap exercises on the `reading` skill, tone confusion table on Progress) | `23-review-sessions-and-pinyin-practice.md` |
+| 24 | Graded stories from known words (vocabulary ladder, Stories in the Reader, Home "Today's story", optional lesson story step) | `24-graded-stories.md`, eval in `docs/stories-eval.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

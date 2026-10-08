@@ -26,6 +26,10 @@ import {
   JournalReviewSchema,
   OpenTurnRequestSchema,
   SentenceGenRequestSchema,
+  StoryCheckRequestSchema,
+  StoryCheckResponseSchema,
+  StoryRequestSchema,
+  StoryResponseSchema,
   TopicWordsRequestSchema,
   TopicWordsResponseSchema,
   TurnRequestSchema,
@@ -46,6 +50,8 @@ import {
   JOURNAL_SENTENCE_FIX_JSON_SCHEMA,
   JOURNAL_SOLVE_JSON_SCHEMA,
   JOURNAL_VERIFY_JSON_SCHEMA,
+  STORY_CHECK_JSON_SCHEMA,
+  STORY_JSON_SCHEMA,
   TOPIC_WORDS_JSON_SCHEMA,
 } from './json-schema.js';
 import {
@@ -71,6 +77,9 @@ import {
   type GlossPrompts,
   buildSentenceGenPrompt,
   buildOpenSystemPrompt,
+  buildStoryPrompt,
+  storyCheckUserMessage,
+  storyUserMessage,
   buildSystemPrompt,
   topicWordsUserMessage,
   journalCheckUserMessage,
@@ -107,6 +116,8 @@ export interface AppDeps {
     topicWordsPrompt: string;
     topicWordsOrchestrator: JsonOrchestrator;
   };
+  /** Phase 24: graded stories (writer + independent checker prompts). */
+  story?: { prompts: { write: string; check: string }; orchestrator?: JsonOrchestrator };
   rateLimiter: RateLimiter;
   log?: (entry: Record<string, unknown>) => void;
 }
@@ -564,6 +575,37 @@ export function createApp(deps: AppDeps): Hono {
       TOPIC_WORDS_JSON_SCHEMA,
       (req) => ({ systemPrompt: oc.topicWordsPrompt, userMessage: topicWordsUserMessage(req) }),
       oc.topicWordsOrchestrator,
+    );
+  });
+
+  // Phase 24: a graded story, then the independent reader (the other provider, never shown the
+  // prompt or the word lists). Both behind the household code, cached like every JSON task.
+  app.post('/v1/story', (c) => {
+    const st = deps.story;
+    if (!st) return c.json({ error: 'stories are not configured' }, 501);
+    return journalRoute(
+      c,
+      '/v1/story',
+      StoryRequestSchema,
+      StoryResponseSchema,
+      STORY_JSON_SCHEMA,
+      (req) => ({ systemPrompt: buildStoryPrompt(st.prompts.write, req), userMessage: storyUserMessage(req) }),
+      st.orchestrator,
+    );
+  });
+
+  app.post('/v1/story-check', (c) => {
+    const st = deps.story;
+    if (!st) return c.json({ error: 'stories are not configured' }, 501);
+    return journalRoute(
+      c,
+      '/v1/story-check',
+      StoryCheckRequestSchema,
+      StoryCheckResponseSchema,
+      STORY_CHECK_JSON_SCHEMA,
+      (req) => ({ systemPrompt: st.prompts.check, userMessage: storyCheckUserMessage(req) }),
+      st.orchestrator,
+      (req) => req.avoidProvider,
     );
   });
 

@@ -309,14 +309,20 @@ test.describe('Reader: New sentence (phase 9)', () => {
       page.getByRole('button', { name: 'Previous sentence' }),
       newButton(page),
     ];
-    const tops = async () => Promise.all(below.map(async (l) => (await l.boundingBox())!.y));
+    // page positions (Phase 24: Stories sit above the reader, so opening a definition may scroll)
+    const scrollY = () => page.evaluate(() => window.scrollY);
+    const tops = async () => {
+      const y = await scrollY();
+      return Promise.all(below.map(async (l) => (await l.boundingBox())!.y + y));
+    };
     const before = await tops();
 
     // the very last word of the sample is on the bottom row
     await tokens.nth((await tokens.count()) - 3).click();
     const popover = page.locator('.an-popover');
     await expect(popover).toBeVisible();
-    const pop = (await popover.boundingBox())!;
+    const popBox = (await popover.boundingBox())!;
+    const pop = { ...popBox, y: popBox.y + (await scrollY()) };
     const after = await tops();
     for (const top of after) expect(pop.y + pop.height).toBeLessThanOrEqual(top + 1);
     // the content moved down to make room, rather than being overlapped
@@ -330,8 +336,8 @@ test.describe('Reader: New sentence (phase 9)', () => {
       await expect
         .poll(async () => {
           const grown = (await popover.boundingBox())!;
-          const tops = await Promise.all(below.map(async (l) => (await l.boundingBox())!.y));
-          return Math.max(...tops.map((top) => grown.y + grown.height - top));
+          const ts = await Promise.all(below.map(async (l) => (await l.boundingBox())!.y));
+          return Math.max(...ts.map((top) => grown.y + grown.height - top));
         })
         .toBeLessThanOrEqual(1);
     }

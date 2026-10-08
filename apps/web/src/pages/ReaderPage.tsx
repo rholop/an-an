@@ -12,6 +12,7 @@ import {
   type Level,
   type Lexicon,
   type ReaderFocus,
+  type StoryRecord,
 } from '@anan/core';
 import { AnnotatedText, type AnnotatedToken } from '../components/AnnotatedText.js';
 import { ReadingControls } from '../components/ReadingControls.js';
@@ -33,7 +34,11 @@ import { useTextbookSentences } from '../lib/textbook-data.js';
 import { useSetting } from '../lib/useSetting.js';
 import { useReadingSettings } from '../lib/reading.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
-import { coverageLine } from '../lib/labels.js';
+import { coverageLine, STORY_UNAVAILABLE } from '../lib/labels.js';
+import { storyFakeOn, useStoryService } from '../lib/stories.js';
+import { showToast } from '../lib/toast.js';
+import { StoriesSection } from './StoriesSection.js';
+import { StoryView } from './StoryView.js';
 
 const SAMPLE = '我們搭捷運去便利商店，路上還遇到陳雅婷。他還沒還我錢，這件事情我做不了。';
 
@@ -101,7 +106,42 @@ export function ReaderPage() {
       </p>
     );
   }
-  return <ReaderView lexiconState={lexiconState} />;
+  return <ReaderWithStories lexiconState={lexiconState} />;
+}
+
+/** Phase 24: the Stories section sits at the top of the Reader; a story opens in its place. */
+function ReaderWithStories({ lexiconState }: { lexiconState: Extract<LexiconLoadState, { status: 'ready' }> }) {
+  const { level } = useCurrentLevel();
+  const [fake, setFake] = useState(storyFakeOn());
+  const stories = useStoryService(lexiconState.lexicon, fake);
+  const [open, setOpen] = useState<StoryRecord | null>(null);
+  if (open) {
+    return (
+      <StoryView
+        key={open.id}
+        story={open}
+        service={stories}
+        lexicon={lexiconState.lexicon}
+        level={level}
+        onExit={() => {
+          setOpen(null);
+          window.scrollTo(0, 0);
+        }}
+        onContinue={(s) =>
+          void stories
+            .write({ level, difficulty: s.difficulty, kind: 'continue', continueFrom: s })
+            .then(setOpen)
+            .catch(() => showToast(STORY_UNAVAILABLE))
+        }
+      />
+    );
+  }
+  return (
+    <>
+      <StoriesSection service={stories} lexicon={lexiconState.lexicon} level={level} onOpen={setOpen} onFakeChange={setFake} />
+      <ReaderView lexiconState={lexiconState} />
+    </>
+  );
 }
 
 function ReaderView({

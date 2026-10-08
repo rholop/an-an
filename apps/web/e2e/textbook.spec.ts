@@ -58,7 +58,7 @@ test.describe('Textbook / My class (phase 12)', () => {
     }
   });
 
-  test('Study this lesson runs vocab → grammar → scenario → journal, each step skippable', async ({ page }) => {
+  test('Study this lesson runs vocab → grammar → scenario → journal → story, each step skippable', async ({ page }) => {
     test.setTimeout(60_000); // every miss comes back once, so the grammar step can run to ~40 exercises
     await page.goto('/?page=textbook');
     await page.getByTestId('my-class-toggle').check();
@@ -67,14 +67,14 @@ test.describe('Textbook / My class (phase 12)', () => {
     await page.getByTestId('lesson-3').getByRole('button').first().click();
     await page.getByTestId('study-lesson').click();
 
-    await expect(page.getByTestId('study-session')).toContainText('Step 1 of 4');
+    await expect(page.getByTestId('study-session')).toContainText('Step 1 of 5');
     // Vocab: review a couple of cards, then continue.
     await page.getByRole('button', { name: 'Show answer' }).first().click();
     await page.getByRole('button', { name: 'Good' }).click();
     await page.getByRole('button', { name: /Done with vocabulary/ }).click();
 
     // Grammar: answer every exercise.
-    await expect(page.getByTestId('study-session')).toContainText('Step 2 of 4');
+    await expect(page.getByTestId('study-session')).toContainText('Step 2 of 5');
     // (a miss comes back once at the end, so allow for every exercise twice)
     // the exercises load first (reported sentences are filtered out)
     await expect(page.getByTestId('grammar-exercise').or(page.getByTestId('grammar-done'))).toBeVisible();
@@ -95,13 +95,18 @@ test.describe('Textbook / My class (phase 12)', () => {
     await page.getByTestId('grammar-done').click();
 
     // Scenario: the lesson's own chat scenario opens with the authored opener.
-    await expect(page.getByTestId('study-session')).toContainText('Step 3 of 4');
+    await expect(page.getByTestId('study-session')).toContainText('Step 3 of 5');
     await expect(page.locator('.chat-bubble--npc').first()).toContainText('Lisa');
     await page.getByTestId('study-skip').click();
 
     // Journal: one of the lesson's prompts, with its pattern.
-    await expect(page.getByTestId('study-session')).toContainText('Step 4 of 4');
+    await expect(page.getByTestId('study-session')).toContainText('Step 4 of 5');
     await expect(page.getByTestId('class-prompts')).toBeVisible();
+    await page.getByTestId('study-skip').click();
+
+    // Phase 24: an optional story at the end.
+    await expect(page.getByTestId('study-session')).toContainText('Step 5 of 5');
+    await expect(page.getByTestId('study-story-step')).toBeVisible();
     await page.getByTestId('study-skip').click(); // Finish
     await expect(page.getByTestId('study-lesson')).toBeVisible();
   });

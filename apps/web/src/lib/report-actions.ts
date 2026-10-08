@@ -27,7 +27,7 @@ export async function reportDefinition(at: AnnotatedToken, contextSentence: stri
 export async function recordDefaultLookup(
   at: AnnotatedToken,
   kind: 'gloss' | 'reading',
-  source: 'reader' | 'textbook' | 'journal' | 'chat' | 'cloze' | 'review' = 'reader',
+  source: 'reader' | 'textbook' | 'journal' | 'chat' | 'cloze' | 'review' | 'story' = 'reader',
 ): Promise<void> {
   if (!at.wordId) return;
   const now = new Date();

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { storyWeekStats } from '../lib/story-service.js';
 import {
   activeEvidence,
   actualRetention,
@@ -24,7 +25,7 @@ import {
 import { JournalProgress } from '../components/JournalProgress.js';
 import { AnnotatedInline, useReadingScript } from '../components/AnnotatedInline.js';
 import { LearnedMastered } from '../components/LearnedMastered.js';
-import { coverageLine, levelLabel, PINYIN_TAB, toneConfusionLine, toneLabel } from '../lib/labels.js';
+import { coverageLine, levelLabel, PINYIN_TAB, storyWeekLine, toneConfusionLine, toneLabel } from '../lib/labels.js';
 import { readTargetRetention } from '../lib/retention.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
 import { useProgressData } from '../lib/study.js';
@@ -49,6 +50,7 @@ export function ProgressPage() {
   const [streakConfig, setStreakConfig] = useState<StreakConfig | null>(null);
   const [tones, setTones] = useState<ToneConfusion[]>([]);
   const [readingCards, setReadingCards] = useState<SkillCard[]>([]);
+  const [storyStats, setStoryStats] = useState({ chars: 0, finished: 0 });
   const script = useReadingScript();
   const progressData = useProgressData();
   // Phase 21: every count re-reads after a change (a review, a sync merge, a setting).
@@ -79,6 +81,8 @@ export function ProgressPage() {
       setTones(toneConfusions(activeEvidence(evidence), new Date()));
       const reading = await allReadingCards(db);
       if (!cancelled) setReadingCards(reading);
+      const stats = await storyWeekStats(db);
+      if (!cancelled) setStoryStats(stats);
       setStreakConfig(streak);
     })();
     return () => {
@@ -142,6 +146,7 @@ export function ProgressPage() {
           <li>{week.scenariosCompleted} scenarios completed</li>
           <li>{week.journalEntries} journal entries</li>
           <li>{week.mistakesFixed} mistakes fixed</li>
+          <li data-testid="progress-stories">{storyWeekLine(storyStats.chars, storyStats.finished)}</li>
           <li>
             {week.points} points over {week.activeDays} {week.activeDays === 1 ? 'day' : 'days'}
           </li>
