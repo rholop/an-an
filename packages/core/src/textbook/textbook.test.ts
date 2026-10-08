@@ -17,7 +17,8 @@ import {
   tagsInScope,
   textbookTag,
 } from './scope.js';
-import { lessonProgress } from './progress.js';
+import { lessonDone, lessonProgress } from './progress.js';
+import { ProgressIndex } from '../progress/terms.js';
 import {
   courseLessonLevel,
   courseOrdinal,
@@ -88,8 +89,8 @@ const book: Textbook = {
 describe('tags', () => {
   it('builds and reads lesson tags', () => {
     expect(lessonTag(3)).toBe('textbook:laixue-1:L03');
-    expect(lessonBadge(3)).toBe('來學華語 1 · L3');
-    expect(lessonBadge(5, 'laixue-2')).toBe('來學華語 2 · L5');
+    expect(lessonBadge(3)).toBe('來學華語 1 · Lesson 3');
+    expect(lessonBadge(5, 'laixue-2')).toBe('來學華語 2 · Lesson 5');
     expect(lessonsOfTags(['x', ...tb(6), lessonTag(3)])).toEqual([3, 6]);
     expect(firstLessonOfTags(['x'])).toBeUndefined();
   });
@@ -149,15 +150,15 @@ describe('lessonCoveredEvidence', () => {
 
 describe('nextNewItems with My class', () => {
   const lexicon = new Lexicon(words);
-  const idsOf = (cards: SkillCard[], scope: ReturnType<typeof classScope>, n = 20) =>
-    nextNewItems(cards, lexicon, n, { currentLevel: 'N1', classScope: scope }).map((w) => w.id);
+  const idsOf = (cards: SkillCard[], scope: ReturnType<typeof classScope>, n = 20, priorityIds: string[] = []) =>
+    nextNewItems(cards, lexicon, n, { currentLevel: 'N1', classScope: scope, priorityIds }).map((w) => w.id);
 
-  it('current lesson first, next lesson trickles, lessons 6–10 stay out at lesson 4', () => {
+  it('study-focus words first (Phase 21), the next lesson is visible, lessons 6–10 stay out at lesson 4', () => {
     const scope = classScope({ enabled: true, textbookId: 'laixue-1', currentLesson: 4 });
     const cards = lessonCoveredEvidence(book, 3, NOW)
       .filter((e) => e.item.kind === 'word')
       .map((e) => applyEvidence(undefined, e, NOW).card!);
-    const picked = idsOf(cards, scope);
+    const picked = idsOf(cards, scope, 20, ['w4', 'w7']);
     expect(picked[0]).toBe('w4');
     expect(picked).toContain('w5'); // i+1
     for (const out of ['w6', 'w7', 'w8', 'w9', 'w10']) expect(picked).not.toContain(out);
@@ -186,11 +187,11 @@ describe('nextNewItems with My class', () => {
 });
 
 describe('lessonProgress', () => {
-  it('counts review-or-better vocab and practised grammar', () => {
-    const mk = (kind: 'word' | 'grammar', id: string, state: SkillCard['state']): SkillCard => ({
+  it('counts Learned and Mastered over the core items (Phase 21 shared terms)', () => {
+    const mk = (kind: 'word' | 'grammar', id: string, state: SkillCard['state'], over: Partial<SkillCard['card']> = {}, skill: SkillCard['skill'] = 'recognition'): SkillCard => ({
       item: { kind, id },
-      skill: 'recognition',
-      card: emptyCard(NOW),
+      skill,
+      card: { ...emptyCard(NOW), ...over },
       state,
       lapses: 0,
       leech: false,
@@ -202,16 +203,23 @@ describe('lessonProgress', () => {
       flags: {},
       updatedAt: NOW,
     });
-    const l = lesson(1, ['a', 'b'], ['gram-1']);
-    const p = lessonProgress(l, {
+    const l = lesson(1, ['a', 'b', 'c'], ['gram-1']);
+    const index = new ProgressIndex({
       cards: [
-        mk('word', 'a', 'review'),
+        mk('word', 'a', 'review', { reps: 2, stability: 5 }),
         mk('word', 'b', 'introduced'),
-        mk('grammar', 'gram-1', 'learning'),
+        mk('word', 'c', 'mature', { reps: 6, stability: 30 }),
+        mk('word', 'c', 'review', { reps: 3, stability: 9 }, 'production'),
+        mk('grammar', 'gram-1', 'learning', { reps: 1 }),
       ],
+      grammarUses: new Map([['gram-1', { correct: 1, lastCorrect: true }]]),
     });
-    expect(p.vocabShare).toBe(0.5);
-    expect(p.grammarPractised).toBe(1);
+    const p = lessonProgress(l, { index });
+    expect(p.total).toBe(4);
+    expect(p.learned).toBe(3); // a, c, gram-1 (one correct use)
+    expect(p.mastered).toBe(1); // c
+    expect(p.grammarMastered).toBe(0);
+    expect(lessonDone(p)).toBe(false);
   });
 });
 
@@ -315,13 +323,14 @@ describe('class scope across books', () => {
 
   it('book 2 lesson 3: all of book 1 and book 2 L1–3 covered, only L4 trickles, L5+ out', () => {
     const s = classScope(setting);
-    expect(s.currentLesson).toBe(13);
+    expect(s.courseOrdinal).toBe(13);
+    expect(s.currentLesson).toBe(3);
     for (let n = 1; n <= 10; n++) expect(tagsInScope(tbBook('laixue-1', n), s)).toBe(true);
     for (const n of [1, 2, 3, 4]) expect(tagsInScope(tbBook('laixue-2', n), s)).toBe(true);
     for (const n of [5, 6, 10]) expect(tagsInScope(tbBook('laixue-2', n), s)).toBe(false);
     expect(tagsInScope(tbBook('laixue-3', 1), s)).toBe(false);
 
-    const ev = lessonCoveredEvidence([b1, b2, b3], s.currentLesson, NOW);
+    const ev = lessonCoveredEvidence([b1, b2, b3], s.courseOrdinal, NOW);
     const ids = ev.filter((e) => e.item.kind === 'word').map((e) => e.item.id);
     expect(ids).toEqual([
       ...Array.from({ length: 10 }, (_, i) => `a${i + 1}`),
@@ -330,6 +339,13 @@ describe('class scope across books', () => {
       'b3',
     ]);
     expect(ids).not.toContain('b5');
+  });
+
+  it('"Lessons ahead of class" is the one preview setting (Phase 21)', () => {
+    const none = classScope(setting, { aheadLessons: 0 });
+    expect(tagsInScope(tbBook('laixue-2', 4), none)).toBe(false);
+    const two = classScope(setting, { aheadLessons: 2 });
+    expect(tagsInScope(tbBook('laixue-2', 5), two)).toBe(true);
   });
 
   it('at the end of a book the next book\'s first lesson is the one that trickles in', () => {
@@ -345,7 +361,7 @@ describe('class scope across books', () => {
     expect(tagsInScope(tbBook('laixue-3', 9), s)).toBe(false);
   });
 
-  it('new-word queue: current lesson first, next lesson trickles, later lessons stay out', () => {
+  it('new-word queue: study-focus words first, later lessons stay out (Phase 21)', () => {
     const lex = new Lexicon([
       word('a1', '甲', tbBook('laixue-1', 1)),
       word('b3', '乙', tbBook('laixue-2', 3)),
@@ -353,7 +369,7 @@ describe('class scope across books', () => {
       word('b5', '丁', tbBook('laixue-2', 5)),
       word('c1', '戊', tbBook('laixue-3', 1)),
     ]);
-    const picked = nextNewItems([], lex, 10, { classScope: classScope(setting) }).map((w) => w.id);
+    const picked = nextNewItems([], lex, 10, { classScope: classScope(setting), priorityIds: ['b3', 'b5'] }).map((w) => w.id);
     expect(picked.slice(0, 1)).toEqual(['b3']);
     expect(picked).toContain('a1');
     expect(picked).toContain('b4');
@@ -403,6 +419,6 @@ describe('level filter for textbook content', () => {
     expect(filterByLevel(items, (x) => x.level, 'L2').map((x) => x.id)).toEqual(['c', 'b', 'd', 'a']);
     expect(filterByLevel(items, (x) => x.level, 'N1').map((x) => x.id)).toEqual(['a']);
     expect(levelFit('L2', 'L1')).toBe('harder');
-    expect(classLevelHint('laixue-2', 3)).toBe('來學華語 第二冊 (A1) ≈ L1 入門級 · A1');
+    expect(classLevelHint('laixue-2', 3)).toBe('來學華語 2 (A1) ≈ L1 入門級 · A1');
   });
 });

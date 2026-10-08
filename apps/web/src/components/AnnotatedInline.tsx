@@ -2,15 +2,14 @@ import { useMemo } from 'react';
 import type { Lexicon, Word } from '@anan/core';
 import { annotate, annotateWord } from '../lib/annotate.js';
 import { useCurrentLevel } from '../lib/current-level.js';
-import { useSetting } from '../lib/useSetting.js';
+import { useReadingSettings } from '../lib/reading.js';
 import { AnnotatedText, type AnnotationScript } from './AnnotatedText.js';
 
 /** The learner's chosen reading script (pinyin / zhuyin / both), shared with
  * the reader. Read ONCE per page and pass it down — many tiles must not each
  * hit the database. */
 export function useReadingScript(): AnnotationScript {
-  const [script] = useSetting<AnnotationScript>('readerScript', 'pinyin');
-  return script;
+  return useReadingSettings().script;
 }
 
 /**

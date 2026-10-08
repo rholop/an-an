@@ -1,3 +1,4 @@
+import { markProfileDirty } from './sync.js';
 import {
   hashText,
   restoreErrorItem,
@@ -120,6 +121,7 @@ export async function alsoInOtherProfiles(
     const other = new AnanDB(profileDbName(id));
     try {
       await write(other);
+      markProfileDirty(id);
     } catch {
       /* the other profile picks nothing up this time */
     } finally {

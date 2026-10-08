@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  activeEvidence,
   emptyCard,
   selectDueErrorItems,
   type ErrorItem,
   type Evidence,
+  type SkillCard,
 } from '@anan/core';
 import { DexieLearnerRepo } from '../db/learner-repo.js';
 import { AnanDB } from '../db/schema.js';
@@ -34,6 +36,7 @@ afterEach(async () => {
   await db.delete();
 });
 
+const stripStamp = ({ updatedAt: _u, ...rest }: SkillCard) => rest;
 const ev = (kind: Evidence['kind'], at: Date): Evidence => ({
   item: { kind: 'word', id: 'w-1' },
   skill: 'recognition',
@@ -54,16 +57,21 @@ describe('evidence undo (reporting after answering)', () => {
     expect(await db.evidence.count()).toBe(evidenceBefore + 1);
 
     await handle.undo();
-    expect(await repo.getCard({ kind: 'word', id: 'w-1' }, 'recognition')).toEqual(before);
-    expect(await db.evidence.count()).toBe(evidenceBefore);
+    // Phase 21: sync-safe undo: the card is back exactly (with a NEW updatedAt so sync keeps the
+    // undo) and the undone answer stays in the log, cancelled by an `evidence_undone` record.
+    const restored = await repo.getCard({ kind: 'word', id: 'w-1' }, 'recognition');
+    expect(stripStamp(restored!)).toEqual(stripStamp(before!));
+    expect(restored!.updatedAt.getTime()).toBeGreaterThan(before!.updatedAt.getTime());
+    expect(activeEvidence(await db.evidence.toArray())).toHaveLength(evidenceBefore);
   });
 
-  it('removes a card that did not exist before the answer', async () => {
+  it('a card that did not exist before the answer is left as never shown', async () => {
     const handle = await service.recordUndoable(ev('cloze_wrong', now), now);
     expect(await repo.getCard({ kind: 'word', id: 'w-1' }, 'recognition')).toBeDefined();
     await handle.undo();
-    expect(await repo.getCard({ kind: 'word', id: 'w-1' }, 'recognition')).toBeUndefined();
-    expect(await db.evidence.count()).toBe(0);
+    expect((await repo.getCard({ kind: 'word', id: 'w-1' }, 'recognition'))?.state).toBe('unseen');
+    expect(await repo.dueCards(new Date('2030-01-01'), 10)).toEqual([]);
+    expect(activeEvidence(await db.evidence.toArray())).toHaveLength(0);
   });
 });
 

@@ -97,6 +97,8 @@ export interface Orchestrator {
   run(
     systemPrompt: string,
     history: TurnHistoryEntry[],
+    /** Phase 21: start with the fallback provider (a retry after repeated Taiwan-check failures). */
+    opts?: { alternate?: boolean },
   ): Promise<{ result: ProviderResult; log: OrchestratorLogEntry }>;
 }
 
@@ -119,9 +121,10 @@ export function createOrchestrator(
   logAttempt: AttemptLogger = defaultAttemptLogger,
 ): Orchestrator {
   return {
-    async run(systemPrompt, history) {
+    async run(systemPrompt, history, opts) {
       const historyJson = JSON.stringify(history);
-      const cacheKey = PromptCache.keyFor(systemPrompt, historyJson);
+      const alternate = opts?.alternate === true && fallback.configured !== false;
+      const cacheKey = PromptCache.keyFor(alternate ? `alt\n${systemPrompt}` : systemPrompt, historyJson);
       const cached = cache.get(cacheKey);
       if (cached) {
         return {
@@ -136,8 +139,8 @@ export function createOrchestrator(
       }
 
       const { result, fallbackReason } = await withFallback(
-        primary,
-        fallback,
+        alternate ? fallback : primary,
+        alternate ? primary : fallback,
         (adapter) => adapter.generateTurn(systemPrompt, history),
         logAttempt,
       );

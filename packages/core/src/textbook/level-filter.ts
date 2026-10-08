@@ -2,7 +2,7 @@
 // sentences, journal prompts). The chosen level's items come first, easier ones
 // stay available below, harder ones are hidden. Due reviews never go through here.
 import { levelIndex, levelLabel, type Level } from '../levels.config.js';
-import { courseBook, courseLessonLevel, LAIXUE_COURSE, type Course } from './course.js';
+import { bookTitle, courseBook, courseLessonLevel, LAIXUE_COURSE, type Course } from './course.js';
 
 export type LevelFit = 'match' | 'easier' | 'harder';
 
@@ -33,5 +33,5 @@ export function classLevelHint(
   const book = courseBook(course, bookId);
   if (!book) return undefined;
   const level = courseLessonLevel(course, bookId, lesson);
-  return `${book.titleZh} (${book.levelLabel}) ≈ ${levelLabel(level)}`;
+  return `${bookTitle(bookId, course)} (${book.levelLabel}) ≈ ${levelLabel(level)}`;
 }

@@ -157,7 +157,7 @@ function profile(over: Partial<OpenChatProfile> = {}): OpenChatProfile {
 }
 
 /** A real Phase 14 focus: book 1 lessons are N1, book 2 lessons are L1 (gated while N1 is unmastered). */
-function focusFor(masteredWordIds: string[] = [], myClass?: OpenChatProfile['myClass']) {
+function focusFor(masteredWordIds: string[] = [], myClass?: { enabled: boolean; textbookId: string; currentLesson: number }) {
   return getStudyFocus(
     {
       lexicon,
@@ -217,26 +217,28 @@ describe('upcomingContent: the next three lessons', () => {
     expect(upcomingContent(profile({ studyFocus: levelStep }), { upcomingLessons: 3, levelStepWordCap: 1 }).wordIds).toEqual([id('吃')]);
   });
 
-  it('"My class" only: the current lesson and the next two in course order', () => {
-    const u = upcomingContent(
-      profile({ myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 3 } }),
-    );
-    expect(u.source).toBe('my-class');
-    expect(lessonIds(u)).toEqual(['laixue-1-L03', 'laixue-2-L01', 'laixue-2-L02']);
+  it('Phase 21: with My class set the study focus follows the class (no separate My-class path)', () => {
+    const focus = focusFor([], { enabled: true, textbookId: 'laixue-1', currentLesson: 3 });
+    const u = upcomingContent(profile({ studyFocus: focus }));
+    expect(u.source).toBe('study-order');
+    expect(lessonIds(u)[0]).toBe(focus.activeLesson!.lessonId);
   });
 
-  it('study order switched off falls back to My class', () => {
+  it('Phase 21: a mastered lesson does not use up one of the three places', () => {
+    const focus = focusFor();
+    const u = upcomingContent(profile({ studyFocus: { ...focus, masteredLessonIds: ['laixue-1-L02'] } }));
+    // L02 mastered and book 2 gated: neither takes a place
+    expect(lessonIds(u)).toEqual(['laixue-1-L01', 'laixue-1-L03']);
+  });
+
+  it('study order switched off: nothing is upcoming', () => {
     const off = { ...focusFor(), enabled: false };
-    const u = upcomingContent(
-      profile({ studyFocus: off, myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 2 } }),
-    );
-    expect(lessonIds(u)).toEqual(['laixue-1-L02', 'laixue-1-L03', 'laixue-2-L01']);
+    expect(upcomingContent(profile({ studyFocus: off })).source).toBe('none');
   });
 
   it('no textbook (or My class off, no study order): nothing is upcoming', () => {
     expect(upcomingContent(profile({ books: [] })).source).toBe('none');
     expect(upcomingContent(profile()).source).toBe('none');
-    expect(upcomingContent(profile({ myClass: { enabled: false, textbookId: 'laixue-1', currentLesson: 1 } })).wordIds).toEqual([]);
   });
 });
 
@@ -249,7 +251,7 @@ describe('buildOpenChatVocab: the tiers', () => {
         knownIds: new Set([id('我')]),
         dueIds: new Set([id('你')]),
         learningIds: new Set([id('學校')]),
-        myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 1 },
+        studyFocus: focusFor(),
       }),
       topic,
       now,
@@ -300,7 +302,7 @@ describe('buildOpenChatVocab: the tiers', () => {
     const big = new Lexicon([...Object.values(WORDS), ...filler], []);
     const known = new Set(filler.map((f) => f.id));
     const v2 = buildOpenChatVocab(
-      { ...profile({ level: 'N1', knownIds: known, dueIds: new Set([id('你')]), myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 1 } }), lexicon: big },
+      { ...profile({ level: 'N1', knownIds: known, dueIds: new Set([id('你')]), studyFocus: focusFor() }), lexicon: big },
       { text: '' },
       now,
       OPEN_CHAT_CONFIG,
@@ -323,7 +325,7 @@ describe('analyze / validate an open-chat reply', () => {
     profile({
       level: 'N2',
       knownIds: new Set([id('我'), id('你'), id('喜歡'), id('吃'), id('飯'), id('喝')]),
-      myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 1 },
+      studyFocus: focusFor(),
     }),
     { text: 'school', words: ['學校', '新聞'] },
     now,
@@ -415,7 +417,7 @@ describe('analyze / validate an open-chat reply', () => {
 });
 
 describe('chips', () => {
-  const upcoming = upcomingContent(profile({ myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 1 } }));
+  const upcoming = upcomingContent(profile({ studyFocus: focusFor() }));
 
   it('lesson themes first, then defaults that suit the level; up to 8', () => {
     const chips = openChatChips(upcoming, 'N1');

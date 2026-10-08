@@ -208,7 +208,11 @@ describe('bracket gaps', () => {
     expect(card?.flags.priority).toBe(true);
     expect(card?.card.due.getTime()).toBeLessThanOrEqual(now.getTime());
 
-    const dueCards = await learnerService.dueCards(new Date(now.getTime() + 1000), 100);
+    // Phase 21: the priority card is New (never answered), so it comes from newCards, not dueCards.
+    const dueCards = [
+      ...(await learnerService.dueCards(new Date(now.getTime() + 1000), 100)),
+      ...(await learnerService.newCards()),
+    ];
     const filler = ['w-i', 'w-go', 'w-buy', 'w-phone', 'w-mrt', 'w-coffee'].map((id) => ({
       ...card!,
       flags: {},

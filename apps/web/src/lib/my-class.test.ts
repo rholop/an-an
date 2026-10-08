@@ -82,7 +82,7 @@ describe('recordLessonCoverage (My class → learner model)', () => {
     }
     expect(await service.getCard({ kind: 'word', id: 'w5' }, 'recognition')).toBeUndefined();
     // Never "known": nothing is in review yet.
-    expect((await service.knownSet('review')).size).toBe(0);
+    expect((await service.wordSets(NOW)).knownIds.size).toBe(0);
   });
 
   it('lesson 4 gets top priority in new items; lessons 6–10 stay out', async () => {
@@ -159,11 +159,25 @@ describe('My class across books', () => {
     expect(legacy.coveredThrough).toBe(6);
   });
 
+  it('Phase 21: lessons held back by the TOCFL gate are listed but not introduced; coverage resumes later', async () => {
+    const gated = new Set(['laixue-2-L01', 'laixue-2-L02', 'laixue-2-L03']);
+    const r = await recordLessonCoverage([book, b2], at('laixue-2', 3), service, NOW, gated);
+    expect(r.coveredThrough).toBe(10);
+    expect(await service.getCard({ kind: 'word', id: 'w10' }, 'recognition')).toBeDefined();
+    expect(await service.getCard({ kind: 'word', id: 'b1' }, 'recognition')).toBeUndefined();
+    // the gate opens: the rest is covered from where it stopped
+    const later = await recordLessonCoverage([book, b2], at('laixue-2', 3, 10), service, NOW);
+    expect(later.coveredThrough).toBe(13);
+    expect(await service.getCard({ kind: 'word', id: 'b3' }, 'recognition')).toBeDefined();
+  });
+
   it('a Phase 12 profile (book 1, lesson n) produces the same queue as before', () => {
     const lex = new Lexicon(Array.from({ length: 10 }, (_, i) => word(i + 1)));
     const picked = (s: ReturnType<typeof classScope>) =>
       nextNewItems([], lex, 10, { currentLevel: 'N1', classScope: s }).map((w) => w.id);
     expect(picked(classScope(at('laixue-1', 4)))).toEqual(picked(classScope({ enabled: true, textbookId: 'laixue-1', currentLesson: 4 })));
-    expect(picked(classScope(at('laixue-1', 4))).slice(0, 1)).toEqual(['w4']);
+    // Phase 21: the class scope is visibility only; priority comes from the study focus (priorityIds).
+    const first = nextNewItems([], lex, 10, { currentLevel: 'N1', classScope: classScope(at('laixue-1', 4)), priorityIds: ['w4'] });
+    expect(first[0]?.id).toBe('w4');
   });
 });

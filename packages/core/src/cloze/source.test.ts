@@ -68,6 +68,13 @@ describe('selectClozeSource', () => {
     expect(result?.zh).toBe('珍珠奶茶很好喝。');
   });
 
+  it('a lesson sentence says which lesson it is from (Phase 21)', () => {
+    const bankSentences: SentenceBankEntry[] = [
+      { id: 'tb-L03-001', zh: '珍珠奶茶很好喝。', en: '', targetWordId: TARGET.id, level: 'N1', tokens: [], source: 'generated', doubtful: false, tags: ['textbook:laixue-1', 'textbook:laixue-1:L03'] },
+    ];
+    expect(selectClozeSource(TARGET, { ...baseOpts, bankSentences })?.sourceLabel).toBe('來學華語 1 · Lesson 3 sentence');
+  });
+
   it('rejects a chat line that contains the word but is otherwise too hard (coverage gate)', () => {
     const chatLines: ChatLineSource[] = [
       { zh: `這杯珍珠奶茶令人陶醉。`, role: 'npc', npcName: '店員', scenarioTitle: 'tea-shop', at: new Date('2026-01-01') },

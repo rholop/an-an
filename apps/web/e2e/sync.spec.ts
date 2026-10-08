@@ -22,6 +22,9 @@ async function signIn(page: import('@playwright/test').Page, name: string, code 
   await page.getByRole('button', { name }).click();
   await expect(page.getByTestId('profile-chip')).toContainText(name, { timeout: 20000 });
   await page.waitForFunction(() => Boolean(window.__anan && window.__ananSync));
+  // The opening screen (Home) has finished loading its code, so going offline later can't break it.
+  await expect(page.locator('.page-slot .page-loading')).toHaveCount(0);
+  await expect(page.locator('.page-slot > *').first()).toBeVisible();
 }
 
 test.describe('sync between browsers (phase 8)', () => {

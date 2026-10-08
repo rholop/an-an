@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  classScope,
+  isUsableSentence,
+  levelIndex,
   lessonIndex,
+  maxVisibleLesson,
+  pickNewForSession,
   studyRank,
   planListenSession,
   LISTENING_CONFIG,
   type PlanItem,
   type SkillCard,
-  levelIndex,
   buildClozeExercise,
   buildLePlacementExercise,
   buildMainlandVsTaiwanExercise,
@@ -25,6 +27,7 @@ import {
   type Lexicon,
   type Level,
   type NaturalPairExercise,
+  type SentenceBankEntry,
   type SessionEntry,
   type SessionItem,
 } from '@anan/core';
@@ -60,6 +63,7 @@ import {
   describePlanItem,
   itemKey,
   newSessionSeed,
+  requeueAgain,
   placeExtras,
   sessionMeta,
   type SessionCard,
@@ -79,9 +83,23 @@ import { allChatLines, allJournalSentences } from '../db/queries.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
-import { useMyClass } from '../lib/my-class.js';
-import { getStudyBooks, useStudyFocus } from '../lib/study.js';
-import { sentenceOrdinal, useTextbookSentences } from '../lib/textbook-data.js';
+import { getStudyBooks, useClassScope, useStudyFocus } from '../lib/study.js';
+import { sentenceBookId, sentenceOrdinal, useTextbookSentences } from '../lib/textbook-data.js';
+import { onStudyDirty } from '../lib/study-dirty.js';
+import { newSessionCard } from '../lib/review-session.js';
+import { readingText, useAnswerInputMode, useReadingSettings, type AnswerInputMode } from '../lib/reading.js';
+import { AnnotatedInline } from '../components/AnnotatedInline.js';
+import type { AnnotationScript } from '../components/AnnotatedText.js';
+import {
+  FEEDBACK_CORRECT,
+  FEEDBACK_WRONG_TONE,
+  MINE_IS_RIGHT,
+  NEXT,
+  NOTHING_DUE,
+  UNDO,
+  feedbackWrong,
+} from '../lib/labels.js';
+import { glossFor } from '@anan/core';
 import './ClozePage.css';
 
 type Outcome = 'correct' | 'correct_wrong_tone' | 'wrong';
@@ -112,9 +130,9 @@ export function ClozePage() {
   const lexiconState = useLexicon();
   const scenariosState = useScenarios();
 
-  const [dueCards, setDueCards] = useState<Awaited<
-    ReturnType<typeof learnerService.dueCards>
-  > | null>(null);
+  const [dueCards, setDueCards] = useState<SkillCard[] | null>(null);
+  // Phase 21: New cards (introduced, never answered) come from their own query, picked by the one "new" rule.
+  const [newCards, setNewCards] = useState<SkillCard[] | null>(null);
   const [knownIds, setKnownIds] = useState<Set<string> | null>(null);
   const [chatLines, setChatLines] = useState<Awaited<ReturnType<typeof allChatLines>> | null>(null);
   const [journalSentences, setJournalSentences] = useState<JournalSentenceSource[] | null>(null);
@@ -127,8 +145,30 @@ export function ClozePage() {
   const [notice, setNotice] = useState<{ undo: () => Promise<void> } | null>(null);
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const answered = useRef(
-    new Map<number, { outcome: Outcome | 'error-correct' | 'error-wrong'; undo?: () => Promise<void>; redo?: () => Promise<void> }>(),
+    new Map<
+      number,
+      {
+        outcome: Outcome | 'error-correct' | 'error-wrong';
+        undo?: () => Promise<void>;
+        redo?: () => Promise<void>;
+        /** The queue before an "Again" re-queue (Undo puts it back). */
+        prevSession?: SessionEntry[];
+      }
+    >(),
   );
+  // Phase 21: a missed item comes back once later in the session ("Again", as in Review).
+  const requeued = useRef(new Set<string>());
+  function requeueMissed(entry: SessionEntry): SessionEntry[] | undefined {
+    if (!session) return undefined;
+    const key = describeClozeEntry(entry).keys[0]!;
+    if (requeued.current.has(key)) return undefined;
+    requeued.current.add(key);
+    const prev = session;
+    setSession(requeueAgain(session, index, describeClozeEntry));
+    return prev;
+  }
+  // Phase 21: "Undo" takes back the last answer and shows that item again.
+  const [undoable, setUndoable] = useState<number | null>(null);
   // Phase 7: the global "My level" — never hides due reviews, only steers
   // sentence-level preference and the new-item pool.
   const { level: learnerLevel } = useCurrentLevel();
@@ -139,9 +179,10 @@ export function ClozePage() {
     (async () => {
       const now = new Date();
       const ex = await excludedZh(db);
-      const [due, known, lines, journal, errors] = await Promise.all([
-        learnerService.dueCards(now, 200),
-        learnerService.knownSet('review'),
+      const [due, fresh, known, lines, journal, errors] = await Promise.all([
+        learnerService.dueCards(now),
+        learnerService.newCards(),
+        learnerService.wordSets(now).then((s) => s.knownIds),
         allChatLines(db, scenariosState.scenarios),
         allJournalSentences(db, ex),
         db.errorItems.toArray(),
@@ -151,6 +192,7 @@ export function ClozePage() {
       setJournalSentences(journal);
       setErrorItems(errors);
       setDueCards(due);
+      setNewCards(fresh);
       setKnownIds(known);
       setChatLines(lines);
     })();
@@ -158,6 +200,15 @@ export function ClozePage() {
       cancelled = true;
     };
   }, [lexiconState.status, scenariosState.status, reloadKey]);
+  // Phase 21 freshness: anything studied elsewhere (or a sync) reloads the queue while no session runs.
+  const sessionRunning = useRef(false);
+  useEffect(
+    () =>
+      onStudyDirty(() => {
+        if (!sessionRunning.current) setReloadKey((k) => k + 1);
+      }),
+    [],
+  );
 
   // Phase 17 Part E: rebuild old journal items and process entries not yet
   // processed (needs the proxy). Unprocessed material stays hidden meanwhile.
@@ -184,10 +235,13 @@ export function ClozePage() {
     return [...levels];
   }, [dueCards, lexiconState]);
   const sentenceBankState = useSentenceBank(neededLevels);
-  // Phase 12: the lesson sentences (lessons up to the class's current one) join the bank while My class is on.
-  const myClass = useMyClass();
+  // Phase 21: the lesson sentences always join the bank (active and catch-up lessons first);
+  // the class scope only hides lessons past the class.
+  const scope = useClassScope();
   const { focus: studyFocus } = useStudyFocus();
-  const textbookSentences = useTextbookSentences(myClass.enabled);
+  const textbookSentences = useTextbookSentences(true);
+  const [inputMode, setInputMode] = useAnswerInputMode();
+  const { script } = useReadingSettings();
 
   const [session, setSession] = useState<SessionEntry[] | null>(null);
   const reviewSettings = useReviewSettings();
@@ -209,6 +263,7 @@ export function ClozePage() {
     sentenceBankState.status === 'ready' &&
     textbookSentences.status === 'ready' &&
     dueCards !== null &&
+    newCards !== null &&
     knownIds !== null &&
     chatLines !== null &&
     journalSentences !== null &&
@@ -220,13 +275,45 @@ export function ClozePage() {
 
   const lessonIdx = useMemo(() => lessonIndex(getStudyBooks()), [studyFocus]);
 
-  function startSession() {
-    if (!ready || lexiconState.status !== 'ready' || sentenceBankState.status !== 'ready') return;
+  /** Phase 21: the lesson sentences in reach: the active lesson's, then catch-up lessons', then the
+   * rest up to the class (+ "Lessons ahead of class"), or up to the active lesson without a class. */
+  const lessonSentences = useMemo((): { lead: SentenceBankEntry[]; rest: SentenceBankEntry[] } => {
+    if (textbookSentences.status !== 'ready') return { lead: [], rest: [] };
+    const active = studyFocus?.enabled ? studyFocus.activeLesson : undefined;
+    const limit = scope.enabled ? maxVisibleLesson(scope) : (active?.ordinal ?? 0);
+    const visible = textbookSentences.sentences.filter(
+      (x) => (sentenceOrdinal(x) ?? Infinity) <= limit && isUsableSentence(x.zh, excluded ?? new Set()),
+    );
+    const leadLessons = [...(active ? [active] : []), ...(studyFocus?.enabled ? studyFocus.reviewLessons : [])];
+    const leadKey = (bookId: string, n: number) => `${bookId}:${n}`;
+    const order = new Map(leadLessons.map((l, i) => [leadKey(l.bookId, l.n), i]));
+    const lead = visible
+      .filter((x) => x.lesson !== undefined && order.has(leadKey(sentenceBookId(x), x.lesson)))
+      .sort((a, b) => order.get(leadKey(sentenceBookId(a), a.lesson!))! - order.get(leadKey(sentenceBookId(b), b.lesson!))!);
+    const leadSet = new Set(lead);
+    return { lead, rest: visible.filter((x) => !leadSet.has(x) && levelIndex(x.level) <= levelIndex(learnerLevel)) };
+  }, [textbookSentences, studyFocus, scope, excluded, learnerLevel]);
+
+  /** Phase 21: the session is built before it is offered, so the button shows its real size. */
+  const planned = useMemo(() => {
+    if (!ready || lexiconState.status !== 'ready' || sentenceBankState.status !== 'ready') return null;
+    const now = new Date();
     const seed = newSessionSeed('cloze');
     // Phase 20: no new cards while reviews are backed up, half while a backlog builds.
-    const maxNewItems = newItemAllowance(dueCards!.length, DEFAULT_SESSION_CONFIG.maxNewItems, reviewSettings.dailyCap).allowed;
-    const built = buildMixedSession(dueCards!, {
-      config: { maxNewItems },
+    const allowed = newItemAllowance(dueCards!.length, DEFAULT_SESSION_CONFIG.maxNewItems, reviewSettings.dailyCap).allowed;
+    // Phase 21: the one "new" rule (study focus first, then catch-up lessons); cloze is words only.
+    const picked = pickNewForSession({
+      newCards: newCards!.filter((c) => c.item.kind === 'word'),
+      focus: studyFocus,
+      lessonIdx,
+      allowed,
+    });
+    const freshItems = picked.items
+      .filter((i) => i.kind === 'word' && lexiconState.lexicon.byId(i.id))
+      .map((i): SkillCard => ({ ...newSessionCard(i, now), state: 'introduced' }));
+    const fresh = [...picked.cards, ...freshItems];
+    const built = buildMixedSession([...dueCards!, ...fresh], {
+      config: { maxNewItems: fresh.length },
       seed,
       recent: recentShown(),
       lexicon: lexiconState.lexicon,
@@ -242,28 +329,21 @@ export function ClozePage() {
               studyRank(studyFocus, (i) => lessonIdx.get(`${i.kind}:${i.id}`), c.item),
           }
         : {}),
-      bankSentences: [
-        ...(studyFocus?.enabled && studyFocus.activeLesson && textbookSentences.status === 'ready'
-          ? textbookSentences.sentences.filter(
-              (x) =>
-                x.lesson === studyFocus.activeLesson!.n &&
-                (x.textbookId ?? 'laixue-1') === studyFocus.activeLesson!.bookId,
-            )
-          : []),
-        ...sentenceBankState.sentences,
-        ...(myClass.enabled && textbookSentences.status === 'ready'
-          ? textbookSentences.sentences.filter(
-              (x) =>
-                (sentenceOrdinal(x) ?? 0) <= classScope(myClass).currentLesson &&
-                levelIndex(x.level) <= levelIndex(learnerLevel),
-            )
-          : []),
-      ],
+      bankSentences: [...lessonSentences.lead, ...sentenceBankState.sentences, ...lessonSentences.rest],
       errorItems: errorItems!,
-      now: new Date(),
+      now,
     });
+    return { built, seed };
+  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, reviewSettings.dailyCap, learnerLevel]);
+
+  function startSession() {
+    if (!planned || lexiconState.status !== 'ready') return;
+    const { built, seed } = planned;
     logSessionOrder('cloze', seed, built.length, sessionMeta(built)?.deferred.length ?? 0);
     answered.current.clear();
+    requeued.current.clear();
+    sessionRunning.current = true;
+    setUndoable(null);
     setSession(built);
     setSlots(new Map());
     setDoneSlots(new Set());
@@ -273,11 +353,26 @@ export function ClozePage() {
     setShowBonus(false);
   }
 
+  /** Phase 21: back to the start screen; the queue reloads (it may have changed elsewhere). */
+  function endSession() {
+    sessionRunning.current = false;
+    setSession(null);
+    setUndoable(null);
+    setReloadKey((k) => k + 1);
+  }
+
   async function buildListeningSlots(built: readonly OrderedEntry[], lexicon: Lexicon) {
     const length = built.length;
     const now = new Date();
     const cards = await ensureListeningCards(clips.hasClip, now);
-    const practiced = cards.filter((c) => c.card.reps > 0 && c.card.due <= now);
+    // Phase 21: the listening extras follow the study order too.
+    const rankOf = (c: (typeof cards)[number]) =>
+      studyFocus?.enabled ? studyRank(studyFocus, (i) => lessonIdx.get(`${i.kind}:${i.id}`), c.item) : 0;
+    const practiced = cards
+      .filter((c) => c.card.reps > 0 && c.card.due <= now)
+      .map((c, i) => ({ c, i, r: rankOf(c) }))
+      .sort((a, b) => a.r - b.r || a.i - b.i)
+      .map((x) => x.c);
     const n = Math.min(practiced.length, Math.round(length * LISTENING_CONFIG.mixShare));
     if (n <= 0) return;
     const plan = planListenSession({
@@ -304,8 +399,10 @@ export function ClozePage() {
       at: now,
     };
     const handle = await learnerService.recordUndoable(evidence, now);
+    const prevSession = outcome === 'wrong' ? requeueMissed({ kind: 'card', item }) : undefined;
     answered.current.set(index, {
       outcome,
+      ...(prevSession ? { prevSession } : {}),
       undo: handle.undo,
       redo: async () => {
         await learnerService.record(evidence, now);
@@ -316,6 +413,50 @@ export function ClozePage() {
       hinted: t.hinted + (outcome === 'correct_wrong_tone' ? 1 : 0),
       wrong: t.wrong + (outcome === 'wrong' ? 1 : 0),
     }));
+    setUndoable(index);
+  }
+
+  /** Phase 21: "I think mine is right too" on a sentence cloze: the answer counts as right word,
+   * and the sentence is reported (another answer fits) so it is not used again. */
+  async function mineIsRight(item: SessionItem) {
+    const given = answered.current.get(index);
+    if (!given || given.outcome !== 'wrong') return;
+    await given.undo?.();
+    if (given.prevSession) setSession(given.prevSession);
+    setTally((t) => ({ ...t, wrong: t.wrong - 1 }));
+    await recordOutcome(item, 'correct_wrong_tone');
+    if (item.source) {
+      const at = new Date();
+      const profileId = currentSession()?.profileId ?? 'unknown';
+      const meta = { zh: item.source.zh, sourceKind: item.source.sourceKind as 'journal' | 'chat' | 'bank', sourceLabel: item.source.sourceLabel };
+      await reportSource(db, meta, { reason: 'other_answer_fits', note: '', profileId }, at);
+      await alsoInOtherProfiles(meta.sourceKind, profileId, (other) =>
+        reportSource(other, meta, { reason: 'other_answer_fits', note: '', profileId }, at),
+      );
+    }
+  }
+
+  /** Phase 21: take back the last answer and show that item again. */
+  async function undoLast() {
+    if (undoable === null) return;
+    const at = undoable;
+    const given = answered.current.get(at);
+    answered.current.delete(at);
+    setUndoable(null);
+    if (!given) return;
+    await given.undo?.();
+    if (given.prevSession) {
+      const e = given.prevSession[at];
+      if (e) requeued.current.delete(describeClozeEntry(e).keys[0]!);
+      setSession(given.prevSession);
+    }
+    setTally((t) => ({
+      correct: t.correct - (given.outcome === 'correct' || given.outcome === 'error-correct' ? 1 : 0),
+      hinted: t.hinted - (given.outcome === 'correct_wrong_tone' ? 1 : 0),
+      wrong: t.wrong - (given.outcome === 'wrong' || given.outcome === 'error-wrong' ? 1 : 0),
+    }));
+    setAttempt((n) => n + 1);
+    setIndex(at);
   }
 
   /** Phase 5 §7: an error-bank answer reschedules the error item's own FSRS
@@ -324,11 +465,20 @@ export function ClozePage() {
   async function recordErrorOutcome(error: ErrorItem, outcome: ErrorOutcome) {
     const at = new Date();
     noteShown(describeClozeEntry({ kind: 'error', error }).keys, at);
-    await db.errorItems.put(reviewErrorItem(error, outcome, at));
+    // Phase 21: re-read it first (a sync or another tab may have reviewed it since the session began).
+    const current = (await db.errorItems.get(error.id)) ?? error;
+    await db.errorItems.put(reviewErrorItem(current, outcome, at));
+    const paid = outcome === 'correct' ? await gameService.onErrorFixed(error.id, at) : [];
+    const prevSession = outcome === 'wrong' ? requeueMissed({ kind: 'error', error }) : undefined;
     answered.current.set(index, {
       outcome: outcome === 'wrong' ? 'error-wrong' : 'error-correct',
+      ...(prevSession ? { prevSession } : {}),
+      undo: async () => {
+        await db.errorItems.put(current);
+        await gameService.revoke(paid, new Date());
+      },
     });
-    if (outcome === 'correct') await gameService.onErrorFixed(error.id, at);
+    setUndoable(index);
     setTally((t) => ({
       correct: t.correct + (outcome === 'correct' ? 1 : 0),
       hinted: t.hinted + (outcome === 'hint' ? 1 : 0),
@@ -343,9 +493,16 @@ export function ClozePage() {
   async function regradeError(before: ErrorItem, updated: ErrorItem) {
     const at = new Date();
     const prior = answered.current.get(index);
+    const stored = (await db.errorItems.get(before.id)) ?? before;
     await db.errorItems.put(reviewErrorItem({ ...updated, card: before.card }, 'correct', at));
-    await gameService.onErrorFixed(before.id, at);
-    answered.current.set(index, { outcome: 'error-correct' });
+    const paid = await gameService.onErrorFixed(before.id, at);
+    answered.current.set(index, {
+      outcome: 'error-correct',
+      undo: async () => {
+        await db.errorItems.put(stored);
+        await gameService.revoke(paid, new Date());
+      },
+    });
     setTally((t) => ({
       ...t,
       correct: t.correct + 1,
@@ -370,6 +527,8 @@ export function ClozePage() {
   function next() {
     setIndex((i) => i + 1);
   }
+  // Bumped by Undo so the item re-mounts fresh.
+  const [attempt, setAttempt] = useState(0);
 
   /** Phase 16 Part C: the card leaves the session at once; an answer already
    * given is undone (evidence removed, card restored exactly), so a bad cloze
@@ -380,6 +539,8 @@ export function ClozePage() {
     const profileId = currentSession()?.profileId ?? 'unknown';
     const given = answered.current.get(index);
     answered.current.delete(index);
+    // A reported item doesn't come back as an "Again" either.
+    if (given?.prevSession) setSession(given.prevSession);
     if (given) {
       setTally((t) => ({
         correct: t.correct - (given.outcome === 'correct' || given.outcome === 'error-correct' ? 1 : 0),
@@ -419,6 +580,7 @@ export function ClozePage() {
       },
     });
     noticeTimer.current = setTimeout(() => setNotice(null), 8000);
+    setUndoable(null);
     setIndex((i) => i + 1);
   }
 
@@ -443,21 +605,20 @@ export function ClozePage() {
     return (
       <div className="cloze-page">
         <h1>Cloze review</h1>
-        {!ready ? (
+        {!ready || !planned ? (
           <p>Loading your review queue…</p>
-        ) : dueCards!.length === 0 && dueErrorCount === 0 ? (
-          <p>Nothing due right now — nice work.</p>
+        ) : planned.built.length === 0 ? (
+          <p data-testid="cloze-empty">{NOTHING_DUE}</p>
         ) : (
           <>
-            <p className="cloze-level-note">Your level: {learnerLevel}</p>
             {dueErrorCount > 0 && (
               <p className="cloze-level-note">
                 {dueErrorCount} sentence{dueErrorCount === 1 ? '' : 's'} from your journal
                 corrections {dueErrorCount === 1 ? 'is' : 'are'} due.
               </p>
             )}
-            <button onClick={startSession}>
-              Start session ({Math.min(dueCards!.length + dueErrorCount, 20)} items)
+            <button onClick={startSession} data-testid="cloze-start">
+              Start session ({planned.built.length} item{planned.built.length === 1 ? '' : 's'})
             </button>
           </>
         )}
@@ -465,15 +626,21 @@ export function ClozePage() {
     );
   }
 
+  const undoEl = undoable !== null && answered.current.has(undoable) && (
+    <button type="button" className="cloze-undo" data-testid="cloze-undo" onClick={() => void undoLast()}>
+      {UNDO}
+    </button>
+  );
   const entry = session[index];
   const listenNow = slots.get(index) && !doneSlots.has(index) ? slots.get(index) : undefined;
   if (listenNow && entry && lexiconState.status === 'ready') {
     return (
       <div className="cloze-page">
         <div className="cloze-header">
-          <span>
-            Item {index + 1} / {session.length}
+          <span data-testid="cloze-counter">
+            {index + 1} of {session.length}
           </span>
+          {undoEl}
           <span className="cloze-badge">Listening</span>
         </div>
         <ListenRunner
@@ -498,7 +665,8 @@ export function ClozePage() {
           <li>{tally.hinted} right word, wrong tone</li>
           <li>{tally.wrong} wrong</li>
         </ul>
-        <button onClick={() => setSession(null)}>Back</button>
+        {undoEl}
+        <button onClick={endSession}>Back</button>
         <button onClick={() => setShowBonus((v) => !v)}>
           {showBonus ? 'Hide' : 'Show'} bonus practice
         </button>
@@ -511,15 +679,16 @@ export function ClozePage() {
     return (
       <div className="cloze-page">
         <div className="cloze-header">
-          <span>
-            Item {index + 1} / {session.length}
+          <span data-testid="cloze-counter">
+            {index + 1} of {session.length}
           </span>
+          {undoEl}
           <span className="cloze-badge">From your journal</span>
           {entry.error.pattern && <span className="cloze-badge">{entry.error.pattern}</span>}
         </div>
         {noticeEl}
         <ErrorExerciseView
-          key={entry.error.id}
+          key={`${entry.error.id}:${attempt}`}
           item={entry.error}
           lexicon={lexiconState.lexicon}
           reconsider={reconsider}
@@ -565,9 +734,10 @@ export function ClozePage() {
   return (
     <div className="cloze-page">
       <div className="cloze-header">
-        <span>
-          Item {index + 1} / {session.length}
-        </span>
+        <span data-testid="cloze-counter">
+            {index + 1} of {session.length}
+          </span>
+          {undoEl}
         <span className="cloze-badge">Rung {item.card.clozeRung}</span>
         <span className="cloze-badge">{item.card.skill}</span>
       </div>
@@ -575,11 +745,15 @@ export function ClozePage() {
       {item.source && <div className="cloze-source-label">{item.source.sourceLabel}</div>}
 
       <ExerciseView
-        key={item.card.item.id + index}
+        key={`${item.card.item.id}:${index}:${attempt}`}
         item={item}
         lexicon={lexiconState.lexicon}
         onAnswer={(outcome) => recordOutcome(item, outcome)}
+        onMineIsRight={() => void mineIsRight(item)}
         onNext={next}
+        inputMode={inputMode}
+        setInputMode={setInputMode}
+        script={script}
       />
       {nopeEl}
       <NopeButton onNope={() => void sayNope()} />
@@ -590,17 +764,25 @@ export function ClozePage() {
   );
 }
 
+interface ViewShared {
+  onMineIsRight: () => void;
+  inputMode: AnswerInputMode;
+  setInputMode: (m: AnswerInputMode) => void;
+  script: AnnotationScript;
+}
+
 function ExerciseView({
   item,
   lexicon,
   onAnswer,
   onNext,
+  ...shared
 }: {
   item: SessionItem;
   lexicon: Lexicon;
   onAnswer: (o: Outcome) => void;
   onNext: () => void;
-}) {
+} & ViewShared) {
   const [answered, setAnswered] = useState<Outcome | null>(null);
   const useReorder = useReorderSubstitution(item);
   const handleAnswer = (o: Outcome) => {
@@ -613,6 +795,7 @@ function ExerciseView({
   if (item.exerciseKind === 'typed' && useReorder && item.source) {
     return (
       <ReorderExerciseView
+        {...shared}
         item={item}
         lexicon={lexicon}
         answered={answered}
@@ -625,6 +808,8 @@ function ExerciseView({
   if (item.exerciseKind === 'typed') {
     return (
       <TypedExerciseView
+        {...shared}
+        lexicon={lexicon}
         item={item}
         exercise={exercise}
         answered={answered}
@@ -636,6 +821,7 @@ function ExerciseView({
 
   return (
     <ChoiceExerciseView
+      {...shared}
       item={item}
       lexicon={lexicon}
       exercise={exercise}
@@ -671,6 +857,7 @@ function ChoiceExerciseView({
   answered,
   onAnswer,
   onNext,
+  script,
 }: {
   item: SessionItem;
   lexicon: Lexicon;
@@ -678,7 +865,7 @@ function ChoiceExerciseView({
   answered: Outcome | null;
   onAnswer: (o: Outcome) => void;
   onNext: () => void;
-}) {
+} & ViewShared) {
   const [options] = useState<ChoiceOption[]>(() =>
     item.exerciseKind === 'word_bank'
       ? buildWordBankOptions(item.word, lexicon)
@@ -702,7 +889,7 @@ function ChoiceExerciseView({
         />
       ) : (
         <p className="cloze-prompt">
-          Which word means: <strong>{item.word.glossEn || '(no gloss)'}</strong>?
+          Which word means: <strong>{glossFor(item.word) || '(no gloss)'}</strong>?
         </p>
       )}
       <div className="cloze-options">
@@ -723,6 +910,8 @@ function ChoiceExerciseView({
           word={item.word}
           onNext={onNext}
           sentenceZh={item.source?.zh}
+          lexicon={lexicon}
+          script={script}
         />
       )}
     </div>
@@ -731,20 +920,31 @@ function ChoiceExerciseView({
 
 function TypedExerciseView({
   item,
+  lexicon,
   exercise,
   answered,
   onAnswer,
   onNext,
+  onMineIsRight,
+  inputMode,
+  setInputMode,
+  script,
 }: {
   item: SessionItem;
+  lexicon: Lexicon;
   exercise: ReturnType<typeof buildClozeExercise>;
   answered: Outcome | null;
   onAnswer: (o: Outcome) => void;
   onNext: () => void;
-}) {
-  const [mode, setMode] = useState<ClozeInputMode>(
-    item.card.skill === 'production' ? 'hanzi' : 'pinyin',
+} & ViewShared) {
+  // Phase 21: the remembered answer input mode (Settings); production always asks for the characters.
+  const [mode, setModeState] = useState<ClozeInputMode>(
+    item.card.skill === 'production' ? 'hanzi' : inputMode === 'characters' ? 'hanzi' : inputMode,
   );
+  const setMode = (m: ClozeInputMode) => {
+    setModeState(m);
+    setInputMode(m === 'hanzi' ? 'characters' : m);
+  };
   const [typed, setTyped] = useState('');
 
   function submit() {
@@ -764,7 +964,7 @@ function TypedExerciseView({
         <p className="cloze-prompt">
           {mode === 'hanzi' ? (
             <>
-              Type the Chinese word for: <strong>{item.word.glossEn}</strong>
+              Type the Chinese word for: <strong>{glossFor(item.word)}</strong>
             </>
           ) : (
             <>
@@ -813,6 +1013,9 @@ function TypedExerciseView({
           word={item.word}
           onNext={onNext}
           sentenceZh={item.source?.zh}
+          lexicon={lexicon}
+          script={script}
+          {...(answered === 'wrong' && exercise ? { onMineIsRight } : {})}
         />
       )}
     </div>
@@ -825,13 +1028,14 @@ function ReorderExerciseView({
   answered,
   onAnswer,
   onNext,
+  script,
 }: {
   item: SessionItem;
   lexicon: Lexicon;
   answered: Outcome | null;
   onAnswer: (o: Outcome) => void;
   onNext: () => void;
-}) {
+} & ViewShared) {
   const [exercise] = useState(() => buildReorderExercise(item.source!.zh, lexicon));
   const order = exercise.shuffled;
   const [picked, setPicked] = useState<number[]>([]);
@@ -876,6 +1080,8 @@ function ReorderExerciseView({
           onNext={onNext}
           sentenceZh={item.source?.zh}
           correctTextOverride={exercise.correctOrder.join('')}
+          lexicon={lexicon}
+          script={script}
         />
       )}
     </div>
@@ -888,6 +1094,9 @@ function Feedback({
   onNext,
   correctTextOverride,
   sentenceZh,
+  lexicon,
+  script,
+  onMineIsRight,
 }: {
   outcome: Outcome;
   word: SessionItem['word'];
@@ -895,20 +1104,44 @@ function Feedback({
   correctTextOverride?: string;
   /** The full sentence the exercise came from: its clip (if any) plays after answering. */
   sentenceZh?: string;
+  lexicon: Lexicon;
+  script: AnnotationScript;
+  /** Phase 21: a typed sentence answer marked wrong may be right too. */
+  onMineIsRight?: () => void;
 }) {
+  const reading = readingText(word, script);
+  const [claimed, setClaimed] = useState(false);
   return (
-    <div className={`cloze-feedback cloze-feedback--${outcome}`}>
+    <div className={`cloze-feedback cloze-feedback--${outcome}`} data-testid="cloze-feedback">
       <p>
-        {outcome === 'correct' && '✓ Correct!'}
-        {outcome === 'correct_wrong_tone' && `Right word, wrong tone — it's ${word.pinyin}`}
+        {outcome === 'correct' && FEEDBACK_CORRECT}
+        {outcome === 'correct_wrong_tone' && `${FEEDBACK_WRONG_TONE}: ${word.headword} (${reading})`}
         {outcome === 'wrong' &&
-          `✗ Wrong — it's ${correctTextOverride ?? `${word.headword} (${word.pinyin})`}`}
+          feedbackWrong(correctTextOverride ?? word.headword, correctTextOverride ? undefined : reading)}
       </p>
+      {sentenceZh && (
+        <p className="cloze-answered-sentence" lang="zh-Hant">
+          <AnnotatedInline text={sentenceZh} lexicon={lexicon} script={script} />
+        </p>
+      )}
       <div className="cloze-audio">
         {sentenceZh && <SpeakerButton kind="sentence" text={sentenceZh} label="the sentence" />}
         <SpeakerButton kind="word" id={word.id} label={word.headword} />
       </div>
-      <button onClick={onNext}>Next</button>
+      {onMineIsRight && !claimed && (
+        <button
+          type="button"
+          data-testid="cloze-mine-is-right"
+          onClick={() => {
+            setClaimed(true);
+            onMineIsRight();
+          }}
+        >
+          {MINE_IS_RIGHT}
+        </button>
+      )}
+      {claimed && <p className="cloze-level-note">Counted as right. This sentence won&apos;t be used again.</p>}
+      <button onClick={onNext}>{NEXT}</button>
     </div>
   );
 }

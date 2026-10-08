@@ -31,19 +31,20 @@ test.describe('Placement test', () => {
     expect(taps).toBeLessThan(60);
     // A learner who knows everything converges on the top level (L5) or the
     // "beyond L5" sentinel — either is a correct, graceful placement.
-    await expect(page.getByText(/Placed at/)).toContainText(/L5|beyond L5/);
+    await expect(page.getByTestId('placed-at')).toContainText(/L5/);
     await page.screenshot({ path: 'screenshots/placement-summary.png' });
 
     expect(errors, `console errors: ${errors.join('\n')}`).toEqual([]);
   });
 
-  test('manual "start at level" bulk-marks everything at/below that level as known', async ({
+  test('manual placement at a level marks the levels below it as known', async ({
     page,
   }) => {
     await page.goto('/?page=placement');
     await page.getByRole('button', { name: 'L2', exact: true }).click();
     await expect(page.getByText('Level-by-level summary')).toBeVisible();
-    await expect(page.getByText(/Placed at/)).toContainText('L3');
+    await expect(page.getByTestId('placed-at')).toContainText('Placed at L2');
+    await expect(page.getByTestId('placed-at')).toContainText('N1, N2, L1 marked as known');
     await page.screenshot({ path: 'screenshots/placement-manual-summary.png' });
   });
 });

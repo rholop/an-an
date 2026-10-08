@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import {
-  blankListeningCard,
   listeningClip,
   listeningCardsToCreate,
   makeClipLookup,
@@ -36,9 +35,11 @@ export function useListeningClips() {
 
 /** Profile setting: Listening on/off. On by default when audio is on. */
 export function useListeningEnabled(): boolean {
-  const [audioOn] = useSetting<boolean>('audioEnabled', true);
-  const [listeningOn] = useSetting<boolean>('listeningEnabled', true);
-  return audioOn && listeningOn && !testSwitchOff();
+  // Phase 21: nothing acts on the default before the stored value has loaded (no listening cards
+  // are created for someone who turned listening off).
+  const [audioOn, , audioLoaded] = useSetting<boolean>('audioEnabled', true);
+  const [listeningOn, , listeningLoaded] = useSetting<boolean>('listeningEnabled', true);
+  return audioLoaded && listeningLoaded && audioOn && listeningOn && !testSwitchOff();
 }
 
 /** E2E hook (like anan.study.disabled): specs written without listening switch it off. */
@@ -57,11 +58,19 @@ function testSwitchOff(): boolean {
 export async function ensureListeningCards(
   hasClip: ClipLookup,
   now: Date = new Date(),
-  deps: { db: AnanDB; putCard: (c: SkillCard) => Promise<unknown> } = { db, putCard: (c) => learnerService.putCard(c) },
+  deps: { db: AnanDB; recordBulk: (e: Evidence[], now: Date) => Promise<unknown> } = {
+    db,
+    recordBulk: (e, n) => learnerService.recordBulk(e, n),
+  },
 ): Promise<SkillCard[]> {
   const cards = await allTouchedCards(deps.db);
   const create = listeningCardsToCreate(cards, hasClip);
-  for (const id of create) await deps.putCard(blankListeningCard(id, now));
+  // Phase 21: created through evidence (listening_unlocked), like every other card.
+  if (create.length > 0)
+    await deps.recordBulk(
+      create.map((id) => ({ item: { kind: 'word', id }, skill: 'listening', kind: 'listening_unlocked', at: now, context: { source: 'review' } })),
+      now,
+    );
   const rows = await deps.db.items.filter((r) => r.skill === 'listening').toArray();
   return rows.map(({ pk: _pk, ...c }) => c);
 }

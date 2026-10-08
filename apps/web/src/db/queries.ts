@@ -10,7 +10,7 @@ import type { AnanDB } from './schema.js';
 
 /** Count of cards due on each of the next `days` calendar days (today
  * first), for the review screen's forecast. Direct Dexie query — not part
- * of the core LearnerRepo contract, which only needs dueCards()/knownSet(). */
+ * of the core LearnerRepo contract. */
 export async function dueForecast(db: AnanDB, now: Date, days = 7): Promise<number[]> {
   const dayStart = (offset: number) => {
     const d = new Date(now);
@@ -23,9 +23,12 @@ export async function dueForecast(db: AnanDB, now: Date, days = 7): Promise<numb
   for (let i = 0; i < days; i++) {
     const from = dayStart(i);
     const to = dayStart(i + 1);
-    // Today includes everything overdue. Phase 20: removed cards ("Not now", "Never show") don't count.
+    // Today = overdue + due before local midnight. Phase 20: removed cards ("Not now", "Never show")
+    // don't count. Phase 21: only Due cards (answered at least once): New cards are never "due".
     const range = i === 0 ? db.items.where('card.due').below(to) : db.items.where('card.due').between(from, to, true, false);
-    const count = await range.filter((r) => r.skill !== 'listening' && isActiveCard(r)).count();
+    const count = await range
+      .filter((r) => r.skill !== 'listening' && r.state !== 'unseen' && r.card.reps > 0 && isActiveCard(r))
+      .count();
     counts.push(count);
   }
   return counts;

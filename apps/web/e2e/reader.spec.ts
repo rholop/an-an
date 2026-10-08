@@ -8,7 +8,7 @@ test.describe('Reader page', () => {
     });
     page.on('pageerror', (err) => errors.push(String(err)));
 
-    await page.goto('/');
+    await page.goto('/?page=reader');
     await expect(page.getByText("An'an reader")).toBeVisible();
     await expect(page.getByText(/Lexicon v2 · \d+ words/)).toBeVisible({ timeout: 15000 });
 

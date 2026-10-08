@@ -15,7 +15,9 @@ import {
 import { AnnotatedWord, useReadingScript } from '../components/AnnotatedInline.js';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { LevelChips } from '../components/LevelPicker.js';
-import { db, gameService } from '../db/instance.js';
+import { db } from '../db/instance.js';
+import { onStudyDirty } from '../lib/study-dirty.js';
+import { NOTHING_DUE, TERM } from '../lib/labels.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -32,16 +34,17 @@ const STAGE_ICON: Record<GrowthStage, string> = {
   plant: '🌿',
   bloom: '🌸',
 };
+/** Phase 21: the plant art keeps its metaphor; the words are the shared terms. */
 const STAGE_LABEL: Record<GrowthStage, string> = {
-  seed: 'just met',
+  seed: TERM.new,
   sprout: 'learning',
-  plant: 'growing',
-  bloom: 'well known',
+  plant: TERM.learned,
+  bloom: TERM.mastered,
 };
 const WILT_LABEL: Record<Wilt, string> = {
-  healthy: 'healthy',
-  wilting: 'wilting — needs water',
-  withered: 'withered — needs water soon',
+  healthy: 'not due',
+  wilting: `${TERM.due} — needs water`,
+  withered: `${TERM.due}, fading fast — needs water`,
 };
 
 /** Phase 6 §2: the word garden / map. Growth = learning state; wilt = FSRS
@@ -65,20 +68,14 @@ export function GardenPage() {
     studyFocus?.enabled ? studyFocus.focusItems.filter((i) => i.kind === 'word').map((i) => i.id) : [],
   );
   const [refresh, setRefresh] = useState(0);
+  // Phase 21: every change (a review here, "Study this lesson", a sync merge) refreshes the garden.
+  useEffect(() => onStudyDirty(() => setRefresh((k) => k + 1)), []);
 
   useEffect(() => {
     if (lexiconState.status !== 'ready' || scenariosState.status !== 'ready') return;
     let cancelled = false;
     (async () => {
-      const target = await gameService.getTargetRetention();
-      const snap = await loadGameSnapshot(
-        db,
-        lexiconState.lexicon,
-        scenariosState.scenarios,
-        new Date(),
-        target,
-        level,
-      );
+      const snap = await loadGameSnapshot(db, lexiconState.lexicon, scenariosState.scenarios, new Date(), undefined, level);
       if (!cancelled) setSnapshot(snap);
     })();
     return () => {
@@ -130,9 +127,9 @@ export function GardenPage() {
       <p className="garden-meta">
         {shownPlants.length === 0
           ? snapshot.plants.length === 0
-            ? 'Nothing planted yet — meet some words in Chat or Review and they will appear here.'
+            ? 'No words yet. Meet some words in Chat or Review and they will appear here.'
             : 'No words at the selected levels yet.'
-          : `${shownPlants.length} words planted · ${wilting === 0 ? 'all healthy' : `${wilting} need water`}`}
+          : `${shownPlants.length} words · ${wilting === 0 ? 'nothing due right now' : `${wilting} need water (${TERM.due.toLowerCase()})`}`}
       </p>
       <p className="garden-legend">
         {(Object.keys(STAGE_ICON) as GrowthStage[]).map((s) => (
@@ -140,7 +137,7 @@ export function GardenPage() {
             {STAGE_ICON[s]} {STAGE_LABEL[s]}{' '}
           </span>
         ))}
-        · faded and drooping = memory fading below your target
+        · drooping = {TERM.due.toLowerCase()}, needs water · ⚠ = tricky word (never {TERM.mastered})
       </p>
       <LevelChips selected={levelFilter} onChange={setLevelFilter} current={level} />
       {(hasTextbookWords || textbookOnly) && (
@@ -155,7 +152,7 @@ export function GardenPage() {
       )}
       {hiddenWilting > 0 && (
         <p className="garden-meta">
-          {hiddenWilting} wilting {hiddenWilting === 1 ? 'word' : 'words'} at other levels — pick
+          {hiddenWilting} {hiddenWilting === 1 ? 'word needs' : 'words need'} water at other levels — pick
           “All” to see them. Your due reviews are never hidden.
         </p>
       )}
@@ -190,24 +187,30 @@ function PlotView({
 }) {
   return (
     <section
-      className={`garden-plot garden-plot--${plot.wiltingCount > 0 ? 'thirsty' : 'ok'}${plot.plants.some((p) => activeIds.has(p.wordId)) ? ' garden-plot--active' : ''}`}
-      data-testid={plot.plants.some((p) => activeIds.has(p.wordId)) ? 'plot-active' : undefined}
+      className={`garden-plot garden-plot--${plot.wiltingCount > 0 ? 'thirsty' : 'ok'}${plot.plants.some((p) => activeIds.has(p.wordId) && p.stage !== 'bloom') ? ' garden-plot--active' : ''}`}
+      data-testid={plot.plants.some((p) => activeIds.has(p.wordId) && p.stage !== 'bloom') ? 'plot-active' : undefined}
     >
       <header>
-        <h2>{plot.title}</h2>
+        <h2 lang={plot.kind === 'level' ? 'zh-Hant' : undefined}>{plot.title}</h2>
         <span className="garden-plot-count">{plot.kind === 'scenario' ? 'scenario' : 'level'}</span>
       </header>
       <div className="garden-tiles">
         {plot.plants.map((p) => (
-          <Tile key={p.wordId} plant={p} word={lexicon?.byId(p.wordId)} script={script} active={activeIds.has(p.wordId)} />
+          <Tile
+            key={p.wordId}
+            plant={p}
+            word={lexicon?.byId(p.wordId)}
+            script={script}
+            active={activeIds.has(p.wordId) && p.stage !== 'bloom'}
+          />
         ))}
       </div>
       {plot.wiltingCount > 0 ? (
         <button className="garden-water" onClick={onWater}>
-          💧 Water {plot.wiltingCount} wilting {plot.wiltingCount === 1 ? 'word' : 'words'}
+          💧 Water {plot.wiltingCount} {plot.wiltingCount === 1 ? 'word' : 'words'}
         </button>
       ) : (
-        <p className="garden-ok">All healthy</p>
+        <p className="garden-ok">{NOTHING_DUE}</p>
       )}
     </section>
   );
@@ -229,8 +232,9 @@ function Tile({
     <div
       className={`garden-tile garden-tile--${plant.wilt}${active ? ' garden-tile--active' : ''}`}
       role="group"
-      aria-label={`${plant.headword}: ${STAGE_LABEL[plant.stage]}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : `, ${pct}% remembered`}`}
-      title={`${plant.headword} — ${STAGE_LABEL[plant.stage]}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : ` (${pct}%)`}`}
+      aria-label={`${plant.headword}: ${STAGE_LABEL[plant.stage]}${plant.leech ? `, ${TERM.leech.toLowerCase()}` : ''}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : `, ${pct}% remembered`}`}
+      title={`${plant.headword} — ${STAGE_LABEL[plant.stage]}${plant.leech ? ` (${TERM.leech.toLowerCase()})` : ''}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : ` (${pct}%)`}`}
+      data-stage={plant.stage}
     >
       <span className="garden-plant" aria-hidden="true">
         {STAGE_ICON[plant.stage]}
@@ -238,6 +242,11 @@ function Tile({
       <span className="garden-word" lang="zh-Hant">
         {word ? <AnnotatedWord word={word} script={script} /> : plant.headword}
       </span>
+      {plant.leech && (
+        <span className="garden-leech-mark" title={TERM.leech} data-testid="leech-mark">
+          ⚠
+        </span>
+      )}
       {plant.wilt !== 'healthy' && (
         <span className="garden-wilt-mark">{plant.wilt === 'withered' ? '!!' : '!'}</span>
       )}

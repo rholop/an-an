@@ -68,12 +68,12 @@ describe('buildSession', () => {
     expect(byRung[3]).toBe('typed');
   });
 
-  it('caps new (not-yet-review) items separately from review items', () => {
+  it('caps New (never answered) items separately from due items (Phase 21 shared "New")', () => {
     const newWords = Array.from({ length: 10 }, (_, i) => word({ id: `new${i}`, headword: `新${i}` }));
     const reviewWords = Array.from({ length: 10 }, (_, i) => word({ id: `rev${i}`, headword: `舊${i}` }));
     const lexicon = new Lexicon([...newWords, ...reviewWords]);
     const cards = [
-      ...newWords.map((w) => card(w, { state: 'learning' })),
+      ...newWords.map((w) => card(w, { state: 'introduced' })),
       ...reviewWords.map((w) => card(w, { state: 'review' })),
     ];
     const items = buildSession(cards, {
@@ -82,7 +82,7 @@ describe('buildSession', () => {
       learnerLevel: 'N1',
       config: { maxItems: 20, maxNewItems: 3 },
     });
-    const newCount = items.filter((i) => i.card.state === 'learning').length;
+    const newCount = items.filter((i) => i.card.state === 'introduced').length;
     expect(newCount).toBeLessThanOrEqual(3);
     expect(items.length).toBeLessThanOrEqual(20);
   });

@@ -2,6 +2,7 @@ import {
   DEFAULT_REWARD_CONFIG,
   DEFAULT_STREAK_CONFIG,
   makeReward,
+  revokeReward,
   rewardsForEvidence,
   type Evidence,
   type RewardConfig,
@@ -12,7 +13,6 @@ import {
 import type { AnanDB, ConversationRow, RewardRow } from '../db/schema.js';
 
 const STREAK_KEY = 'streakConfig';
-const RETENTION_KEY = 'targetRetention';
 
 /**
  * Phase 6 §1 persistence + hooks. Every award goes through RewardEvent ids
@@ -25,13 +25,24 @@ export class GameService {
     private readonly config: RewardConfig = DEFAULT_REWARD_CONFIG,
   ) {}
 
-  async award(events: RewardEvent[]): Promise<void> {
-    if (events.length > 0) await this.db.rewardEvents.bulkPut(events);
+  /** Writes the events not already in the ledger; returns those (what this call actually paid). */
+  async award(events: RewardEvent[]): Promise<RewardEvent[]> {
+    if (events.length === 0) return [];
+    const existing = await this.db.rewardEvents.bulkGet(events.map((e) => e.id));
+    const fresh = events.filter((_, i) => !existing[i]);
+    if (fresh.length > 0) await this.db.rewardEvents.bulkPut(fresh);
+    return fresh;
   }
 
-  /** Wired into LearnerService: successful recalls (+ revived overdue words). */
-  async onEvidence(evidence: Evidence, prior: SkillCard | undefined): Promise<void> {
-    await this.award(rewardsForEvidence(evidence, prior, this.config));
+  /** Wired into LearnerService: successful recalls (+ revived overdue words). Returns what was paid. */
+  async onEvidence(evidence: Evidence, prior: SkillCard | undefined): Promise<RewardEvent[]> {
+    return this.award(rewardsForEvidence(evidence, prior, this.config));
+  }
+
+  /** Phase 21 Undo: takes back what an answer paid (append-only, so sync keeps the undo). */
+  async revoke(paid: unknown, at: Date): Promise<void> {
+    if (!Array.isArray(paid) || paid.length === 0) return;
+    await this.db.rewardEvents.bulkPut((paid as RewardEvent[]).map((e) => revokeReward(e, at)));
   }
 
   /** Scenario completed; the unassisted bonus needs no "I'm stuck" and no English fallback. */
@@ -59,8 +70,8 @@ export class GameService {
   }
 
   /** An error-bank sentence answered correctly. */
-  async onErrorFixed(errorItemId: string, at: Date): Promise<void> {
-    await this.award([makeReward('error_fixed', at, errorItemId, this.config)]);
+  async onErrorFixed(errorItemId: string, at: Date): Promise<RewardEvent[]> {
+    return this.award([makeReward('error_fixed', at, errorItemId, this.config)]);
   }
 
   allRewards(): Promise<RewardRow[]> {
@@ -74,10 +85,5 @@ export class GameService {
 
   async setStreakConfig(config: StreakConfig): Promise<void> {
     await this.db.settings.put({ key: STREAK_KEY, value: config });
-  }
-
-  async getTargetRetention(fallback = 0.9): Promise<number> {
-    const row = await this.db.settings.get(RETENTION_KEY);
-    return typeof row?.value === 'number' ? row.value : fallback;
   }
 }

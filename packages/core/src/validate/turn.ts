@@ -1,3 +1,4 @@
+import { ALWAYS_ALLOWED_TAGS, COMPREHENSIBLE_CLASSES } from '../progress/terms.js';
 import { checkTaiwanness } from '../taiwanness.js';
 import type { Lexicon } from '../lexicon.js';
 import { segment, type HintToken, type Token } from '../segment.js';
@@ -49,7 +50,7 @@ export interface AnalyzeResult {
   taiwanness: ReturnType<typeof checkTaiwanness>;
 }
 
-const COMPREHENSIBLE: ReadonlySet<TokenClass> = new Set(['known', 'due', 'learning', 'allowed']);
+const COMPREHENSIBLE = COMPREHENSIBLE_CLASSES as ReadonlySet<TokenClass>;
 const UNKNOWN_CLASSES: ReadonlySet<TokenClass> = new Set(['target', 'out_of_level', 'unlisted']);
 
 function classifyWordToken(token: Token, ctx: AnalyzeContext): ClassifiedToken {
@@ -68,7 +69,7 @@ function classifyWordToken(token: Token, ctx: AnalyzeContext): ClassifiedToken {
   // Names, NPC names, particles and fillers are always conversationally
   // fine regardless of the learner's level/progress (CLAUDE.md §4 "allowed").
   if (
-    prioritized.tags.some((t) => t === 'name' || t === 'npc' || t === 'particle' || t === 'filler')
+    prioritized.tags.some((t) => ALWAYS_ALLOWED_TAGS.has(t))
   ) {
     return { token, wordId, class: 'allowed' };
   }

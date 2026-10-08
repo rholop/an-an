@@ -1,50 +1,39 @@
-import type { SkillCard } from '../learner/types.js';
+import { PROGRESS_CONFIG } from '../progress/progress.config.js';
+import { lessonCoreItems, type LearnedMastered, type ProgressIndex } from '../progress/terms.js';
+import type { ItemRef } from '../types.js';
 import type { Lesson } from './types.js';
 
-export interface LessonProgress {
+/** Phase 21: a lesson's progress in the shared terms (Learned / Mastered over `lessonCoreItems`). */
+export interface LessonProgress extends LearnedMastered {
   lessonId: string;
-  vocabTotal: number;
-  vocabInReview: number;
-  /** vocabInReview / vocabTotal (1 for an empty list). */
-  vocabShare: number;
   grammarTotal: number;
-  /** Grammar items with a card past `introduced` (actually practised). */
-  grammarPractised: number;
+  grammarMastered: number;
   scenariosTotal: number;
   scenariosDone: number;
   promptsTotal: number;
   promptsDone: number;
 }
 
-const IN_REVIEW = new Set(['review', 'mature']);
-const PRACTISED = new Set(['learning', 'review', 'mature']);
-
-export interface ProgressInputs {
-  cards: readonly SkillCard[];
+export interface LessonProgressInputs {
+  index: ProgressIndex;
   completedScenarioIds?: ReadonlySet<string>;
   donePromptIds?: ReadonlySet<string>;
 }
 
-export function lessonProgress(lesson: Lesson, inputs: ProgressInputs): LessonProgress {
-  const wordState = new Map<string, boolean>();
-  const grammarState = new Map<string, boolean>();
-  for (const c of inputs.cards) {
-    if (c.item.kind === 'word' && c.skill === 'recognition') {
-      if (IN_REVIEW.has(c.state)) wordState.set(c.item.id, true);
-    } else if (c.item.kind === 'grammar' && PRACTISED.has(c.state)) {
-      grammarState.set(c.item.id, true);
-    }
-  }
-  const vocab = [...new Set(lesson.vocab)];
-  const vocabInReview = vocab.filter((id) => wordState.get(id)).length;
-  const grammarPractised = lesson.grammar.filter((id) => grammarState.get(id)).length;
+/** The items a lesson's numbers count: its core items, minus words the learner removed (Phase 20). */
+export function countedLessonItems(lesson: Lesson, index: ProgressIndex): ItemRef[] {
+  return lessonCoreItems(lesson).filter((i) => !index.removed(i));
+}
+
+export function lessonProgress(lesson: Lesson, inputs: LessonProgressInputs): LessonProgress {
+  const items = countedLessonItems(lesson, inputs.index);
+  const sum = inputs.index.summarize(items);
+  const grammar = items.filter((i) => i.kind === 'grammar');
   return {
+    ...sum,
     lessonId: lesson.id,
-    vocabTotal: vocab.length,
-    vocabInReview,
-    vocabShare: vocab.length === 0 ? 1 : vocabInReview / vocab.length,
-    grammarTotal: lesson.grammar.length,
-    grammarPractised,
+    grammarTotal: grammar.length,
+    grammarMastered: grammar.filter((g) => inputs.index.mastered(g)).length,
     scenariosTotal: lesson.scenarios.length,
     scenariosDone: lesson.scenarios.filter((s) => inputs.completedScenarioIds?.has(s)).length,
     promptsTotal: lesson.journalPrompts.length,
@@ -52,7 +41,7 @@ export function lessonProgress(lesson: Lesson, inputs: ProgressInputs): LessonPr
   };
 }
 
-/** "Lesson done" = core vocab (not supplementary) ≥ 80% in review. */
-export function lessonDone(p: LessonProgress, threshold = 0.8): boolean {
-  return p.vocabShare >= threshold;
+/** "Lesson done" = Mastered at the lesson share (the same rule as Home's celebration). */
+export function lessonDone(p: Pick<LearnedMastered, 'masteredShare'>, share: number = PROGRESS_CONFIG.mastered.lessonShare): boolean {
+  return p.masteredShare >= share;
 }

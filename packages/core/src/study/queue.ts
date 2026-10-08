@@ -2,7 +2,9 @@
 // only ordered (textbook first); new items come only from the active step, in book order.
 import { PRIORITY_CONFIG } from '../curriculum/priority.config.js';
 import type { ItemRef } from '../types.js';
-import { orderDueCards, type StudyFocus } from './study-focus.js';
+import { orderDueCards, studyRank, type StudyFocus } from './study-focus.js';
+import type { SkillCard } from '../learner/types.js';
+import { isNewCard } from '../progress/terms.js';
 
 export interface ReviewPlan<T> {
   ordered: T[];
@@ -39,4 +41,46 @@ export function studyTargetWordIds(focus: StudyFocus | undefined, n: number): st
 export function studyGrammarId(focus: StudyFocus | undefined): string | undefined {
   if (!focus || !focus.enabled) return undefined;
   return [...focus.focusItems, ...focus.reviewItems].find((i) => i.kind === 'grammar')?.id;
+}
+
+/**
+ * Phase 21 Part F: the ONE "new" rule every session builder uses (Review, Cloze, Listen, the lesson
+ * step). New = cards introduced but never answered (`isNewCard`: My class coverage, lookups,
+ * production unlocks) plus study-order items with no card yet. At most `allowed` of them (the
+ * Phase 20 allowance), study-order rank first; `onlyItems` limits them to one lesson.
+ */
+export function pickNewForSession<T extends SkillCard>(input: {
+  newCards: readonly T[];
+  focus?: StudyFocus;
+  lessonIdx?: ReadonlyMap<string, string>;
+  allowed: number;
+  /** Item keys ("word:id") to keep (e.g. one lesson's items). */
+  onlyItems?: ReadonlySet<string>;
+  /** Extra items with no card to introduce after the focus's (e.g. a lesson's own new items). */
+  extraItems?: readonly ItemRef[];
+}): { cards: T[]; items: ItemRef[] } {
+  const n = Math.max(0, Math.floor(input.allowed));
+  if (n === 0) return { cards: [], items: [] };
+  const key = (i: ItemRef) => `${i.kind}:${i.id}`;
+  const keep = (i: ItemRef) => !input.onlyItems || input.onlyItems.has(key(i));
+  const focus = input.focus?.enabled ? input.focus : undefined;
+  const idx = input.lessonIdx;
+  const rank = (i: ItemRef) => (focus && idx ? studyRank(focus, (x) => idx.get(key(x)), i) : 0);
+  const cards = input.newCards
+    .filter((c) => isNewCard(c) && keep(c.item))
+    .map((c, i) => ({ c, i, r: rank(c.item) + (c.skill === 'production' ? 0.5 : 0) }))
+    .sort((a, b) => a.r - b.r || a.i - b.i)
+    .map((x) => x.c)
+    .slice(0, n);
+  const carded = new Set(input.newCards.map((c) => key(c.item)));
+  const seen = new Set<string>();
+  const items: ItemRef[] = [];
+  for (const i of [...(focus?.newItemsAllowed ?? []), ...(input.extraItems ?? [])]) {
+    if (cards.length + items.length >= n) break;
+    const k = key(i);
+    if (carded.has(k) || seen.has(k) || !keep(i)) continue;
+    seen.add(k);
+    items.push(i);
+  }
+  return { cards, items };
 }

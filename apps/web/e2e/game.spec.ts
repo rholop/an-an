@@ -47,7 +47,7 @@ test.describe('Game layer', () => {
     await expect(page.locator('.garden-tile[aria-label*="needs water"]').first()).toBeVisible();
 
     await page
-      .getByRole('button', { name: /Water \d+ wilting/ })
+      .getByRole('button', { name: /Water \d+ words?/ })
       .first()
       .click();
     await expect(page.getByRole('heading', { name: 'Water these words' })).toBeVisible();
@@ -70,7 +70,7 @@ test.describe('Game layer', () => {
     await expect(page.getByText(/never from\s+time spent/)).toBeVisible();
     await expect(page.getByText(/Recalled a word/)).toBeVisible();
     await expect(page.getByTestId('streak')).toHaveCount(0);
-    await expect(page.getByText(/you can handle ~\d+% of the words/).first()).toBeVisible();
+    await expect(page.getByText(/You know about \d+% of the words here/).first()).toBeVisible();
     await expect(page.getByTestId('retention')).toContainText('Review retention');
 
     await page.getByText('Streak settings').click();
@@ -90,7 +90,7 @@ test.describe('Game layer', () => {
     await expect(page.locator('.chat-scenario-card:disabled').first()).toContainText('locked');
     await expect(
       page.locator('.chat-scenario-card', { hasText: 'Ordering a drink at a tea shop' }),
-    ).toContainText('You know ~');
+    ).toContainText(/You know about \d+% of the words here/);
     await expect(page.locator('.chat-stars').first()).toHaveAttribute('aria-label', /of 3 stars/);
   });
 });

@@ -1,8 +1,10 @@
 import {
   capDueCards,
+  emptyCard,
+  lessonCoreItems,
+  pickNewForSession,
   describeSkillCard,
   newItemAllowance,
-  planReviewSession,
   PRIORITY_CONFIG,
   orderSession,
   studyRank,
@@ -12,6 +14,25 @@ import {
   type SkillCard,
   type StudyFocus,
 } from '@anan/core';
+
+/** A card for an item that has no card yet (shown as New): rating it records the first evidence. */
+export function newSessionCard(item: ItemRef, now: Date): SkillCard {
+  return {
+    item,
+    skill: 'recognition',
+    card: emptyCard(now),
+    state: 'unseen',
+    lapses: 0,
+    leech: false,
+    leechTreatmentsTried: [],
+    clozeRung: 1,
+    clozeStreak: 0,
+    familiarity: 0,
+    readingDependence: 0,
+    flags: {},
+    updatedAt: now,
+  };
+}
 
 /**
  * Phase 19: the review screen's session builder (normal review, Phase 14 study order, garden and
@@ -33,22 +54,45 @@ export function buildReviewSession(input: {
   const idx = input.lessonIdx;
   const rank = (item: ItemRef) =>
     focus && idx ? studyRank(focus, (i) => idx.get(`${i.kind}:${i.id}`), item) : 0;
+  // Phase 21: a journal "priority" word (a gap the learner hit while writing) comes right after
+  // the new items, in Review as well as Cloze.
   return orderSession(
     [...(input.fresh ?? []), ...input.due],
-    (c) => describeSkillCard(c, { band: fresh.has(c) ? 0 : 1 + rank(c.item) }),
+    (c) => describeSkillCard(c, { band: fresh.has(c) ? 0 : c.flags.priority ? 1 : 2 + rank(c.item) }),
     { seed: input.seed, recent: input.recent },
   );
 }
 
-/** "Study this lesson" vocabulary: the lesson's due words, recognition cards only (Mandarin →
- * English: new words are met that way first; production comes in later sessions). */
-export function lessonVocabCards(
-  due: readonly SkillCard[],
-  lesson: Pick<Lesson, 'vocab' | 'grammarWords'>,
-  max = 25,
-): SkillCard[] {
-  const ids = new Set([...lesson.vocab, ...(lesson.grammarWords ?? [])]);
-  return due.filter((c) => c.item.kind === 'word' && c.skill === 'recognition' && ids.has(c.item.id)).slice(0, max);
+/**
+ * Phase 21 Part D: "Study this lesson" vocabulary is a real session: the lesson's Due cards
+ * (recognition and production), then its New items (existing New cards first, then words with no
+ * card yet) under the same Phase 20 allowance as Review. Never empty while the lesson has words
+ * left to learn, unless new words are paused (the caller says why).
+ */
+export function lessonSessionCards(input: {
+  due: readonly SkillCard[];
+  newCards: readonly SkillCard[];
+  lesson: Pick<Lesson, 'vocab' | 'grammarWords' | 'properNouns' | 'grammar'>;
+  focus?: StudyFocus;
+  lessonIdx?: ReadonlyMap<string, string>;
+  /** Items the learner already has a card for (so they aren't introduced twice). */
+  hasCard: (i: ItemRef) => boolean;
+  allowedNew: number;
+  maxDue?: number;
+}): { due: SkillCard[]; fresh: SkillCard[]; newItems: ItemRef[] } {
+  const words = lessonCoreItems(input.lesson as Lesson).filter((i) => i.kind === 'word');
+  const keys = new Set(words.map((i) => `${i.kind}:${i.id}`));
+  const mine = (c: SkillCard) => keys.has(`${c.item.kind}:${c.item.id}`);
+  const due = input.due.filter(mine).slice(0, input.maxDue ?? 40);
+  const picked = pickNewForSession({
+    newCards: input.newCards,
+    ...(input.focus ? { focus: input.focus } : {}),
+    ...(input.lessonIdx ? { lessonIdx: input.lessonIdx } : {}),
+    allowed: input.allowedNew,
+    onlyItems: keys,
+    extraItems: words.filter((i) => !input.hasCard(i)),
+  });
+  return { due, fresh: picked.cards, newItems: picked.items };
 }
 
 /**
@@ -57,13 +101,24 @@ export function lessonVocabCards(
  */
 export function pickReviewCards(input: {
   due: readonly SkillCard[];
+  /** Phase 21: New cards (introduced, never answered), e.g. from My class or a lookup. */
+  newCards?: readonly SkillCard[];
   doneToday: number;
   cap: number;
   focus?: StudyFocus;
   lessonIdx?: ReadonlyMap<string, string>;
   now: Date;
   baseNew?: number;
-}): { due: SkillCard[]; newItems: ItemRef[]; held: number; newPaused: boolean; newReason?: string } {
+}): {
+  due: SkillCard[];
+  /** New cards that join this session. */
+  fresh: SkillCard[];
+  /** Items with no card yet that join this session. */
+  newItems: ItemRef[];
+  held: number;
+  newPaused: boolean;
+  newReason?: string;
+} {
   const focus = input.focus?.enabled ? input.focus : undefined;
   const idx = input.lessonIdx;
   const rank =
@@ -72,11 +127,18 @@ export function pickReviewCards(input: {
   const due = capDueCards(input.due, { remaining, now: input.now, ...(rank ? { rank } : {}) });
   const allowance = newItemAllowance(input.due.length + input.doneToday, input.baseNew ?? PRIORITY_CONFIG.reviewNewItems, input.cap);
   const roomForNew = Math.max(0, remaining - due.length);
-  const newItems =
-    focus && idx ? planReviewSession(due, focus, idx, Math.min(allowance.allowed, roomForNew)).newItems : [];
+  // One "new" rule for every session (core `pickNewForSession`): New cards and study-order items
+  // together, never more than the allowance (Phase 20) — My class cards are no longer uncapped.
+  const picked = pickNewForSession({
+    newCards: input.newCards ?? [],
+    ...(focus ? { focus } : {}),
+    ...(idx ? { lessonIdx: idx } : {}),
+    allowed: Math.min(allowance.allowed, roomForNew),
+  });
   return {
     due,
-    newItems,
+    fresh: picked.cards,
+    newItems: picked.items,
     held: input.due.length - due.length,
     newPaused: allowance.paused,
     ...(allowance.reason ? { newReason: allowance.reason } : {}),

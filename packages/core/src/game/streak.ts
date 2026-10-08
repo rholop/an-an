@@ -1,3 +1,4 @@
+import { activeRewards } from './rewards.js';
 import { dayKey } from './rewards.js';
 
 export interface StreakConfig {
@@ -80,19 +81,28 @@ export interface WeeklySummary {
 /** Phase 6 §5: a weekly summary instead of a daily nag. Counts the 7 days
  * ending at `now`'s day. Purely descriptive — no goals, no shortfalls. */
 export function weeklySummary(
-  events: readonly { kind: string; points: number; at: Date }[],
+  events: readonly { id?: string; kind: string; points: number; at: Date; refId?: string; revokes?: string }[],
   now: Date,
 ): WeeklySummary {
   const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
   const from = addDays(to, -7);
-  const inWeek = events.filter((e) => e.at >= from && e.at < to);
+  // Phase 21: undone answers (and their revoking events) don't count; points still net out.
+  const all = events.filter((e) => e.at >= from && e.at < to);
+  const inWeek = activeRewards(all.map((e, i) => ({ ...e, id: e.id ?? `#${i}` })));
   const count = (...kinds: string[]) => inWeek.filter((e) => kinds.includes(e.kind)).length;
   return {
     from,
     to,
     points: inWeek.reduce((s, e) => s + e.points, 0),
     activeDays: new Set(inWeek.map((e) => dayKey(e.at))).size,
-    wordsRecalled: count('recall_correct', 'recall_hinted'),
+    // Phase 21: distinct WORDS recalled (not word+skill pairs per day, and not grammar points).
+    wordsRecalled: new Set(
+      inWeek
+        .filter((e) => ['recall_correct', 'recall_hinted', 'recall_wrong_tone'].includes(e.kind))
+        .map((e) => e.refId ?? `${e.kind}:${e.at.getTime()}`)
+        .filter((ref) => !ref.startsWith('grammar:'))
+        .map((ref) => (ref.startsWith('word:') ? ref.split(':')[1] : ref)),
+    ).size,
     scenariosCompleted: count('scenario_completed'),
     journalEntries: count('journal_entry'),
     mistakesFixed: count('error_fixed', 'self_correction'),

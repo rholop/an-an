@@ -73,7 +73,7 @@ test.describe('Review screen', () => {
 
     await page.reload();
     await expect(page.getByText('Review', { exact: true })).toBeVisible();
-    await expect(page.getByText(/2 due now/)).toBeVisible();
+    await expect(page.getByTestId('review-counts')).toContainText(/^2 due · /);
 
     await page.screenshot({ path: 'screenshots/review-front.png' });
 

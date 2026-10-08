@@ -4,6 +4,7 @@ import type { ProfileId } from '../profiles.js';
 import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
 import { reloadCurrentLevel } from './current-level.js';
 import { reloadMyClass } from './my-class.js';
+import { markStudyDirty } from './study-dirty.js';
 import { SyncManager, type SyncStatus } from './sync.js';
 
 export const PROFILE_KEY = 'anan.profile';
@@ -18,6 +19,14 @@ export function rememberedProfile(isValid: (v: unknown) => v is ProfileId): Prof
 }
 
 const beforeSwitch = new Set<() => Promise<void> | void>();
+const afterMerge = new Set<() => void>();
+
+/** Phase 21: module stores (settings, study order, review settings…) re-read after a sync merge,
+ * so no screen keeps showing — or later writes back — a stale copy. Returns an unregister fn. */
+export function registerAfterMerge(fn: () => void): () => void {
+  afterMerge.add(fn);
+  return () => afterMerge.delete(fn);
+}
 
 /** Things that hold unsaved in-progress state (a journal draft, a setting being
  * typed) register here; switching profile awaits them all first, so nothing
@@ -86,6 +95,8 @@ export class ProfileController {
       onDataChanged: () => {
         reloadCurrentLevel();
         reloadMyClass();
+        afterMerge.forEach((fn) => fn());
+        markStudyDirty();
         this.events.onDataChanged();
       },
     });

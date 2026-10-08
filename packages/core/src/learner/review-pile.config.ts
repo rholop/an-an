@@ -1,3 +1,4 @@
+import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 // Phase 20: every number that keeps the review pile a sensible size, in one place.
 // The daily cap is also a per-profile setting (Settings → Review); this is its default.
 export interface ReviewPileConfig {
@@ -19,7 +20,7 @@ export interface ReviewPileConfig {
 export const REVIEW_PILE_CONFIG: ReviewPileConfig = {
   dailyCap: 80,
   newHalfShare: 0.5,
-  knownStabilityDays: 60,
+  knownStabilityDays: PROGRESS_CONFIG.knownStabilityDays,
   bulkSpreadMinDays: 14,
   bulkSpreadMaxDays: 28,
   bulkShareOfCap: 0.5,

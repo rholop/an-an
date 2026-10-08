@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { emptyCard, pileReport, type SkillCard, type Word } from '@anan/core';
+import { activeEvidence, emptyCard, pileReport, type SkillCard, type Word } from '@anan/core';
 import { DexieLearnerRepo } from '../db/learner-repo.js';
 import { AnanDB } from '../db/schema.js';
 import { LearnerService, setLookupGate } from './learner-service.js';
@@ -10,6 +10,7 @@ let db: AnanDB;
 let repo: DexieLearnerRepo;
 let service: LearnerService;
 const NOW = new Date('2026-10-07T12:00:00Z');
+const stripStamp = ({ updatedAt: _u, ...rest }: SkillCard) => rest;
 const DAY = 86_400_000;
 
 beforeEach(() => {
@@ -66,8 +67,9 @@ describe('Nope in the app (Phase 20)', () => {
     expect(await repo.dueCards(NOW, 100)).toHaveLength(0);
     expect(await repo.dueListeningCards(NOW, 100)).toHaveLength(0);
     await h.undo();
-    expect(await repo.cardsOfItem({ kind: 'word', id: 'w1' })).toEqual(before);
-    expect(await db.evidence.count()).toBe(0);
+    // Phase 21: restored exactly apart from a new updatedAt (sync-safe undo); no active evidence left.
+    expect((await repo.cardsOfItem({ kind: 'word', id: 'w1' })).map(stripStamp)).toEqual(before.map(stripStamp));
+    expect(activeEvidence(await db.evidence.toArray())).toHaveLength(0);
   });
 
   it('Never show keeps the word out of the due queue; I already know it counts as known', async () => {
@@ -75,7 +77,7 @@ describe('Nope in the app (Phase 20)', () => {
     await service.nope({ kind: 'word', id: 'a' }, 'never', {}, NOW);
     await service.nope({ kind: 'word', id: 'b' }, 'known', {}, NOW);
     expect(await repo.dueCards(NOW, 100)).toHaveLength(0);
-    expect((await service.knownSet('review')).has('b')).toBe(true);
+    expect((await service.wordSets(NOW)).knownIds.has('b')).toBe(true);
     // Restore brings "never" back
     await service.restore({ kind: 'word', id: 'a' }, NOW);
     expect((await repo.dueCards(NOW, 100)).map((c) => c.item.id)).toEqual(['a']);
@@ -152,6 +154,6 @@ describe('bulk clean-up (Phase 20)', () => {
     await done.undo();
     const after = await repo.allCards();
     const sort = (xs: SkillCard[]) => [...xs].sort((a, b) => `${a.item.id}${a.skill}`.localeCompare(`${b.item.id}${b.skill}`));
-    expect(sort(after)).toEqual(sort(before));
+    expect(sort(after).map(stripStamp)).toEqual(sort(before).map(stripStamp));
   });
 });

@@ -16,8 +16,18 @@ import { db, learnerService } from '../db/instance.js';
 import type { ConversationRow, TurnRow } from '../db/schema.js';
 import { annotate, withReadingDisplay } from '../lib/annotate.js';
 import type { ChatService } from '../lib/chat-service.js';
-import { reportGloss } from '../lib/gloss-reports.js';
-import { peekMyClass } from '../lib/my-class.js';
+import { onStudyDirty } from '../lib/study-dirty.js';
+import { useReadingSettings } from '../lib/reading.js';
+import { AnnotatedInline } from '../components/AnnotatedInline.js';
+import { SpeakerButton } from '../components/SpeakerButton.js';
+import {
+  BACK_TO_CHATS,
+  CHAT_FINISHED,
+  END_CHAT,
+  NEW_WORDS_MET,
+  UNRELIABLE_REPLY,
+  messagesFromYou,
+} from '../lib/labels.js';
 import {
   OpenChatService,
   type OpenChatSummary,
@@ -71,10 +81,6 @@ export function OpenChatView({
     () =>
       new OpenChatService(db, lexicon, learnerService, tutorLLM, {
         books: () => booksRef.current,
-        myClass: () => {
-          const m = peekMyClass();
-          return { enabled: m.enabled, textbookId: m.textbookId, currentLesson: m.currentLesson };
-        },
         studyFocus: () => getStudyFocusNow(),
       }),
     [lexicon, tutorLLM],
@@ -99,8 +105,11 @@ export function OpenChatView({
   const scrollRef = useRef<HTMLDivElement>(null);
   const keyboardOpen = useKeyboardOpen();
 
-  // Chips follow the header level: change it and the list changes, no reload.
+  // Chips follow the header level and the study focus: change either and the list changes, no reload.
   const [chips, setChips] = useState<TopicChip[]>([]);
+  const [studyTick, setStudyTick] = useState(0);
+  useEffect(() => onStudyDirty(() => setStudyTick((t) => t + 1)), []);
+  const { script, mode } = useReadingSettings();
   useEffect(() => {
     let cancelled = false;
     service
@@ -114,7 +123,7 @@ export function OpenChatView({
     return () => {
       cancelled = true;
     };
-  }, [service, learnerLevel, books]);
+  }, [service, learnerLevel, books, studyTick]);
 
   const refresh = useCallback(
     async (cid: number) => {
@@ -162,6 +171,7 @@ export function OpenChatView({
           skill: 'recognition',
           kind: kind === 'gloss' ? 'chat_lookup_gloss' : 'chat_hover_reading',
           at: now,
+          context: { source: 'chat' },
         },
         now,
       );
@@ -177,17 +187,6 @@ export function OpenChatView({
       }
       await refreshCards();
     };
-  }
-
-  async function reportFromPopover(at: AnnotatedToken, sentence: string) {
-    if (!at.word) return;
-    await reportGloss(db, {
-      word: at.word,
-      sense: at.sense,
-      shownGloss: at.gloss,
-      contextSentence: sentence,
-    });
-    setError(`Thanks: "${at.token.text}" is saved for review (Credits page → reported definitions).`);
   }
 
   async function sendMessage() {
@@ -236,7 +235,7 @@ export function OpenChatView({
     return (
       <div className="chat-page chat-page--convo open-chat-topic" data-testid="open-chat-topic">
         <div className="chat-header">
-          <button onClick={onExit}>← Chats</button>
+          <button onClick={onExit}>{BACK_TO_CHATS}</button>
           <h1 lang="zh-Hant">Open chat · {OPEN_CHAT_NPC.name}</h1>
         </div>
         <div className="chat-scroll">
@@ -264,7 +263,7 @@ export function OpenChatView({
   return (
     <div className="chat-page chat-page--convo" data-testid="open-chat">
       <div className="chat-header">
-        <button onClick={onExit}>← Chats</button>
+        <button onClick={onExit}>{BACK_TO_CHATS}</button>
         <h1 lang="zh-Hant">
           {OPEN_CHAT_NPC.name} · {topic || 'Just chat'}
         </h1>
@@ -290,15 +289,20 @@ export function OpenChatView({
             const tiers = turn.validatorReport?.tiers;
             return (
               <div key={turn.id} className={`chat-bubble chat-bubble--${turn.role}`}>
-                {turn.recastZh && <div className="chat-recast">You could say: {turn.recastZh}</div>}
+                {turn.recastZh && (
+                  <div className="chat-recast">
+                    You could say: <AnnotatedInline text={turn.recastZh} lexicon={lexicon} script={script} />
+                  </div>
+                )}
                 <AnnotatedText
                   tokens={annotated}
-                  mode="auto"
-                  script="pinyin"
+                  mode={mode}
+                  script={script}
                   onLookup={turn.role === 'npc' ? makeOnLookup(turn.id) : undefined}
+                  lookupSource="chat"
                   currentLevel={learnerLevel}
-                  onReportGloss={(at) => void reportFromPopover(at, turn.zh)}
                 />
+                <SpeakerButton kind="sentence" text={turn.zh} />
                 {turn.glosses && turn.glosses.length > 0 && (
                   <div className="open-chat-glosses" data-testid="open-chat-glosses">
                     {turn.glosses.map((g) => (
@@ -322,7 +326,11 @@ export function OpenChatView({
           })}
         </div>
 
-        {error && <div className="chat-error">Couldn't get a reply: {error}</div>}
+        {error && (
+          <div className="chat-error">
+            {error === UNRELIABLE_REPLY ? error : `${UNRELIABLE_REPLY} (${error})`}
+          </div>
+        )}
         {import.meta.env.DEV && lastResult && (
           <div className="chat-debug" data-testid="open-chat-vocab-debug">
             tier A {lastResult.vocab.tierAIds.size} · tier B {lastResult.vocab.tierBIds.size} ·
@@ -335,6 +343,7 @@ export function OpenChatView({
 
         {ended && summary && (
           <OpenSummaryPanel
+            lexicon={lexicon}
             summary={summary}
             onAdd={async (ids) => {
               await service.addToReview(ids);
@@ -377,6 +386,11 @@ export function OpenChatView({
                     {suggestions[0].zh}
                   </button>
                 </div>
+              )}
+              {input !== '' && suggestions.some((x) => x.zh === input) && (
+                <p className="chat-reply-preview" lang="zh-Hant" data-testid="chat-reply-preview">
+                  <AnnotatedInline text={input} lexicon={lexicon} script={script} />
+                </p>
               )}
               <div className="chat-input-row">
                 <input
@@ -431,7 +445,7 @@ export function OpenChatView({
                   </label>
                 )}
                 <button onClick={() => setPickingTopic(true)}>New topic</button>
-                <button onClick={endNow}>End chat</button>
+                <button onClick={endNow}>{END_CHAT}</button>
               </div>
             </>
           )}
@@ -499,10 +513,13 @@ function TopicPicker({
 function OpenSummaryPanel({
   summary,
   onAdd,
+  lexicon,
 }: {
   summary: OpenChatSummary;
   onAdd: (wordIds: string[]) => Promise<void>;
+  lexicon: Lexicon;
 }) {
+  const { script } = useReadingSettings();
   const [chosen, setChosen] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const toggle = (id: string) =>
@@ -514,9 +531,9 @@ function OpenSummaryPanel({
     });
   return (
     <div className="chat-summary" data-testid="open-chat-summary">
-      <h2>Chat finished</h2>
+      <h2>{CHAT_FINISHED}</h2>
       <ul>
-        <li>{summary.learnerTurns} messages from you</li>
+        <li>{messagesFromYou(summary.learnerTurns)}</li>
         <li data-testid="open-chat-tier-mix">
           {Math.round(summary.tierShareA * 100)}% words you know or are learning soon
         </li>
@@ -526,7 +543,7 @@ function OpenSummaryPanel({
       </ul>
       {summary.wordsMet.length > 0 && (
         <>
-          <h3>New words you met</h3>
+          <h3>{NEW_WORDS_MET}</h3>
           <ul className="open-chat-met">
             {summary.wordsMet.map((w) => (
               <li key={w.wordId}>
@@ -562,7 +579,7 @@ function OpenSummaryPanel({
         <>
           <h3>Words you looked up</h3>
           <p className="chat-summary-words" lang="zh-Hant">
-            {summary.wordsLookedUp.join('、')}
+            <AnnotatedInline text={summary.wordsLookedUp.join('、')} lexicon={lexicon} script={script} />
           </p>
         </>
       )}

@@ -32,7 +32,7 @@ function strongCard(id: string): SkillCard {
   return {
     item: { kind: 'word', id },
     skill: 'recognition',
-    card: { ...emptyCard(now), stability: 30 },
+    card: { ...emptyCard(now), stability: 30, reps: 3 },
     state: 'mature',
     lapses: 0,
     leech: false,

@@ -3,7 +3,7 @@ import {
   Lexicon,
   readingDisplay,
   resolveReading,
-  resolveSense,
+  senseFor,
   segment,
   type Level,
   type Sense,
@@ -44,15 +44,15 @@ export function annotate(
       level = matched?.level ?? null;
       wordId = matched?.id;
       word = matched;
+      // Phase 21: the one gloss rule (core `senseFor`).
       sense = matched
-        ? resolveSense(matched, senseHints?.get(token.text), {
+        ? senseFor(matched, {
+            ...(senseHints?.get(token.text) ? { senseId: senseHints.get(token.text)! } : {}),
             prev: tokens[i - 1]?.text,
             next: tokens[i + 1]?.text,
+            textbook: !!opts.textbook,
           })
         : undefined;
-      if (opts.textbook && matched?.textbookSenseId) {
-        sense = matched.senses?.find((x) => x.id === matched.textbookSenseId) ?? sense;
-      }
       gloss = sense?.glossEn ?? matched?.glossEn ?? '';
     }
     const textbookHome = word ? homeLessonOfTags(word.tags) : undefined;
@@ -87,10 +87,7 @@ export function withReadingDisplay(
  * sense matters: 去 as the N1 verb must not turn into the L3 particle. */
 export function annotateWord(word: Word, opts: { textbook?: boolean } = {}): AnnotatedToken {
   const length = [...word.headword].length;
-  const sense =
-    (opts.textbook && word.textbookSenseId
-      ? word.senses?.find((x) => x.id === word.textbookSenseId)
-      : undefined) ?? resolveSense(word, word.primarySenseId, {});
+  const sense = senseFor(word, opts.textbook === undefined ? {} : { textbook: opts.textbook });
   return {
     token: { text: word.headword, start: 0, end: length, kind: 'word' },
     reading: { pinyin: word.pinyin, zhuyin: word.zhuyin, confidence: 'high' },

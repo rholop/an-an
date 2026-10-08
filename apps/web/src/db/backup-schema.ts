@@ -56,6 +56,10 @@ export const SkillCardSchema = z.object({
     excluded: z.boolean().optional(),
     snoozed: z.boolean().optional(),
     snoozedWhen: z.object({ level: LevelSchema.optional(), lessonId: z.string().optional() }).optional(),
+    // Phase 21 (additive): "I already know this" quick check.
+    knownChecked: z.boolean().optional(),
+    knownCheckedAt: z.coerce.date().optional(),
+    knownCheckLapses: z.number().optional(),
   }),
   source: z
     .enum([
@@ -98,6 +102,13 @@ const EvidenceKindSchema = z.enum([
   'listening_wrong',
   'review_nope',
   'review_restore',
+  // Phase 21
+  'known_check_passed',
+  'production_unlocked',
+  'listening_unlocked',
+  'journal_priority',
+  'evidence_undone',
+  'cloze_rung_set',
 ]);
 
 export const EvidenceSchema = z.object({
@@ -114,6 +125,9 @@ export const EvidenceSchema = z.object({
       choice: z.enum(['not_now', 'known', 'never']).optional(),
       noIntroduce: z.boolean().optional(),
       snoozedWhen: z.object({ level: LevelSchema.optional(), lessonId: z.string().optional() }).optional(),
+      // Phase 21: the card before an undone answer, and a cloze rung set without a rating.
+      restore: z.unknown().optional(),
+      rung: z.number().optional(),
     })
     .optional(),
 });
@@ -312,6 +326,7 @@ export const RewardRowSchema = z.object({
   points: z.number(),
   at: z.coerce.date(),
   refId: z.string().optional(),
+  revokes: z.string().optional(),
 });
 
 export const GlossReportRowSchema = z.object({
@@ -325,6 +340,7 @@ export const GlossReportRowSchema = z.object({
   contextSentence: z.string(),
   note: z.string().optional(),
   at: z.coerce.date(),
+  withdrawnAt: z.coerce.date().optional(),
 });
 
 export const AiGlossRowSchema = z.object({

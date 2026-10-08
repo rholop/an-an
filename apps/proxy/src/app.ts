@@ -279,7 +279,9 @@ export function createApp(deps: AppDeps): Hono {
         openRequest.feedback,
       );
       try {
-        const { result, log: runLog } = await deps.orchestrator.run(openPrompt, openRequest.history);
+        const { result, log: runLog } = await deps.orchestrator.run(openPrompt, openRequest.history, {
+          alternate: openRequest.alternateProvider === true,
+        });
         const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
         deps.rateLimiter.recordUsage(installId, totalTokens);
         log({ route: '/v1/turn', mode: 'open', installId, totalTokens, ...runLog });
@@ -312,6 +314,7 @@ export function createApp(deps: AppDeps): Hono {
       const { result, log: runLog } = await deps.orchestrator.run(
         effectiveSystemPrompt,
         turnRequest.history,
+        { alternate: turnRequest.alternateProvider === true },
       );
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);

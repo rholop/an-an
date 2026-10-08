@@ -10,6 +10,7 @@ import type { Evidence } from '../types.js';
 export type RewardKind =
   | 'recall_correct'
   | 'recall_hinted'
+  | 'recall_wrong_tone'
   | 'word_revived'
   | 'scenario_completed'
   | 'scenario_unassisted'
@@ -33,8 +34,13 @@ export const REWARD_TABLE: Record<RewardKind, RewardRule> = {
   },
   recall_hinted: {
     points: 1,
-    label: 'Recalled a word with a hint',
-    behaviour: 'successful recall with help',
+    label: 'Recalled a word (hard)',
+    behaviour: 'successful recall that took effort (Hard, or after replays)',
+  },
+  recall_wrong_tone: {
+    points: 1,
+    label: 'Right word, wrong tone',
+    behaviour: 'produced the right word with a wrong tone',
   },
   word_revived: {
     points: 5,
@@ -84,6 +90,19 @@ export interface RewardEvent {
   at: Date;
   /** What it was for (item id, conversation id, journal entry id …). */
   refId?: string;
+  /** Phase 21 Undo: this event takes back the event with this id (negative points, same kind). */
+  revokes?: string;
+}
+
+/** Phase 21 Undo: the event that takes `e` back (append-only, so it survives sync). */
+export function revokeReward(e: Pick<RewardEvent, 'id' | 'kind' | 'points' | 'refId'>, at: Date): RewardEvent {
+  return { id: `undo:${e.id}`, kind: e.kind, points: -e.points, at, ...(e.refId ? { refId: e.refId } : {}), revokes: e.id };
+}
+
+/** Events that still count: revoked events and the revoking events themselves drop out. */
+export function activeRewards<T extends { id: string; revokes?: string }>(events: readonly T[]): T[] {
+  const revoked = new Set(events.flatMap((e) => (e.revokes ? [e.revokes] : [])));
+  return events.filter((e) => !e.revokes && !revoked.has(e.id));
 }
 
 const DAY_MS = 86_400_000;
@@ -121,15 +140,21 @@ export function rewardsForEvidence(
   config: RewardConfig = DEFAULT_REWARD_CONFIG,
 ): RewardEvent[] {
   let kind: RewardKind | null = null;
+  // Phase 21: listening and journal recalls earn the same points as review and cloze recalls.
   switch (evidence.kind) {
     case 'cloze_correct_nohint':
     case 'review_good':
     case 'review_easy':
+    case 'listening_correct':
+    case 'journal_correct_use':
       kind = 'recall_correct';
       break;
-    case 'cloze_correct_hint':
     case 'review_hard':
+    case 'listening_correct_replayed':
       kind = 'recall_hinted';
+      break;
+    case 'cloze_correct_hint':
+      kind = 'recall_wrong_tone';
       break;
     default:
       return [];
@@ -148,4 +173,11 @@ export function rewardsForEvidence(
 
 export function totalPoints(events: readonly Pick<RewardEvent, 'points'>[]): number {
   return events.reduce((sum, e) => sum + e.points, 0);
+}
+
+/** Phase 21: evidence that still counts: answers taken back by an `evidence_undone` record drop out
+ * (with the undo records themselves). Rows written before sync uids existed always count. */
+export function activeEvidence<T extends { kind: string; uid?: string; context?: { refId?: string } }>(rows: readonly T[]): T[] {
+  const undone = new Set(rows.flatMap((e) => (e.kind === 'evidence_undone' && e.context?.refId ? [e.context.refId] : [])));
+  return rows.filter((e) => e.kind !== 'evidence_undone' && !(e.uid && undone.has(e.uid)));
 }

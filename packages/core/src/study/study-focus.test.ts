@@ -9,7 +9,6 @@ import type { Word } from '../types.js';
 import {
   DEFAULT_STUDY_SETTINGS,
   getStudyFocus,
-  grammarUsesFromEvidence,
   lessonIndex,
   orderDueCards,
   stepKey,
@@ -18,6 +17,7 @@ import {
   type GrammarUse,
   type StudyProfile,
 } from './study-focus.js';
+import { grammarUsesFromEvidence } from '../progress/terms.js';
 
 // ---- fixtures: 4 books x 2 lessons (course positions 1,2 / 11,12 / 21,22 / 31,32), 2 words + 1 grammar each
 const BOOKS = ['laixue-1', 'laixue-2', 'laixue-3', 'laixue-4'];
@@ -254,7 +254,7 @@ describe('getStudyFocus', () => {
     expect(f.activeStep).toEqual({ kind: 'level', level: 'N1' });
     expect(f.gateStatus.blocked).toBe(true);
     expect(f.gateStatus.waitingForLevel).toBe('N1');
-    expect(f.gateStatus.message).toMatch(/^來學華語 2 unlocks after TOCFL Novice 1: \d+% mastered/);
+    expect(f.gateStatus.message).toMatch(/^來學華語 2 unlocks after TOCFL N1: \d+% mastered/);
   });
 
   it('a lapsed earlier lesson becomes a review lesson without moving the active step back', () => {
@@ -366,5 +366,69 @@ describe('Phase 20: removed words and lesson mastery', () => {
     ];
     expect(getStudyFocus(profile({ cards: known(mark) }), now).mastery!.mastered).toBe(0);
     expect(getStudyFocus(profile({ cards: known(new Date('2026-10-03')) }), now).mastery!.mastered).toBe(1);
+  });
+});
+
+describe('Phase 21 Part A: Now studying follows the class', () => {
+  it('class = lesson 2 with lesson 1 unmastered: lesson 2 is active, lesson 1 is catch-up', () => {
+    const f = getStudyFocus(profile({ myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 2 } }), now);
+    expect(f.activeLesson).toMatchObject({ bookId: 'laixue-1', n: 2 });
+    expect(f.activeIsClass).toBe(true);
+    expect(f.classLesson).toMatchObject({ bookId: 'laixue-1', n: 2 });
+    expect(f.reviewLessons.map((l) => l.n)).toEqual([1]);
+    // catch-up items come after the active lesson's own items
+    expect(f.reviewItems.map((i) => i.id)).toContain('laixue-1-w1a');
+    expect(f.focusItems.map((i) => i.id)).toContain('laixue-1-w2a');
+    // Next = the step after the class lesson
+    expect(f.nextStep).toEqual({ kind: 'level', level: 'N1' });
+  });
+
+  it('no class set: Phase 14 behaviour (first unmastered lesson)', () => {
+    const f = getStudyFocus(profile(), now);
+    expect(f.activeLesson).toMatchObject({ bookId: 'laixue-1', n: 1 });
+    expect(f.activeIsClass).toBeUndefined();
+    expect(f.reviewLessons).toEqual([]);
+  });
+
+  it('the class lesson is a floor even when the saved pointer has moved past it', () => {
+    const f = getStudyFocus(
+      profile({ settings: { ...DEFAULT_STUDY_SETTINGS, reached: 5 }, myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 1 } }),
+      now,
+    );
+    expect(f.activeLesson).toMatchObject({ bookId: 'laixue-1', n: 1 });
+  });
+
+  it('class lesson mastered: the preview lesson (classAheadLessons) is active, never an earlier one', () => {
+    const l1 = lessonItems('laixue-1');
+    const p = profile({
+      cards: masteredCards(l1.words.filter((w) => w.includes('w1'))),
+      grammarUses: grammarDone(['g-laixue-1-1']),
+      myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 1 },
+    });
+    expect(getStudyFocus(p, now).activeLesson).toMatchObject({ n: 2 });
+    const noPreview = getStudyFocus({ ...p, settings: { ...p.settings, classAheadLessons: 0 } }, now);
+    expect(noPreview.activeStep).toEqual({ kind: 'level', level: 'N1' });
+  });
+
+  it('the TOCFL gate still wins over the class lesson', () => {
+    const f = getStudyFocus(profile({ myClass: { enabled: true, textbookId: 'laixue-2', currentLesson: 2 } }), now);
+    expect(f.activeStep).toEqual({ kind: 'level', level: 'N1' });
+    expect(f.gateStatus.blocked).toBe(true);
+    expect(f.activeIsClass).toBe(false);
+    expect(f.classLesson).toMatchObject({ bookId: 'laixue-2', n: 2 });
+  });
+
+  it('mastery carries the Learned share over the same items', () => {
+    const f = getStudyFocus(profile({ myClass: { enabled: true, textbookId: 'laixue-1', currentLesson: 1 } }), now);
+    expect(f.mastery).toMatchObject({ learned: 0, learnedShare: 0, total: 3 });
+  });
+
+  it('a "TOCFL X (rest)" step counts only the words no lesson covers (#8)', () => {
+    const f = getStudyFocus(profile({ masteredLessonBooks: ['laixue-1'] }), now);
+    expect(f.activeStep).toEqual({ kind: 'level', level: 'N1' });
+    // 10 rest-of-N1 words; book 1's N1 lesson words are not counted again
+    expect(f.mastery).toMatchObject({ total: 10, mastered: 0 });
+    expect(f.focusItems.every((i) => !i.id.startsWith('laixue-'))).toBe(true);
+    expect(f.masteredLessonIds).toEqual(['laixue-1-L01', 'laixue-1-L02']);
   });
 });

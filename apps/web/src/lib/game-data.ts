@@ -1,4 +1,5 @@
 import {
+  activeRewards,
   buildFsrs,
   buildPlants,
   buildScenarioMap,
@@ -16,9 +17,13 @@ import {
   type Scenario,
   type ScenarioCoverage,
   type ScenarioNode,
+  ProgressIndex,
   type SkillCard,
+  wordSets,
 } from '@anan/core';
 import { allTouchedCards } from '../db/queries.js';
+import { peekStudySettings } from './study.js';
+import { readTargetRetention } from './retention.js';
 import type { AnanDB, RewardRow } from '../db/schema.js';
 
 export type StoredConversation = ConversationRecord & { learnerTurns: number };
@@ -59,32 +64,33 @@ export interface GameSnapshot {
 /**
  * Everything the garden, scenario map and progress screens need, computed
  * from local data only (works fully offline — phase doc acceptance).
- * `targetRetention` is the garden's wilt threshold.
+ * Phase 21: the target retention is the ONE stored setting (the scheduler uses it too), stages
+ * and coverage use the shared terms, and undone rewards don't count.
  */
 export async function loadGameSnapshot(
   db: AnanDB,
   lexicon: Lexicon,
   scenarios: Scenario[],
   now: Date,
-  targetRetention = DEFAULT_LEARNER_CONFIG.requestRetention,
+  targetRetention?: number,
   /** Phase 7: the learner's chosen level; falls back to the derived frontier. */
   chosenLevel?: Level,
 ): Promise<GameSnapshot> {
-  const [cards, conversations, rewards, convRows, turns] = await Promise.all([
+  const [cards, conversations, rewardRows, convRows, turns, retention] = await Promise.all([
     allTouchedCards(db),
     conversationRecords(db),
     db.rewardEvents.orderBy('at').toArray(),
     db.conversations.toArray(),
     db.turns.toArray(),
+    targetRetention === undefined ? readTargetRetention(db) : Promise.resolve(targetRetention),
   ]);
+  const rewards = activeRewards(rewardRows) as RewardRow[];
 
   const recognition = cards.filter((c) => c.skill === 'recognition');
   const frontier = chosenLevel ?? currentFrontierLevel(lexicon.allWords(), recognition);
-  const knownIds = new Set(
-    cards.filter((c) => c.state === 'review' || c.state === 'mature').map((c) => c.item.id),
-  );
-  const learningIds = new Set(cards.filter((c) => c.state === 'learning').map((c) => c.item.id));
-  const ctx = coverageContext(lexicon, frontier, knownIds, learningIds);
+  // One "comprehensible" definition (the chat validator's): Learned ∪ due ∪ learning ∪ allowed.
+  const sets = wordSets(cards, now, { knownItems: peekStudySettings().knownItems });
+  const ctx = coverageContext(lexicon, frontier, sets.knownIds, sets.learningIds, sets.dueIds);
 
   const scenarioByConv = new Map(convRows.map((c) => [c.id!, c.scenarioId]));
   const npcLines = new Map<string, Set<string>>();
@@ -101,8 +107,16 @@ export async function loadGameSnapshot(
     coverage.set(s.id, scenarioCoverage(scenarioCorpus(s, [...(npcLines.get(s.id) ?? [])]), ctx));
   }
 
-  const fsrs = buildFsrs(DEFAULT_LEARNER_CONFIG);
-  const plants = buildPlants(cards, lexicon, now, fsrs, { targetRetention, witheredMargin: 0.2 });
+  const fsrs = buildFsrs({ ...DEFAULT_LEARNER_CONFIG, requestRetention: retention });
+  const plants = buildPlants(
+    cards,
+    lexicon,
+    now,
+    fsrs,
+    { targetRetention: retention, witheredMargin: 0.2 },
+    // the same Learned / Mastered as every tab (plants are words, so grammar uses don't matter here)
+    new ProgressIndex({ cards, knownItems: peekStudySettings().knownItems }),
+  );
   return {
     frontier,
     cards,

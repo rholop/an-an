@@ -9,6 +9,9 @@ import {
   type Reconsidered,
   type Span,
 } from '@anan/core';
+import { FEEDBACK_CORRECT, FEEDBACK_WRONG_TONE, MINE_IS_RIGHT, NEXT } from '../lib/labels.js';
+import { useAnswerInputMode } from '../lib/reading.js';
+import { SpeakerButton } from '../components/SpeakerButton.js';
 
 export type ErrorOutcome = 'correct' | 'hint' | 'wrong';
 
@@ -81,7 +84,13 @@ export function ErrorExerciseView({
   const [checking, setChecking] = useState(false);
   const [note, setNote] = useState('');
   const [typed, setTyped] = useState(ex.kind === 'fix' ? item.original : '');
-  const [mode, setMode] = useState<ClozeInputMode>('hanzi');
+  // Phase 21: the one remembered answer input mode (shared with Cloze and Listen).
+  const [inputMode, setInputMode] = useAnswerInputMode();
+  const [mode, setModeState] = useState<ClozeInputMode>(inputMode === 'characters' ? 'hanzi' : inputMode);
+  const setMode = (m: ClozeInputMode) => {
+    setModeState(m);
+    setInputMode(m === 'hanzi' ? 'characters' : m);
+  };
   const [placed, setPlaced] = useState<number[]>([]);
   const orderTokens = useMemo(
     () =>
@@ -300,24 +309,31 @@ export function ErrorExerciseView({
 
       {done && (
         <div className={`cloze-feedback cloze-feedback--${right ? 'correct' : 'wrong'}`}>
-          <p>{right ? '✓ Correct!' : '✗ Not quite.'}</p>
+          <p>
+            {grade === 'correct_wrong_tone'
+              ? FEEDBACK_WRONG_TONE
+              : right
+                ? FEEDBACK_CORRECT
+                : '✗ Not quite.'}
+          </p>
           <p>
             <strong>You wrote:</strong>{' '}
             <Marked text={item.original} spans={item.marks?.original ?? []} tone="wrong" />
           </p>
           <p>
             <strong>Correct:</strong>{' '}
-            <Marked text={item.corrected} spans={item.marks?.corrected ?? []} tone="right" />
+            <Marked text={item.corrected} spans={item.marks?.corrected ?? []} tone="right" />{' '}
+            <SpeakerButton kind="sentence" text={item.corrected} />
           </p>
           {item.explanationEn && <p>{item.explanationEn}</p>}
           {item.en && <p className="cloze-gloss">{item.en}</p>}
           {note && <p role="status">{note}</p>}
           {!right && last && ex.kind !== 'fix' && (
             <button onClick={() => void mineToo()} disabled={checking}>
-              {checking ? 'Checking…' : 'I think mine is right too'}
+              {checking ? 'Checking…' : MINE_IS_RIGHT}
             </button>
           )}
-          <button onClick={onNext}>Next</button>
+          <button onClick={onNext}>{NEXT}</button>
         </div>
       )}
     </div>

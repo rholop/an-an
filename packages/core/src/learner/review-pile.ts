@@ -36,6 +36,13 @@ export function cardSourceFor(e: Pick<Evidence, 'kind' | 'context'>): CardSource
       return 'study_order';
     case 'review_restore':
       return 'added';
+    case 'known_check_passed':
+    case 'production_unlocked':
+      return 'study_order';
+    case 'listening_unlocked':
+      return 'listening';
+    case 'journal_priority':
+      return 'journal';
     case 'chat_lookup_gloss':
       if (e.context?.source === 'reader') return 'reader_lookup';
       if (e.context?.source === 'journal') return 'journal';

@@ -1,18 +1,26 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import {
+  activeEvidence,
   DEFAULT_STUDY_SETTINGS,
   getStudyFocus,
   grammarUsesFromEvidence,
   lessonIndex,
-  PRIORITY_CONFIG,
+  PROGRESS_CONFIG,
+  ProgressIndex,
+  classScope,
+  type ClassScope,
+  type GrammarUse,
   type Lexicon,
+  type SkillCard,
   type StudyFocus,
   type StudySettings,
   type Textbook,
 } from '@anan/core';
-import { currentSession, db, onSessionChange } from '../db/instance.js';
+import { currentSession, db, learnerService, onSessionChange } from '../db/instance.js';
 import { allTouchedCards } from '../db/queries.js';
-import { peekMyClass } from './my-class.js';
+import { setKnownItemsSource } from './learner-service.js';
+import { catchUpClassCoverage, peekMyClass, useMyClass } from './my-class.js';
+import { registerAfterMerge } from './profile-controller.js';
 import { markStudyDirty, onStudyDirty, studyVersion } from './study-dirty.js';
 import { useLexicon } from './useLexicon.js';
 import { useTextbook } from './textbook-data.js';
@@ -44,6 +52,8 @@ function sanitize(v: unknown): StudySettings {
   };
 }
 
+setKnownItemsSource(() => settings.knownItems);
+
 async function load(): Promise<void> {
   if (loaded || !currentSession()) return;
   loaded = true;
@@ -63,15 +73,33 @@ onSessionChange((session) => {
   settings = { ...DEFAULT_STUDY_SETTINGS };
   loaded = false;
   cache = undefined;
+  dataCache = undefined;
+  // Phase 21: nothing from the previous profile survives a switch.
+  pendingCelebrations = [];
   notify();
   if (session) void load();
 });
 
-/** After a sync merge replaced the database contents. */
+/** After a sync merge replaced the database contents (called by the profile controller). */
 export function reloadStudySettings(): void {
   loaded = false;
   cache = undefined;
-  void load();
+  dataCache = undefined;
+  void load().then(() => markStudyDirty());
+}
+
+registerAfterMerge(reloadStudySettings);
+
+/**
+ * Phase 21 sync-safe merge of two copies of the study settings: `knownItems` is a union and
+ * `reached` a max, so neither a sync merge nor a stale in-memory copy can lose progress.
+ */
+export function mergeStudySettings(a: StudySettings, b: StudySettings): StudySettings {
+  return {
+    ...b,
+    reached: Math.max(a.reached, b.reached),
+    knownItems: [...new Set([...a.knownItems, ...b.knownItems])],
+  };
 }
 
 export function peekStudySettings(): StudySettings {
@@ -83,6 +111,15 @@ export async function updateStudySettings(patch: Partial<StudySettings>): Promis
   loaded = true;
   cache = undefined;
   notify();
+  // Phase 21: merge with what is stored (a sync may have landed since this copy was read).
+  let stored: StudySettings | undefined;
+  try {
+    const row = await db.settings.get(KEY);
+    if (row?.value) stored = sanitize(row.value);
+  } catch {
+    /* no row yet */
+  }
+  if (stored) settings = sanitize(mergeStudySettings(stored, settings));
   await db.settings.put({ key: KEY, value: settings });
 }
 
@@ -115,6 +152,54 @@ function testSwitchOff(): boolean {
 
 let cache: { version: number; focus: Promise<StudyFocus | undefined> } | undefined;
 
+/** Phase 21: the inputs every Learned / Mastered number is computed from, cached per change. */
+export interface ProgressData {
+  cards: SkillCard[];
+  grammarUses: Map<string, GrammarUse>;
+  index: ProgressIndex;
+}
+let dataCache: { version: number; data: Promise<ProgressData> } | undefined;
+
+/** The shared progress index (the same inputs as the study focus), for every tab's numbers. */
+export function getProgressNow(): Promise<ProgressData> {
+  if (dataCache && dataCache.version === studyVersion()) return dataCache.data;
+  const version = studyVersion();
+  const data = (async () => {
+    await load();
+    const [cards, evidence] = await Promise.all([
+      allTouchedCards(db),
+      db.evidence
+        .where('kind')
+        .anyOf([...PROGRESS_CONFIG.grammarCorrectKinds, ...PROGRESS_CONFIG.grammarWrongKinds, 'evidence_undone'])
+        .toArray()
+        .catch(() => db.evidence.toArray()),
+    ]);
+    const grammarUses = grammarUsesFromEvidence(activeEvidence(evidence));
+    return { cards, grammarUses, index: new ProgressIndex({ cards, grammarUses, knownItems: settings.knownItems }) };
+  })();
+  dataCache = { version, data };
+  return data;
+}
+
+/** React: the shared progress data, refreshed after every change. */
+export function useProgressData(): ProgressData | undefined {
+  const [data, setData] = useState<ProgressData | undefined>(undefined);
+  const [tick, setTick] = useState(0);
+  const set = useStudySettings();
+  useEffect(() => onStudyDirty(() => setTick((t) => t + 1)), []);
+  useEffect(() => {
+    if (!currentSession()) return;
+    let cancelled = false;
+    void getProgressNow().then((d) => {
+      if (!cancelled) setData(d);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [tick, set]);
+  return data;
+}
+
 /** The study focus for the CURRENT state; undefined when there is no textbook (study order has nothing to order). */
 export function getStudyFocusNow(now: Date = new Date()): Promise<StudyFocus | undefined> {
   if (!ctx || ctx.books.length === 0 || !currentSession()) return Promise.resolve(undefined);
@@ -125,10 +210,7 @@ export function getStudyFocusNow(now: Date = new Date()): Promise<StudyFocus | u
     await load();
     // Off: nothing to compute (and no heavy work on every screen).
     if (!settings.enabled || testSwitchOff()) return disabledFocus();
-    const [cards, evidence] = await Promise.all([
-      allTouchedCards(db),
-      db.evidence.where('kind').anyOf([...PRIORITY_CONFIG.grammarCorrectKinds, ...PRIORITY_CONFIG.grammarWrongKinds]).toArray().catch(() => db.evidence.toArray()),
-    ]);
+    const { cards, grammarUses } = await getProgressNow();
     const my = peekMyClass();
     const effective = { ...settings, enabled: settings.enabled && !testSwitchOff() };
     return getStudyFocus(
@@ -136,7 +218,7 @@ export function getStudyFocusNow(now: Date = new Date()): Promise<StudyFocus | u
         lexicon: c.lexicon,
         books: c.books,
         cards,
-        grammarUses: grammarUsesFromEvidence(evidence),
+        grammarUses,
         settings: effective,
         myClass: { enabled: my.enabled, textbookId: my.textbookId, currentLesson: my.currentLesson },
       },
@@ -201,6 +283,8 @@ export function useStudyFocus(): StudyState {
     getStudyFocusNow().then((f) => {
       if (cancelled) return;
       setFocus(f);
+      // Phase 21: class lessons the TOCFL gate held back join review once the gate opens.
+      if (f?.enabled && ctx) void catchUpClassCoverage(ctx.books, learnerService, new Set(f.gatedLessonIds ?? [])).catch(() => 0);
       if (f && f.reached > settings.reached) {
         pendingCelebrations = [...pendingCelebrations, ...f.justMastered.map((s) => s.lessonId)];
         void updateStudySettings({ reached: f.reached });
@@ -220,4 +304,17 @@ export function useStudyFocus(): StudyState {
       bump((n) => n + 1);
     },
   };
+}
+
+/**
+ * Phase 21 Part D: the class scope (visibility only: what is past the class is hidden), with the
+ * ONE "Lessons ahead of class" setting. Priority never comes from here; it comes from the focus.
+ */
+export function currentClassScope(): ClassScope {
+  return classScope(peekMyClass(), { aheadLessons: settings.classAheadLessons });
+}
+export function useClassScope(): ClassScope {
+  const my = useMyClass();
+  const set = useStudySettings();
+  return classScope(my, { aheadLessons: set.classAheadLessons });
 }

@@ -19,6 +19,18 @@ import type { JsonTaskRequest, JsonTaskResult, SentenceProviderResult } from './
 const history: TurnHistoryEntry[] = [{ role: 'learner', zh: '我要一杯珍珠奶茶' }];
 
 describe('createOrchestrator', () => {
+  it('Phase 21: alternate = start with the fallback provider (and cache it separately)', async () => {
+    const gemini = new FakeProviderAdapter('gemini', { kind: 'success', response: fakeTurnResponse() });
+    const openai = new FakeProviderAdapter('openai', { kind: 'success', response: fakeTurnResponse() });
+    const orchestrator = createOrchestrator(gemini, openai, new PromptCache());
+    await orchestrator.run('system prompt', history);
+    const { log } = await orchestrator.run('system prompt', history, { alternate: true });
+    expect(log.provider).toBe('openai');
+    expect(log.cached).toBe(false);
+    expect(gemini.calls).toBe(1);
+    expect(openai.calls).toBe(1);
+  });
+
   it('serves from Gemini (primary) on a normal success', async () => {
     const gemini = new FakeProviderAdapter('gemini', {
       kind: 'success',

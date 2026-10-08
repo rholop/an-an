@@ -49,3 +49,54 @@ export function pickConfusableContrast(target: Word, lexicon: Lexicon, rng: () =
   const [confusable] = pickDistractors(target, lexicon, { count: 1, preferConfusable: true }, rng);
   return confusable ? { target, confusable } : null;
 }
+
+export interface CharInWord {
+  ch: string;
+  /** This character's syllable IN THIS WORD (MOE reading of the word), e.g. 還 in 還是 = hái. */
+  pinyin: string;
+  zhuyin: string;
+  /** The character's own entry with that same reading, if it is one. */
+  glossEn?: string;
+}
+
+const toneless = (numeric: string) => numeric.replace(/[0-9]/g, '').toLowerCase();
+
+/**
+ * Phase 21 Part I: the leech panel's character breakdown uses each character's reading in this
+ * word (from the word's MOE-verified reading), never the first dictionary entry of the character:
+ * 還 in 還是 is hái, not huán; 長 in 長大 is zhǎng.
+ */
+export function charsInWord(word: Pick<Word, 'chars' | 'pinyin' | 'pinyinNumeric' | 'zhuyin'>, lexicon: Lexicon): CharInWord[] {
+  const py = word.pinyin.trim().split(/\s+/);
+  const num = word.pinyinNumeric.trim().split(/\s+/);
+  const zy = word.zhuyin.trim().split(/\s+/);
+  const aligned = py.length === word.chars.length;
+  return word.chars.map((ch, i) => {
+    const pinyin = aligned ? (py[i] ?? '') : '';
+    const zhuyin = zy.length === word.chars.length ? (zy[i] ?? '') : '';
+    const n = num.length === word.chars.length ? (num[i] ?? '') : '';
+    const entries = lexicon.charInfo(ch).words;
+    const same =
+      entries.find((w) => w.pinyinNumeric.trim() === n) ??
+      entries.find((w) => n && toneless(w.pinyinNumeric) === toneless(n));
+    return { ch, pinyin, zhuyin, ...(same ? { glossEn: same.glossEn } : {}) };
+  });
+}
+
+/**
+ * Phase 21: is an AI-supplied reading of an unlisted word one the MOE-verified lexicon gives these
+ * characters? Each syllable must be a reading of its character (tones included).
+ * `undefined` = can't tell (a character with no entry, or syllables that don't line up).
+ */
+export function readingMatchesDictionary(text: string, pinyin: string, lexicon: Lexicon): boolean | undefined {
+  const chars = [...text];
+  const norm = (s: string) => s.normalize('NFC').toLowerCase().replace(/[^\p{L}\p{M}]/gu, '');
+  const syllables = pinyin.trim().split(/[\s·'’-]+/).filter(Boolean).map(norm);
+  if (syllables.length !== chars.length) return undefined;
+  for (let i = 0; i < chars.length; i++) {
+    const readings = lexicon.charInfo(chars[i]!).words.map((w) => norm(w.pinyin));
+    if (readings.length === 0) return undefined;
+    if (!readings.includes(syllables[i]!)) return false;
+  }
+  return true;
+}

@@ -1,6 +1,16 @@
 import { useMemo, useState } from 'react';
 import type { GrammarItem, Lesson, Lexicon, SentenceBankEntry } from '@anan/core';
-import { buildGrammarCloze, newSessionSeed, orderSession, sessionMeta, type OrderedSession } from '@anan/core';
+import {
+  buildGrammarCloze,
+  glossFor,
+  newSessionSeed,
+  orderSession,
+  seededRng,
+  sessionMeta,
+  type Evidence,
+  type OrderedSession,
+} from '@anan/core';
+import { learnerService } from '../db/instance.js';
 import { logSessionOrder } from '../lib/session-recent.js';
 import { peekStudySettings, updateStudySettings } from '../lib/study.js';
 
@@ -15,10 +25,10 @@ interface Q {
   answer: string;
 }
 
-function shuffle<T>(a: T[]): T[] {
+function shuffle<T>(a: T[], rng: () => number): T[] {
   const c = [...a];
   for (let i = c.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [c[i], c[j]] = [c[j]!, c[i]!];
   }
   return c;
@@ -31,25 +41,27 @@ export function buildQuickCheck(
   sentences: readonly SentenceBankEntry[],
   seed: string = newSessionSeed('quick-check'),
 ): OrderedSession<Q> {
+  // Phase 21: every random choice comes from the seed; glosses are the book's own sense.
+  const rng = seededRng(`${seed}:options`);
   const proper = new Set(lesson.properNouns);
   const words = [...new Set(lesson.vocab)].filter((id) => !proper.has(id)).flatMap((id) => lexicon.byId(id) ?? []);
   const qs: Q[] = [];
   for (const w of words) {
-    const others = shuffle(words.filter((x) => x.id !== w.id));
-    const gloss = (x: { glossEn: string }) => x.glossEn.split(/[;,(]/)[0]!.trim();
+    const others = shuffle(words.filter((x) => x.id !== w.id), rng);
+    const gloss = (x: Parameters<typeof glossFor>[0]) => glossFor(x, { textbook: true }).split(/[;,(]/)[0]!.trim();
     qs.push({
       item: { kind: 'word', id: w.id },
       skill: 'recognition',
       prompt: w.headword,
       answer: gloss(w),
-      options: shuffle([gloss(w), ...others.slice(0, 3).map(gloss)]),
+      options: shuffle([gloss(w), ...others.slice(0, 3).map(gloss)], rng),
     });
     qs.push({
       item: { kind: 'word', id: w.id },
       skill: 'production',
       prompt: gloss(w),
       answer: w.headword,
-      options: shuffle([w.headword, ...others.slice(0, 3).map((x) => x.headword)]),
+      options: shuffle([w.headword, ...others.slice(0, 3).map((x) => x.headword)], rng),
     });
   }
   const pool = grammar.flatMap((g) => g.focus ?? []);
@@ -105,6 +117,12 @@ export function QuickKnownCheck({
 
   async function finish(fails: Set<string>) {
     const passed = [...new Set(qs.map(key))].filter((k) => !fails.has(k));
+    // Phase 21: a pass is evidence too (Learned / Mastered everywhere), not only a settings list.
+    const now = new Date();
+    const events: Evidence[] = qs
+      .filter((q) => passed.includes(key(q)))
+      .map((q) => ({ item: q.item, skill: q.skill, kind: 'known_check_passed', at: now, context: { source: 'placement' } }));
+    await learnerService.recordBulk(events, now);
     await updateStudySettings({ knownItems: [...new Set([...peekStudySettings().knownItems, ...passed])] });
     setMarked(passed.length);
   }

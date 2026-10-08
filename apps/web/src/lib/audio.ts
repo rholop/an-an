@@ -211,7 +211,22 @@ export const setSlow = (slow: boolean): void => {
   } catch {
     /* ignore */
   }
+  slowListeners.forEach((l) => l(slow));
 };
+/** Phase 21: the profile setting mirrors this (lib/audio-slow.ts), so it follows the profile and syncs. */
+const slowListeners = new Set<(slow: boolean) => void>();
+export function onSlowChange(l: (slow: boolean) => void): () => void {
+  slowListeners.add(l);
+  return () => slowListeners.delete(l);
+}
+/** Set from the synced profile setting without echoing it back. */
+export function loadSlow(slow: boolean): void {
+  try {
+    localStorage.setItem(SLOW_KEY, slow ? '1' : '0');
+  } catch {
+    /* ignore */
+  }
+}
 
 let current: { audio: HTMLAudioElement; objectUrl: string } | null = null;
 

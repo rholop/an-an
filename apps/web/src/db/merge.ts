@@ -19,6 +19,9 @@ import type { Backup } from './backup-schema.js';
 
 const t = (d: Date | undefined): number => (d ? d.getTime() : 0);
 
+/** The study-order settings row (lib/study.ts). */
+const STUDY_ORDER_KEY = 'studyOrder';
+
 /** Union by key; for a key on both sides the later `updatedAt` wins (local on a tie). */
 function mergeByKey<T>(
   local: readonly T[],
@@ -137,6 +140,21 @@ export function mergeBackups(local: Backup, remote: Backup): Backup {
     remote.settings,
     remote.settingsUpdatedAt,
   );
+  // Phase 21: the study order's progress never goes backwards in a merge: "already known" items
+  // are a union and the pointer a max (whichever copy is newer supplies the other fields).
+  const so = (v: unknown) => (v && typeof v === 'object' ? (v as { reached?: unknown; knownItems?: unknown }) : undefined);
+  const a = so(local.settings[STUDY_ORDER_KEY]);
+  const b = so(remote.settings[STUDY_ORDER_KEY]);
+  if (a && b) {
+    const winner = so(settings.values[STUDY_ORDER_KEY]) ?? a;
+    const num = (x: unknown) => (typeof x === 'number' ? x : 0);
+    const list = (x: unknown) => (Array.isArray(x) ? x.filter((y): y is string => typeof y === 'string') : []);
+    settings.values[STUDY_ORDER_KEY] = {
+      ...winner,
+      reached: Math.max(num(a.reached), num(b.reached)),
+      knownItems: [...new Set([...list(a.knownItems), ...list(b.knownItems)])],
+    };
+  }
   const meta = mergeKeyed(local.meta, local.metaUpdatedAt, remote.meta, remote.metaUpdatedAt);
 
   return {
@@ -181,7 +199,8 @@ export function mergeBackups(local: Backup, remote: Backup): Backup {
     conversations,
     turns,
     rewardEvents: unionByKey(local.rewardEvents, remote.rewardEvents, (r) => r.id),
-    glossReports: unionByKey(
+    // Phase 21: a withdrawn report (Undo) is newer than the report, so the withdrawal wins.
+    glossReports: mergeByKey(
       local.glossReports.map((g) => ({
         ...g,
         uid: g.uid ?? `legacy-report:${g.wordId}:${g.at.getTime()}:${g.contextSentence}`,
@@ -191,6 +210,7 @@ export function mergeBackups(local: Backup, remote: Backup): Backup {
         uid: g.uid ?? `legacy-report:${g.wordId}:${g.at.getTime()}:${g.contextSentence}`,
       })),
       (g) => g.uid,
+      (g) => t(g.withdrawnAt ?? g.at),
     ),
     aiGlosses: unionByKey(local.aiGlosses, remote.aiGlosses, (a) => a.key),
     liveSentences: unionByKey(local.liveSentences, remote.liveSentences, (s) => s.id),
@@ -220,7 +240,7 @@ export function sameContent(a: Backup, b: Backup): boolean {
       x.conversations.map((c) => [c.uid ?? '', t(c.updatedAt)]).sort(),
       x.turns.map((tr) => tr.uid ?? '').sort(),
       x.rewardEvents.map((r) => r.id).sort(),
-      x.glossReports.map((g) => g.uid ?? '').sort(),
+      x.glossReports.map((g) => `${g.uid ?? ''}:${g.withdrawnAt ? t(g.withdrawnAt) : ''}`).sort(),
       x.aiGlosses.map((g) => g.key).sort(),
       x.liveSentences.map((s) => s.id).sort(),
       x.readerShown.map((r) => [r.sentenceId, t(r.at)]).sort(),

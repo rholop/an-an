@@ -3,6 +3,8 @@ import type { SkillCard } from '../learner/types.js';
 import type { Lexicon } from '../lexicon.js';
 import type { Scenario } from '../chat/scenario.js';
 import type { ItemState, Level, Word } from '../types.js';
+import { isLevel, levelIndex, levelLabel, LEVEL_IDS } from '../levels.config.js';
+import { isDueCard, ProgressIndex } from '../progress/terms.js';
 
 export type GrowthStage = 'seed' | 'sprout' | 'plant' | 'bloom';
 /** healthy: at/above target retention. wilting: below it. withered: far below. */
@@ -17,7 +19,9 @@ export interface GardenConfig {
 
 export const DEFAULT_GARDEN_CONFIG: GardenConfig = { targetRetention: 0.9, witheredMargin: 0.2 };
 
-/** introduced -> learning -> review -> mature, as seed -> sprout -> plant -> bloom. */
+/** Phase 21: the garden's stages ARE the shared terms: seed = New, sprout = learning,
+ * plant = Learned, bloom = Mastered (see `stageOf`). This maps a bare card state for callers
+ * without an index (introduced -> learning -> review -> mature). */
 export function growthStage(state: ItemState): GrowthStage | null {
   switch (state) {
     case 'unseen':
@@ -51,12 +55,16 @@ export function wiltFor(
   return 'withered';
 }
 
-const STAGE_ORDER: GrowthStage[] = ['seed', 'sprout', 'plant', 'bloom'];
 
 export interface Plant {
   wordId: string;
   headword: string;
+  /** seed = New, sprout = learning, plant = Learned, bloom = Mastered. */
   stage: GrowthStage;
+  /** Learned but keeps lapsing: never blooms; shown with a small leech mark. */
+  leech: boolean;
+  /** Cards of this word that are Due now ("needs water"). */
+  dueCards: SkillCard[];
   /** Lowest R across the word's skills (the weakest memory shows). */
   retrievability: number | null;
   wilt: Wilt;
@@ -64,14 +72,22 @@ export interface Plant {
   cards: SkillCard[];
 }
 
-/** One plant per word, merging its recognition + production cards: it grows
- * to the *strongest* stage but wilts by the *weakest* retrievability. */
+/** The shared term for one word, as a garden stage. */
+export function stageOf(index: ProgressIndex, wordId: string): GrowthStage {
+  const s = index.status({ kind: 'word', id: wordId });
+  return s === 'mastered' ? 'bloom' : s === 'learned' ? 'plant' : s === 'new' ? 'seed' : 'sprout';
+}
+
+/** One plant per word, merging its recognition + production cards. Its stage is the word's
+ * shared term (Phase 21); it "needs water" when one of its cards is Due, and wilts further the
+ * lower its weakest retrievability. */
 export function buildPlants(
   cards: readonly SkillCard[],
   lexicon: Lexicon,
   now: Date,
   fsrsInstance: FSRS,
   config: GardenConfig = DEFAULT_GARDEN_CONFIG,
+  index: ProgressIndex = new ProgressIndex({ cards }),
 ): Plant[] {
   const byWord = new Map<string, SkillCard[]>();
   for (const c of cards) {
@@ -84,19 +100,22 @@ export function buildPlants(
   for (const [wordId, wordCards] of byWord) {
     const word = lexicon.byId(wordId);
     if (!word) continue;
-    const stage = wordCards
-      .map((c) => growthStage(c.state)!)
-      .reduce((best, s) => (STAGE_ORDER.indexOf(s) > STAGE_ORDER.indexOf(best) ? s : best));
+    const stage = stageOf(index, wordId);
     const rs = wordCards
       .map((c) => retrievabilityOf(c, now, fsrsInstance))
       .filter((r): r is number => r !== null);
     const retrievability = rs.length > 0 ? Math.min(...rs) : null;
+    const due = wordCards.filter((c) => isDueCard(c, now));
+    // "Needs water" = has a Due card (the same Due every tab counts); withered = due and far below target.
+    const wilt: Wilt = due.length === 0 ? 'healthy' : wiltFor(retrievability, config) === 'withered' ? 'withered' : 'wilting';
     plants.push({
       wordId,
       headword: word.headword,
       stage,
+      leech: index.leech({ kind: 'word', id: wordId }),
+      dueCards: due,
       retrievability,
-      wilt: wiltFor(retrievability, config),
+      wilt,
       cards: wordCards,
     });
   }
@@ -140,16 +159,22 @@ export function groupPlots(
     if (s) add(`scenario:${s.id}`, s.title, 'scenario', p);
     else {
       const level: Level | null = (lexicon.byId(p.wordId) as Word | undefined)?.level ?? null;
-      add(`level:${level ?? 'other'}`, level ? `Level ${level} words` : 'Other words', 'level', p);
+      add(`level:${level ?? 'other'}`, level ? levelLabel(level) : 'Other words', 'level', p);
     }
   }
+  // Scenario plots first (by title), then level plots in learning order (N1, N2, L1 …), "other" last.
+  const levelRank = (p: Plot) => {
+    const id = p.id.slice('level:'.length);
+    return isLevel(id) ? levelIndex(id) : LEVEL_IDS.length;
+  };
   return [...plots.values()].sort(
     (a, b) =>
-      Number(a.kind === 'level') - Number(b.kind === 'level') || a.title.localeCompare(b.title),
+      Number(a.kind === 'level') - Number(b.kind === 'level') ||
+      (a.kind === 'level' ? levelRank(a) - levelRank(b) : a.title.localeCompare(b.title)),
   );
 }
 
-/** Cards to focus-review for a plot: only plants that are wilting or withered. */
+/** Cards to focus-review for a plot ("Water N words"): exactly the Due cards of its plants. */
 export function wiltingCards(plot: Plot): SkillCard[] {
-  return plot.plants.filter((p) => p.wilt !== 'healthy').flatMap((p) => p.cards);
+  return plot.plants.flatMap((p) => p.dueCards);
 }

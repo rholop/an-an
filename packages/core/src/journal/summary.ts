@@ -4,7 +4,7 @@ import type { Level } from '../types.js';
 import { analyzeText } from '../validate/turn.js';
 import type { ErrorItem } from './types.js';
 import { normalisePattern } from './error-bank.js';
-import { LAST_LEVEL, LEVEL_IDS, levelName } from '../levels.config.js';
+import { LAST_LEVEL, LEVEL_IDS, levelLabel } from '../levels.config.js';
 
 const LEVEL_ORDER = LEVEL_IDS;
 
@@ -59,8 +59,8 @@ export function summarizeLevels(
       (l) => LEVEL_ORDER.indexOf(l) > LEVEL_ORDER.indexOf(dominant!) && byLevel[l],
     );
     headline = [
-      `Mostly ${levelName(dominant)} words`,
-      ...above.map((l) => `${byLevel[l]} ${levelName(l)} word${byLevel[l] === 1 ? '' : 's'}`),
+      `Mostly ${levelLabel(dominant)} words`,
+      ...above.map((l) => `${byLevel[l]} ${levelLabel(l)} word${byLevel[l] === 1 ? '' : 's'}`),
     ].join(', ');
   }
   // Phase 7: relative to the learner's chosen level.

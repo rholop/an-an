@@ -6,6 +6,7 @@ import {
   levelIndex,
   PRIORITY_CONFIG,
   type StudyFocus,
+  isUsableSentence,
   lessonBadge,
   lessonTag,
   nextNewItems,
@@ -23,7 +24,6 @@ import {
   type ReaderPick,
   type Scenario,
   type SentenceBankEntry,
-  type SkillCard,
   type TutorLLM,
 } from '@anan/core';
 import { allChatLines, allJournalSentences, allTouchedCards } from '../db/queries.js';
@@ -89,14 +89,18 @@ export class ReaderService {
    * change or a lookup a moment ago is reflected immediately). */
   async learnerState(level: Level, now: Date): Promise<ReaderLearnerState> {
     const { db, learnerService, lexicon } = this.deps;
-    const [knownIds, cards] = await Promise.all([learnerService.knownSet('review'), allTouchedCards(db)]);
-    const recognition = cards.filter((c: SkillCard) => c.skill === 'recognition' && c.item.kind === 'word');
-    const dueIds = new Set(recognition.filter((c) => c.card.due <= now).map((c) => c.item.id));
-    const learningIds = new Set(
-      recognition.filter((c) => c.state === 'learning' || c.state === 'introduced').map((c) => c.item.id),
-    );
+    // Phase 21: the one known / due / learning definition, and the study focus's order first.
+    const [{ knownIds, dueIds, learningIds }, cards, focus] = await Promise.all([
+      learnerService.wordSets(now),
+      allTouchedCards(db),
+      this.deps.studyFocus?.().catch(() => undefined),
+    ]);
+    const priorityIds = focus?.enabled
+      ? focus.newItemsAllowed.filter((i) => i.kind === 'word').map((i) => i.id)
+      : [];
     const frontier = nextNewItems(cards, lexicon, FRONTIER_POOL, {
       currentLevel: level,
+      priorityIds,
       ...(this.deps.classScope?.enabled ? { classScope: this.deps.classScope } : {}),
     });
     return { lexicon, learnerLevel: level, knownIds, dueIds, learningIds, frontier };
@@ -121,7 +125,8 @@ export class ReaderService {
     req: NextSentenceRequest,
     now: Date,
   ): Promise<NextSentenceResult | null> {
-    const all = this.deps.textbookSentences ?? this.deps.lesson?.sentences ?? [];
+    const ex = await excludedZh(this.deps.db).catch(() => new Set<string>());
+    const all = (this.deps.textbookSentences ?? this.deps.lesson?.sentences ?? []).filter((s) => isUsableSentence(s.zh, ex));
     const idx = this.deps.lessonIndex;
     if (!idx || all.length === 0) return null;
     const rand = this.deps.rand ?? Math.random;
@@ -180,8 +185,10 @@ export class ReaderService {
     const rand = this.deps.rand ?? Math.random;
     const tag = lessonTag(lesson.n, lesson.bookId);
     // Phase 13: the header level hides sentences harder than the chosen level.
+    const ex = await excludedZh(this.deps.db).catch(() => new Set<string>());
     const pool = lesson.sentences.filter(
       (s) =>
+        isUsableSentence(s.zh, ex) &&
         s.lesson === lesson.n &&
         (s.tags ?? []).includes(tag) &&
         levelIndex(s.level) <= levelIndex(req.level),
@@ -198,7 +205,7 @@ export class ReaderService {
         sentence,
         focus: 'lesson',
         focusWordId: entry.targetWordId,
-        reason: `Lesson ${lesson.n} sentence`,
+        reason: `${lessonBadge(lesson.n, lesson.bookId)} sentence`,
         exact: true,
         coverage: 1,
         unknownCount: 0,
@@ -212,18 +219,21 @@ export class ReaderService {
     const rand = this.deps.rand ?? Math.random;
     if (req.focus === 'lesson') return this.nextLessonSentence(req, now);
     const state = await this.learnerState(req.level, now);
+    const ex = await excludedZh(db).catch(() => new Set<string>());
     const [live, chat, journal] = await Promise.all([
       db.liveSentences.toArray(),
       allChatLines(db, [...this.deps.scenarios]),
-      excludedZh(db).then((ex) => allJournalSentences(db, ex)),
+      allJournalSentences(db, ex),
     ]);
     const shown = await this.shownMap(req.sessionIds ?? new Set(), now);
-    const own = [...readerSentencesFromJournal(journal), ...readerSentencesFromChat(chat)];
+    // Phase 21: one rule for every sentence source (reported, unusable or English-mixed ones never shown).
+    const usable = <T extends { zh: string }>(xs: readonly T[]) => xs.filter((x) => isUsableSentence(x.zh, ex));
+    const own = usable([...readerSentencesFromJournal(journal), ...readerSentencesFromChat(chat)]);
 
     const local = selectLocalReaderSentence({
       state,
       focus: req.focus,
-      bank: [...this.deps.staticBank, ...live],
+      bank: usable([...this.deps.staticBank, ...live]),
       own,
       shown,
       now,
@@ -345,7 +355,7 @@ export class ReaderService {
     sentenceId: string,
     now: Date = new Date(),
   ): Promise<string[]> {
-    const known = await this.deps.learnerService.knownSet('review');
+    const { knownIds: known } = await this.deps.learnerService.wordSets(now);
     const unknown = [...new Set(wordIds)].filter((id) => !known.has(id) && !lookedUp.has(id));
     if (unknown.length === 0) return [];
     await this.deps.learnerService.recordBulk(

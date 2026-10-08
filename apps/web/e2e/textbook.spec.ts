@@ -14,7 +14,7 @@ test.describe('Textbook / My class (phase 12)', () => {
 
     await page.getByTestId('my-class-toggle').check();
     await page.getByTestId('my-class-lesson').selectOption('4');
-    await expect(page.getByTestId('class-status')).toHaveText("We're on lesson 4 in class.");
+    await expect(page.getByTestId('class-status')).toHaveText('Your class: 來學華語 1 · Lesson 4');
     await expect(page.getByRole('status').filter({ hasText: /Added \d+ words and grammar points/ })).toBeVisible();
     await expect(page.getByTestId('lesson-4')).toHaveClass(/textbook-lesson--now/);
     await expect(page.getByTestId('lesson-5')).toHaveClass(/textbook-lesson--next/);
@@ -34,7 +34,7 @@ test.describe('Textbook / My class (phase 12)', () => {
 
     // A word's popover carries the badge and the book's own gloss.
     await page.locator('.textbook-words .an-token').first().click();
-    await expect(page.getByTestId('textbook-badge').first()).toContainText('來學華語 1 · L4');
+    await expect(page.getByTestId('textbook-badge').first()).toContainText('來學華語 1 · Lesson 4');
     // A 404 for the private dialogue is expected where the book text isn't installed (CI).
     const real = errors.filter((e) => !/status of 404/.test(e));
     expect(real, real.join('\n')).toEqual([]);
@@ -59,6 +59,7 @@ test.describe('Textbook / My class (phase 12)', () => {
   });
 
   test('Study this lesson runs vocab → grammar → scenario → journal, each step skippable', async ({ page }) => {
+    test.setTimeout(60_000); // every miss comes back once, so the grammar step can run to ~40 exercises
     await page.goto('/?page=textbook');
     await page.getByTestId('my-class-toggle').check();
     await page.getByTestId('my-class-lesson').selectOption('3');
@@ -74,7 +75,10 @@ test.describe('Textbook / My class (phase 12)', () => {
 
     // Grammar: answer every exercise.
     await expect(page.getByTestId('study-session')).toContainText('Step 2 of 4');
-    for (let i = 0; i < 12; i++) {
+    // (a miss comes back once at the end, so allow for every exercise twice)
+    // the exercises load first (reported sentences are filtered out)
+    await expect(page.getByTestId('grammar-exercise').or(page.getByTestId('grammar-done'))).toBeVisible();
+    for (let i = 0; i < 80; i++) {
       const ex = page.getByTestId('grammar-exercise');
       if (!(await ex.isVisible())) break;
       const opt = ex.locator('.textbook-options button:not([disabled])').first();
@@ -141,13 +145,13 @@ test.describe('Textbook / My class (phase 12)', () => {
     await page.goto('/?page=textbook');
     await expect(page.getByTestId('book-picker')).toBeVisible();
     for (const n of [1, 2, 3, 4])
-      await expect(page.getByTestId(`book-progress-laixue-${n}`)).toContainText('of 10 lessons done');
+      await expect(page.getByTestId(`book-progress-laixue-${n}`)).toContainText('of 10 lessons mastered');
     await page.getByTestId('book-laixue-3').click(); // jumps to the book's section
 
     await page.getByTestId('my-class-toggle').check();
     await page.getByTestId('my-class-book').selectOption('laixue-2');
     await page.getByTestId('my-class-lesson').selectOption('3');
-    await expect(page.getByTestId('class-status')).toContainText('lesson 3 of 來學華語 第二冊');
+    await expect(page.getByTestId('class-status')).toContainText('Your class: 來學華語 2 · Lesson 3');
     // everything before it is "past", this lesson is now, the next trickles in, later ones are out
     await expect(page.getByTestId('lesson-10')).toHaveClass(/textbook-lesson--past/);
     await expect(page.getByTestId('lesson-laixue-2-3')).toHaveClass(/textbook-lesson--now/);
@@ -159,7 +163,7 @@ test.describe('Textbook / My class (phase 12)', () => {
 
     // "Study this lesson" works for a lesson of any book
     await page.getByTestId('lesson-laixue-2-3').getByRole('button').first().click();
-    await expect(page.getByTestId('textbook-badge').first().or(page.getByText('來學華語 2 · L3').first())).toBeVisible();
+    await expect(page.getByTestId('textbook-badge').first().or(page.getByText('來學華語 2 · Lesson 3').first())).toBeVisible();
     await expect(page.getByTestId('study-lesson')).toBeEnabled();
   });
 
@@ -173,7 +177,7 @@ test.describe('Textbook / My class (phase 12)', () => {
     const card = page.getByTestId('now-studying');
     await expect(card).toBeVisible();
     await expect(page.getByTestId('now-studying-name')).toContainText('Lesson 1');
-    await expect(page.getByTestId('now-studying-left')).toContainText('to go');
+    await expect(page.getByTestId('now-studying-left')).toContainText('to master');
     await card.locator('summary').click();
     await page.getByTestId('study-order-toggle').uncheck();
     await expect(card).toContainText('Study order is off');

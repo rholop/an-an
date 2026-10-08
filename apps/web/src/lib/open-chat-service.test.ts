@@ -6,6 +6,7 @@ import {
   type Textbook,
   type TurnResponse,
   type Word,
+  type StudyFocus,
 } from '@anan/core';
 import { DexieLearnerRepo } from '../db/learner-repo.js';
 import { AnanDB } from '../db/schema.js';
@@ -81,9 +82,28 @@ const books: Textbook[] = [
   },
 ];
 
+const step = { kind: 'lesson' as const, bookId: 'laixue-1', n: 1, lessonId: 'laixue-1-L01', level: 'N1' as const, ordinal: 1 };
+const ACTIVE_L1: StudyFocus = {
+  enabled: true,
+  steps: [step],
+  activeStep: step,
+  activeLesson: step,
+  reviewLessons: [],
+  focusItems: [],
+  reviewItems: [],
+  newItemsAllowed: [],
+  generalNewItemsAllowed: true,
+  gateStatus: { blocked: false },
+  mastery: undefined,
+  nextStep: undefined,
+  reached: 0,
+  justMastered: [],
+};
+
 const env = (over: Partial<OpenChatEnvironment> = {}): OpenChatEnvironment => ({
   books: () => books,
-  myClass: () => ({ enabled: true, textbookId: 'laixue-1', currentLesson: 1 }),
+  // Phase 21: "upcoming" comes from the study focus only (it follows My class): active lesson 1.
+  studyFocus: async () => ACTIVE_L1,
   ...over,
 });
 
@@ -281,7 +301,7 @@ describe('scripted run: 20 turns on 5 topics at Novice and L1 (the pipeline, wit
   // sent, with one deliberately hard topic where it also uses a tier C word.
   const topics = ['food', 'weekend', 'family', 'work', 'news'];
   for (const level of ['N1', 'L1'] as const) {
-    it(`meets the tier limits on ≥ 90% of replies and uses upcoming words on ≥ 50% (${level})`, async () => {
+    it(`meets the tier limits on every reply but the hard topic's and uses upcoming words on ≥ 50% (${level})`, async () => {
       await seedKnown();
       const llm = new FakeTutorLLM(
         undefined,
@@ -314,7 +334,9 @@ describe('scripted run: 20 turns on 5 topics at Novice and L1 (the pipeline, wit
         }
       }
       expect(total).toBe(20);
-      expect(passed / total).toBeGreaterThanOrEqual(0.9);
+      // Phase 21: a word only glossed in this chat is New, not "learning", so it stays tier C: the
+      // deliberately hard topic (a tier C word in every reply) is the only one that breaks limits.
+      expect(passed).toBe(16);
       expect(upcomingTurns / total).toBeGreaterThanOrEqual(0.5);
     });
   }

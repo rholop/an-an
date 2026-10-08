@@ -104,6 +104,33 @@ interface Evidence {             // everything that updates the learner model
 
 Phases may add fields but must not rename or remove these.
 
+## Shared terms (Phase 21: one meaning everywhere)
+
+Every screen uses these words with exactly these meanings. The definitions live in
+`packages/core/src/progress/terms.ts` (thresholds in `progress.config.ts`); nothing else
+compares a card's `state` or `stability` to decide them (an architecture test enforces this).
+
+| Term | Meaning | Where it is computed |
+|---|---|---|
+| **New** | Introduced, never answered (`state === 'introduced'`, `reps === 0`) | `isNewCard` |
+| **Due** | Answered at least once, due now, not removed by Nope. `unseen` and New cards are never due | `isDueCard` |
+| **Learned** | Recognition in review after an answer in this app, or passed "I already know this". Grammar: one correct use. Leeches count as Learned | `ProgressIndex.learned` / `summarize` |
+| **Mastered** | Recognition stability ≥ 21 d and production ≥ 7 d (grammar: 3 correct uses, last one correct). Leeches and imports never count | `ProgressIndex.mastered` / `summarize` |
+| **Imported** | Seeded by Anki or placement, no answer here yet | `ProgressIndex.imported` |
+| **Tricky** | A leech: counts as Learned, never Mastered | `ProgressIndex` |
+| **Comprehensible** | Known ∪ due ∪ learning (chat, reader and open-chat coverage) | `learnerService.wordSets` |
+| **Current lesson** | The study focus's active lesson (`getStudyFocus`), which follows My class | `study/study-focus.ts` |
+| **Your class** | The My class setting. Labels and visibility only, never priority | `useClassScope` / `currentClassScope` |
+
+Progress is always shown as "Learned X% · Mastered Y%" (`LearnedMastered` component).
+New items for any session come from one rule, `pickNewForSession` in `study/queue.ts`.
+
+**Labels rule:** lesson, book and level names are built only in `apps/web/src/lib/labels.ts`,
+`packages/core/src/textbook/course.ts`, `packages/core/src/levels.config.ts` and core's
+`stepName`. Never write `` `Lesson ${n}` ``, `` `L${n}` `` or `` `TOCFL ${level}` `` by hand in a page:
+add a helper to `labels.ts` instead. User-facing words for actions and feedback (Next, Undo,
+Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
+
 ## Build phases
 
 | # | Phase | Brief |
@@ -120,6 +147,7 @@ Phases may add fields but must not rename or remove these.
 | 18 | Open chat about any topic, words weighted to what you know and the next three lessons | `docs/open-chat.md` |
 | 19 | Flashcards always mixed: one shared session order, a word's cards never side by side | `docs/flashcard-order.md` |
 | 20 | Nope a review card; daily cap, spread bulk cards, lookups and new words kept in bounds | `docs/review-pile.md` |
+| 21 | Now studying follows your class; one meaning for progress, due, new and labels everywhere | Shared terms above |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

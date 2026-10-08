@@ -120,7 +120,20 @@ export function courseLessonLevel(course: Course, bookId: string, n: number): Le
   return b.laterLevel && n > b.laterLevel.splitAfter ? b.laterLevel.level : b.level;
 }
 
-/** "來學華語 2 · L5" */
+/* Phase 21 Part H: the ONE place lesson and book labels are built. "L" only ever means a TOCFL
+ * level, so a lesson is always "Lesson N". UI code uses these through apps/web/src/lib/labels.ts. */
+
+/** "來學華語 2" */
+export function bookTitle(bookId: string = 'laixue-1', course: Course = LAIXUE_COURSE): string {
+  return `${course.titleZh} ${bookNumber(course, bookId)}`;
+}
+
+/** "Lesson 5" (inside a screen that already names the book). */
+export function lessonShort(n: number): string {
+  return `Lesson ${n}`;
+}
+
+/** "來學華語 2 · Lesson 5" */
 export function lessonBadge(n: number, bookId: string = 'laixue-1', course: Course = LAIXUE_COURSE): string {
-  return `${course.titleZh} ${bookNumber(course, bookId)} · L${n}`;
+  return `${bookTitle(bookId, course)} · ${lessonShort(n)}`;
 }

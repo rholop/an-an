@@ -112,7 +112,7 @@ test.describe('household code, who are you, switching', () => {
     await switchTo('羅恩');
     expect(await page.evaluate(() => window.__anan.db.items.count())).toBe(3); // intact
     await page.getByRole('button', { name: 'Review', exact: true }).click();
-    await expect(page.getByText(/3 due now/)).toBeVisible();
+    await expect(page.getByTestId('review-counts')).toContainText(/^0 due · 3 new/); // lookups make New cards, never Due ones
 
     expect(await page.evaluate(() => (window as unknown as { __marker?: number }).__marker)).toBe(
       1,

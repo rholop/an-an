@@ -8,9 +8,14 @@ import {
   type Lexicon,
   type Word,
 } from '@anan/core';
-import { getSlow, markClip, playUrl, setSlow } from '../lib/audio.js';
-import { useSetting } from '../lib/useSetting.js';
+import { getSlow, playUrl, setSlow } from '../lib/audio.js';
 import { useProfile } from './ProfileGate.js';
+import { AnnotatedInline } from './AnnotatedInline.js';
+import type { AnnotationScript } from './AnnotatedText.js';
+import { FEEDBACK_CORRECT, FEEDBACK_WRONG_TONE, NEXT } from '../lib/labels.js';
+import { readingText, useAnswerInputMode, useReadingSettings } from '../lib/reading.js';
+import { reportClip } from '../lib/report-actions.js';
+import { REPORT_LABEL } from '../lib/labels.js';
 import './ListenExercise.css';
 
 export interface ListenResult {
@@ -47,6 +52,7 @@ export function ListenExercise({
   onDone: (r: ListenResult) => void;
 }) {
   const { profile } = useProfile();
+  const { script } = useReadingSettings();
   const clip = clipFor(exercise);
   const [plays, setPlays] = useState(0);
   const [slowUsed, setSlowUsed] = useState(false);
@@ -73,7 +79,8 @@ export function ListenExercise({
   function soundsWrong() {
     if (!clip || done.current) return;
     done.current = true;
-    void markClip({ kind: clip.kind, id: clip.id, hash: clip.hash, status: 'flagged', text: clip.text, profileId: profile.id });
+    // Phase 21: the shared report (with Undo; sent once the Undo window has passed).
+    reportClip({ kind: clip.kind, id: clip.id, hash: clip.hash, status: 'flagged', text: clip.text, profileId: profile.id });
     onDone({ evidence: [], skipped: true, correct: false });
   }
 
@@ -117,7 +124,7 @@ export function ListenExercise({
           ▶ slow
         </button>
         <button type="button" className="listen-wrong" onClick={soundsWrong} data-testid="listen-sounds-wrong">
-          Sounds wrong
+          {REPORT_LABEL}
         </button>
       </div>
       {plays > 0 && <p className="listen-meta">Plays: {plays}</p>}
@@ -146,6 +153,7 @@ export function ListenExercise({
         <TonePairView
           a={word(exercise.a)}
           b={word(exercise.b)}
+          script={script}
           play={exercise.play}
           disabled={plays === 0 || answered !== null}
           onPick={(side) => finish(side === exercise.play ? 'correct' : 'wrong', targets)}
@@ -160,7 +168,11 @@ export function ListenExercise({
             disabled={plays === 0 || answered !== null}
             onPick={(o) => finish(o === exercise.answer ? 'correct' : 'wrong', targets)}
           />
-          {answered && <p lang="zh-Hant" className="listen-reveal">{exercise.zh}</p>}
+          {answered && (
+            <p lang="zh-Hant" className="listen-reveal">
+              <AnnotatedInline text={exercise.zh} lexicon={lexicon} script={script} />
+            </p>
+          )}
         </>
       )}
       {exercise.type === 'hear_type' && (
@@ -171,7 +183,7 @@ export function ListenExercise({
             const r = gradeWordDictation(typed, w);
             const note =
               r.outcome === 'wrong_tone'
-                ? `Right syllables, wrong tone on syllable ${r.toneWrongAt.map((i) => i + 1).join(', ')} — it is ${w.pinyin}`
+                ? `${FEEDBACK_WRONG_TONE} (syllable ${r.toneWrongAt.map((i) => i + 1).join(', ')}): ${readingText(w, script)}`
                 : undefined;
             finish(r.outcome, targets, note);
           }}
@@ -195,15 +207,26 @@ export function ListenExercise({
 
       {answered && (
         <div role="status" className="listen-feedback" data-testid="listen-feedback">
-          {answered.outcome === 'correct' && '✓ Correct'}
-          {answered.outcome === 'wrong_tone' && `~ ${answered.note ?? 'Right word, wrong tone'}`}
-          {answered.outcome === 'wrong' && !('zh' in exercise && exercise.type === 'sentence_dictation') && (
-            <>✗ It was <strong lang="zh-Hant">{answerText(exercise, word)}</strong></>
+          {answered.outcome === 'correct' && FEEDBACK_CORRECT}
+          {answered.outcome === 'wrong_tone' && (answered.note ?? FEEDBACK_WRONG_TONE)}
+          {answered.outcome === 'wrong' && exercise.type !== 'sentence_dictation' && (
+            <>✗ Not quite — it's <strong lang="zh-Hant">{answerText(exercise, word, script)}</strong></>
           )}
           {exercise.type === 'sentence_dictation' && answered.outcome === 'wrong' && ' ✗ Missed words are marked above.'}{' '}
           <button type="button" onClick={next} data-testid="listen-next">
-            Next →
+            {NEXT}
           </button>
+          {exercise.type === 'sentence_dictation' && (
+            <p lang="zh-Hant" className="listen-reveal">
+              <AnnotatedInline text={exercise.zh} lexicon={lexicon} script={script} />
+            </p>
+          )}
+          {(exercise.type === 'hear_pick' || exercise.type === 'hear_type' || exercise.type === 'tone_check') &&
+            word(exercise.wordId) && (
+              <p lang="zh-Hant" className="listen-reveal">
+                <AnnotatedInline text={word(exercise.wordId)!.headword} lexicon={lexicon} script={script} />
+              </p>
+            )}
         </div>
       )}
     </div>
@@ -224,7 +247,7 @@ function diffParts(d: DiffPartLike[] | null, answered: unknown) {
   );
 }
 
-function answerText(e: Exercise, word: (id: string) => Word | undefined): string {
+function answerText(e: Exercise, word: (id: string) => Word | undefined, script: AnnotationScript): string {
   switch (e.type) {
     case 'hear_pick':
     case 'tone_check':
@@ -232,11 +255,11 @@ function answerText(e: Exercise, word: (id: string) => Word | undefined): string
       return e.answer;
     case 'hear_type': {
       const w = word(e.wordId);
-      return w ? `${w.headword} (${w.pinyin})` : e.headword;
+      return w ? `${w.headword} (${readingText(w, script)})` : e.headword;
     }
     case 'tone_pair': {
       const w = word(e.play === 'a' ? e.a : e.b);
-      return w ? `${w.headword} (${w.pinyin})` : '';
+      return w ? `${w.headword} (${readingText(w, script)})` : '';
     }
     case 'sentence_dictation':
       return e.zh;
@@ -289,15 +312,17 @@ function TonePairView({
   play,
   disabled,
   onPick,
+  script,
 }: {
   a: Word | undefined;
   b: Word | undefined;
+  script: AnnotationScript;
   play: 'a' | 'b';
   disabled: boolean;
   onPick: (side: 'a' | 'b') => void;
 }) {
   const [picked, setPicked] = useState<'a' | 'b' | null>(null);
-  const label = (w: Word | undefined) => (w ? `${w.headword} · ${w.pinyin}` : '?');
+  const label = (w: Word | undefined) => (w ? `${w.headword} · ${readingText(w, script)}` : '?');
   return (
     <>
       <p>Which of these two did you hear?</p>
@@ -323,7 +348,10 @@ function TonePairView({
 }
 
 function TypeView({ disabled, onSubmit }: { disabled: boolean; onSubmit: (typed: string) => void }) {
-  const [mode, setMode] = useSetting<InputMode>('listeningInputMode', 'pinyin');
+  // Phase 21: the one remembered answer input mode (shared with Cloze and journal items).
+  const [inputMode, setInputMode] = useAnswerInputMode();
+  const mode: InputMode = inputMode === 'characters' ? 'hanzi' : inputMode;
+  const setMode = (m: InputMode) => setInputMode(m === 'hanzi' ? 'characters' : m);
   const [typed, setTyped] = useState('');
   return (
     <>

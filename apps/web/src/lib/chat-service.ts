@@ -1,6 +1,9 @@
 import {
   CHAT_LEAK_REF,
   analyzeText,
+  checkTaiwanness,
+  isDueCard,
+  isLearningState,
   derivedCompoundIds,
   lessonScopedWordIds,
   nextNewItems,
@@ -21,6 +24,7 @@ import {
   type TurnResponse,
   type TutorLLM,
   wordInScope,
+  glossFor,
 } from '@anan/core';
 import type { AnanDB, ConversationRow, TurnRow } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
@@ -56,11 +60,25 @@ export interface SendTurnResult {
 }
 
 export interface ChatSummary {
+  /** Phase 21: messages the learner sent (both chat types say "N messages from you"). */
+  learnerMessages: number;
   turnCount: number;
   avgCoverage: number;
   goalStepsDone: string[];
   wordsEncountered: string[];
 }
+
+/** Phase 21 Part J: a reply that still fails the Taiwan / traditional check after every retry. */
+export class UnreliableReplyError extends Error {
+  constructor() {
+    super("Couldn't get a reliable reply, try again");
+    this.name = 'UnreliableReplyError';
+  }
+}
+
+/** Phase 21 Part J: suggested replies, recasts and "Try:" lines are shown only when they pass the
+ * Taiwan / traditional-characters check; failing ones are dropped. */
+export const isCleanChinese = (zh: string | undefined): zh is string => !!zh && checkTaiwanness(zh).isClean;
 
 function sample<T>(arr: T[], n: number, rng: () => number): T[] {
   const copy = [...arr];
@@ -132,6 +150,8 @@ export class ChatService {
   ): Promise<void> {
     const tokens = segment(npcText, this.lexicon);
     const events: Evidence[] = [];
+    // Phase 21: a word read twice in one message is one reading, not two.
+    const seen = new Set<string>();
     for (const token of tokens) {
       if (token.kind !== 'word') continue;
       const candidates = this.lexicon.lookup(token.text);
@@ -140,9 +160,10 @@ export class ChatService {
           { kind: 'word', id: word.id },
           'recognition',
         );
-        if (!card) continue;
-        const isDueOrLearning = card.state === 'learning' || card.card.due <= now;
+        if (!card || seen.has(word.id)) continue;
+        const isDueOrLearning = isLearningState(card) || isDueCard(card, now);
         if (isDueOrLearning && !lookedUpWordIds.has(word.id)) {
+          seen.add(word.id);
           events.push({
             item: { kind: 'word', id: word.id },
             skill: 'recognition',
@@ -161,12 +182,8 @@ export class ChatService {
     targetIds: string[],
     allowedExtraIds: string[],
   ): Promise<AnalyzeContext> {
-    const [knownIds, dueCards] = await Promise.all([
-      this.learnerService.knownSet('review'),
-      this.learnerService.dueCards(new Date(), 10_000),
-    ]);
-    const dueIds = new Set(dueCards.filter((c) => c.skill === 'recognition').map((c) => c.item.id));
-    const learningIds = new Set<string>(); // learning-state cards are a subset not separately tracked by knownSet; acceptable to omit for Phase 3's first cut
+    // Phase 21: the shared comprehensible sets (known / due / learning), the same everywhere.
+    const { knownIds, dueIds, learningIds } = await this.learnerService.wordSets(new Date());
     return {
       lexicon: this.lexicon,
       learnerLevel,
@@ -237,10 +254,11 @@ export class ChatService {
 
     const klass = this.classContext?.();
     const scope = klass?.scope.enabled ? klass.scope : undefined;
-    const [knownAll, { ids: scenarioExtraIds }] = await Promise.all([
-      this.learnerService.knownSet('review'),
+    const [sets, { ids: scenarioExtraIds }] = await Promise.all([
+      this.learnerService.wordSets(now),
       Promise.resolve(resolveScenarioVocabExtraIds(scenario, this.lexicon)),
     ]);
+    const knownAll = sets.knownIds;
     // My class: textbook words from lessons beyond current+1 stay out of the known sample.
     const knownCards = scope
       ? new Set([...knownAll].filter((id) => {
@@ -257,17 +275,18 @@ export class ChatService {
       const { textbookId, lesson } = scenario.textbook;
       const scoped = lessonScopedWordIds(klass.books, lesson, { bookId: textbookId });
       const lessonOwn =
-        klass.books.find((b) => b.id === textbookId)?.lessons[lesson - 1]?.vocab ?? [];
+        klass.books.find((b) => b.id === textbookId)?.lessons.find((l) => l.n === lesson)?.vocab ?? [];
       allowedExtraIds = [...new Set([...scenarioExtraIds, ...lessonOwn])].slice(0, 60);
       validatorExtraIds = [
         ...new Set([...scenarioExtraIds, ...scoped, ...derivedCompoundIds(this.lexicon, scoped)]),
       ];
     }
-    const dueCards = await this.learnerService.dueCards(now, 10_000);
-    const dueWordIds = dueCards.filter((c) => c.skill === 'recognition').map((c) => c.item.id);
-    const allCards: SkillCard[] = dueCards; // best-effort pool for nextNewItems' "touched" check
+    const dueWordIds = [...sets.dueIds];
+    // Phase 21: every card counts as "touched" (not only due ones), so new targets are really new.
+    const allCards: SkillCard[] = await this.learnerService.allCards();
     const want = this.config.newTargetsPerTurn;
-    const studyIds = studyTargetWordIds(await this.studyFocus?.().catch(() => undefined), want);
+    const focus = await this.studyFocus?.().catch(() => undefined);
+    const studyIds = studyTargetWordIds(focus, want);
     const studyWords = studyIds.flatMap((id) => this.lexicon.byId(id) ?? []);
     const targets =
       studyWords.length >= want
@@ -278,6 +297,7 @@ export class ChatService {
               scenarioTags: [scenario.id],
               currentLevel: options.learnerLevel,
               ...(scope ? { classScope: scope } : {}),
+              priorityIds: focus?.enabled ? focus.newItemsAllowed.filter((i) => i.kind === 'word').map((i) => i.id) : [],
             }).filter((w) => !studyIds.includes(w.id)),
           ].slice(0, want);
     const targetIds = targets.map((w) => w.id);
@@ -323,6 +343,19 @@ export class ChatService {
       feedback = buildFeedback(report);
     }
 
+    // Phase 21 Part J: a reply that still fails the Taiwan / traditional check is never shown: one
+    // more try on the other provider, then an error ("Couldn't get a reliable reply, try again").
+    if (report && !report.taiwanness.isClean) {
+      attempts++;
+      response = await this.tutorLLM.generateTurn({ ...req, feedback: buildFeedback(report), alternateProvider: true });
+      report = analyzeText(response.reply_zh, analyzeCtx, [], {
+        coverageThreshold: 0.95,
+        maxUnknownTokens: 4,
+        ...this.config,
+      });
+      if (!report.taiwanness.isClean) throw new UnreliableReplyError();
+    }
+
     const finalResponse = response!;
     const finalReport = report!;
 
@@ -349,8 +382,10 @@ export class ChatService {
       zh: finalResponse.reply_zh,
       en: finalResponse.reply_en,
       tokens: this.sanitizeSenseIds(finalResponse.tokens, req.vocab.senseOptions ?? []),
-      suggestedReplies: finalResponse.suggested_replies,
-      recastZh: finalResponse.recast_zh,
+      suggestedReplies: finalResponse.suggested_replies.filter((r) => isCleanChinese(r.zh)),
+      ...(isCleanChinese(finalResponse.recast_zh) ? { recastZh: finalResponse.recast_zh } : {}),
+      // Phase 21: the promised inline glosses for words past the learner's reach (as in open chat).
+      ...(finalReport.pass ? {} : { glosses: this.leakGlosses(finalReport.unknown) }),
       validatorReport: {
         coverage: finalReport.coverage,
         maxLevel: finalReport.maxLevel,
@@ -376,6 +411,17 @@ export class ChatService {
 
   /** Phase 6: "I'm stuck" pressed (once per press, however many hint levels
    * that press reveals) — one of the scenario star criteria. */
+  private leakGlosses(unknown: ReadonlyArray<{ token: { text: string }; wordId?: string }>): { text: string; gloss: string }[] {
+    const seen = new Set<string>();
+    return unknown.flatMap((c) => {
+      const w = c.wordId ? this.lexicon.byId(c.wordId) : undefined;
+      const text = c.token.text;
+      if (!w || seen.has(text)) return [];
+      seen.add(text);
+      return [{ text, gloss: glossFor(w) }];
+    });
+  }
+
   async recordStuck(conversationId: number): Promise<void> {
     await this.db.conversations
       .where('id')
@@ -440,13 +486,17 @@ export class ChatService {
       .where('at')
       .between(lower, upper, true, true)
       .toArray();
+    // Phase 21: "New words you met" lists only words not already Learned.
+    const { knownIds } = await this.learnerService.wordSets(upper);
     const encounteredIds = new Set(
       evidenceInRange
         .filter((e) => e.kind === 'chat_lookup_gloss' || e.kind === 'chat_hover_reading')
-        .map((e) => e.item.id),
+        .map((e) => e.item.id)
+        .filter((id) => !knownIds.has(id)),
     );
 
     return {
+      learnerMessages: turns.filter((t) => t.role === 'learner').length,
       turnCount: turns.length,
       avgCoverage,
       goalStepsDone: conversation?.goalStepsDone ?? [],

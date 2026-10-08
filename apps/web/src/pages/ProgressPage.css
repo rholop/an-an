@@ -23,3 +23,4 @@
   max-width: 320px;
   display: block;
 }
+.progress-levels { list-style: none; padding: 0; display: grid; gap: 0.6rem; }

@@ -2,6 +2,8 @@ import {
   buildGrammarCloze,
   courseOrdinal,
   homeLessonOfTags,
+  isUsableSentence,
+  seededRng,
   LAIXUE_COURSE,
   newSessionSeed,
   orderSession,
@@ -44,13 +46,17 @@ export function buildGrammarExercises(
     /** Phase 19: session id for the order; `recent` = keys shown at the end of the vocab step. */
     seed?: string;
     recent?: readonly (readonly string[])[];
+    /** Phase 21: reported sentences (never offered again, in any sentence source). */
+    excluded?: ReadonlySet<string>;
   } = {},
 ): OrderedSession<GrammarExercise> {
-  const rng = opts.rng ?? Math.random;
+  // Phase 21: every random choice comes from the session seed, so a logged seed rebuilds it exactly.
+  const seed = opts.seed ?? newSessionSeed('grammar');
+  const rng = opts.rng ?? seededRng(`${seed}:grammar`);
   const perPoint = opts.perPoint ?? 2;
   const max = opts.max ?? 8;
   const byId = new Map(grammarItems.map((g) => [g.id, g]));
-  const lessonSentences = sentences.filter((s) => s.lesson === lesson.n);
+  const lessonSentences = sentences.filter((s) => s.lesson === lesson.n && isUsableSentence(s.zh, opts.excluded));
   // Distractors: the signal words of every point up to this lesson.
   const here = courseOrdinal(LAIXUE_COURSE, opts.bookId ?? 'laixue-1', lesson.n) ?? lesson.n;
   const pool = grammarItems
@@ -83,7 +89,7 @@ export function buildGrammarExercises(
   // Phase 19: two exercises on one grammar point are siblings, so the shared order keeps them
   // apart (or leaves the second for next time); the gap also runs on from the vocab step.
   return orderSession(shuffle(out, rng).slice(0, max), describeGrammarExercise, {
-    seed: opts.seed ?? newSessionSeed('grammar'),
+    seed,
     recent: opts.recent,
   });
 }

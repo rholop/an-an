@@ -76,7 +76,7 @@ test.describe('Level picker everywhere + accurate definitions (phase 7)', () => 
     await expect(picker(page)).toHaveValue('L4');
 
     // Garden: its level chips default to the current level.
-    await page.getByRole('button', { name: 'Garden' }).click();
+    await page.getByRole('button', { name: 'Home', exact: true }).click();
     await expect(page.getByRole('button', { name: /^L4/, pressed: true })).toBeVisible({
       timeout: 15000,
     });
@@ -118,7 +118,7 @@ test.describe('Level picker everywhere + accurate definitions (phase 7)', () => 
     await expect(page.getByText(/Lexicon v2/)).toBeVisible({ timeout: 15000 });
     await page.locator('.reader-input').fill('他很機車。');
     await page.locator('.an-token', { hasText: '機車' }).first().click();
-    await page.getByRole('button', { name: 'Report this definition' }).click();
+    await page.getByTestId('report-definition').click();
 
     await page.getByRole('button', { name: 'Credits' }).click();
     const list = page.getByTestId('credits-list');

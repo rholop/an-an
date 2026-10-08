@@ -37,7 +37,7 @@ test.describe('Journal page', () => {
     // Self-fix, then check.
     await page.getByLabel('Your fix for part 1').fill('捷運');
     await page.getByRole('button', { name: 'Check' }).click();
-    await expect(page.getByText(/Looks good/)).toBeVisible();
+    await expect(page.getByText('✓ Correct')).toBeVisible();
 
     await page.getByRole('button', { name: 'Show corrections' }).click();
     await expect(page.getByText('You fixed this yourself')).toBeVisible();
@@ -63,7 +63,7 @@ test.describe('Journal page', () => {
     await page.getByLabel('Journal entry').fill('我搭地鐵。');
     await page.getByRole('button', { name: 'Submit for feedback' }).click();
     await page.getByRole('button', { name: 'Show corrections' }).click();
-    await page.getByRole('button', { name: 'Flag this correction' }).click();
+    await page.getByRole('button', { name: "⚑ Something's wrong" }).click();
     await page.getByRole('button', { name: 'Finish entry' }).click();
     await expect(page.getByText(/Entry saved/)).toBeVisible();
 

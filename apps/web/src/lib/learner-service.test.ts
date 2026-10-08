@@ -64,10 +64,11 @@ describe('LearnerService.recordBulk', () => {
   });
 });
 
-describe('LearnerService.dueCards / knownSet', () => {
-  it('dueCards and knownSet reflect recorded evidence', async () => {
+describe('LearnerService.wordSets (Phase 21 shared terms)', () => {
+  it('an Anki seed is comprehensible (learning) but not Learned until reviewed in the app', async () => {
     await service.record({ item, skill: 'recognition', kind: 'anki_import_seen', at: NOW }, NOW);
-    const known = await service.knownSet('review');
-    expect(known.has('w1')).toBe(true);
+    const sets = await service.wordSets(NOW);
+    expect(sets.knownIds.has('w1')).toBe(false);
+    expect(sets.learningIds.has('w1')).toBe(true);
   });
 });

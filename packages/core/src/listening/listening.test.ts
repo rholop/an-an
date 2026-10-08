@@ -55,7 +55,7 @@ describe('tones', () => {
   it('reads MOE tones and formats the answer ("3 + 4")', () => {
     expect(wordTones(LS)).toEqual([3, 1]);
     expect(tonePattern(LS)).toBe('3 + 1');
-    expect(tonePattern(GG)).toBe('1 + 0');
+    expect(tonePattern(GG)).toBe('1 + 5'); // Phase 21: neutral shown as 5, like typed pinyin
   });
   it('tone check never includes 一/不 words or 3rd + 3rd sequences', () => {
     expect(toneCheckEligible(BU)).toBe(false);
@@ -124,12 +124,14 @@ const card = (id: string, skill: SkillCard['skill'], state: SkillCard['state'], 
 });
 
 describe('listening cards and FSRS', () => {
-  it('are created only once recognition reaches review, with a usable clip, and not twice', () => {
+  it('are created only once recognition is Learned, with a usable clip, and not twice', () => {
+    const learned = (c: SkillCard): SkillCard => ({ ...c, card: { ...c.card, reps: 2 } });
     const cards = [
-      card('a', 'recognition', 'review'),
+      learned(card('a', 'recognition', 'review')),
+      card('f', 'recognition', 'review'), // never answered in the app: not Learned
       card('b', 'recognition', 'learning'),
-      card('c', 'recognition', 'mature'),
-      card('d', 'recognition', 'review'),
+      learned(card('c', 'recognition', 'mature')),
+      learned(card('d', 'recognition', 'review')),
       card('d', 'listening', 'learning'),
       card('e', 'production', 'review'),
     ];
@@ -182,7 +184,9 @@ describe('listening cards and FSRS', () => {
     expect(withListening.mastered).toBe(without.mastered);
     expect(withListening.mastered).toBe(0);
     const done = [card('mai3', 'recognition', 'mature', 30), card('mai3', 'production', 'mature', 10)];
-    expect(getStudyFocus(profile(done), NOW).mastery!.mastered).toBe(1);
+    // Phase 21: the lesson is mastered (the active step moves on; level steps count the rest only).
+    expect(getStudyFocus(profile(done), NOW).masteredLessonIds).toContain('laixue-1-L01');
+    expect(getStudyFocus(profile(strongListening), NOW).masteredLessonIds).not.toContain('laixue-1-L01');
   });
 });
 

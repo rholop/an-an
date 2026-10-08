@@ -3,7 +3,9 @@ import { newItemInBounds } from './learner/review-pile.js';
 import type { Lexicon } from './lexicon.js';
 import type { Level, Word } from './types.js';
 import { LEVEL_IDS } from './levels.config.js';
-import { homeLessonOfTags, tagsInScope, type ClassScope } from './textbook/scope.js';
+import { tagsInScope, type ClassScope } from './textbook/scope.js';
+import { PROGRESS_CONFIG } from './progress/progress.config.js';
+import { levelItems, ProgressIndex } from './progress/terms.js';
 
 const LEVEL_ORDER = LEVEL_IDS;
 
@@ -17,7 +19,7 @@ export interface CurriculumConfig {
 }
 
 export const DEFAULT_CURRICULUM_CONFIG: CurriculumConfig = {
-  levelAdvanceThreshold: 0.7,
+  levelAdvanceThreshold: PROGRESS_CONFIG.levelUpLearnedShare,
   nextLevelTrickleShare: 0.2,
 };
 
@@ -30,25 +32,17 @@ export interface CurriculumContext {
    * up (see levelUpSuggestion) and never switches by itself. When unset the
    * frontier is derived from progress as before. */
   currentLevel?: Level;
-  /** Phase 12 "My class". When enabled: the current lesson's words get top
-   * priority, the next lesson's trickle in at `nextLevelTrickleShare`, and
-   * textbook words from later lessons stay out of the queue. Disabled or
-   * absent = exactly the previous behaviour. */
+  /** Phase 12 "My class": textbook words beyond the class (+ "lessons ahead") stay out of
+   * the queue. Since Phase 21 this is visibility only; priority comes from `priorityIds`. */
   classScope?: ClassScope;
+  /** Phase 21: word ids in study-focus order (active lesson, then catch-up lessons), from
+   * `getStudyFocus`. Picked first; the TOCFL gate is already applied by the focus. */
+  priorityIds?: readonly string[];
 }
 
-/** Share of `level`'s words that are at least "in review" (recognition
- * skill) — i.e. genuinely being retained, not just introduced. */
+/** Phase 21: share of `level`'s TOCFL words the learner has Learned (the shared definition). */
 export function levelCoverage(level: Level, words: Word[], cards: SkillCard[]): number {
-  const atLevel = words.filter((w) => w.level === level);
-  if (atLevel.length === 0) return 1;
-  const strongIds = new Set(
-    cards
-      .filter((c) => c.skill === 'recognition' && (c.state === 'review' || c.state === 'mature'))
-      .map((c) => c.item.id),
-  );
-  const strongCount = atLevel.filter((w) => strongIds.has(w.id)).length;
-  return strongCount / atLevel.length;
+  return new ProgressIndex({ cards }).summarize(levelItems(level, words)).learnedShare;
 }
 
 /** Lowest level that hasn't crossed `levelAdvanceThreshold` yet — the
@@ -94,11 +88,6 @@ function sortCandidates(
   });
 }
 
-/** Current lesson first, then the most recent earlier lessons. */
-function lessonRank(lesson: number, scope: ClassScope): number {
-  return scope.currentLesson - lesson;
-}
-
 /**
  * Picks the next `n` new (never-introduced) words to show the learner:
  * mostly from the current frontier level plus any supplement/custom words
@@ -124,7 +113,6 @@ export function nextNewItems(
 
   const scope = context.classScope?.enabled ? context.classScope : undefined;
   const inScope = (w: Word) => !scope || tagsInScope(w.tags, scope);
-  const lessonOf = (w: Word) => (scope ? homeLessonOfTags(w.tags, scope.course)?.ordinal : undefined);
 
   // Phase 20: new picks stay in bounds — TOCFL, textbook and the learner's own words; never the
   // 17k level-less MOE compounds, names, or other supplementary entries.
@@ -144,34 +132,21 @@ export function nextNewItems(
   const sortedMain = sortCandidates(mainPool, cards, lexicon, context);
   const sortedTrickle = sortCandidates(tricklePool, cards, lexicon, context);
 
-  let picked: Word[];
-  if (scope) {
-    // Textbook words regardless of level: the class is the frontier.
-    const tbPool = words.filter(
-      (w) => notIntroduced(w) && lessonOf(w) !== undefined && inScope(w) && newItemInBounds(w),
-    );
-    const covered = sortCandidates(
-      tbPool.filter((w) => lessonOf(w)! <= scope.currentLesson),
-      cards,
-      lexicon,
-      context,
-    ).sort((a, b) => lessonRank(lessonOf(a)!, scope) - lessonRank(lessonOf(b)!, scope));
-    const nextLesson = sortCandidates(
-      tbPool.filter((w) => lessonOf(w)! === scope.currentLesson + 1),
-      cards,
-      lexicon,
-      context,
-    );
-    const nextCount = Math.min(nextLesson.length, Math.round(n * config.nextLevelTrickleShare));
-    const head = covered.slice(0, n - nextCount);
-    picked = [...head, ...nextLesson.slice(0, nextCount)];
-    const rest = [...sortedMain, ...sortedTrickle, ...covered.slice(head.length), ...nextLesson.slice(nextCount)];
-    for (const w of rest) {
-      if (picked.length >= n) break;
-      if (!picked.includes(w)) picked.push(w);
-    }
-    return picked.slice(0, n);
+  // Phase 21: the study focus decides what comes first (active lesson, then catch-up lessons).
+  const priority: Word[] = [];
+  for (const id of context.priorityIds ?? []) {
+    const w = lexicon.byId(id);
+    if (w && notIntroduced(w) && inScope(w) && !priority.includes(w)) priority.push(w);
   }
+  let picked: Word[] = priority.slice(0, n);
+  if (picked.length >= n) return picked;
+  const left = n - picked.length;
+  const leftTrickle = Math.min(trickleCount, Math.round(left * config.nextLevelTrickleShare));
+  for (const w of [...sortedMain.slice(0, left - leftTrickle), ...sortedTrickle.slice(0, leftTrickle), ...sortedMain.slice(left - leftTrickle)]) {
+    if (picked.length >= n) break;
+    if (!picked.includes(w)) picked.push(w);
+  }
+  if (priority.length > 0) return picked.slice(0, n);
 
   picked = [...sortedMain.slice(0, mainCount), ...sortedTrickle.slice(0, trickleCount)];
   // Backfill from the main pool if the trickle pool came up short.

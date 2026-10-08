@@ -2,32 +2,33 @@ import {
   applyEvidence,
   buildFsrs,
   DEFAULT_LEARNER_CONFIG,
+  productionUnlockFor,
   REVIEW_PILE_CONFIG,
   spreadBulkDue,
+  wordSets,
   type ItemRef,
   type Level,
   type NopeChoice,
   type Evidence,
   type FSRS,
-  type ItemState,
   type LearnerConfig,
   type LearnerRepo,
   type SkillCard,
+  type WordSets,
 } from '@anan/core';
 
-interface UndoableRepo {
-  appendEvidenceKeys(events: Evidence[]): Promise<number[]>;
-  undoEvidence(
-    evidenceId: number,
-    item: Evidence['item'],
-    skill: Evidence['skill'],
-    prior: SkillCard | undefined,
-  ): Promise<void>;
+interface UidRepo {
+  /** Appends and returns each row's sync uid (Phase 21 undo refers to it). */
+  appendEvidenceUids(events: Evidence[]): Promise<string[]>;
 }
 
 interface ItemCardsRepo {
   cardsOfItem(item: ItemRef): Promise<SkillCard[]>;
+  allCards(): Promise<SkillCard[]>;
 }
+
+/** What a recorded answer earned (so Undo can take it back). */
+export type RecordedHook = (evidence: Evidence, prior: SkillCard | undefined) => Promise<unknown>;
 
 /**
  * Phase 20: may a lookup of this word create a card on its own? Registered by the app once the
@@ -59,6 +60,13 @@ function gated(e: Evidence): Evidence {
   return { ...e, context: { source: e.context?.source ?? 'chat', ...e.context, noIntroduce: true } };
 }
 
+/** Phase 21: the study settings' legacy "known" list, so every wordSets caller sees the same
+ * Learned set (registered by lib/study.ts; avoids an import cycle). */
+let knownItemsSource: () => readonly string[] = () => [];
+export function setKnownItemsSource(fn: () => readonly string[]): void {
+  knownItemsSource = fn;
+}
+
 export interface NopeHandle {
   choice: NopeChoice;
   /** The item's cards exactly as they were, restored by `undo`. */
@@ -72,80 +80,158 @@ export interface NopeHandle {
  * allowed to call `new Date()` — every other caller passes `now` through.
  */
 export class LearnerService {
-  private readonly fsrsInstance: FSRS;
+  private fsrsInstance: FSRS;
+  private config: LearnerConfig;
 
   constructor(
     private readonly repo: LearnerRepo,
-    private readonly config: LearnerConfig = DEFAULT_LEARNER_CONFIG,
+    config: LearnerConfig = DEFAULT_LEARNER_CONFIG,
     /** Phase 6: told about every single recorded piece of evidence, with the
-     * card as it was *before* (e.g. to award points). Failures never block
-     * learning. */
-    private readonly onRecorded?: (
-      evidence: Evidence,
-      prior: SkillCard | undefined,
-    ) => Promise<void>,
+     * card as it was *before* (e.g. to award points; it may return what was
+     * awarded, which Undo takes back). Failures never block learning. */
+    private readonly onRecorded?: RecordedHook,
+    /** Phase 21: told once after any write (single or bulk), e.g. to mark the study focus dirty. */
+    private readonly onChanged?: () => void,
+    /** Phase 21: Undo takes back what `onRecorded` awarded for the undone answer. */
+    private readonly onUndone?: (awarded: unknown, at: Date) => Promise<void>,
   ) {
+    this.config = config;
     this.fsrsInstance = buildFsrs(config);
+  }
+
+  /** Phase 21: the profile's target retention (Settings) is what the scheduler uses. */
+  setRequestRetention(r: number): void {
+    if (r === this.config.requestRetention) return;
+    this.config = { ...this.config, requestRetention: r };
+    this.fsrsInstance = buildFsrs(this.config);
+  }
+
+  /** Apply one event and persist it; a Learned recognition card also unlocks its production card
+   * (Phase 21 Part B rule 1), through evidence like everything else. */
+  private async applyOne(
+    evidence: Evidence,
+    now: Date,
+  ): Promise<{ card: SkillCard | undefined; prior: SkillCard | undefined; uid?: string; unlocked?: Evidence }> {
+    const prior = await this.repo.getCard(evidence.item, evidence.skill);
+    const result = applyEvidence(prior, evidence, now, this.config, this.fsrsInstance);
+    const writes: SkillCard[] = result.card ? [result.card] : [];
+    const events: Evidence[] = [evidence];
+    let unlocked: Evidence | undefined;
+    if (result.card && evidence.skill === 'recognition') {
+      const hasProduction = !!(await this.repo.getCard(evidence.item, 'production'));
+      unlocked = productionUnlockFor(result.card, hasProduction, now);
+      if (unlocked) {
+        const prod = applyEvidence(undefined, unlocked, now, this.config, this.fsrsInstance).card;
+        if (prod) writes.push(prod);
+        events.push(unlocked);
+      }
+    }
+    if (writes.length > 0) await this.repo.putCards(writes);
+    const repo = this.repo as Partial<UidRepo> & LearnerRepo;
+    let uid: string | undefined;
+    if (repo.appendEvidenceUids) [uid] = await repo.appendEvidenceUids(events);
+    else await this.repo.appendEvidence(events);
+    return { card: result.card, prior, ...(uid ? { uid } : {}), ...(unlocked ? { unlocked } : {}) };
   }
 
   async record(raw: Evidence, now: Date = new Date()): Promise<SkillCard | undefined> {
     const evidence = gated(raw);
-    const current = await this.repo.getCard(evidence.item, evidence.skill);
-    const result = applyEvidence(current, evidence, now, this.config, this.fsrsInstance);
-    if (result.card) await this.repo.putCards([result.card]);
-    await this.repo.appendEvidence([evidence]);
-    if (this.onRecorded) await this.onRecorded(evidence, current).catch(() => undefined);
-    return result.card;
+    const { card, prior } = await this.applyOne(evidence, now);
+    if (this.onRecorded) await this.onRecorded(evidence, prior).catch(() => undefined);
+    this.onChanged?.();
+    return card;
   }
 
-  /** Phase 16: `record`, but keeps what is needed to take it back exactly. A
-   * repo without undo support (a test double) records normally and can't undo. */
+  /**
+   * Phase 16/21: `record`, plus an `undo` that takes the answer back. Sync-safe: undo writes an
+   * `evidence_undone` record and puts the card back with a NEW `updatedAt` (nothing is deleted, so
+   * another device can't resurrect the undone answer), and takes back the points it earned.
+   */
   async recordUndoable(
     raw: Evidence,
     now: Date = new Date(),
   ): Promise<{ card: SkillCard | undefined; undo: () => Promise<void> }> {
     const evidence = gated(raw);
-    const repo = this.repo as Partial<UndoableRepo> & LearnerRepo;
-    if (!repo.appendEvidenceKeys || !repo.undoEvidence) {
-      return { card: await this.record(evidence, now), undo: async () => undefined };
-    }
-    const prior = await repo.getCard(evidence.item, evidence.skill);
-    const result = applyEvidence(prior, evidence, now, this.config, this.fsrsInstance);
-    if (result.card) await repo.putCards([result.card]);
-    const [id] = await repo.appendEvidenceKeys([evidence]);
-    if (this.onRecorded) await this.onRecorded(evidence, prior).catch(() => undefined);
+    const { card, prior, uid, unlocked } = await this.applyOne(evidence, now);
+    let awarded: unknown;
+    if (this.onRecorded) awarded = await this.onRecorded(evidence, prior).catch(() => undefined);
+    this.onChanged?.();
+    let undone = false;
     return {
-      card: result.card,
+      card,
       undo: async () => {
-        if (id !== undefined)
-          await repo.undoEvidence!(id, evidence.item, evidence.skill, prior);
+        if (undone) return;
+        undone = true;
+        const at = new Date(Math.max(Date.now(), now.getTime() + 1));
+        const undos: Evidence[] = [
+          {
+            item: evidence.item,
+            skill: evidence.skill,
+            kind: 'evidence_undone',
+            at,
+            context: { source: evidence.context?.source ?? 'review', ...(uid ? { refId: uid } : {}), ...(prior ? { restore: prior } : {}) },
+          },
+        ];
+        if (unlocked)
+          undos.push({ item: unlocked.item, skill: 'production', kind: 'evidence_undone', at, context: { source: 'review' } });
+        for (const u of undos) await this.applyOne(u, at);
+        if (this.onUndone && awarded !== undefined) await this.onUndone(awarded, at).catch(() => undefined);
+        this.onChanged?.();
       },
     };
   }
 
   /** Same as `record`, batched: one parallel read pass, one bulk write pass
    * — used by Anki import so a few thousand rows doesn't mean a few
-   * thousand sequential round-trips. */
+   * thousand sequential round-trips. Phase 21: events for the same item and skill are applied in
+   * order (each sees the previous one's result), and listeners hear about the batch once. */
   async recordBulk(raw: Evidence[], now: Date = new Date()): Promise<SkillCard[]> {
     const events = raw.map(gated);
-    const currents = await Promise.all(events.map((e) => this.repo.getCard(e.item, e.skill)));
-    const results = events.map((e, i) =>
-      applyEvidence(currents[i], e, now, this.config, this.fsrsInstance),
-    );
-    let cards = results.map((r) => r.card).filter((c): c is SkillCard => c !== undefined);
+    const keyOf = (e: { item: ItemRef; skill: string }) => `${e.item.kind}:${e.item.id}|${e.skill}`;
+    const firstIdx = new Map<string, number>();
+    events.forEach((e, i) => {
+      if (!firstIdx.has(keyOf(e))) firstIdx.set(keyOf(e), i);
+    });
+    const keys = [...firstIdx.keys()];
+    const loaded = await Promise.all(keys.map((k) => this.repo.getCard(events[firstIdx.get(k)!]!.item, events[firstIdx.get(k)!]!.skill)));
+    const latest = new Map<string, SkillCard | undefined>(keys.map((k, i) => [k, loaded[i]]));
+    const original = new Map(latest);
+    const results = events.map((e) => {
+      const r = applyEvidence(latest.get(keyOf(e)), e, now, this.config, this.fsrsInstance);
+      if (r.card) latest.set(keyOf(e), r.card);
+      return r;
+    });
+    // Production cards unlocked by this batch (one per word).
+    const unlockEvents: Evidence[] = [];
+    for (const [k, c] of latest) {
+      if (!c || c.skill !== 'recognition' || !k.endsWith('|recognition')) continue;
+      const prodKey = `${c.item.kind}:${c.item.id}|production`;
+      const hasProduction = latest.get(prodKey) !== undefined || !!(await this.repo.getCard(c.item, 'production'));
+      const u = productionUnlockFor(c, hasProduction, now);
+      if (u) {
+        const prod = applyEvidence(undefined, u, now, this.config, this.fsrsInstance).card;
+        if (prod) latest.set(prodKey, prod);
+        unlockEvents.push(u);
+      }
+    }
+    const changed = [...latest.entries()].filter(([k, c]) => c !== undefined && c !== original.get(k));
+    let cards = changed.map(([, c]) => c!);
+    const currents = events.map((e) => original.get(keyOf(e)));
     // Phase 20: cards a bulk action creates (Anki import, placement) get spread-out first due
     // dates, so they never all fall due on the same day.
-    const fresh = new Set(
-      results.flatMap((r, i) => (r.card && !currents[i] && BULK_KINDS.has(events[i]!.kind) ? [r.card] : [])),
+    const freshKeys = new Set(
+      results.flatMap((r, i) => (r.card && !currents[i] && BULK_KINDS.has(events[i]!.kind) ? [keyOf(events[i]!)] : [])),
     );
-    if (fresh.size > 0) {
+    if (freshKeys.size > 0) {
       const startDays = Math.max(1, Math.round(this.config.importedInitialStability / 2));
-      const spread = spreadBulkDue([...fresh], now, { cap: bulkCap(), startDays });
-      const byKey = new Map(spread.map((c) => [`${c.item.kind}:${c.item.id}|${c.skill}`, c]));
-      cards = cards.map((c) => (fresh.has(c) ? byKey.get(`${c.item.kind}:${c.item.id}|${c.skill}`)! : c));
+      const fresh = cards.filter((c) => freshKeys.has(keyOf(c)));
+      const spread = spreadBulkDue(fresh, now, { cap: bulkCap(), startDays });
+      const byKey = new Map(spread.map((c) => [keyOf(c), c]));
+      cards = cards.map((c) => byKey.get(keyOf(c)) ?? c);
     }
     await this.repo.putCards(cards);
-    await this.repo.appendEvidence(events);
+    await this.repo.appendEvidence([...events, ...unlockEvents]);
+    this.onChanged?.();
     return cards;
   }
 
@@ -198,13 +284,8 @@ export class LearnerService {
     return all.filter((c): c is SkillCard => !!c);
   }
 
-  /** Writes a card as-is (no evidence) — for flags like Phase 5's `priority`
-   * that sit on the card but aren't learner evidence. */
-  putCard(card: SkillCard): Promise<void> {
-    return this.repo.putCards([card]);
-  }
-
-  dueCards(now: Date = new Date(), limit = 50): Promise<SkillCard[]> {
+  /** Phase 21: every Due card (no silent row cut; sessions cap by study-order priority). */
+  dueCards(now: Date = new Date(), limit = Infinity): Promise<SkillCard[]> {
     return this.repo.dueCards(now, limit);
   }
 
@@ -213,8 +294,23 @@ export class LearnerService {
     return (this.repo as unknown as { dueListeningCards(n: Date, l: number): Promise<SkillCard[]> }).dueListeningCards(now, limit);
   }
 
-  knownSet(minState: ItemState = 'review'): Promise<Set<string>> {
-    return this.repo.knownSet(minState);
+  /** Phase 21: New cards (introduced, never answered); sessions take them through `pickNewForSession`. */
+  async newCards(): Promise<SkillCard[]> {
+    const repo = this.repo as LearnerRepo & { newCards?: () => Promise<SkillCard[]> };
+    return repo.newCards ? repo.newCards() : [];
+  }
+
+  /** Every card (any skill, any state). */
+  async allCards(): Promise<SkillCard[]> {
+    const repo = this.repo as Partial<ItemCardsRepo> & LearnerRepo;
+    return repo.allCards ? repo.allCards() : [];
+  }
+
+  /** Phase 21: the shared known / due / learning sets (the one "comprehensible" definition). */
+  async wordSets(now: Date = new Date(), knownItems?: readonly string[]): Promise<WordSets> {
+    const repo = this.repo as Partial<ItemCardsRepo> & LearnerRepo;
+    const cards = repo.allCards ? await repo.allCards() : [];
+    return wordSets(cards, now, { knownItems: knownItems ?? knownItemsSource() });
   }
 
   getCard(item: Evidence['item'], skill: Evidence['skill']): Promise<SkillCard | undefined> {

@@ -42,6 +42,9 @@ export const TurnRequestSchema = z.object({
    * simpler replacements. Not part of the "public" contract a caller
    * normally fills in. */
   feedback: z.string().optional(),
+  /** Phase 21: a reply that kept failing the Taiwan / traditional check is retried once on the
+   * other provider (OpenAI first instead of Gemini). */
+  alternateProvider: z.boolean().optional(),
   learnerLevel: LevelSchema,
   vocab: z.object({
     knownSample: z.array(z.string()),

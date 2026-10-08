@@ -18,8 +18,8 @@ export async function reportGloss(
     note?: string;
   },
   at: Date = new Date(),
-): Promise<void> {
-  await db.glossReports.add({
+): Promise<number> {
+  return (await db.glossReports.add({
     wordId: input.word.id,
     headword: input.word.headword,
     pinyin: input.word.pinyin,
@@ -28,7 +28,12 @@ export async function reportGloss(
     contextSentence: input.contextSentence,
     note: input.note,
     at,
-  });
+  })) as number;
+}
+
+/** Phase 21: Undo on a definition report (kept as withdrawn, so sync can't bring it back). */
+export async function withdrawGlossReport(db: AnanDB, id: number, at: Date = new Date()): Promise<void> {
+  await db.glossReports.update(id, { withdrawnAt: at });
 }
 
 const yamlString = (s: string) => JSON.stringify(s); // JSON strings are valid YAML scalars
@@ -49,7 +54,7 @@ export function exportReportsAsOverridesYaml(
     '',
   ];
   const byWord = new Map<string, GlossReportRow[]>();
-  for (const r of reports)
+  for (const r of reports.filter((x) => !x.withdrawnAt))
     byWord.set(`${r.wordId}|${r.headword}`, [
       ...(byWord.get(`${r.wordId}|${r.headword}`) ?? []),
       r,

@@ -254,7 +254,7 @@ describe('ReaderService.next — Lesson focus (Phase 12)', () => {
     const reader = service({ lesson: { bookId: 'laixue-2', n: 3, sentences: mix }, rand: () => 0 });
     const ok = await reader.next({ focus: 'lesson', level: 'L1', now: NOW });
     expect(ok!.pick.sentence.zh).toBe('我去喝茶。');
-    expect(ok!.pick.sentence.sourceLabel).toBe('來學華語 2 · L3');
+    expect(ok!.pick.sentence.sourceLabel).toBe('來學華語 2 · Lesson 3');
     expect(await reader.next({ focus: 'lesson', level: 'N1', now: NOW })).toBeNull();
   });
 
@@ -288,7 +288,7 @@ describe('ReaderService.next — Lesson focus follows the study order (Phase 14)
     const r = await reader.next({ focus: 'lesson', level: 'N1', now: NOW }); // sentences are L2, picker is N1
     expect(r).not.toBeNull();
     expect(sentences.slice(0, 2).map((s) => s.zh)).toContain(r!.pick.sentence.zh);
-    expect(r!.pick.sentence.sourceLabel).toBe('來學華語 1 · L3');
+    expect(r!.pick.sentence.sourceLabel).toBe('來學華語 1 · Lesson 3');
   });
 
   it('a grammar point picks a sentence that exercises it; ~30% of the time a review lesson’s item is used', async () => {

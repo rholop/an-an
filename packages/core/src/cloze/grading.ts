@@ -1,5 +1,6 @@
 import { parseSyllableTone, splitPinyinSyllables } from '../pinyin.js';
 import type { Word } from '../types.js';
+import { normaliseAnswer } from '../journal/normalize.js';
 
 export type ClozeInputMode = 'hanzi' | 'pinyin' | 'zhuyin';
 
@@ -18,19 +19,13 @@ export interface GradeOptions {
   toneInsensitive?: boolean;
 }
 
-const PUNCT_AND_SPACE = /[\s,.!?，。！？、；：:;'"'"()（）]/g;
-
-function stripPunctuationAndSpaces(s: string): string {
-  return s.replace(PUNCT_AND_SPACE, '');
-}
-
 function gradeHanzi(typed: string, word: Word): GradeResult {
-  const normalizedTyped = stripPunctuationAndSpaces(typed);
-  const accepted = [word.headword, ...word.variants].map(stripPunctuationAndSpaces);
+  const normalizedTyped = normaliseAnswer(typed);
+  const accepted = [word.headword, ...word.variants].map(normaliseAnswer);
   return accepted.includes(normalizedTyped) ? 'correct' : 'wrong';
 }
 
-interface ParsedSyllable {
+export interface ParsedSyllable {
   base: string;
   tone: number;
   /** False only for pinyin's genuine ambiguity: no digit and no diacritic
@@ -41,14 +36,17 @@ interface ParsedSyllable {
   toneSpecified: boolean;
 }
 
-const PINYIN_DIGIT_RE = /^([a-zü]+)([1-5])$/i;
+const PINYIN_DIGIT_RE = /^([a-zü]+)([0-5])$/i;
 
-function parseTypedPinyinSyllable(raw: string): ParsedSyllable {
-  // "nv"/"lv" is a common ASCII-IME shortcut for ü.
-  const trimmed = raw.trim().replace(/v/g, 'ü').replace(/V/g, 'Ü');
+/** Phase 21: the one typed-pinyin syllable parser (cloze, error items, listening dictation).
+ * Digits 1–4, 5 or 0 for neutral, tone marks, or nothing (matches a genuinely neutral target). */
+export function parseTypedPinyinSyllable(raw: string): ParsedSyllable {
+  // "nv"/"lv" (and "u:") are common ASCII-IME shortcuts for ü.
+  const trimmed = raw.normalize('NFC').trim().replace(/u:/gi, 'ü').replace(/v/g, 'ü').replace(/V/g, 'Ü');
   const digitMatch = PINYIN_DIGIT_RE.exec(trimmed);
   if (digitMatch) {
-    return { base: digitMatch[1]!.toLowerCase(), tone: Number(digitMatch[2]), toneSpecified: true };
+    const d = Number(digitMatch[2]);
+    return { base: digitMatch[1]!.toLowerCase(), tone: d === 0 ? 5 : d, toneSpecified: true };
   }
   const { base, tone } = parseSyllableTone(trimmed);
   // parseSyllableTone only ever returns a tone other than the 5-fallback
@@ -64,6 +62,15 @@ function parseTargetPinyinSyllable(raw: string): { base: string; tone: number } 
   return { base: base.toLowerCase(), tone };
 }
 
+/** Tones that differ, by syllable index (an unmarked syllable only matches a neutral target). */
+export function toneMismatches(typed: readonly ParsedSyllable[], target: readonly { tone: number }[]): number[] {
+  return typed.flatMap((t, i) => {
+    const want = target[i]!.tone;
+    const ok = t.toneSpecified ? t.tone === want : want === 5;
+    return ok ? [] : [i];
+  });
+}
+
 function gradeSyllables(
   typed: ParsedSyllable[],
   target: { base: string; tone: number }[],
@@ -73,12 +80,7 @@ function gradeSyllables(
   if (typed.some((t, i) => t.base !== target[i]!.base)) return 'wrong';
   if (options.toneInsensitive) return 'correct';
 
-  const allToneCorrect = typed.every((t, i) => {
-    const targetTone = target[i]!.tone;
-    if (!t.toneSpecified) return targetTone === 5; // unmarked only matches a genuinely neutral target
-    return t.tone === targetTone;
-  });
-  return allToneCorrect ? 'correct' : 'correct_wrong_tone';
+  return toneMismatches(typed, target).length === 0 ? 'correct' : 'correct_wrong_tone';
 }
 
 function gradePinyin(typed: string, word: Word, options: GradeOptions): GradeResult {
@@ -91,10 +93,11 @@ function gradePinyin(typed: string, word: Word, options: GradeOptions): GradeRes
 const ZHUYIN_NEUTRAL_PREFIX = '˙';
 const ZHUYIN_TONE_SUFFIX: Record<string, number> = { ˊ: 2, ˇ: 3, ˋ: 4 };
 
-function parseZhuyinSyllable(raw: string): ParsedSyllable {
-  const s = raw.trim();
-  if (s.startsWith(ZHUYIN_NEUTRAL_PREFIX)) {
-    return { base: s.slice(ZHUYIN_NEUTRAL_PREFIX.length), tone: 5, toneSpecified: true };
+/** Phase 21: the one zhuyin syllable parser. ˙ (neutral) is accepted before or after the syllable. */
+export function parseZhuyinSyllable(raw: string): ParsedSyllable {
+  const s = raw.normalize('NFC').trim();
+  if (s.includes(ZHUYIN_NEUTRAL_PREFIX)) {
+    return { base: s.split(ZHUYIN_NEUTRAL_PREFIX).join(''), tone: 5, toneSpecified: true };
   }
   const lastChar = s.slice(-1);
   if (lastChar in ZHUYIN_TONE_SUFFIX) {

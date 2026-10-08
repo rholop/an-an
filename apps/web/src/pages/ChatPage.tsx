@@ -1,17 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  classScope,
   formatDuration,
-  isTextbookScenarioUnlocked,
   classLevelHint,
   stepName,
   courseLessonLevel,
   courseOrdinal,
   filterByLevel,
   LAIXUE_COURSE,
-  lessonBadge,
   scenarioMatchesLevels,
   type Level,
+  type Lexicon,
   type Scenario,
   type SkillCard,
 } from '@anan/core';
@@ -22,20 +20,36 @@ import type { ConversationRow, TurnRow } from '../db/schema.js';
 import { annotate, withReadingDisplay } from '../lib/annotate.js';
 import { ChatService, type ChatSummary } from '../lib/chat-service.js';
 import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
-import { reportGloss } from '../lib/gloss-reports.js';
 import { LevelChips } from '../components/LevelPicker.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useKeyboardOpen } from '../lib/viewport.js';
 import { useLexicon } from '../lib/useLexicon.js';
-import { useMyClass, peekMyClass } from '../lib/my-class.js';
+import { useMyClass } from '../lib/my-class.js';
+import { useReadingSettings } from '../lib/reading.js';
+import { AnnotatedInline } from '../components/AnnotatedInline.js';
+import { SpeakerButton } from '../components/SpeakerButton.js';
+import {
+  BACK_TO_CHATS,
+  CHAT_FINISHED,
+  CURRENT_LESSON,
+  END_CHAT,
+  UNRELIABLE_REPLY,
+  YOUR_LEVEL,
+  coverageLine,
+  lessonLabel,
+  levelShort,
+  messagesFromYou,
+  yourClassLabel,
+} from '../lib/labels.js';
 import { useTextbook } from '../lib/textbook-data.js';
-import { getStudyFocusNow, useStudyFocus } from '../lib/study.js';
+import { currentClassScope, getStudyFocusNow, useClassScope, useStudyFocus } from '../lib/study.js';
 import { OpenChatEntryCard, OpenChatView } from './OpenChat.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSetting } from '../lib/useSetting.js';
 import './ChatPage.css';
+import './OpenChat.css';
 
 type Scaffolding = 'high' | 'medium' | 'low';
 const SCAFFOLDING_LEVELS: Scaffolding[] = ['high', 'medium', 'low'];
@@ -53,12 +67,15 @@ export function ChatPage({
   const myClass = useMyClass();
   const textbookState = useTextbook();
   const { focus: studyFocus } = useStudyFocus();
+  const scope = useClassScope();
+  const { script, mode } = useReadingSettings();
   // Phase 14: the active lesson's scenarios are pinned on top and ignore the level filter.
+  // Phase 21: the catch-up lessons' scenarios follow (all from the study focus; lessons found by n).
   const pinnedIds: string[] =
     studyFocus?.enabled && studyFocus.activeLesson && textbookState.status === 'ready'
-      ? (textbookState.books
-          .find((b) => b.id === studyFocus.activeLesson!.bookId)
-          ?.lessons[studyFocus.activeLesson.n - 1]?.scenarios ?? [])
+      ? [studyFocus.activeLesson, ...studyFocus.reviewLessons].flatMap(
+          (l) => textbookState.books.find((b) => b.id === l.bookId)?.lessons.find((x) => x.n === l.n)?.scenarios ?? [],
+        )
       : [];
   const [cardsByWordId, setCardsByWordId] = useState<Map<string, SkillCard>>(new Map());
   const refreshCards = useCallback(async () => {
@@ -97,7 +114,7 @@ export function ChatPage({
       // Phase 12: read fresh each turn, so changing the class lesson applies at once.
       () =>
         textbookState.status === 'ready'
-          ? { scope: classScope(peekMyClass()), books: textbookState.books }
+          ? { scope: currentClassScope(), books: textbookState.books }
           : undefined,
       getStudyFocusNow,
     );
@@ -210,6 +227,7 @@ export function ChatPage({
           skill: 'recognition',
           kind: kind === 'gloss' ? 'chat_lookup_gloss' : 'chat_hover_reading',
           at: now,
+          context: { source: 'chat' },
         },
         now,
       );
@@ -230,19 +248,6 @@ export function ChatPage({
   const lastNpcTurn = [...turns].reverse().find((t) => t.role === 'npc');
   const suggestions = lastNpcTurn?.suggestedReplies ?? [];
   const visibleSuggestions = suggestions.slice(0, SUGGESTED_REPLY_CAP[scaffolding]);
-
-  async function reportFromPopover(at: AnnotatedToken, sentence: string) {
-    if (!at.word) return;
-    await reportGloss(db, {
-      word: at.word,
-      sense: at.sense,
-      shownGloss: at.gloss,
-      contextSentence: sentence,
-    });
-    setError(
-      `Thanks — "${at.token.text}" is saved for review (Credits page → reported definitions).`,
-    );
-  }
 
   async function sendMessage() {
     if (!chatService || !scenario || conversationId === null || sending) return;
@@ -338,7 +343,9 @@ export function ChatPage({
     return (
       <div className="chat-page">
         <h1>An'an chat</h1>
-        <p className="chat-level-note">Your level: {learnerLevel}</p>
+        <p className="chat-level-note">
+          {YOUR_LEVEL}: {levelShort(learnerLevel)}
+        </p>
         <LevelChips selected={levelFilter} onChange={setLevelFilter} current={learnerLevel} />
         <div className="open-chat-entry">
           <OpenChatEntryCard onOpen={() => setOpenChat(true)} />
@@ -346,7 +353,7 @@ export function ChatPage({
         {pinnedIds.length > 0 && (
           <section className="chat-pinned-section" aria-label="Current lesson" data-testid="pinned-scenarios">
             <h2 lang="zh-Hant">
-              Current lesson · {studyFocus?.activeLesson ? stepName(studyFocus.activeLesson) : ''}
+              {CURRENT_LESSON}: {studyFocus?.activeLesson ? stepName(studyFocus.activeLesson) : ''}
             </h2>
             <div className="chat-scenario-list">
               {scenariosState.scenarios
@@ -414,7 +421,7 @@ export function ChatPage({
                   )}
                   {coverage && node.unlocked && (
                     <div className="chat-coverage">
-                      You know ~{Math.round(coverage.coverage * 100)}% of the words here
+                      {coverageLine(coverage.coverage)}
                     </div>
                   )}
                 </button>
@@ -424,14 +431,19 @@ export function ChatPage({
         {myClass.enabled && (
           <section className="chat-class-section" aria-label="My class scenarios">
             <h2 lang="zh-Hant">
-              來學華語 · My class ({lessonBadge(myClass.currentLesson, myClass.textbookId)})
+              {yourClassLabel(myClass.currentLesson, myClass.textbookId)}
             </h2>
             <p className="chat-level-note" data-testid="class-level-hint">
               {classLevelHint(myClass.textbookId, myClass.currentLesson)}
             </p>
             <div className="chat-scenario-list">
               {classScenarios(scenariosState.scenarios, myClass, learnerLevel, new Set(pinnedIds)).map((sc) => {
-                  const unlocked = isTextbookScenarioUnlocked(sc, myClass);
+                  // Phase 21: open once the class has reached the lesson (the shared class scope; a
+                  // preview lesson's scenarios are pinned above while it is the study lesson).
+                  const unlocked =
+                    scope.enabled &&
+                    (courseOrdinal(LAIXUE_COURSE, sc.textbook!.textbookId, sc.textbook!.lesson) ?? Infinity) <=
+                      scope.courseOrdinal;
                   return (
                     <button
                       key={sc.id}
@@ -441,14 +453,14 @@ export function ChatPage({
                       title={
                         unlocked
                           ? undefined
-                          : `Unlocks when the class reaches ${lessonBadge(sc.textbook!.lesson, sc.textbook!.textbookId)}`
+                          : `Unlocks when the class reaches ${lessonLabel(sc.textbook!.lesson, sc.textbook!.textbookId)}`
                       }
                       data-testid={`class-scenario-${sc.id}`}
                     >
                       <div className="chat-scenario-title">{sc.title}</div>
                       <div className="chat-scenario-range">
                         <span className="textbook-badge" lang="zh-Hant">
-                          {lessonBadge(sc.textbook!.lesson, sc.textbook!.textbookId)}
+                          {lessonLabel(sc.textbook!.lesson, sc.textbook!.textbookId)}
                         </span>
                         {!unlocked && ' · 🔒 locked'}
                       </div>
@@ -475,7 +487,7 @@ export function ChatPage({
   return (
     <div className="chat-page chat-page--convo">
       <div className="chat-header">
-        <button onClick={backToScenarios}>← Scenarios</button>
+        <button onClick={backToScenarios}>{BACK_TO_CHATS}</button>
         <h1>{scenario.title}</h1>
       </div>
 
@@ -500,15 +512,30 @@ export function ChatPage({
             );
             return (
               <div key={turn.id} className={`chat-bubble chat-bubble--${turn.role}`}>
-                {turn.recastZh && <div className="chat-recast">You could say: {turn.recastZh}</div>}
+                {turn.recastZh && (
+                  <div className="chat-recast">
+                    You could say:{' '}
+                    <AnnotatedInline text={turn.recastZh} lexicon={lexiconState.lexicon} script={script} />
+                  </div>
+                )}
                 <AnnotatedText
                   tokens={annotated}
-                  mode="auto"
-                  script="pinyin"
+                  mode={mode}
+                  script={script}
                   onLookup={turn.role === 'npc' ? makeOnLookup(turn.id) : undefined}
+                  lookupSource="chat"
                   currentLevel={learnerLevel}
-                  onReportGloss={(at) => void reportFromPopover(at, turn.zh)}
                 />
+                <SpeakerButton kind="sentence" text={turn.zh} />
+                {turn.glosses && turn.glosses.length > 0 && (
+                  <div className="open-chat-glosses" data-testid="chat-glosses">
+                    {turn.glosses.map((g) => (
+                      <span key={g.text} className="open-chat-gloss">
+                        <span lang="zh-Hant">{g.text}</span> = {g.gloss}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 {englishFallback && turn.en && <div className="chat-en">{turn.en}</div>}
                 {import.meta.env.DEV && turn.validatorReport && (
                   <div className="chat-debug">
@@ -523,9 +550,20 @@ export function ChatPage({
           })}
         </div>
 
-        {error && <div className="chat-error">Couldn't get a reply: {error}</div>}
+        {error && (
+          <div className="chat-error">
+            {error === UNRELIABLE_REPLY ? error : `${UNRELIABLE_REPLY} (${error})`}
+          </div>
+        )}
 
-        {ended && summary && <ChatSummaryPanel scenario={scenario} summary={summary} />}
+        {ended && summary && (
+          <ChatSummaryPanel
+            scenario={scenario}
+            summary={summary}
+            learnerTurns={turns.filter((t) => t.role === 'learner').length}
+            lexicon={lexiconState.lexicon}
+          />
+        )}
       </div>
 
       {!ended && (
@@ -552,6 +590,11 @@ export function ChatPage({
             </div>
           )}
 
+          {input !== '' && suggestions.some((x) => x.zh === input) && (
+            <p className="chat-reply-preview" lang="zh-Hant" data-testid="chat-reply-preview">
+              <AnnotatedInline text={input} lexicon={lexiconState.lexicon} script={script} />
+            </p>
+          )}
           <div className="chat-input-row">
             <input
               className="chat-input"
@@ -606,7 +649,7 @@ export function ChatPage({
                 English fallback
               </label>
             )}
-            <button onClick={endNow}>End conversation</button>
+            <button onClick={endNow}>{END_CHAT}</button>
           </div>
         </div>
       )}
@@ -633,22 +676,35 @@ function GoalChecklist({
   );
 }
 
-function ChatSummaryPanel({ scenario, summary }: { scenario: Scenario; summary: ChatSummary }) {
+function ChatSummaryPanel({
+  scenario,
+  summary,
+  learnerTurns,
+  lexicon,
+}: {
+  scenario: Scenario;
+  summary: ChatSummary;
+  learnerTurns: number;
+  lexicon: Lexicon;
+}) {
+  const { script } = useReadingSettings();
   return (
     <div className="chat-summary">
-      <h2>Scenario complete</h2>
+      <h2>{CHAT_FINISHED}</h2>
       <p>{scenario.successLine.en}</p>
       <ul>
-        <li>{summary.turnCount} turns</li>
-        <li>{(summary.avgCoverage * 100).toFixed(0)}% average coverage</li>
+        <li>{messagesFromYou(learnerTurns)}</li>
+        <li>{coverageLine(summary.avgCoverage)}</li>
         <li>
           {summary.goalStepsDone.length}/{scenario.goalSteps.length} goals completed
         </li>
       </ul>
       {summary.wordsEncountered.length > 0 && (
         <>
-          <h3>Words you encountered</h3>
-          <p className="chat-summary-words">{summary.wordsEncountered.join('、')}</p>
+          <h3>Words you met</h3>
+          <p className="chat-summary-words" lang="zh-Hant">
+            <AnnotatedInline text={summary.wordsEncountered.join('、')} lexicon={lexicon} script={script} />
+          </p>
         </>
       )}
     </div>

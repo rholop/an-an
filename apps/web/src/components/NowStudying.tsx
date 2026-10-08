@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { stepName } from '@anan/core';
+import { LearnedMastered } from './LearnedMastered.js';
+import { lessonLabel, lessonOnly, STUDY_THIS_LESSON, stepName } from '../lib/labels.js';
 import { updateStudySettings, useStudyFocus, useStudySettings } from '../lib/study.js';
 import { StudyLessonView } from '../pages/TextbookPage.js';
 import { ReviewPage } from '../pages/ReviewPage.js';
@@ -10,14 +11,18 @@ import './NowStudying.css';
 export function NowStudying() {
   const { focus, celebrate, dismissCelebration } = useStudyFocus();
   const settings = useStudySettings();
-  const [studying, setStudying] = useState(false);
+  // The step being studied: the active one, or a catch-up lesson tapped on the card.
+  const [studying, setStudying] = useState<{ bookId: string; n: number } | 'active' | null>(null);
 
+  if (studying && typeof studying === 'object') {
+    return <StudyLessonView bookId={studying.bookId} n={studying.n} onExit={() => setStudying(null)} />;
+  }
   if (studying && focus?.activeStep) {
     const s = focus.activeStep;
     return s.kind === 'lesson' ? (
-      <StudyLessonView bookId={s.bookId} n={s.n} onExit={() => setStudying(false)} />
+      <StudyLessonView bookId={s.bookId} n={s.n} onExit={() => setStudying(null)} />
     ) : (
-      <ReviewPage onExit={() => setStudying(false)} exitLabel="← Back" title={`${stepName(s)} — review`} />
+      <ReviewPage onExit={() => setStudying(null)} exitLabel="← Back" title={`${stepName(s)} — review`} />
     );
   }
   if (!focus) return null;
@@ -39,17 +44,35 @@ export function NowStudying() {
         <>
           <p className="now-studying-name" data-testid="now-studying-name">
             <strong lang="zh-Hant">{stepName(focus.activeStep)}</strong>
+            {focus.activeIsClass && focus.classLesson && (
+              <span className="textbook-muted">
+                {' '}
+                {focus.activeStep.kind === 'lesson' && focus.activeStep.lessonId === focus.classLesson.lessonId
+                  ? '(your class)'
+                  : `(preview, your class is on ${lessonOnly(focus.classLesson.n)})`}
+              </span>
+            )}
           </p>
-          <div className="now-studying-bar" title={`${Math.round(m.share * 100)}% mastered`}>
-            <span style={{ width: `${Math.round(m.share * 100)}%` }} />
-          </div>
+          <LearnedMastered p={m} testId="now-studying-progress" />
           <p data-testid="now-studying-left">
-            {Math.round(m.share * 100)}% mastered ·{' '}
             {m.remainingWords} word{m.remainingWords === 1 ? '' : 's'}
             {focus.activeStep.kind === 'lesson' &&
               ` and ${m.remainingGrammar} grammar point${m.remainingGrammar === 1 ? '' : 's'}`}{' '}
-            to go
+            to master
           </p>
+          {focus.reviewLessons.length > 0 && (
+            <p className="now-studying-catchup" data-testid="now-studying-catchup">
+              Catching up:{' '}
+              {focus.reviewLessons.map((l, i) => (
+                <span key={l.lessonId}>
+                  {i > 0 && ', '}
+                  <button className="link-button" onClick={() => setStudying({ bookId: l.bookId, n: l.n })}>
+                    {l.bookId === (focus.activeLesson?.bookId ?? focus.classLesson?.bookId) ? lessonOnly(l.n) : stepName(l)}
+                  </button>
+                </span>
+              ))}
+            </p>
+          )}
           {focus.nextStep && (
             <p className="textbook-muted">Next: {stepName(focus.nextStep)}</p>
           )}
@@ -59,7 +82,9 @@ export function NowStudying() {
           {focus.gateStatus.cappedByClass && (
             <p className="textbook-muted">Waiting for the class: later lessons are held back.</p>
           )}
-          <button onClick={() => setStudying(true)} data-testid="study-this">Study this</button>
+          <button onClick={() => setStudying('active')} data-testid="study-this">
+            {focus.activeStep.kind === 'lesson' ? STUDY_THIS_LESSON : 'Study these words'}
+          </button>
         </>
       )}
       <details className="now-studying-settings">
@@ -101,6 +126,6 @@ export function NowStudying() {
 }
 
 function lessonName(id: string): string {
-  const m = /^laixue-(\d+)-L(\d+)$/.exec(id);
-  return m ? `來學華語 ${m[1]} · Lesson ${Number(m[2])}` : id;
+  const m = /^(laixue-\d+)-L(\d+)$/.exec(id);
+  return m ? lessonLabel(Number(m[2]), m[1]!) : id;
 }

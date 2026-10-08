@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { findClip, getSlow, markClip, playUrl, setSlow, useAudioState } from '../lib/audio.js';
+import { findClip, getSlow, playUrl, setSlow, useAudioState } from '../lib/audio.js';
+import { reportClip } from '../lib/report-actions.js';
+import { REPORT_LABEL } from '../lib/labels.js';
 import { useProfile } from './ProfileGate.js';
 import { useSetting } from '../lib/useSetting.js';
 import './SpeakerButton.css';
@@ -22,8 +24,9 @@ export function SpeakerButton(props: Props) {
   const [flagged, setFlagged] = useState(false);
 
   const clip = findClip(audio, props);
-  if (!loaded || !enabled || !clip) {
-    return flagged ? <span className="speaker-note">Thanks — that clip is hidden now.</span> : null;
+  // A clip just reported is hidden here at once (the toast offers Undo).
+  if (!loaded || !enabled || !clip || flagged) {
+    return null;
   }
 
   async function play() {
@@ -65,20 +68,23 @@ export function SpeakerButton(props: Props) {
       <button
         type="button"
         className="speaker-wrong"
+        aria-label={`${REPORT_LABEL} with this audio`}
+        title="Report this audio"
         onClick={(e) => {
           e.stopPropagation();
           setFlagged(true);
-          void markClip({
+          // Phase 21: the shared report, with Undo.
+          reportClip({
             kind: clip.kind,
             id: clip.id,
             hash: clip.hash,
             status: 'flagged',
             text: clip.text,
             profileId: profile.id,
-          });
+          }, () => setFlagged(false));
         }}
       >
-        Sounds wrong
+        {REPORT_LABEL}
       </button>
       {failed && <span className="speaker-note"> Not available offline yet</span>}
     </span>

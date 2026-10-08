@@ -24,6 +24,16 @@ export interface SourceReport extends ClozeReport {
 
 export const SOURCE_REPORT_PREFIX = 'clozeReport:';
 
+/**
+ * Phase 21 Part F: the ONE sentence-exclusion check every sentence source applies (cloze, lesson
+ * grammar, listening dictation, reader): a sentence the learner reported (or deleted) is never
+ * offered again, whatever screen it would appear on. `excluded` = the reported texts.
+ */
+export function isUsableSentence(zh: string, excluded: ReadonlySet<string> | undefined): boolean {
+  if (!excluded || excluded.size === 0) return true;
+  return !excluded.has(zh) && !excluded.has(zh.trim());
+}
+
 /** Only `active` items built by Phase 17 (`version: 2`) are shown. The older
  * one-span-patched items are never shown: the migration rebuilds or blocks them. */
 export const isShowableErrorItem = (

@@ -20,8 +20,8 @@ function card(id: string, overrides: Partial<SkillCard> = {}): SkillCard {
   return {
     item: { kind: 'word', id },
     skill: 'recognition',
-    card: emptyCard(now),
-    state: 'introduced',
+    card: { ...emptyCard(now), reps: 1 },
+    state: 'learning',
     lapses: 0,
     leech: false,
     leechTreatmentsTried: [],
@@ -67,9 +67,9 @@ describe('DexieLearnerRepo', () => {
   it('dueCards returns only cards due at/before `now`, up to the limit', async () => {
     const now = new Date('2026-01-10');
     await repo.putCards([
-      card('due-1', { card: { ...emptyCard(now), due: new Date('2026-01-09') } }),
-      card('due-2', { card: { ...emptyCard(now), due: new Date('2026-01-10') } }),
-      card('not-due', { card: { ...emptyCard(now), due: new Date('2026-01-11') } }),
+      card('due-1', { card: { ...emptyCard(now), reps: 1, due: new Date('2026-01-09') } }),
+      card('due-2', { card: { ...emptyCard(now), reps: 1, due: new Date('2026-01-10') } }),
+      card('not-due', { card: { ...emptyCard(now), reps: 1, due: new Date('2026-01-11') } }),
     ]);
     const due = await repo.dueCards(now, 10);
     expect(due.map((c) => c.item.id).sort()).toEqual(['due-1', 'due-2']);
@@ -78,37 +78,38 @@ describe('DexieLearnerRepo', () => {
   it('dueCards respects the limit', async () => {
     const now = new Date('2026-01-10');
     await repo.putCards([
-      card('a', { card: { ...emptyCard(now), due: new Date('2026-01-01') } }),
-      card('b', { card: { ...emptyCard(now), due: new Date('2026-01-02') } }),
+      card('a', { card: { ...emptyCard(now), reps: 1, due: new Date('2026-01-01') } }),
+      card('b', { card: { ...emptyCard(now), reps: 1, due: new Date('2026-01-02') } }),
     ]);
     expect(await repo.dueCards(now, 1)).toHaveLength(1);
   });
 
-  it('knownSet returns ids at or above the minimum state', async () => {
-    await repo.putCards([
-      card('unseen-1', { state: 'unseen' }),
-      card('intro-1', { state: 'introduced' }),
-      card('review-1', { state: 'review' }),
-      card('mature-1', { state: 'mature' }),
-    ]);
-    const known = await repo.knownSet('review');
-    expect([...known].sort()).toEqual(['mature-1', 'review-1']);
+  it('an unseen row (placement "don\'t know") is never due (Phase 21)', async () => {
+    const past = new Date('2020-01-01');
+    await repo.putCards([card('u', { state: 'unseen', card: { ...emptyCard(past), reps: 1, due: past } })]);
+    expect(await repo.dueCards(new Date('2026-06-01'), 50)).toEqual([]);
   });
 
-  it('knownSet("unseen") returns every stored item', async () => {
+  it('a New (introduced, never answered) card is never due; newCards returns it (Phase 21)', async () => {
+    const past = new Date('2020-01-01');
+    await repo.putCards([card('n', { state: 'introduced', card: { ...emptyCard(past), due: past } })]);
+    expect(await repo.dueCards(new Date('2026-06-01'), 50)).toEqual([]);
+    expect((await repo.newCards()).map((c) => c.item.id)).toEqual(['n']);
+  });
+
+  it('allCards returns every stored card', async () => {
     await repo.putCards([card('a', { state: 'unseen' }), card('b', { state: 'mature' })]);
-    expect((await repo.knownSet('unseen')).size).toBe(2);
+    expect((await repo.allCards()).length).toBe(2);
   });
 
-  it('keeps listening cards out of dueCards and knownSet, but returns them from dueListeningCards', async () => {
+  it('keeps listening cards out of dueCards, but returns them from dueListeningCards', async () => {
     const past = new Date('2020-01-01');
     await repo.putCards([
-      card('a', { skill: 'recognition', state: 'review', card: { ...emptyCard(past), due: past } }),
-      card('b', { skill: 'listening', state: 'review', card: { ...emptyCard(past), due: past } }),
+      card('a', { skill: 'recognition', state: 'review', card: { ...emptyCard(past), reps: 1, due: past } }),
+      card('b', { skill: 'listening', state: 'review', card: { ...emptyCard(past), reps: 1, due: past } }),
     ]);
     const now = new Date('2026-06-01');
     expect((await repo.dueCards(now, 50)).map((c) => c.item.id)).toEqual(['a']);
-    expect((await repo.knownSet('introduced')).has('b')).toBe(false);
     expect((await repo.dueListeningCards(now, 50)).map((c) => c.item.id)).toEqual(['b']);
   });
 });

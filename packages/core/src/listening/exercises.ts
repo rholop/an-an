@@ -4,9 +4,11 @@ import type { Lexicon } from '../lexicon.js';
 import type { SentenceBankEntry } from '../cloze/sentence.js';
 import { levelIndex, type Level } from '../levels.config.js';
 import type { Word } from '../types.js';
-import { orderSession, type OrderedSession, type SessionCard } from '../session/orderSession.js';
+import { orderSession, seededRng, type OrderedSession, type SessionCard } from '../session/orderSession.js';
+import { unlocksListening } from '../progress/terms.js';
 import { LISTENING_CONFIG, type ExerciseType, type ListeningConfig } from './config.js';
 import type { ClipLookup } from './clips.js';
+import { toneDigit } from '../journal/normalize.js';
 import { toneCheckEligible, toneless, tonePattern, wordTones } from './tones.js';
 
 export interface HearPick {
@@ -122,7 +124,7 @@ export function buildToneCheck(
     const t = [...tones];
     const i = Math.floor(rng() * t.length);
     t[i] = [1, 2, 3, 4][Math.floor(rng() * 4)]!;
-    patterns.add(t.map((x) => (x === 5 ? '0' : String(x))).join(' + '));
+    patterns.add(t.map(toneDigit).join(' + '));
   }
   if (patterns.size < 3) return undefined;
   return { type: 'tone_check', wordId: word.id, options: shuffle([...patterns].slice(0, 4), rng), answer };
@@ -194,7 +196,7 @@ export function dictationEligible(s: SentenceBankEntry, config: ListeningConfig 
 // ---- creating listening cards ----------------------------------------------
 
 /**
- * A listening card is created for an item when its RECOGNITION card has reached `review`
+ * A listening card is created for an item when its RECOGNITION card is Learned (Phase 21 shared term)
  * and it has a usable (verified/auto_ok) word clip. Pure: the caller persists the result.
  */
 export function listeningCardsToCreate(
@@ -207,7 +209,7 @@ export function listeningCardsToCreate(
       (c) =>
         c.skill === 'recognition' &&
         c.item.kind === 'word' &&
-        (c.state === 'review' || c.state === 'mature') &&
+        unlocksListening(c) &&
         !have.has(c.item.id) &&
         hasClip('word', c.item.id),
     )
@@ -261,7 +263,8 @@ export function unlockedTypes(stability: number, config: ListeningConfig = LISTE
 }
 
 export function planListenSession(input: ListenPlanInput): OrderedSession<PlanItem> {
-  const rng = input.rng ?? Math.random;
+  // Phase 21: seeded when the session has a seed (a logged seed rebuilds the session exactly).
+  const rng = input.rng ?? (input.seed ? seededRng(`${input.seed}:plan`) : Math.random);
   const config = input.config ?? LISTENING_CONFIG;
   const size = input.size ?? config.sessionSize;
   const all = input.lexicon.allWords();

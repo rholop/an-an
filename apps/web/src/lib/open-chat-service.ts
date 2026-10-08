@@ -20,21 +20,20 @@ import {
   CHAT_LEAK_REF,
   type Lexicon,
   type Level,
-  type MyClassPosition,
   type OpenChatConfig,
   type OpenChatProfile,
   type OpenChatReport,
   type OpenChatVocab,
   type OpenTurnRequest,
-  type SkillCard,
   type StudyFocus,
   type Textbook,
   type TurnResponse,
   type TutorLLM,
+  glossFor,
 } from '@anan/core';
-import { allTouchedCards } from '../db/queries.js';
 import type { AnanDB, ConversationRow, TurnRow } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
+import { isCleanChinese, UnreliableReplyError } from './chat-service.js';
 
 export const OPEN_CHAT_SCENARIO_ID = 'open-chat';
 const TOPIC_CACHE_KEY = 'openChatTopicWords';
@@ -43,7 +42,6 @@ const TOPIC_CACHE_MAX = 60;
 /** What the page supplies fresh on every turn (so a changed level or class lesson applies at once). */
 export interface OpenChatEnvironment {
   books(): Textbook[];
-  myClass(): MyClassPosition | undefined;
   studyFocus?(): Promise<StudyFocus | undefined>;
 }
 
@@ -171,17 +169,8 @@ export class OpenChatService {
   // ---- the learner's state as a profile ---------------------------------------------
 
   async buildProfile(level: Level, now: Date): Promise<OpenChatProfile> {
-    const cards = await allTouchedCards(this.db);
-    const known = new Set<string>();
-    const due = new Set<string>();
-    const learning = new Set<string>();
-    for (const c of cards as SkillCard[]) {
-      if (c.item.kind !== 'word' || c.skill !== 'recognition') continue;
-      if (c.state === 'review' || c.state === 'mature') known.add(c.item.id);
-      else if (c.state === 'learning' || c.state === 'introduced') learning.add(c.item.id);
-      if (c.state !== 'unseen' && c.card.due <= now) due.add(c.item.id);
-    }
-    const my = this.env.myClass();
+    // Phase 21: the shared known / due / learning sets (the same as scenario chat and the reader).
+    const { knownIds: known, dueIds: due, learningIds: learning } = await this.learnerService.wordSets(now);
     const studyFocus = await this.env.studyFocus?.().catch(() => undefined);
     return {
       lexicon: this.lexicon,
@@ -191,7 +180,6 @@ export class OpenChatService {
       learningIds: learning,
       books: this.env.books(),
       ...(studyFocus ? { studyFocus } : {}),
-      ...(my ? { myClass: my } : {}),
     };
   }
 
@@ -272,7 +260,16 @@ export class OpenChatService {
       feedback = openChatFeedback(report, this.config.limits);
     }
 
-    const best = pickBestOpenChatAttempt(attempts);
+    let best = pickBestOpenChatAttempt(attempts);
+    // Phase 21 Part J: a reply that still fails the Taiwan / traditional check is never shown: one
+    // more try on the other provider, then "Couldn't get a reliable reply, try again".
+    if (!best.report.taiwanness.isClean) {
+      const response = await generate({ ...base, feedback: openChatFeedback(best.report, this.config.limits), alternateProvider: true });
+      const report = validateOpenChatTurn(response, ctx, this.config.limits);
+      attempts.push({ response, report });
+      if (!report.taiwanness.isClean) throw new UnreliableReplyError();
+      best = { response, report };
+    }
     const { response, report } = best;
 
     // Gloss tier C always (the topic needed it), and tier B too when the reply broke a limit.
@@ -308,9 +305,14 @@ export class OpenChatService {
       role: 'npc',
       zh: response.reply_zh,
       en: response.reply_en,
-      tokens: response.tokens.map(({ text, lemma }) => ({ text, ...(lemma ? { lemma } : {}) })),
-      suggestedReplies: response.suggested_replies,
-      recastZh: response.recast_zh,
+      // Phase 21: the sense the model picked is kept (like scenario chat) when it is a real sense of the word.
+      tokens: response.tokens.map(({ text, lemma, sense_id }) => {
+        const sense = sense_id ? this.lexicon.byId(sense_id) : undefined;
+        const ok = !!sense && [sense.headword, ...sense.variants].some((h) => h === (lemma ?? text) || h === text);
+        return { text, ...(lemma ? { lemma } : {}), ...(ok ? { sense_id } : {}) };
+      }),
+      suggestedReplies: response.suggested_replies.filter((r) => isCleanChinese(r.zh)),
+      ...(isCleanChinese(response.recast_zh) ? { recastZh: response.recast_zh } : {}),
       validatorReport: {
         coverage: report.shareA,
         maxLevel: null,
@@ -369,11 +371,15 @@ export class OpenChatService {
         .map((e) => e.item.id),
     );
 
-    const metIds = [...new Set(tiers.flatMap((t) => [...t.bIds, ...t.cIds, ...t.upcomingIds]))];
+    // Phase 21: "New words you met" lists only words not already Learned.
+    const { knownIds } = await this.learnerService.wordSets(upper);
+    const metIds = [...new Set(tiers.flatMap((t) => [...t.bIds, ...t.cIds, ...t.upcomingIds]))].filter(
+      (id) => !knownIds.has(id),
+    );
     const wordsMet = metIds.flatMap((wordId) => {
       const w = this.lexicon.byId(wordId);
       return w
-        ? [{ wordId, headword: w.headword, glossEn: w.glossEn, lookedUp: lookedUp.has(wordId) }]
+        ? [{ wordId, headword: w.headword, glossEn: glossFor(w, { textbook: false }), lookedUp: lookedUp.has(wordId) }]
         : [];
     });
     return {

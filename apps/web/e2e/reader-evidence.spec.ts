@@ -15,7 +15,7 @@ test.describe('Reader lookup events feed the learner model', () => {
   test('clicking a token records chat_lookup_gloss evidence and creates/updates its card', async ({
     page,
   }) => {
-    await page.goto('/');
+    await page.goto('/?page=reader');
     await expect(page.getByText("An'an reader")).toBeVisible();
     await page.waitForFunction(() => Boolean(window.__anan));
     await expect(page.getByText(/Lexicon v2 · \d+ words/)).toBeVisible({ timeout: 15000 });
@@ -40,7 +40,7 @@ test.describe('Reader lookup events feed the learner model', () => {
   });
 
   test('hovering a token while the reading is visible records nothing', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?page=reader');
     await page.waitForFunction(() => Boolean(window.__anan));
     await expect(page.getByText(/Lexicon v2 · \d+ words/)).toBeVisible({ timeout: 15000 });
 
@@ -58,7 +58,7 @@ test.describe('Reader lookup events feed the learner model', () => {
   test('hovering a token whose reading is hidden records chat_hover_reading evidence', async ({
     page,
   }) => {
-    await page.goto('/');
+    await page.goto('/?page=reader');
     await page.waitForFunction(() => Boolean(window.__anan));
     await expect(page.getByText(/Lexicon v2 · \d+ words/)).toBeVisible({ timeout: 15000 });
 

@@ -1,3 +1,4 @@
+import { onSessionChange } from '../db/instance.js';
 /**
  * Phase 19: the last few cards answered, across screens and the parts of "Study this lesson", so the
  * next session's order keeps its sibling gap across the boundary (orderSession's `recent`).
@@ -7,6 +8,9 @@ const MAX = 12;
 const TTL_MS = 30 * 60 * 1000;
 
 let shown: Array<{ keys: string[]; at: number }> = [];
+
+// Phase 21: another profile's cards never count as "just shown".
+onSessionChange(() => clearRecentShown());
 
 export function noteShown(keys: readonly string[], now: Date = new Date()): void {
   shown.push({ keys: [...keys], at: now.getTime() });

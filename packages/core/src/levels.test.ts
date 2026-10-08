@@ -17,7 +17,8 @@ import {
   isLevel,
   levelIndex,
   levelLabel,
-  levelName,
+  levelShort,
+  tocflLabel,
   nextLevel,
 } from './levels.config.js';
 import type { Level, Word } from './types.js';
@@ -46,7 +47,7 @@ const word = (
 const card = (id: string, over: Partial<SkillCard> = {}): SkillCard => ({
   item: { kind: 'word', id },
   skill: 'recognition',
-  card: emptyCard(new Date('2026-01-01')),
+  card: { ...emptyCard(new Date('2026-01-01')), reps: 2 },
   state: 'review',
   lapses: 0,
   leech: false,
@@ -73,8 +74,8 @@ describe('levels.config', () => {
   it('labels and helpers', () => {
     expect(levelLabel('L2')).toBe('L2 基礎級 · A2');
     expect(levelLabel('N1')).toBe('N1 準備級一級 · pre-A1');
-    expect(levelName('L3')).toBe('Level 3 (Intermediate)');
-    expect(levelName('N2')).toBe('Novice 2');
+    expect(levelShort('L3')).toBe('L3');
+    expect(tocflLabel('N2')).toBe('TOCFL N2');
     expect(levelIndex('L1')).toBe(2);
     expect(nextLevel('L4')).toBe('L5');
     expect(nextLevel('L5')).toBeNull();

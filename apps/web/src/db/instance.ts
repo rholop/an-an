@@ -40,10 +40,10 @@ export function createSession(
   const learnerService = new LearnerService(
     learnerRepo,
     DEFAULT_LEARNER_CONFIG,
-    (evidence, prior) => {
-      markStudyDirty();
-      return gameService.onEvidence(evidence, prior);
-    },
+    (evidence, prior) => gameService.onEvidence(evidence, prior),
+    // Phase 21: every write (single or bulk) marks the study focus dirty.
+    () => markStudyDirty(),
+    (paid, at) => gameService.revoke(paid, at),
   );
   return { profileId, db, learnerRepo, gameService, learnerService };
 }

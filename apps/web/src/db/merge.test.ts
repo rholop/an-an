@@ -46,10 +46,11 @@ describe('mergeBackups', () => {
     const ab = mergeBackups(await wire(a), await wire(b));
     const ba = mergeBackups(await wire(b), await wire(a));
     for (const m of [ab, ba]) {
-      const card = m.items.find((c) => c.item.id === 'w-x')!;
+      const card = m.items.find((c) => c.item.id === 'w-x' && c.skill === 'recognition')!;
       expect(card.updatedAt.getTime()).toBe(at(60).getTime());
-      expect(card.card.reps).toBe((await wire(a)).items[0]!.card.reps);
-      expect(m.evidence).toHaveLength(4); // nothing deleted: all four reviews are in the log
+      expect(card.card.reps).toBe((await wire(a)).items.find((c) => c.skill === 'recognition')!.card.reps);
+      // nothing deleted: all four reviews are in the log (plus Phase 21's production unlock)
+      expect(m.evidence.filter((e) => e.kind.startsWith('review_'))).toHaveLength(4);
     }
   });
 

@@ -1,0 +1,11 @@
+.lm { font-size: 0.85rem; display: grid; gap: 0.2rem; }
+.lm--compact { font-size: 0.78rem; }
+.lm-bar { position: relative; height: 6px; border-radius: 3px; background: #7f7f7f40; overflow: hidden; }
+.lm-bar > span { position: absolute; left: 0; top: 0; bottom: 0; display: block; }
+.lm-bar-learned { background: color-mix(in srgb, var(--c-good) 45%, transparent); }
+.lm-bar-mastered { background: var(--c-good); }
+.lm-line { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; }
+.lm-info { background: transparent; border: 0; color: inherit; cursor: pointer; opacity: 0.7; min-width: 28px; min-height: 28px; padding: 0; }
+.lm-info-text { margin: 0; opacity: 0.8; font-size: 0.8rem; }
+.lm-leech { color: var(--c-bad); }
+.lm-imported { opacity: 0.75; }

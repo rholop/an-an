@@ -18,6 +18,9 @@ import {
   restoreSource,
 } from '../lib/cloze-reports.js';
 import { allowedLatinNames } from '../lib/journal-cloze-check.js';
+import { withdrawGlossReport } from '../lib/gloss-reports.js';
+import { useAudioState } from '../lib/audio.js';
+import type { GlossReportRow } from '../db/schema.js';
 import { getProtectedTerms } from '../lib/journal-protected.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -58,7 +61,10 @@ export function ReportedPage() {
         key: `item:${it.id}`,
         zh: it.corrected,
         where: `journal entry${date ? ` of ${fmt(date)}` : ''}`,
-        why: it.status === 'reported' ? reasonLabel(it.report?.reason ?? 'other') : `Blocked: ${it.blockedReason ?? 'failed the check'}`,
+        why:
+          it.status === 'reported'
+            ? reasonLabel(it.report?.reason ?? 'other')
+            : `Held back by a check: ${it.blockedReason ?? 'failed the check'}`,
         note: it.report?.note,
         item: it,
       });
@@ -74,7 +80,24 @@ export function ReportedPage() {
       });
     }
     setRows(out);
+    // Phase 21: one Reported page for every "⚑ Something's wrong".
+    setDefinitions((await db.glossReports.toArray()).filter((r) => !r.withdrawnAt));
+    const reviews = await db.journalReviews.toArray();
+    setCorrections(
+      reviews.flatMap((r) =>
+        r.flagged.flatMap((i) => {
+          const issue = r.issues[i];
+          return issue ? [{ key: `${r.entryId}:${i}`, correction: issue.correction, explanation: issue.explanationEn, date: entryDate.get(r.entryId) }] : [];
+        }),
+      ),
+    );
   }, []);
+  const [definitions, setDefinitions] = useState<GlossReportRow[]>([]);
+  const [corrections, setCorrections] = useState<
+    Array<{ key: string; correction: string; explanation: string; date?: Date }>
+  >([]);
+  const audio = useAudioState();
+  const flaggedAudio = Object.entries(audio.marks).filter(([, m]) => m.status === 'flagged');
 
   useEffect(() => {
     void load();
@@ -118,9 +141,10 @@ export function ReportedPage() {
   if (!rows) return <p>Loading…</p>;
   return (
     <div className="reported-page">
-      <h1>Reported clozes</h1>
+      <h1>Reported</h1>
+      <h2>Sentences</h2>
       {rows.length === 0 ? (
-        <p>Nothing reported or blocked.</p>
+        <p>No sentences reported or held back.</p>
       ) : (
         <>
           <button
@@ -206,6 +230,63 @@ export function ReportedPage() {
             ))}
           </ul>
         </>
+      )}
+      <h2>Definitions</h2>
+      {definitions.length === 0 ? (
+        <p>No definitions reported.</p>
+      ) : (
+        <ul className="reported-list" data-testid="reported-definitions">
+          {definitions.map((d) => (
+            <li key={d.id}>
+              <p lang="zh-Hant-TW" className="reported-sentence">
+                {d.headword} ({d.pinyin}): {d.shownGloss}
+              </p>
+              <p>
+                <small lang="zh-Hant-TW">{d.contextSentence}</small>
+              </p>
+              <button onClick={() => void withdrawGlossReport(db, d.id!).then(load)}>It was fine</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <h2>Audio</h2>
+      {flaggedAudio.length === 0 ? (
+        <p>No clips reported.</p>
+      ) : (
+        <ul className="reported-list" data-testid="reported-audio">
+          {flaggedAudio.map(([key, m]) => (
+            <li key={key}>
+              <p lang="zh-Hant-TW" className="reported-sentence">
+                {m.text}
+              </p>
+              <p>
+                <small>
+                  {m.kind} clip — sounds wrong ({new Date(m.at).toLocaleDateString()})
+                </small>
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <h2>Corrections</h2>
+      {corrections.length === 0 ? (
+        <p>No journal corrections reported.</p>
+      ) : (
+        <ul className="reported-list" data-testid="reported-corrections">
+          {corrections.map((c) => (
+            <li key={c.key}>
+              <p lang="zh-Hant-TW" className="reported-sentence">
+                {c.correction}
+              </p>
+              <p>
+                <small>
+                  {c.date ? `journal entry of ${fmt(c.date)} — ` : ''}
+                  {c.explanation} (not practised)
+                </small>
+              </p>
+            </li>
+          ))}
+        </ul>
       )}
       {import.meta.env.DEV && (
         <p>

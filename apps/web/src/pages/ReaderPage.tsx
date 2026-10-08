@@ -2,27 +2,23 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TouchEvent } from 'react';
 import {
   checkTaiwanness,
-  classScope,
   lessonIndex,
   coverage,
   isReaderFocus,
   levelIndex,
   LEVEL_IDS,
   READER_FOCUSES,
+  readingMatchesDictionary,
   type Level,
   type Lexicon,
   type ReaderFocus,
 } from '@anan/core';
-import {
-  AnnotatedText,
-  type AnnotatedToken,
-  type AnnotationMode,
-  type AnnotationScript,
-} from '../components/AnnotatedText.js';
+import { AnnotatedText, type AnnotatedToken } from '../components/AnnotatedText.js';
+import { ReadingControls } from '../components/ReadingControls.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { db, learnerService } from '../db/instance.js';
 import { getSiteCode } from '../lib/api.js';
-import { defineUnlisted, reportGloss, type AiDefinition } from '../lib/gloss-reports.js';
+import { defineUnlisted, type AiDefinition } from '../lib/gloss-reports.js';
 import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useCurrentLevel } from '../lib/current-level.js';
@@ -32,14 +28,15 @@ import { useLexicon, type LexiconLoadState } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
 import { useMyClass } from '../lib/my-class.js';
-import { getStudyBooks, getStudyFocusNow, useStudyFocus } from '../lib/study.js';
+import { currentClassScope, getStudyBooks, getStudyFocusNow, useStudyFocus } from '../lib/study.js';
 import { useTextbookSentences } from '../lib/textbook-data.js';
 import { useSetting } from '../lib/useSetting.js';
+import { useReadingSettings } from '../lib/reading.js';
+import { onStudyDirty } from '../lib/study-dirty.js';
+import { coverageLine } from '../lib/labels.js';
 
 const SAMPLE = '我們搭捷運去便利商店，路上還遇到陳雅婷。他還沒還我錢，這件事情我做不了。';
 
-const MODES: AnnotationMode[] = ['always', 'hover', 'off', 'tone-only'];
-const SCRIPTS: AnnotationScript[] = ['pinyin', 'zhuyin', 'both'];
 
 const LEVEL_ORDER: readonly Level[] = LEVEL_IDS;
 
@@ -115,20 +112,29 @@ function ReaderView({
   const lexicon: Lexicon = lexiconState.lexicon;
   const { level: currentLevel } = useCurrentLevel();
   // Phase 8: display settings are per profile (stored in the profile's database).
-  const [mode, setMode] = useSetting<AnnotationMode>('readerMode', 'always');
-  const [script, setScript] = useSetting<AnnotationScript>('readerScript', 'pinyin');
+  // Phase 21 Part I: the one reading setting (also in Settings), respected in every tab.
+  const { mode, script } = useReadingSettings();
   const [storedFocus, setFocus] = useSetting<ReaderFocus>('readerFocus', 'lesson');
   const { focus: studyFocus } = useStudyFocus();
-  // Phase 14: with the study order on, "Lesson" is the default and always available.
-  const studyOn = Boolean(studyFocus?.enabled && studyFocus.activeStep);
+  // "Lesson" reads the current lesson's sentences: the focus's lesson, or the class lesson when study
+  // order is off. Without either, a stored 'lesson' falls back to Mixed.
   const myClass = useMyClass();
-  // "Lesson" only exists while My class is on; otherwise a stored 'lesson' falls back to Mixed.
+  const fallbackLesson =
+    studyFocus?.activeLesson ??
+    studyFocus?.classLesson ??
+    (myClass.enabled
+      ? { bookId: myClass.textbookId, n: myClass.currentLesson, lessonId: `${myClass.textbookId}#${myClass.currentLesson}` }
+      : undefined);
+  const lessonOn = Boolean(fallbackLesson);
   const focus: ReaderFocus =
-    isReaderFocus(storedFocus) && (storedFocus !== 'lesson' || myClass.enabled || studyOn) ? storedFocus : 'mixed';
+    isReaderFocus(storedFocus) && (storedFocus !== 'lesson' || lessonOn) ? storedFocus : 'mixed';
   const textbookSentences = useTextbookSentences(true);
 
   const [lookupLog, setLookupLog] = useState<string[]>([]);
+  // Phase 21: "comprehensible" = known, due or learning (the shared word sets), refreshed after
+  // every lookup and every change elsewhere.
   const [knownSet, setKnownSet] = useState<Set<string>>(new Set());
+  const [setsTick, setSetsTick] = useState(0);
   const [nav, setNavState] = useState<Nav>(() => ({ entries: [SAMPLE_ENTRY()], pos: 0 }));
   const [pasted, setPasted] = useState('');
   const [busy, setBusy] = useState(false);
@@ -146,8 +152,11 @@ function ReaderView({
   }, []);
 
   useEffect(() => {
-    learnerService.knownSet('review').then(setKnownSet);
-  }, []);
+    void learnerService
+      .wordSets(new Date())
+      .then((s) => setKnownSet(new Set([...s.knownIds, ...s.dueIds, ...s.learningIds])));
+  }, [setsTick]);
+  useEffect(() => onStudyDirty(() => setSetsTick((t) => t + 1)), []);
 
   const bankLevels = useMemo(
     () => LEVEL_IDS.filter((l) => levelIndex(l) <= levelIndex(currentLevel)),
@@ -164,19 +173,20 @@ function ReaderView({
         lexicon,
         llm,
         staticBank: bank.status === 'ready' ? bank.sentences : [],
-        classScope: classScope(myClass),
+        classScope: currentClassScope(),
         studyFocus: getStudyFocusNow,
         lessonIndex: lessonIndex(getStudyBooks()),
         ...(textbookSentences.status === 'ready' ? { textbookSentences: textbookSentences.sentences } : {}),
+        // Phase 21: the "Lesson" fallback is the study focus's lesson (which follows the class).
         lesson:
-          myClass.enabled && textbookSentences.status === 'ready'
-            ? { bookId: myClass.textbookId, n: myClass.currentLesson, sentences: textbookSentences.sentences }
+          fallbackLesson && textbookSentences.status === 'ready'
+            ? { bookId: fallbackLesson.bookId, n: fallbackLesson.n, sentences: textbookSentences.sentences }
             : undefined,
         scenarios: scenarios.status === 'ready' ? scenarios.scenarios : [],
         // Live generation needs the household code (phase 8); dev has no gate.
         canGenerate: () => useFake || import.meta.env.DEV || Boolean(getSiteCode()),
       }),
-    [lexicon, llm, bank, scenarios, useFake, myClass, textbookSentences],
+    [lexicon, llm, bank, scenarios, useFake, fallbackLesson?.lessonId, myClass, textbookSentences],
   );
 
   const current = nav.entries[nav.pos]!;
@@ -187,15 +197,15 @@ function ReaderView({
     [text, lexicon, current.sourceLabel],
   );
   const taiwanness = useMemo(() => checkTaiwanness(text), [text]);
-  const cov = useMemo(
-    () =>
-      coverage(
-        annotated.map((a) => a.token),
-        lexicon,
-        knownSet,
-      ),
-    [annotated, lexicon, knownSet],
-  );
+  const cov = useMemo(() => {
+    // Names count as understood (they are glossed as names, never taught).
+    const names = annotated.flatMap((a) => (a.wordId && a.word?.tags.includes('name') ? [a.wordId] : []));
+    return coverage(
+      annotated.map((a) => a.token),
+      lexicon,
+      names.length ? new Set([...knownSet, ...names]) : knownSet,
+    );
+  }, [annotated, lexicon, knownSet]);
 
   const wordIdsOf = useCallback(
     (entryText: string): string[] =>
@@ -231,15 +241,18 @@ function ReaderView({
   const sessionIds = (): Set<string> =>
     new Set(navRef.current.entries.flatMap((e) => (e.id ? [e.id] : [])));
 
+  // Phase 21: a prefetched sentence is only used while the level, focus, class and study lesson are unchanged.
+  const prefetchKey = `${currentLevel}|${focus}|${myClass.enabled ? `${myClass.textbookId}:${myClass.currentLesson}` : '-'}|${studyFocus?.activeStep ? JSON.stringify(studyFocus.activeStep) : '-'}`;
+
   /** Quietly prepare the next sentence so the next press is instant. */
   const startPrefetch = useCallback(
     (ids: Set<string>) => {
       prefetch.current = {
-        key: `${currentLevel}|${focus}`,
+        key: prefetchKey,
         promise: reader.next({ focus, level: currentLevel, sessionIds: ids }).catch(() => null),
       };
     },
-    [reader, focus, currentLevel],
+    [reader, focus, currentLevel, prefetchKey],
   );
 
   async function pressNew() {
@@ -258,7 +271,7 @@ function ReaderView({
       }
 
       const ids = sessionIds();
-      const key = `${currentLevel}|${focus}`;
+      const key = prefetchKey;
       const pre = prefetch.current;
       prefetch.current = null;
       let result = pre && pre.key === key ? await pre.promise : null;
@@ -374,17 +387,6 @@ function ReaderView({
     else goBack();
   };
 
-  async function reportFromPopover(at: AnnotatedToken) {
-    if (!at.word) return;
-    await reportGloss(db, {
-      word: at.word,
-      sense: at.sense,
-      shownGloss: at.gloss,
-      contextSentence: text,
-    });
-    setLookupLog((log) => [`reported definition of ${at.token.text}`, ...log].slice(0, 20));
-  }
-
   async function handleLookup(at: AnnotatedToken, kind: 'gloss' | 'reading') {
     const line = `${new Date().toISOString()} lookup ${kind} ${at.token.text}`;
     console.log(line);
@@ -397,6 +399,7 @@ function ReaderView({
       kind === 'gloss' ? 'chat_lookup_gloss' : 'chat_hover_reading',
       current.id,
     );
+    setSetsTick((t) => t + 1);
   }
 
   return (
@@ -408,7 +411,7 @@ function ReaderView({
       </p>
 
       <div className="reader-focus" role="radiogroup" aria-label="Sentence focus">
-        {READER_FOCUSES.filter((f) => f !== "lesson" || myClass.enabled || studyOn).map((f) => (
+        {READER_FOCUSES.filter((f) => f !== 'lesson' || lessonOn).map((f) => (
           <button
             key={f}
             type="button"
@@ -422,32 +425,11 @@ function ReaderView({
         ))}
       </div>
 
-      <div className="reader-controls">
-        <label>
-          Mode:{' '}
-          <select value={mode} onChange={(e) => setMode(e.target.value as AnnotationMode)}>
-            {MODES.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Script:{' '}
-          <select value={script} onChange={(e) => setScript(e.target.value as AnnotationScript)}>
-            {SCRIPTS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <ReadingControls note="The same reading setting as Settings: it applies in every tab." />
 
       <AnnotatedText
         tokens={annotated}
-        onReportGloss={(at) => void reportFromPopover(at)}
+        lookupSource="reader"
         mode={mode}
         script={script}
         onLookup={handleLookup}
@@ -527,6 +509,7 @@ function ReaderView({
       <UnlistedWords
         spans={annotated.filter((a) => a.token.kind === 'unknown').map((a) => a.token.text)}
         context={text}
+        lexicon={lexicon}
       />
 
       {!taiwanness.isClean && (
@@ -557,9 +540,9 @@ function ReaderView({
           ))}
           {cov.byLevel.unleveled && <li>unleveled: {cov.byLevel.unleveled}</li>}
         </ul>
-        <p className="coverage-known-note">
-          {cov.knownCount} known / {cov.unknownCount} unknown word tokens (known = recognition card
-          in review or mature)
+        <p className="coverage-known-note" data-testid="reader-coverage">
+          {coverageLine(cov.knownCount / Math.max(1, cov.knownCount + cov.unknownCount))} (known, due or
+          being learned; names count as known)
         </p>
       </div>
 
@@ -582,7 +565,7 @@ function ReaderView({
 
 /** Phase 7 §B5: words the lexicon doesn't know get an on-demand AI definition —
  * clearly labelled, cached, and queued for human review (never for listed words). */
-function UnlistedWords({ spans, context }: { spans: string[]; context: string }) {
+function UnlistedWords({ spans, context, lexicon }: { spans: string[]; context: string; lexicon: Lexicon }) {
   const unique = [...new Set(spans)];
   const [useFake, setUseFake] = useState(false);
   const llm = useMemo(() => (useFake ? new FakeTutorLLM() : new FetchTutorLLM()), [useFake]);
@@ -615,6 +598,13 @@ function UnlistedWords({ spans, context }: { spans: string[]; context: string })
                 <span>
                   {r.pinyin} — {r.glossEn}{' '}
                   <em className="warning-note">AI-generated, queued for review</em>
+                  {/* Phase 21: readings come from the MOE dictionary; an AI reading is checked against it. */}
+                  {readingMatchesDictionary(w, r.pinyin, lexicon) === false && (
+                    <em className="warning" data-testid="ai-reading-unconfirmed">
+                      {' '}
+                      The MOE dictionary reads these characters differently; check the reading.
+                    </em>
+                  )}
                 </span>
               )}
             </li>

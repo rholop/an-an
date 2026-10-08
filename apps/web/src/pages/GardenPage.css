@@ -123,3 +123,4 @@
 /* Phase 14: the active study step */
 .garden-plot--active { outline: 2px solid var(--accent, #3a7); }
 .garden-tile--active { box-shadow: 0 0 0 2px var(--accent, #3a7) inset; }
+.garden-leech-mark { font-size: 0.7rem; color: var(--c-bad); margin-left: 0.15rem; }

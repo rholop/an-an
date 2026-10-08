@@ -1,7 +1,5 @@
-import { isActiveCard, type Evidence, type ItemRef, type ItemState, type LearnerRepo, type Skill, type SkillCard } from '@anan/core';
+import { isActiveCard, isDueCard, isNewCard, type Evidence, type ItemRef, type LearnerRepo, type Skill, type SkillCard } from '@anan/core';
 import { type AnanDB, itemPk } from './schema.js';
-
-const ITEM_STATE_ORDER: ItemState[] = ['unseen', 'introduced', 'learning', 'review', 'mature'];
 
 function stripPk(row: SkillCard & { pk: string }): SkillCard {
   const { pk: _pk, ...rest } = row;
@@ -26,20 +24,12 @@ export class DexieLearnerRepo implements LearnerRepo {
     await this.db.evidence.bulkAdd(events);
   }
 
-  /** Phase 16: like appendEvidence, but returns the stored row ids (for undo). */
-  async appendEvidenceKeys(events: Evidence[]): Promise<number[]> {
+  /** Phase 21: like appendEvidence, but returns each row's sync uid (an undo refers to it). */
+  async appendEvidenceUids(events: Evidence[]): Promise<string[]> {
     if (events.length === 0) return [];
-    return (await this.db.evidence.bulkAdd(events, { allKeys: true })) as number[];
-  }
-
-  /** Phase 16: removes one evidence row and puts a card back exactly as it was
-   * (or deletes it when it didn't exist before). */
-  async undoEvidence(evidenceId: number, item: ItemRef, skill: Skill, prior: SkillCard | undefined): Promise<void> {
-    await this.db.transaction('rw', this.db.items, this.db.evidence, async () => {
-      await this.db.evidence.delete(evidenceId);
-      if (prior) await this.db.items.put({ ...prior, pk: itemPk(item, skill) });
-      else await this.db.items.delete(itemPk(item, skill));
-    });
+    const ids = (await this.db.evidence.bulkAdd(events, { allKeys: true })) as number[];
+    const rows = await this.db.evidence.bulkGet(ids);
+    return rows.map((r) => r?.uid ?? '');
   }
 
   async dueCards(now: Date, limit: number): Promise<SkillCard[]> {
@@ -49,8 +39,20 @@ export class DexieLearnerRepo implements LearnerRepo {
     const rows = await this.db.items
       .where('card.due')
       .belowOrEqual(now)
-      .filter((r) => r.skill !== 'listening' && isActiveCard(r))
-      .limit(limit)
+      // Phase 21: Due = answered at least once (core `isDueCard`): an `unseen` row (placement
+      // "don't know", an undone first answer) or a never-answered `introduced` card (that is New) is never due.
+      .filter((r) => r.skill !== 'listening' && isDueCard(r, now))
+      .limit(Number.isFinite(limit) ? limit : Number.MAX_SAFE_INTEGER)
+      .toArray();
+    return rows.map(stripPk);
+  }
+
+  /** Phase 21: New cards (introduced, never answered), any skill but listening, still in the queues. */
+  async newCards(): Promise<SkillCard[]> {
+    const rows = await this.db.items
+      .where('state')
+      .equals('introduced')
+      .filter((r) => r.skill !== 'listening' && isNewCard(r) && isActiveCard(r))
       .toArray();
     return rows.map(stripPk);
   }
@@ -59,7 +61,7 @@ export class DexieLearnerRepo implements LearnerRepo {
     const rows = await this.db.items
       .where('card.due')
       .belowOrEqual(now)
-      .filter((r) => r.skill === 'listening' && isActiveCard(r))
+      .filter((r) => r.skill === 'listening' && r.state !== 'unseen' && isActiveCard(r))
       .limit(limit)
       .toArray();
     return rows.map(stripPk);
@@ -76,13 +78,4 @@ export class DexieLearnerRepo implements LearnerRepo {
     return (await this.db.items.toArray()).map(stripPk);
   }
 
-  async knownSet(minState: ItemState): Promise<Set<string>> {
-    const minIdx = ITEM_STATE_ORDER.indexOf(minState);
-    const ids = new Set<string>();
-    await this.db.items.each((row) => {
-      if (row.skill === 'listening') return;
-      if (ITEM_STATE_ORDER.indexOf(row.state) >= minIdx || row.flags.markedKnown) ids.add(row.item.id);
-    });
-    return ids;
-  }
 }

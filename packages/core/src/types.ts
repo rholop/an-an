@@ -92,7 +92,19 @@ export interface Evidence {
     /** Phase 20: the learner said "nope" to a card (see `context.choice`). Never a lapse. */
     | 'review_nope'
     /** Phase 20: brought back into review (Removed words → Restore, or "Add to review"). */
-    | 'review_restore';
+    | 'review_restore'
+    /** Phase 21: passed "I already know this" (quick check): Learned and Mastered until a lapse. */
+    | 'known_check_passed'
+    /** Phase 21: the recognition card was Learned, so the word's production card is created (New). */
+    | 'production_unlocked'
+    /** Phase 21: the word has a verified clip and a Learned recognition card: its listening card is created. */
+    | 'listening_unlocked'
+    /** Phase 21: a word the learner needed mid-journal: introduce/Again its production card, at the front. */
+    | 'journal_priority'
+    /** Phase 21: an answer was undone. `context.refId` = the undone evidence row; `context.restore` = the card before it. */
+    | 'evidence_undone'
+    /** Phase 21: set the cloze ladder rung without a rating (lesson grammar step, error bank). */
+    | 'cloze_rung_set';
   at: Date;
   context?: {
     source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook';
@@ -105,6 +117,10 @@ export interface Evidence {
     noIntroduce?: boolean;
     /** Phase 20: where the learner was when they said "Not now" (when it may come back). */
     snoozedWhen?: { level?: Level; lessonId?: string };
+    /** Phase 21 evidence_undone: the card as it was before the undone answer (absent = it didn't exist). */
+    restore?: unknown;
+    /** Phase 21 cloze_rung_set: the rung to set. */
+    rung?: number;
   };
 }
 

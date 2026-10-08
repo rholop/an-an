@@ -1,4 +1,5 @@
 import type { Word } from '../types.js';
+import { toneDigit } from '../journal/normalize.js';
 
 /** Tones per syllable from the lexicon's MOE-derived numeric pinyin ("ka1 fei1" → [1,1]); 5 = neutral. */
 export function wordTones(w: Pick<Word, 'pinyinNumeric'>): number[] {
@@ -20,7 +21,7 @@ export function toneless(w: Pick<Word, 'pinyinNumeric'>): string[] {
 
 /** "3 + 4" — the answer format of the tone check (the dictionary tones shown in the app). */
 export function tonePattern(w: Pick<Word, 'pinyinNumeric'>): string {
-  return wordTones(w).map((t) => (t === 5 ? '0' : String(t))).join(' + ');
+  return wordTones(w).map(toneDigit).join(' + ');
 }
 
 /**

@@ -1,16 +1,17 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   dailyPrompt,
   findWordsUsed,
   courseLessonLevel,
   filterByLevel,
   LAIXUE_COURSE,
-  lessonBadge,
+  glossFor,
   pickPromptWords,
   studyGrammarId,
   studyTargetWordIds,
   renderBracketsInline,
   type JournalIssue,
+  type Lesson,
   type Level,
   type SkillCard,
   type Lexicon,
@@ -34,7 +35,11 @@ import { useStudyFocus } from '../lib/study.js';
 import { SHEET_QUERY, useMediaQuery } from '../lib/useMediaQuery.js';
 import { useSetting } from '../lib/useSetting.js';
 import { ProtectedTerms } from '../components/ProtectedTerms.js';
+import { CURRENT_LESSON, FEEDBACK_CORRECT, REPORT_LABEL, REPORT_THANKS, lessonLabel, yourClassLabel } from '../lib/labels.js';
+import { showToast } from '../lib/toast.js';
 import './JournalPage.css';
+
+type JournalPromptLike = Lesson['journalPrompts'][number];
 
 const TYPE_LABEL: Record<JournalIssue['type'], string> = {
   error: 'Error',
@@ -112,26 +117,36 @@ export function JournalPage({
   const promptBook = bookId ?? myClass.textbookId;
   // Phase 14: the study order's active lesson (prompts first, words and grammar from unmastered items).
   const { focus: studyFocus } = useStudyFocus();
-  const activeLessonPrompts = useMemo(() => {
-    if (lesson !== undefined || !studyFocus?.enabled || !studyFocus.activeLesson || textbookState.status !== 'ready') return [];
-    const a = studyFocus.activeLesson;
-    return textbookState.books.find((b) => b.id === a.bookId)?.lessons[a.n - 1]?.journalPrompts ?? [];
-  }, [lesson, studyFocus, textbookState]);
-  const classPrompts = useMemo(() => {
+  // Phase 21: each group of prompts sits under its own lesson's label (the active study lesson's
+  // first, then your class's lesson); lessons are found by their number, never by position.
+  const promptGroups = useMemo((): Array<{ label: string; prompts: JournalPromptLike[] }> => {
+    if (textbookState.status !== 'ready') return [];
+    const lessonOf = (b: string, n: number) =>
+      textbookState.books.find((x) => x.id === b)?.lessons.find((l) => l.n === n);
     // A "Study this lesson" session (explicit lesson) works for any lesson, class or not.
-    if ((!myClass.enabled && lesson === undefined) || textbookState.status !== 'ready')
-      return activeLessonPrompts;
-    const prompts =
-      textbookState.books.find((b) => b.id === promptBook)?.lessons[
-        (lesson ?? myClass.currentLesson) - 1
-      ]?.journalPrompts ?? [];
-    // Phase 13: the header level picker shows your level first, easier below, harder hidden —
-    // except in an explicit "Study this lesson" session, which shows the lesson's own prompts.
-    if (lesson !== undefined) return prompts;
-    const rest = filterByLevel(prompts, (p) => p.level ?? courseLessonLevel(LAIXUE_COURSE, promptBook, myClass.currentLesson), learnerLevel);
-    // Active-lesson prompts lead and ignore the level picker; the rest follow.
-    return [...activeLessonPrompts, ...rest.filter((p) => !activeLessonPrompts.some((a) => a.id === p.id))];
-  }, [myClass, textbookState, lesson, promptBook, learnerLevel, activeLessonPrompts]);
+    if (lesson !== undefined) {
+      const prompts = lessonOf(promptBook, lesson)?.journalPrompts ?? [];
+      return prompts.length ? [{ label: lessonLabel(lesson, promptBook), prompts }] : [];
+    }
+    const groups: Array<{ label: string; prompts: JournalPromptLike[] }> = [];
+    const a = studyFocus?.enabled ? studyFocus.activeLesson : undefined;
+    if (a) {
+      const prompts = lessonOf(a.bookId, a.n)?.journalPrompts ?? [];
+      if (prompts.length) groups.push({ label: `${CURRENT_LESSON}: ${lessonLabel(a.n, a.bookId)}`, prompts });
+    }
+    if (myClass.enabled && !(a && a.bookId === myClass.textbookId && a.n === myClass.currentLesson)) {
+      const prompts = lessonOf(myClass.textbookId, myClass.currentLesson)?.journalPrompts ?? [];
+      // Phase 13: the header level picker shows your level first, easier below, harder hidden.
+      const rest = filterByLevel(
+        prompts,
+        (p) => p.level ?? courseLessonLevel(LAIXUE_COURSE, myClass.textbookId, myClass.currentLesson),
+        learnerLevel,
+      );
+      if (rest.length) groups.push({ label: yourClassLabel(myClass.currentLesson, myClass.textbookId), prompts: rest });
+    }
+    return groups;
+  }, [myClass, textbookState, lesson, promptBook, learnerLevel, studyFocus]);
+  const classPrompts = useMemo(() => promptGroups.flatMap((g) => g.prompts), [promptGroups]);
   const [donePromptIds, setDonePromptIds] = useState<Set<string>>(new Set());
   const [chosenId, setChosenId] = useState<string | null>(initialPromptId ?? null);
   useEffect(() => {
@@ -241,14 +256,16 @@ export function JournalPage({
 
         {!entry && classPrompts.length > 0 && (
           <div className="journal-class-prompts" data-testid="class-prompts">
-            <p>
-              <span className="textbook-badge" lang="zh-Hant">
-                {promptBadge(classPrompts[0]?.lessonId, lesson ?? myClass.currentLesson, promptBook)}
-              </span>{' '}
-              Prompts from class
-            </p>
             <div role="radiogroup" aria-label="Choose a prompt">
               {classPrompts.map((p, i) => (
+                <Fragment key={p.id}>
+                {promptGroups.find((g) => g.prompts[0] === p) && (
+                  <p className="journal-prompt-group">
+                    <span className="textbook-badge" lang="zh-Hant">
+                      {promptGroups.find((g) => g.prompts[0] === p)!.label}
+                    </span>
+                  </p>
+                )}
                 <button
                   key={p.id}
                   type="button"
@@ -259,6 +276,7 @@ export function JournalPage({
                 >
                   {donePromptIds.has(p.id) ? '✓ ' : ''}Prompt {i + 1}
                 </button>
+                </Fragment>
               ))}
               <button
                 type="button"
@@ -401,7 +419,7 @@ function WriteStage({
                 <span lang="zh-Hant">
                   <ZhWord word={w} />
                 </span>{' '}
-                <span className="journal-muted">{w.glossEn}</span>
+                <span className="journal-muted">{glossFor(w)}</span>
               </li>
             ))}
           </ul>
@@ -456,7 +474,8 @@ function HighlightedText({
   const parts: React.ReactNode[] = [];
   let cursor = 0;
   issues.forEach((issue, i) => {
-    if (issue.span[0] > cursor) parts.push(text.slice(cursor, issue.span[0]));
+    // Phase 21: the learner's own text is tap-to-lookup too (the marked parts open their correction).
+    if (issue.span[0] > cursor) parts.push(<Zh key={`t${i}`} text={text.slice(cursor, issue.span[0])} />);
     parts.push(
       <mark
         key={i}
@@ -478,7 +497,7 @@ function HighlightedText({
     );
     cursor = issue.span[1];
   });
-  if (cursor < text.length) parts.push(text.slice(cursor));
+  if (cursor < text.length) parts.push(<Zh key="tail" text={text.slice(cursor)} />);
   return (
     <p className="journal-text" lang="zh-Hant">
       {parts}
@@ -609,7 +628,7 @@ function SelfCorrectStage({
         </button>
         {result && (
           <span className={result.fixed ? 'journal-ok' : 'journal-muted'} role="status">
-            {result.fixed ? '✓ Looks good' : 'Not there yet'}
+            {result.fixed ? FEEDBACK_CORRECT : '✗ Not quite yet'}
             {result.note && ` — ${result.note}`}
           </span>
         )}
@@ -704,8 +723,14 @@ function RevealStage({
   }
 
   async function flag(i: number) {
-    await service.toggleFlag(entry.id, i);
+    const on = await service.toggleFlag(entry.id, i);
     onChange();
+    // Phase 21: the same "⚑ Something's wrong" as everywhere, with Undo; listed on the Reported page.
+    if (on)
+      showToast(`${REPORT_THANKS} This correction won't be practised.`, async () => {
+        await service.toggleFlag(entry.id, i).catch(() => false);
+        onChange();
+      });
   }
 
   async function finish() {
@@ -756,7 +781,7 @@ function RevealStage({
             </button>
           )}
           <button onClick={() => flag(i)} aria-pressed={flagged}>
-            {flagged ? 'Flagged — won’t be practised (undo)' : 'Flag this correction'}
+            {flagged ? 'Reported: won’t be practised (Undo)' : REPORT_LABEL}
           </button>
         </div>
       </>
@@ -884,10 +909,4 @@ function RevealStage({
       <button onClick={finish}>Finish entry</button>
     </section>
   );
-}
-
-/** "來學華語 2 · L3" for the lesson a prompt belongs to (falls back to the class position). */
-function promptBadge(lessonId: string | undefined, n: number, bookId: string): string {
-  const m = lessonId ? /^(laixue-\d+)-L(\d+)$/.exec(lessonId) : null;
-  return m ? lessonBadge(Number(m[2]), m[1]!) : lessonBadge(n, bookId);
 }

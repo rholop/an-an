@@ -97,7 +97,7 @@ test.describe('Chat page', () => {
       );
     }
 
-    await expect(page.getByText('Scenario complete')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Chat finished')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('.chat-bubble--npc').last()).toContainText('好了');
     await expect(page.getByText(/goals completed/)).toContainText('5/5 goals completed');
     await page.screenshot({ path: 'screenshots/chat-summary.png' });

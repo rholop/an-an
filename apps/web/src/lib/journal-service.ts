@@ -225,22 +225,12 @@ export class JournalService {
 
   private async addPriorityItem(word: Word, now: Date): Promise<void> {
     const item = { kind: 'word', id: word.id } as const;
-    // chat_lookup_gloss on the *production* skill: introduces the card due
-    // now (or, if the learner already had it in review, an Again — they
-    // couldn't produce it). It's the closest existing evidence kind; the
-    // priority flag below is what actually moves it to the front.
-    const card = await this.learnerService.record(
-      {
-        item,
-        skill: 'production',
-        kind: 'chat_lookup_gloss',
-        at: now,
-        context: { source: 'journal' },
-      },
+    // Phase 21: one evidence kind (a production lookup plus the priority flag), so the flag is
+    // written through applyEvidence like every other card change and syncs with it.
+    await this.learnerService.record(
+      { item, skill: 'production', kind: 'journal_priority', at: now, context: { source: 'journal' } },
       now,
     );
-    if (card)
-      await this.learnerService.putCard({ ...card, flags: { ...card.flags, priority: true } });
   }
 
   /**

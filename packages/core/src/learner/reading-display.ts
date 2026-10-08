@@ -1,3 +1,5 @@
+import { PROGRESS_CONFIG } from '../progress/progress.config.js';
+import { readingMayFade } from '../progress/terms.js';
 import type { SkillCard } from './types.js';
 
 export type ReadingDisplayMode = 'shown' | 'hover';
@@ -10,8 +12,8 @@ export interface ReadingDisplayConfig {
 }
 
 export const DEFAULT_READING_DISPLAY_CONFIG: ReadingDisplayConfig = {
-  minStabilityDays: 21, // matches the default "mature" threshold
-  maxReadingDependence: 0.5,
+  minStabilityDays: PROGRESS_CONFIG.readingFadeStabilityDays,
+  maxReadingDependence: PROGRESS_CONFIG.readingFadeMaxDependence,
 };
 
 /**
@@ -25,7 +27,10 @@ export function readingDisplay(
   card: Pick<SkillCard, 'card' | 'readingDependence'>,
   config: ReadingDisplayConfig = DEFAULT_READING_DISPLAY_CONFIG,
 ): ReadingDisplayMode {
-  const strong = card.card.stability >= config.minStabilityDays;
-  const notReadingDependent = card.readingDependence < config.maxReadingDependence;
-  return strong && notReadingDependent ? 'hover' : 'shown';
+  return readingMayFade(card, {
+    readingFadeStabilityDays: config.minStabilityDays,
+    readingFadeMaxDependence: config.maxReadingDependence,
+  })
+    ? 'hover'
+    : 'shown';
 }

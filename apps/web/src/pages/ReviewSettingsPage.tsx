@@ -16,7 +16,81 @@ import { NOPE_LABELS, nopeSnapshot } from '../lib/nope.js';
 import { applyCleanup, cleanupPreview, removedWords } from '../lib/review-cleanup.js';
 import { updateReviewSettings, useReviewSettings } from '../lib/review-settings.js';
 import { useLexicon } from '../lib/useLexicon.js';
+import { ReadingControls } from '../components/ReadingControls.js';
+import { useAnswerInputMode, type AnswerInputMode } from '../lib/reading.js';
+import { readTargetRetention, RETENTION_MAX, RETENTION_MIN, setTargetRetention } from '../lib/retention.js';
+import { onStudyDirty } from '../lib/study-dirty.js';
 import './ReviewSettingsPage.css';
+
+/** Phase 21: the settings every tab shares (one place each): reading, typed answers, memory target. */
+function SharedSettings() {
+  const [inputMode, setInputMode] = useAnswerInputMode();
+  const [retention, setRetention] = useState<number | null>(null);
+  const [tick, setTick] = useState(0);
+  useEffect(() => onStudyDirty(() => setTick((t) => t + 1)), []);
+  useEffect(() => {
+    void readTargetRetention().then(setRetention);
+  }, [tick]);
+  const modes: Array<{ id: AnswerInputMode; label: string }> = [
+    { id: 'characters', label: 'Characters' },
+    { id: 'pinyin', label: 'Pinyin' },
+    { id: 'zhuyin', label: 'Zhuyin' },
+  ];
+  return (
+    <>
+      <section data-testid="settings-reading">
+        <h2>Reading</h2>
+        <ReadingControls />
+        <p className="review-settings-muted">
+          Used in every tab: Reader, Chat, Review, Cloze, Listen and word pop-ups. Textbook, Journal and Garden always
+          show the reading, in this script.
+        </p>
+      </section>
+      <section data-testid="settings-input">
+        <h2>Typed answers</h2>
+        <div role="radiogroup" aria-label="Typed answers">
+          {modes.map((m) => (
+            <label key={m.id} className="review-settings-radio">
+              <input
+                type="radio"
+                name="answer-input"
+                checked={inputMode === m.id}
+                onChange={() => setInputMode(m.id)}
+              />{' '}
+              {m.label}
+            </label>
+          ))}
+        </div>
+        <p className="review-settings-muted">The input a typed answer starts with in Cloze, journal practice and Listen.</p>
+      </section>
+      <section data-testid="settings-retention">
+        <h2>Memory target</h2>
+        {retention === null ? (
+          <p>Loading…</p>
+        ) : (
+          <label>
+            Aim to remember{' '}
+            <select
+              value={retention.toFixed(2)}
+              onChange={(e) => void setTargetRetention(Number(e.target.value)).then(setRetention)}
+              data-testid="target-retention"
+            >
+              {[RETENTION_MIN, 0.88, 0.9, 0.92, RETENTION_MAX].map((r) => (
+                <option key={r} value={r.toFixed(2)}>
+                  {Math.round(r * 100)}%
+                </option>
+              ))}
+            </select>{' '}
+            of reviews
+          </label>
+        )}
+        <p className="review-settings-muted">
+          Higher means more reviews. Review scheduling and the garden both use this number.
+        </p>
+      </section>
+    </>
+  );
+}
 
 /**
  * Phase 20: Settings → Review. The daily cap, where the review pile comes from, bulk clean-up,
@@ -49,7 +123,9 @@ export function ReviewSettingsPage() {
 
   return (
     <div className="review-settings">
-      <h1>Review settings</h1>
+      <h1>Settings</h1>
+      <SharedSettings />
+      <h2 className="review-settings-group">Review</h2>
 
       <section>
         <h2>Daily review cap</h2>

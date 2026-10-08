@@ -1,3 +1,4 @@
+import { COMPREHENSIBLE_CLASSES } from '../progress/terms.js';
 import type { Scenario } from '../chat/scenario.js';
 import type { Lexicon } from '../lexicon.js';
 import type { Level } from '../types.js';
@@ -122,7 +123,6 @@ export interface ScenarioCoverage {
   missing: string[];
 }
 
-const COMPREHENSIBLE = new Set(['known', 'due', 'learning', 'allowed']);
 
 /**
  * Phase 6 §4: "you can handle ~X% of the words in this scenario". Defined as
@@ -135,7 +135,7 @@ export function scenarioCoverage(corpus: readonly string[], ctx: AnalyzeContext)
   const total = result.classifications.length;
   const counts = new Map<string, number>();
   for (const c of result.classifications) {
-    if (!COMPREHENSIBLE.has(c.class)) counts.set(c.token.text, (counts.get(c.token.text) ?? 0) + 1);
+    if (!COMPREHENSIBLE_CLASSES.has(c.class)) counts.set(c.token.text, (counts.get(c.token.text) ?? 0) + 1);
   }
   return {
     coverage: result.coverage,
@@ -146,18 +146,20 @@ export function scenarioCoverage(corpus: readonly string[], ctx: AnalyzeContext)
   };
 }
 
+/** Phase 21: pass the shared `wordSets()` (known / due / learning) so every coverage number agrees. */
 export function coverageContext(
   lexicon: Lexicon,
   learnerLevel: Level,
   knownIds: ReadonlySet<string>,
   learningIds: ReadonlySet<string> = new Set(),
+  dueIds: ReadonlySet<string> = new Set(),
 ): AnalyzeContext {
   const none = new Set<string>();
   return {
     lexicon,
     learnerLevel,
     knownIds,
-    dueIds: none,
+    dueIds,
     targetIds: none,
     learningIds,
     allowedExtraIds: none,

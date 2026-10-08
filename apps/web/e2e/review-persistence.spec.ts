@@ -42,7 +42,7 @@ test('rating a card persists immediately and survives a full page reload', async
   });
 
   await page.reload();
-  await expect(page.getByText(/2 due now/)).toBeVisible();
+  await expect(page.getByTestId('review-counts')).toContainText(/^2 due · /);
 
   await page.getByRole('button', { name: 'Show answer' }).click();
   await page.getByRole('button', { name: 'Good' }).click();
@@ -50,11 +50,11 @@ test('rating a card persists immediately and survives a full page reload', async
 
   // Still mid-session: the in-memory queue has advanced to the 2nd card,
   // but the session total hasn't changed (that's the "of N this session" figure).
-  await expect(page.getByText(/1 due now \(of 2 this session\)/)).toBeVisible();
+  await expect(page.getByTestId('review-counts')).toContainText(/^1 due · /);
 
   // Reload WITHOUT rating the 2nd card — if the rating from before the
   // reload hadn't actually been persisted, this fresh due-queue fetch would
-  // still show 2 due now instead of 1.
+  // still show 2 due instead of 1.
   await page.reload();
-  await expect(page.getByText(/1 due now \(of 1 this session\)/)).toBeVisible();
+  await expect(page.getByTestId('review-counts')).toContainText(/^1 due · /);
 });

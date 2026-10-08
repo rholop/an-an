@@ -20,11 +20,11 @@ const MORE: { route: Route; label: string }[] = [
   { route: 'cloze', label: 'Cloze' },
   { route: 'progress', label: 'Progress' },
   { route: 'textbook', label: 'Textbook' },
-  { route: 'review-settings', label: 'Review settings' },
+  { route: 'review-settings', label: 'Settings' },
   { route: 'placement', label: 'Placement' },
   { route: 'anki-import', label: 'Anki import' },
   { route: 'audio-review', label: 'Audio review' },
-  { route: 'reported', label: 'Reported clozes' },
+  { route: 'reported', label: 'Reported' },
   { route: 'credits', label: 'Credits' },
   { route: 'zhuyin-test', label: 'Zhuyin rendering test' },
 ];
@@ -79,12 +79,12 @@ export function MoreSheet({
   route,
   onGo,
   onClose,
-  textbookSuffix,
+  textbookLabel,
 }: {
   route: Route;
   onGo: (r: Route) => void;
   onClose: () => void;
-  textbookSuffix: string;
+  textbookLabel: string;
 }) {
   return (
     <BottomSheet label="More" onClose={onClose} testId="more-backdrop">
@@ -97,8 +97,7 @@ export function MoreSheet({
               aria-current={route === m.route ? 'page' : undefined}
               onClick={() => onGo(m.route)}
             >
-              {m.label}
-              {m.route === 'textbook' ? textbookSuffix : ''}
+              {m.route === 'textbook' ? textbookLabel : m.label}
             </button>
           </li>
         ))}

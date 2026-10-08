@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CLOZE_REPORT_REASONS, type ClozeReportReason } from '@anan/core';
+import { REPORT_LABEL, UNDO } from '../lib/labels.js';
 import './ReportSheet.css';
 
 /** Phase 16 Part C: the "Something's wrong" button on every cloze card and
@@ -21,7 +22,7 @@ export function ReportButton({
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
       >
-        <span aria-hidden="true">⚑</span> Something&apos;s wrong
+        {REPORT_LABEL}
       </button>
       {open && (
         <div className="report-backdrop" onClick={() => setOpen(false)}>
@@ -29,10 +30,10 @@ export function ReportButton({
             className="report-sheet"
             role="dialog"
             aria-modal="true"
-            aria-label="What's wrong with this card?"
+            aria-label="What's wrong with this sentence?"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2>What&apos;s wrong with this card?</h2>
+            <h2>What&apos;s wrong with this sentence?</h2>
             <label className="report-note">
               Note (optional)
               <textarea
@@ -72,7 +73,7 @@ export function ReportNotice({ onUndo, onGone }: { onUndo: () => void; onGone: (
     <div className="report-notice" role="status">
       Thanks, this one won&apos;t come back.{' '}
       <button type="button" className="report-undo" onClick={onUndo}>
-        Undo
+        {UNDO}
       </button>
       <button type="button" className="report-dismiss" onClick={onGone} aria-label="Dismiss">
         ×

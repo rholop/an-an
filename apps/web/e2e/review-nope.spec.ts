@@ -25,16 +25,16 @@ test('Nope removes a review card in one tap, Undo brings it back, Removed words 
     await w.__anan.db.items.bulkPut([row('tocfl-53d2a1b065'), row('tocfl-7c491838af')]);
   });
   await page.reload();
-  await expect(page.getByText(/2 due now/)).toBeVisible();
+  await expect(page.getByTestId('review-counts')).toContainText(/^2 due · /);
 
   // Before revealing: Nope is there, one tap removes the card.
   await page.getByTestId('nope-btn').click();
   await expect(page.getByTestId('nope-toast')).toBeVisible();
-  await expect(page.getByText(/1 due now/)).toBeVisible();
+  await expect(page.getByTestId('review-counts')).toContainText(/^1 due · /);
 
   await page.getByTestId('nope-undo').click();
   await expect(page.getByTestId('nope-toast')).toBeHidden();
-  await expect(page.getByText(/2 due now/)).toBeVisible();
+  await expect(page.getByTestId('review-counts')).toContainText(/^2 due · /);
 
   // Nope again, change to "Never show this".
   await page.getByTestId('nope-btn').click();

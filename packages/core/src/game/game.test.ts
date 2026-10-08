@@ -61,6 +61,7 @@ describe('reward table', () => {
         'journal_entry',
         'recall_correct',
         'recall_hinted',
+        'recall_wrong_tone',
         'scenario_completed',
         'scenario_unassisted',
         'self_correction',
@@ -84,8 +85,13 @@ describe('reward table', () => {
       'recall_correct',
     ]);
     expect(rewardsForEvidence(ev('cloze_correct_hint'), undefined).map((r) => r.kind)).toEqual([
-      'recall_hinted',
+      'recall_wrong_tone',
     ]);
+    // Phase 21: listening and journal recalls pay like review and cloze recalls
+    expect(rewardsForEvidence(ev('listening_correct'), undefined).map((r) => r.kind)).toEqual(['recall_correct']);
+    expect(rewardsForEvidence(ev('journal_correct_use'), undefined).map((r) => r.kind)).toEqual(['recall_correct']);
+    expect(rewardsForEvidence(ev('listening_correct_replayed'), undefined).map((r) => r.kind)).toEqual(['recall_hinted']);
+    expect(REWARD_TABLE.recall_wrong_tone.label).toBe('Right word, wrong tone');
     for (const k of [
       'review_again',
       'cloze_wrong',
@@ -215,8 +221,11 @@ describe('garden', () => {
     expect(plots[0]!.plants.map((p) => p.headword).sort()).toEqual(['咖啡', '捷運']);
     expect(plots[0]!.wiltingCount).toBe(2);
     expect(wiltingCards(plots[0]!)).toHaveLength(2);
-    const healthy = buildPlants(cards, lexicon, day(1, 13), fsrs);
+    // Phase 21: "needs water" = a Due card; just after the review nothing is due yet.
+    const healthy = buildPlants(cards, lexicon, new Date(day(1, 12).getTime() + 5 * 60_000), fsrs);
     expect(wiltingCards(groupPlots(healthy, [], lexicon)[0]!)).toEqual([]);
+    // "Water N words" opens exactly the due cards
+    expect(wiltingCards(plots[0]!).every((c) => c.card.due <= later)).toBe(true);
   });
 });
 

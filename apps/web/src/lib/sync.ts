@@ -272,3 +272,13 @@ export class SyncManager {
 }
 
 export type { Backup };
+
+/** Phase 21: a write into ANOTHER profile's database (e.g. a shared cloze report) must reach the
+ * server the next time that profile syncs, so its "needs a push" flag is set too. */
+export function markProfileDirty(profileId: string, storage: Pick<Storage, 'setItem'> = localStorage): void {
+  try {
+    storage.setItem(`anan.sync.${profileId}.dirty`, '1');
+  } catch {
+    /* private mode: picked up on the next local change */
+  }
+}

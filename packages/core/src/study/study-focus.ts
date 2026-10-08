@@ -6,12 +6,14 @@
 // active while a lower TOCFL level is below mastery.
 
 import { PRIORITY_CONFIG, type PriorityConfig } from '../curriculum/priority.config.js';
+import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 import type { SkillCard } from '../learner/types.js';
 import type { Lexicon } from '../lexicon.js';
-import { LEVEL_IDS, type Level } from '../levels.config.js';
-import { courseBook, courseLessonLevel, courseOrdinal, LAIXUE_COURSE, type Course } from '../textbook/course.js';
+import { LEVEL_IDS, tocflLabel, type Level } from '../levels.config.js';
+import { bookTitle, courseBook, courseLessonLevel, courseOrdinal, LAIXUE_COURSE, lessonBadge, type Course } from '../textbook/course.js';
 import type { Lesson, Textbook } from '../textbook/types.js';
-import type { Evidence, ItemRef, Word } from '../types.js';
+import { lessonCoreItems, levelItems, ProgressIndex, type GrammarUse, type LearnedMastered } from '../progress/terms.js';
+import type { ItemRef } from '../types.js';
 
 export type StepRef =
   | { kind: 'lesson'; bookId: string; n: number; lessonId: string; level: Level; ordinal: number }
@@ -40,10 +42,7 @@ export const DEFAULT_STUDY_SETTINGS: StudySettings = {
   knownItems: [],
 };
 
-export interface GrammarUse {
-  correct: number;
-  lastCorrect: boolean;
-}
+export type { GrammarUse };
 
 export interface StudyProfile {
   lexicon: Pick<Lexicon, 'allWords' | 'byId'>;
@@ -60,8 +59,16 @@ export interface StudyProfile {
 
 export interface Mastery {
   mastered: number;
+  /** Phase 21: Learned count / share over the same items (the second number every screen shows). */
+  learned: number;
+  learnedShare: number;
   total: number;
+  /** Mastered share. */
   share: number;
+  /** Same as `share`, under the shared name (Phase 21 Part C display). */
+  masteredShare: number;
+  leeches: number;
+  imported: number;
   isMastered: boolean;
   /** Items still to master, in study order. */
   remainingWords: number;
@@ -86,8 +93,13 @@ export interface StudyFocus {
   activeStep: StepRef | undefined;
   activeLesson?: Extract<StepRef, { kind: 'lesson' }>;
   activeLevel?: Level;
-  /** Earlier lessons that slipped below mastery: their weak items are mixed back in. */
+  /** Earlier lessons not (or no longer) mastered: their items come after the active lesson's.
+   * Phase 21: with My class set these are the "catch-up lessons". */
   reviewLessons: Array<Extract<StepRef, { kind: 'lesson' }>>;
+  /** Phase 21: the class lesson (My class on), whether or not it is active (it may be gated). */
+  classLesson?: Extract<StepRef, { kind: 'lesson' }>;
+  /** Phase 21: the active lesson is the class lesson (or a preview within `classAheadLessons`). */
+  activeIsClass?: boolean;
   /** Unmastered items of the active step, in introduction order. */
   focusItems: ItemRef[];
   /** Unmastered items of the review lessons. */
@@ -105,13 +117,16 @@ export interface StudyFocus {
   justMastered: Array<Extract<StepRef, { kind: 'lesson' }>>;
   /** Phase 18: lesson ids held back by an unmastered lower TOCFL level (they don't count as "upcoming"). */
   gatedLessonIds?: string[];
+  /** Phase 21: lesson ids already mastered (skipped by "the next lessons" everywhere). */
+  masteredLessonIds?: string[];
 }
 
 const itemKey = (i: ItemRef) => `${i.kind}:${i.id}`;
 
 function lessonCoreWords(l: Lesson): string[] {
-  const proper = new Set(l.properNouns);
-  return [...new Set(l.vocab)].filter((id) => !proper.has(id));
+  return lessonCoreItems(l)
+    .filter((i) => i.kind === 'word')
+    .map((i) => i.id);
 }
 
 /** Tiers: for each TOCFL level in order, its lessons (course order), then "the rest of the level". */
@@ -144,69 +159,17 @@ export function studySteps(
   return steps;
 }
 
-/** Correct-use tallies per grammar point from the evidence log (typed/reorder cloze, journal). */
-export function grammarUsesFromEvidence(
-  evidence: readonly Pick<Evidence, 'item' | 'kind' | 'at'>[],
-  config: PriorityConfig = PRIORITY_CONFIG,
-): Map<string, GrammarUse> {
-  const ok = new Set<string>(config.grammarCorrectKinds);
-  const bad = new Set<string>(config.grammarWrongKinds);
-  const sorted = evidence
-    .filter((e) => e.item.kind === 'grammar' && (ok.has(e.kind) || bad.has(e.kind)))
-    .sort((a, b) => a.at.getTime() - b.at.getTime());
-  const out = new Map<string, GrammarUse>();
-  for (const e of sorted) {
-    const cur = out.get(e.item.id) ?? { correct: 0, lastCorrect: false };
-    const correct = ok.has(e.kind);
-    out.set(e.item.id, { correct: cur.correct + (correct ? 1 : 0), lastCorrect: correct });
-  }
-  return out;
-}
-
-/** Everything `getStudyFocus` needs about mastery, built once. */
-class MasteryIndex {
-  private readonly bySkill = new Map<string, SkillCard>();
-  private readonly known: Set<string>;
-  constructor(private readonly p: StudyProfile, private readonly cfg: PriorityConfig) {
-    for (const c of p.cards) this.bySkill.set(`${c.item.kind}:${c.item.id}|${c.skill}`, c);
-    this.known = new Set(p.settings.knownItems);
-  }
-  card(i: ItemRef, skill: 'recognition' | 'production'): SkillCard | undefined {
-    return this.bySkill.get(`${itemKey(i)}|${skill}`);
-  }
-  /** Phase 20: "Not now" / "Never show" words leave lesson and level counts (they can't block progress). */
-  removed(i: ItemRef): boolean {
-    if (i.kind !== 'word') return false;
-    const cards = [this.card(i, 'recognition'), this.card(i, 'production')].filter((c): c is SkillCard => !!c);
-    return cards.some((c) => c.flags.excluded || c.flags.snoozed);
-  }
-  hasCard(i: ItemRef): boolean {
-    return !!this.card(i, 'recognition') || !!this.card(i, 'production');
-  }
-  mastered(i: ItemRef): boolean {
-    if (i.kind === 'grammar') {
-      const u = this.p.grammarUses.get(i.id);
-      if (u && u.correct >= this.cfg.mastery.grammarCorrectUses && u.lastCorrect) return true;
-      return this.known.has(itemKey(i)) && !(u && !u.lastCorrect);
-    }
-    const r = this.card(i, 'recognition');
-    const pr = this.card(i, 'production');
-    if (r?.leech || pr?.leech) return false;
-    // Phase 20: "I already know it" counts only once a later review has passed.
-    const unproven = (c: SkillCard | undefined) =>
-      !!c?.flags.markedKnown &&
-      !(c.card.last_review && c.flags.markedKnownAt && new Date(c.card.last_review) > new Date(c.flags.markedKnownAt));
-    if (unproven(r) || unproven(pr)) return false;
-    if (
-      r &&
-      pr &&
-      r.card.stability >= this.cfg.mastery.recognitionStabilityDays &&
-      pr.card.stability >= this.cfg.mastery.productionStabilityDays
-    )
-      return true;
-    // Passed the "already known" check and nothing has contradicted it since.
-    return this.known.has(itemKey(i)) && !(r && r.lapses > 0 && r.card.stability < 1);
-  }
+/** Phase 21: mastery comes from the shared ProgressIndex (one definition for every tab). */
+function masteryIndexOf(p: StudyProfile, cfg: PriorityConfig): ProgressIndex {
+  return new ProgressIndex({
+    cards: p.cards,
+    grammarUses: p.grammarUses,
+    knownItems: p.settings.knownItems,
+    config: {
+      ...PROGRESS_CONFIG,
+      mastered: { ...PROGRESS_CONFIG.mastered, ...cfg.mastery },
+    },
+  });
 }
 
 export interface StepItems {
@@ -214,8 +177,21 @@ export interface StepItems {
   grammar: string[];
 }
 
-function wordsOfLevel(words: readonly Word[], level: Level): Word[] {
-  return words.filter((w) => w.source === 'tocfl' && w.level === level);
+
+function toMastery(sum: LearnedMastered, threshold: number): Mastery {
+  return {
+    mastered: sum.mastered,
+    learned: sum.learned,
+    learnedShare: sum.learnedShare,
+    total: sum.total,
+    share: sum.masteredShare,
+    masteredShare: sum.masteredShare,
+    leeches: sum.leeches,
+    imported: sum.imported,
+    isMastered: sum.masteredShare >= threshold,
+    remainingWords: sum.remainingWords,
+    remainingGrammar: sum.remainingGrammar,
+  };
 }
 
 /** The single selector. Pure: time and storage are injected via `now` / the profile. */
@@ -224,7 +200,7 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
   const cfg = profile.config ?? PRIORITY_CONFIG;
   const course = profile.course ?? LAIXUE_COURSE;
   const steps = studySteps(profile.books, course);
-  const idx = new MasteryIndex(profile, cfg);
+  const idx = masteryIndexOf(profile, cfg);
   const allWords = profile.lexicon.allWords();
   const lessonById = new Map<string, Lesson>();
   for (const b of profile.books) for (const l of b.lessons) lessonById.set(l.id, l);
@@ -234,55 +210,37 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
   for (const l of lessonById.values()) for (const id of lessonCoreWords(l)) inLesson.add(id);
 
   const share = profile.settings.masteryShare;
-  const levelWords = new Map<Level, Word[]>();
-  for (const lv of LEVEL_IDS) levelWords.set(lv, wordsOfLevel(allWords, lv));
+  const levelWords = new Map<Level, ItemRef[]>();
+  for (const lv of LEVEL_IDS) levelWords.set(lv, levelItems(lv, allWords));
+  const freqOf = new Map(allWords.map((w) => [w.id, w.freqRank ?? Infinity]));
 
   const itemsOfStep = (s: StepRef): ItemRef[] => allItemsOfStep(s).filter((i) => !idx.removed(i));
   const allItemsOfStep = (s: StepRef): ItemRef[] => {
     if (s.kind === 'lesson') {
-      const l = lessonById.get(s.lessonId)!;
-      return [
-        ...lessonCoreWords(l).map((id) => ({ kind: 'word' as const, id })),
-        ...[...new Set(l.grammar)].map((id) => ({ kind: 'grammar' as const, id })),
-      ];
+      return lessonCoreItems(lessonById.get(s.lessonId)!);
     }
     return (levelWords.get(s.level) ?? [])
       .filter((w) => !inLesson.has(w.id))
-      .sort((a, b) => (a.freqRank ?? Infinity) - (b.freqRank ?? Infinity) || a.id.localeCompare(b.id))
-      .map((w) => ({ kind: 'word' as const, id: w.id }));
+      .sort((a, b) => (freqOf.get(a.id) ?? Infinity) - (freqOf.get(b.id) ?? Infinity) || a.id.localeCompare(b.id));
   };
 
-  const masteryOf = (items: ItemRef[], threshold: number): Mastery => {
-    const done = items.filter((i) => idx.mastered(i));
-    const total = items.length;
-    const s = total === 0 ? 1 : done.length / total;
-    const rest = items.filter((i) => !idx.mastered(i));
-    return {
-      mastered: done.length,
-      total,
-      share: s,
-      isMastered: s >= threshold,
-      remainingWords: rest.filter((i) => i.kind === 'word').length,
-      remainingGrammar: rest.filter((i) => i.kind === 'grammar').length,
-    };
-  };
+  const masteryOf = (items: ItemRef[], threshold: number): Mastery => toMastery(idx.summarize(items), threshold);
 
   // A TOCFL level is mastered over ALL its words (textbook words count too).
   const levelMastery = new Map<Level, Mastery>();
   for (const lv of LEVEL_IDS) {
     levelMastery.set(
       lv,
-      masteryOf(
-        (levelWords.get(lv) ?? []).map((w) => ({ kind: 'word' as const, id: w.id })),
-        cfg.mastery.levelShare,
-      ),
+      masteryOf((levelWords.get(lv) ?? []).filter((i) => !idx.removed(i)), cfg.mastery.levelShare),
     );
   }
-  const stepMastery = (s: StepRef): Mastery =>
-    s.kind === 'level'
-      ? // "the rest of level X" is done when the LEVEL is mastered
-        { ...levelMastery.get(s.level)!, ...(levelMastery.get(s.level)!.total === 0 ? { isMastered: true } : {}) }
-      : masteryOf(itemsOfStep(s), share);
+  // Phase 21 Part C: "TOCFL X (rest)" shows numbers for the rest only (what it actually studies);
+  // it is done when the whole LEVEL is mastered (the gate shows the whole-level number).
+  const stepMastery = (s: StepRef): Mastery => {
+    if (s.kind === 'lesson') return masteryOf(itemsOfStep(s), share);
+    const lm = levelMastery.get(s.level)!;
+    return { ...masteryOf(itemsOfStep(s), cfg.mastery.levelShare), isMastered: lm.isMastered || lm.total === 0 };
+  };
 
   const firstUnmasteredLevelBelow = (level: Level): Level | undefined =>
     LEVEL_IDS.slice(0, LEVEL_IDS.indexOf(level)).find((lv) => !levelMastery.get(lv)!.isMastered);
@@ -292,7 +250,9 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
   let p = Math.min(Math.max(0, before), steps.length);
   while (p < steps.length && stepMastery(steps[p]!).isMastered) p++;
 
-  // Class cap: lessons more than N ahead of the class are not active.
+  // Phase 21: with My class set the class lesson is a FLOOR as well as a cap: the active lesson is
+  // the class lesson (or a preview up to `classAheadLessons` ahead), never an earlier one. Earlier
+  // unmastered lessons become catch-up lessons. The TOCFL gate still wins.
   const classOrdinal =
     profile.myClass?.enabled
       ? (courseOrdinal(course, profile.myClass.textbookId, profile.myClass.currentLesson) ?? undefined)
@@ -301,10 +261,11 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
 
   let active: StepRef | undefined;
   let gate: GateStatus = { blocked: false };
-  for (let i = p; i < steps.length; i++) {
+  for (let i = classOrdinal === undefined ? p : 0; i < steps.length; i++) {
     const s = steps[i]!;
     if (stepMastery(s).isMastered) continue;
     if (s.kind === 'lesson') {
+      if (classOrdinal !== undefined && s.ordinal < classOrdinal) continue; // catch-up, not active
       const waiting = firstUnmasteredLevelBelow(s.level);
       if (waiting) {
         // The gate wins: fall back to the lower level's remaining words.
@@ -331,7 +292,7 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
     if (lv) active = { kind: 'level', level: lv };
   }
 
-  // Review lessons: earlier lessons (before the pointer / active) that slipped below mastery.
+  // Review / catch-up lessons: earlier lessons (before the pointer / active) not mastered, earliest first.
   const activeIndex = active ? steps.findIndex((s) => stepKey(s) === stepKey(active!)) : steps.length;
   const reviewLessons = steps
     .slice(0, Math.max(activeIndex, p))
@@ -341,7 +302,20 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
 
   const focusItems = active ? itemsOfStep(active).filter((i) => !idx.mastered(i)) : [];
   const reviewItems = reviewLessons.flatMap((s) => itemsOfStep(s).filter((i) => !idx.mastered(i)));
-  const newItemsAllowed = focusItems.filter((i) => !idx.hasCard(i));
+  // Part A: the active lesson's new items first, then the catch-up lessons' (earliest first),
+  // never a lesson held back by the TOCFL gate.
+  const seenNew = new Set<string>();
+  const newItemsAllowed = [
+    ...focusItems,
+    ...reviewLessons
+      .filter((s) => firstUnmasteredLevelBelow(s.level) === undefined)
+      .flatMap((s) => itemsOfStep(s).filter((i) => !idx.mastered(i))),
+  ].filter((i) => {
+    const k = itemKey(i);
+    if (idx.hasCard(i) || seenNew.has(k)) return false;
+    seenNew.add(k);
+    return true;
+  });
 
   // Gate message for the class: the class is beyond what the order has unlocked.
   if (classOrdinal !== undefined && active) {
@@ -355,11 +329,11 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
         blocked: true,
         waitingForLevel: waiting,
         levelShare: lm.share,
-        message: `${classBook ? `${classBook.titleZh.split(' ')[0]} ${Number(/(\d+)$/.exec(classBook.id)?.[1] ?? 0)}` : 'The class book'} unlocks after TOCFL ${tocflName(waiting)}: ${Math.round(lm.share * 100)}% mastered`,
+        message: `${classBook ? bookTitle(classBook.id, course) : 'The class book'} unlocks after ${tocflLabel(waiting)}: ${Math.round(lm.share * 100)}% mastered`,
       };
     }
   } else if (gate.blocked && gate.waitingForLevel) {
-    gate.message = `Lessons unlock after TOCFL ${tocflName(gate.waitingForLevel)}: ${Math.round((gate.levelShare ?? 0) * 100)}% mastered`;
+    gate.message = `Lessons unlock after ${tocflLabel(gate.waitingForLevel)}: ${Math.round((gate.levelShare ?? 0) * 100)}% mastered`;
   }
 
   const nextStep = (() => {
@@ -367,6 +341,13 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
     const i = steps.findIndex((s) => stepKey(s) === stepKey(active!));
     return steps.slice(i + 1).find((s) => !stepMastery(s).isMastered);
   })();
+
+  const classLesson =
+    classOrdinal === undefined
+      ? undefined
+      : steps.find((s): s is Extract<StepRef, { kind: 'lesson' }> => s.kind === 'lesson' && s.ordinal === classOrdinal);
+  const activeIsClass =
+    classOrdinal !== undefined && active?.kind === 'lesson' && active.ordinal >= classOrdinal && active.ordinal <= cap;
 
   const justMastered = steps
     .slice(Math.min(before, steps.length), p)
@@ -379,6 +360,8 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
     ...(active?.kind === 'lesson' ? { activeLesson: active } : {}),
     ...(active?.kind === 'level' ? { activeLevel: active.level } : {}),
     reviewLessons,
+    ...(classLesson ? { classLesson } : {}),
+    ...(classOrdinal !== undefined ? { activeIsClass } : {}),
     focusItems,
     reviewItems,
     newItemsAllowed,
@@ -392,20 +375,17 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
       .filter((s): s is Extract<StepRef, { kind: 'lesson' }> => s.kind === 'lesson')
       .filter((s) => firstUnmasteredLevelBelow(s.level) !== undefined)
       .map((s) => s.lessonId),
+    masteredLessonIds: steps
+      .filter((s): s is Extract<StepRef, { kind: 'lesson' }> => s.kind === 'lesson')
+      .filter((s) => stepMastery(s).isMastered)
+      .map((s) => s.lessonId),
   };
 }
 
-/** "Novice 1", "Level 2" — for gate messages and the home card. */
-export function tocflName(level: Level): string {
-  return level.startsWith('N') ? `Novice ${level.slice(1)}` : `Level ${level.slice(1)}`;
-}
-
-/** Display name of a step ("來學華語 1 · Lesson 3" / "TOCFL Novice 2 (rest)"). */
+/** Display name of a step ("來學華語 1 · Lesson 3" / "TOCFL N2 (rest)"); formats from the label functions. */
 export function stepName(s: StepRef, course: Course = LAIXUE_COURSE): string {
-  if (s.kind === 'level') return `TOCFL ${tocflName(s.level)} (rest)`;
-  const b = courseBook(course, s.bookId);
-  const no = Number(/(\d+)$/.exec(s.bookId)?.[1] ?? 0);
-  return `${b?.titleZh.split(' ')[0] ?? s.bookId} ${no} · Lesson ${s.n}`;
+  if (s.kind === 'level') return `${tocflLabel(s.level)} (rest)`;
+  return lessonBadge(s.n, s.bookId, course);
 }
 
 /**
@@ -436,9 +416,10 @@ export function lessonIndex(books: readonly Textbook[], course: Course = LAIXUE_
     .flatMap((b) => b.lessons.map((l) => ({ l, o: courseOrdinal(course, b.id, l.n) ?? 999 })))
     .sort((a, b) => a.o - b.o);
   for (const { l } of ordered) {
-    const proper = new Set(l.properNouns);
-    for (const id of l.vocab) if (!proper.has(id) && !out.has(`word:${id}`)) out.set(`word:${id}`, l.id);
-    for (const id of l.grammar) if (!out.has(`grammar:${id}`)) out.set(`grammar:${id}`, l.id);
+    for (const i of lessonCoreItems(l)) {
+      const key = `${i.kind}:${i.id}`;
+      if (!out.has(key)) out.set(key, l.id);
+    }
   }
   return out;
 }

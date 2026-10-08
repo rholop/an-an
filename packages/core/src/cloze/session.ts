@@ -8,7 +8,8 @@ import {
   selectDueErrorItems,
 } from '../journal/error-bank.js';
 import type { Word } from '../types.js';
-import { itemKey, orderSession, type OrderedSession, type SessionCard } from '../session/orderSession.js';
+import { isNewCard } from '../progress/terms.js';
+import { itemKey, orderSession, seededRng, type OrderedSession, type SessionCard } from '../session/orderSession.js';
 import {
   selectClozeSource,
   type ClozeSourceCandidate,
@@ -95,12 +96,14 @@ const seedFrom = (options: BuildSessionOptions, rng: () => number) =>
  * grammar-pattern cloze yet); grammar cards in `dueCards` are skipped.
  */
 export function buildSession(dueCards: SkillCard[], options: BuildSessionOptions): OrderedSession<SessionItem> {
-  const rng = options.rng ?? Math.random;
+  // Phase 21: every random choice comes from the session seed, so a logged seed rebuilds it exactly.
+  const rng = options.rng ?? (options.seed ? seededRng(`${options.seed}:pool`) : Math.random);
   const config = { ...DEFAULT_SESSION_CONFIG, ...options.config };
 
+  // Phase 21: "New" is the shared definition (never answered); everything else is a due card.
   const wordCards = dueCards.filter((c) => c.item.kind === 'word');
-  const newCards = wordCards.filter((c) => c.state !== 'review' && c.state !== 'mature');
-  const reviewCards = wordCards.filter((c) => c.state === 'review' || c.state === 'mature');
+  const newCards = wordCards.filter((c) => isNewCard(c));
+  const reviewCards = wordCards.filter((c) => !isNewCard(c));
 
   // Phase 5 gap capture: unreviewed words the learner needed mid-journal go
   // to the front of the new-item allowance, ahead of the shuffled rest.
@@ -154,7 +157,7 @@ export function buildMixedSession(
   dueCards: SkillCard[],
   options: BuildMixedSessionOptions,
 ): OrderedSession<SessionEntry> {
-  const rng = options.rng ?? Math.random;
+  const rng = options.rng ?? (options.seed ? seededRng(`${options.seed}:mix`) : Math.random);
   const config = { ...DEFAULT_SESSION_CONFIG, ...options.config };
   const errors = selectDueErrorItems(options.errorItems, options.now, config.maxErrorItems);
   const cards = buildSession(dueCards, {

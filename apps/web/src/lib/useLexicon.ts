@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Lexicon, type GrammarItem, type Word } from '@anan/core';
-import { db } from '../db/instance.js';
+import { db, onSessionChange } from '../db/instance.js';
 
 interface LexiconFile {
   meta: { version: string; buildDate: string; wordCount: number };
@@ -20,6 +20,12 @@ const LEXICON_URL = () => `${import.meta.env.BASE_URL}lexicon/lexicon.v2.json`;
 // tab switch used to download (from cache) and parse it again.
 let filePromise: Promise<LexiconFile> | null = null;
 let built: { key: string; lexicon: Lexicon; meta: LexiconFile['meta'] } | null = null;
+
+// Phase 21: a profile's custom words never leak into the next profile's lexicon (the parsed
+// file itself is shared; only the built lexicon is dropped).
+onSessionChange(() => {
+  built = null;
+});
 
 /** Starts the download. Called from main.tsx so it runs while the app's own JS
  * is still being parsed (index.html also preloads the same URL). */

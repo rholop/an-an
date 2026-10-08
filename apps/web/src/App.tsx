@@ -1,11 +1,10 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useLookupGateRegistration } from './lib/lookup-gate.js';
 import {
-  bookNumber,
   classLevelHint,
-  LAIXUE_COURSE,
-  levelLabel,
-  levelUpSuggestion,
+  DEFAULT_CURRICULUM_CONFIG,
+  LEVEL_ORDER,
+  levelItems,
   type Level,
 } from '@anan/core';
 import { LevelPicker } from './components/LevelPicker.js';
@@ -13,14 +12,18 @@ import { MoreSheet, TabBar } from './components/TabBar.js';
 import { ThemeToggle } from './components/ThemeToggle.js';
 import { useProfile } from './components/ProfileGate.js';
 import { PROFILES } from './profiles.js';
-import { db } from './db/instance.js';
-import { allTouchedCards } from './db/queries.js';
 import { initCurrentLevelIfUnset, useCurrentLevel } from './lib/current-level.js';
 import { useLexicon } from './lib/useLexicon.js';
 import { useMediaQuery } from './lib/useMediaQuery.js';
 import { installViewportTracking } from './lib/viewport.js';
 import { useMyClass } from './lib/my-class.js';
-import { useStudyContextRegistration } from './lib/study.js';
+import { useProgressData, useStudyContextRegistration } from './lib/study.js';
+import { ToastHost } from './components/ToastHost.js';
+import { currentSession } from './db/instance.js';
+import { HOME, YOUR_LEVEL, levelLabel, levelShort, navTextbookLabel, pct } from './lib/labels.js';
+// Phase 21: the stored target retention is applied at start, on profile switch and after a sync.
+import './lib/retention.js';
+import './lib/audio-slow.js';
 import './App.css';
 import './components/LevelPicker.css';
 import './components/ProfileGate.css';
@@ -98,36 +101,28 @@ function LevelHeader({ route }: { route: Route }) {
   const classOn = myClassHint.enabled;
   const classBook = myClassHint.textbookId;
   const classLesson = myClassHint.currentLesson;
-  const [suggestion, setSuggestion] = useState<Level | null>(null);
   const [dismissed, setDismissed] = useState<Level | null>(null);
+  void route;
 
   useEffect(() => {
     if (lexiconState.status === 'ready') void initCurrentLevelIfUnset(lexiconState.lexicon);
   }, [lexiconState]);
 
-  // Re-evaluated on every level change and screen change (reviews happen on
-  // other screens), from local data only.
-  useEffect(() => {
-    if (lexiconState.status !== 'ready') return;
-    let cancelled = false;
-    allTouchedCards(db).then((cards) => {
-      if (cancelled) return;
-      setSuggestion(
-        levelUpSuggestion(
-          level,
-          lexiconState.lexicon.allWords(),
-          cards.filter((c) => c.skill === 'recognition'),
-        ),
-      );
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [lexiconState, level, route]);
+  // Phase 21: the level-up prompt uses Learned over the one level item set (the same number as
+  // Progress), refreshed after every change.
+  const progress = useProgressData();
+  const next = LEVEL_ORDER[LEVEL_ORDER.indexOf(level) + 1];
+  const learnedShare =
+    progress && lexiconState.status === 'ready'
+      ? progress.index.summarize(levelItems(level, lexiconState.lexicon.allWords())).learnedShare
+      : 0;
+  const suggestion: Level | null =
+    next && learnedShare >= DEFAULT_CURRICULUM_CONFIG.levelAdvanceThreshold ? next : null;
 
   return (
     <header className="app-header">
       <ProfileChip />
+      <span className="level-picker-label">{YOUR_LEVEL}</span>
       <LevelPicker value={level} onChange={(l) => void setLevel(l)} />
       {classOn && (
         <span className="level-class-hint" data-testid="level-class-hint">
@@ -138,9 +133,11 @@ function LevelHeader({ route }: { route: Route }) {
         <ThemeToggle />
       </div>
       {suggestion && dismissed !== suggestion && (
-        <div className="level-up-prompt" role="status">
-          <span>Ready to try {levelLabel(suggestion)}?</span>
-          <button onClick={() => void setLevel(suggestion)}>Switch to {suggestion}</button>
+        <div className="level-up-prompt" role="status" data-testid="level-up-prompt">
+          <span>
+            You&apos;ve learned {pct(learnedShare)} of {levelShort(level)}. Ready to try {levelLabel(suggestion)}?
+          </span>
+          <button onClick={() => void setLevel(suggestion)}>Switch to {levelShort(suggestion)}</button>
           <button onClick={() => setDismissed(suggestion)}>Not yet</button>
         </div>
       )}
@@ -204,10 +201,21 @@ function ProfileChip() {
   );
 }
 
+/** The open tab survives the re-mount a sync merge causes (Phase 21: a merge never moves you).
+ * Switching to another person still starts on the page the address asks for. */
+let lastRoute: { profileId: string | undefined; route: Route } | undefined;
+
 export function App() {
   const [route, setRoute] = useState<Route>(
-    (new URLSearchParams(location.search).get('page') as Route) ?? 'reader',
+    // Phase 21: the app opens on Home.
+    () =>
+      (lastRoute && lastRoute.profileId === currentSession()?.profileId ? lastRoute.route : undefined) ??
+      (new URLSearchParams(location.search).get('page') as Route) ??
+      'garden',
   );
+  useEffect(() => {
+    lastRoute = { profileId: currentSession()?.profileId, route };
+  }, [route]);
   const myClass = useMyClass();
   useStudyContextRegistration();
   useLookupGateRegistration();
@@ -226,6 +234,9 @@ export function App() {
     <div className="app">
       <LevelHeader route={route} />
       <nav className="app-nav">
+        <button onClick={() => setRoute('garden')} disabled={route === 'garden'}>
+          {HOME}
+        </button>
         <button onClick={() => setRoute('reader')} disabled={route === 'reader'}>
           Reader
         </button>
@@ -238,9 +249,6 @@ export function App() {
         <button onClick={() => setRoute('journal')} disabled={route === 'journal'}>
           Journal
         </button>
-        <button onClick={() => setRoute('garden')} disabled={route === 'garden'}>
-          Garden
-        </button>
         <button onClick={() => setRoute('progress')} disabled={route === 'progress'}>
           Progress
         </button>
@@ -252,10 +260,10 @@ export function App() {
           disabled={route === 'textbook'}
           data-testid="nav-textbook"
         >
-          Textbook{myClass.enabled ? ` · ${myClass.textbookId === 'laixue-1' ? '' : bookNumber(LAIXUE_COURSE, myClass.textbookId) + '.'}L${myClass.currentLesson}` : ''}
+          {myClass.enabled ? navTextbookLabel(myClass.currentLesson) : 'Textbook'}
         </button>
         <button onClick={() => setRoute('review-settings')} disabled={route === 'review-settings'}>
-          Review settings
+          Settings
         </button>
         <button onClick={() => setRoute('placement')} disabled={route === 'placement'}>
           Placement
@@ -264,7 +272,7 @@ export function App() {
           Anki import
         </button>
         <button onClick={() => setRoute('reported')} disabled={route === 'reported'}>
-          Reported clozes
+          Reported
         </button>
         <button onClick={() => setRoute('credits')} disabled={route === 'credits'}>
           Credits
@@ -296,6 +304,7 @@ export function App() {
           {route === 'review-settings' && <ReviewSettingsPage />}
         </Suspense>
       </main>
+      <ToastHost />
       {isPhoneWidth && (
         <TabBar route={route} onGo={go} moreOpen={moreOpen} onMore={() => setMoreOpen((o) => !o)} />
       )}
@@ -304,7 +313,7 @@ export function App() {
           route={route}
           onGo={go}
           onClose={() => setMoreOpen(false)}
-          textbookSuffix={myClass.enabled ? ` · ${myClass.textbookId === 'laixue-1' ? '' : bookNumber(LAIXUE_COURSE, myClass.textbookId) + '.'}L${myClass.currentLesson}` : ''}
+          textbookLabel={myClass.enabled ? navTextbookLabel(myClass.currentLesson) : 'Textbook'}
         />
       )}
     </div>

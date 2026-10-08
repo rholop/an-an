@@ -13,6 +13,7 @@ import type { Lesson, Textbook } from '../textbook/types.js';
 import type { StudyFocus } from '../study/study-focus.js';
 import type { TurnResponse } from './types.js';
 import { locateHints } from '../validate/turn.js';
+import { glossFor } from '../gloss/context.js';
 import {
   DEFAULT_TOPICS,
   OPEN_CHAT_CONFIG,
@@ -45,6 +46,8 @@ export const OpenTurnRequestSchema = z.object({
   hardTopic: z.boolean().optional(),
   history: z.array(TurnHistoryEntrySchema),
   feedback: z.string().optional(),
+  /** Phase 21: retry once on the other provider after repeated Taiwan / traditional failures. */
+  alternateProvider: z.boolean().optional(),
   learnerLevel: LevelSchema,
   scaffolding: z.enum(['high', 'medium', 'low']),
   englishFallback: z.boolean(),
@@ -81,10 +84,8 @@ export interface OpenChatProfile {
   learningIds: ReadonlySet<string>;
   /** Imported textbooks, in course order. Empty = no textbook. */
   books: readonly Textbook[];
-  /** Phase 14, when built and enabled. */
+  /** Phase 14, when built and enabled. Phase 21: the only source of "upcoming" (it follows My class). */
   studyFocus?: StudyFocus;
-  /** Phase 12/13 "My class". */
-  myClass?: MyClassPosition;
 }
 
 export interface OpenChatTopic {
@@ -94,7 +95,7 @@ export interface OpenChatTopic {
   words?: readonly string[];
 }
 
-export type UpcomingSource = 'study-order' | 'level-step' | 'my-class' | 'none';
+export type UpcomingSource = 'study-order' | 'level-step' | 'none';
 
 export interface UpcomingLesson {
   lessonId: string;
@@ -150,49 +151,36 @@ function lessonsInCourseOrder(
 
 /**
  * The "next three lessons" of Part A.
- * - Phase 14 on: the active lesson plus the next two in study order. A lesson gated behind
- *   an unmastered TOCFL level doesn't count. When the active step is "the rest of a TOCFL
- *   level", that level's unmastered words take the place of lessons.
- * - Otherwise "My class": the current lesson and the next two.
- * - No textbook: nothing.
+ * - The active lesson plus the next two in study order. Phase 21: lessons already mastered or
+ *   gated behind an unmastered TOCFL level are skipped (they don't use up a place). When the
+ *   active step is "the rest of a TOCFL level", that level's unmastered words take the place of lessons.
+ * - Study order off, or no textbook: nothing. Phase 21: priority never comes from My class
+ *   directly; the study focus already follows the class.
  */
 export function upcomingContent(
-  profile: Pick<OpenChatProfile, 'books' | 'studyFocus' | 'myClass'>,
+  profile: Pick<OpenChatProfile, 'books' | 'studyFocus'>,
   config: Pick<OpenChatConfig, 'upcomingLessons' | 'levelStepWordCap'> = OPEN_CHAT_CONFIG,
 ): Upcoming {
   if (profile.books.length === 0) return NONE;
   const ordered = lessonsInCourseOrder(profile.books);
   const focus = profile.studyFocus;
-
-  if (focus?.enabled && focus.activeStep) {
-    const step = focus.activeStep;
-    if (step.kind === 'level') {
-      const wordIds = focus.focusItems
-        .filter((i) => i.kind === 'word')
-        .map((i) => i.id)
-        .slice(0, config.levelStepWordCap);
-      return { source: 'level-step', lessons: [], wordIds, grammarIds: [] };
-    }
-    const at = ordered.findIndex((o) => o.lesson.id === step.lessonId);
-    if (at >= 0) {
-      const gated = new Set(focus.gatedLessonIds ?? []);
-      const window = ordered
-        .slice(at, at + config.upcomingLessons)
-        .filter((o, i) => i === 0 || !gated.has(o.lesson.id));
-      return fromLessons('study-order', window);
-    }
+  if (!focus?.enabled || !focus.activeStep) return NONE;
+  const step = focus.activeStep;
+  if (step.kind === 'level') {
+    const wordIds = focus.focusItems
+      .filter((i) => i.kind === 'word')
+      .map((i) => i.id)
+      .slice(0, config.levelStepWordCap);
+    return { source: 'level-step', lessons: [], wordIds, grammarIds: [] };
   }
-
-  const klass = profile.myClass;
-  if (klass?.enabled) {
-    const here = courseOrdinal(LAIXUE_COURSE, klass.textbookId, klass.currentLesson);
-    const at =
-      here !== undefined
-        ? ordered.findIndex((o) => o.ordinal >= here)
-        : ordered.findIndex((o) => o.bookId === klass.textbookId && o.lesson.n >= klass.currentLesson);
-    if (at >= 0) return fromLessons('my-class', ordered.slice(at, at + config.upcomingLessons));
-  }
-  return NONE;
+  const at = ordered.findIndex((o) => o.lesson.id === step.lessonId);
+  if (at < 0) return NONE;
+  const skip = new Set([...(focus.gatedLessonIds ?? []), ...(focus.masteredLessonIds ?? [])]);
+  const window = [
+    ordered[at]!,
+    ...ordered.slice(at + 1).filter((o) => !skip.has(o.lesson.id)),
+  ].slice(0, config.upcomingLessons);
+  return fromLessons('study-order', window);
 }
 
 // ---- tiers -------------------------------------------------------------------
@@ -526,9 +514,11 @@ export function openChatGlosses(
   for (const t of [...report.offendersC, ...report.offendersB]) {
     if (seen.has(t.text) || !t.wordId) continue;
     const w = lexicon.byId(t.wordId);
-    if (!w?.glossEn) continue;
+    // Phase 21: the one gloss rule (open chat is not textbook content).
+    const gloss = w ? glossFor(w, { textbook: false }) : '';
+    if (!gloss) continue;
     seen.add(t.text);
-    out.push({ text: t.text, gloss: w.glossEn });
+    out.push({ text: t.text, gloss });
   }
   return out;
 }

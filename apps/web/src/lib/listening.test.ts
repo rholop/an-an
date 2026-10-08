@@ -45,8 +45,7 @@ async function reviewCard(id: string) {
 
 describe('ensureListeningCards', () => {
   it('creates a listening card only for a reviewed item with a usable clip, once', async () => {
-    const put = (c: Parameters<typeof learner.putCard>[0]) => learner.putCard(c);
-    const deps = { db, putCard: put };
+    const deps = { db, recordBulk: (e: Parameters<typeof learner.recordBulk>[0], n: Date) => learner.recordBulk(e, n) };
     // Not yet in review: nothing created.
     await reviewCard('w-cafe');
     expect(await ensureListeningCards(hasClip, now, deps)).toEqual([]);

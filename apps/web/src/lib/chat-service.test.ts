@@ -318,7 +318,7 @@ describe('ChatService.maybeCompleteConversation', () => {
 describe('ChatService targets follow the study order (Phase 14)', () => {
   const opts = { learnerLevel: 'N2' as const, scaffolding: 'high' as const, englishFallback: false };
   const focus = (ids: string[]) =>
-    ({ enabled: true, focusItems: ids.map((id) => ({ kind: 'word', id })), reviewItems: [] }) as never;
+    ({ enabled: true, focusItems: ids.map((id) => ({ kind: 'word', id })), reviewItems: [], newItemsAllowed: [] }) as never;
 
   async function targetsFor(studyFocus: (() => Promise<never>) | undefined): Promise<string[]> {
     await seedKnownAndDue();
@@ -340,7 +340,7 @@ describe('ChatService targets follow the study order (Phase 14)', () => {
 
   it('study order off or absent: the targets are the usual new words', async () => {
     const usual = await targetsFor(undefined);
-    const off = await targetsFor(async () => ({ enabled: false, focusItems: [{ kind: 'word', id: 'k0' }], reviewItems: [] }) as never);
+    const off = await targetsFor(async () => ({ enabled: false, focusItems: [{ kind: 'word', id: 'k0' }], reviewItems: [], newItemsAllowed: [] }) as never);
     expect(off).toEqual(usual);
     expect(usual).not.toContain('好的');
   });

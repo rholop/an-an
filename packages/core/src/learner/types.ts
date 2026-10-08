@@ -1,5 +1,6 @@
 import type { Card } from 'ts-fsrs';
 import type { Evidence, ItemRef, ItemState, Level, Skill } from '../types.js';
+import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 
 /** Phase 20: how a card came to exist (backfilled from the evidence log for older cards). */
 export type CardSource =
@@ -62,6 +63,11 @@ export interface SkillCard {
     markedKnown?: boolean;
     /** When it was marked known (lesson mastery needs a review after this). */
     markedKnownAt?: Date;
+    /** Phase 21 "I already know this" (quick check): counts as Learned and Mastered until a lapse. */
+    knownChecked?: boolean;
+    knownCheckedAt?: Date;
+    /** Lapses when the check passed (a later lapse contradicts it). */
+    knownCheckLapses?: number;
     /** Phase 20 "Never show this": out of review, new items, cloze, chat targets, journal prompts. */
     excluded?: boolean;
     /** Phase 20 "Not now": back to the unstudied pool until its level/lesson becomes active. */
@@ -97,7 +103,7 @@ export interface LearnerConfig {
 
 export const DEFAULT_LEARNER_CONFIG: LearnerConfig = {
   requestRetention: 0.9,
-  matureStabilityDays: 21,
+  matureStabilityDays: PROGRESS_CONFIG.matureStabilityDays,
   leechThreshold: 4,
   readNoLookupGoodThreshold: 2,
   familiarityStep: 0.25,
@@ -121,5 +127,6 @@ export interface LearnerRepo {
   putCards(cards: SkillCard[]): Promise<void>;
   appendEvidence(e: Evidence[]): Promise<void>;
   dueCards(now: Date, limit: number): Promise<SkillCard[]>;
-  knownSet(minState: ItemState): Promise<Set<string>>;
+  /** Every card (Phase 21: "known" is decided by the shared terms in progress/, not by the repo). */
+  allCards(): Promise<SkillCard[]>;
 }

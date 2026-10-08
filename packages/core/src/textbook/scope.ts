@@ -96,37 +96,48 @@ export function courseLessonsOfTags(
  * "My class" scope: which items are visible to chat targets and the known
  * sample. With the setting off everything is in scope (previous behaviour,
  * exactly). With it on, a textbook item whose first lesson in the COURSE is
- * beyond current+1 is out. Items that aren't in the course at all are never affected.
+ * more than `aheadLessons` past the class is out (the same "Lessons ahead of class"
+ * setting the study focus uses). Items that aren't in the course at all are never affected.
+ *
+ * Phase 21 naming: `currentLesson` is always the lesson number inside its book;
+ * a global course position is always called `courseOrdinal`.
  */
 export interface ClassScope {
   enabled: boolean;
   /** Global order of the class's current lesson (for book 1 this equals the lesson number). */
-  currentLesson: number;
+  courseOrdinal: number;
   /** The book the class is in. */
   textbookId: string;
   /** Lesson number inside `textbookId`. */
-  lessonInBook: number;
+  currentLesson: number;
+  /** "Lessons ahead of class" (study settings `classAheadLessons`). */
+  aheadLessons: number;
   course: Course;
 }
 
+/** Default preview window: the study order's default `classAheadLessons`. */
+export const DEFAULT_CLASS_AHEAD_LESSONS = 1;
+
 export function classScope(
   setting: MyClassSetting | undefined,
-  course: Course = LAIXUE_COURSE,
+  opts: { course?: Course; aheadLessons?: number } = {},
 ): ClassScope {
+  const course = opts.course ?? LAIXUE_COURSE;
   const textbookId = setting?.textbookId ?? TEXTBOOK_ID;
-  const lessonInBook = setting?.currentLesson ?? 1;
+  const currentLesson = setting?.currentLesson ?? 1;
   return {
     enabled: !!setting?.enabled,
-    currentLesson: courseOrdinal(course, textbookId, lessonInBook) ?? lessonInBook,
+    courseOrdinal: courseOrdinal(course, textbookId, currentLesson) ?? currentLesson,
     textbookId,
-    lessonInBook,
+    currentLesson,
+    aheadLessons: opts.aheadLessons ?? DEFAULT_CLASS_AHEAD_LESSONS,
     course,
   };
 }
 
-/** Lessons up to and including `current + 1` (course order) are in reach (i+1 trickle). */
+/** Lessons up to and including the class + `aheadLessons` (course order) are in reach. */
 export function maxVisibleLesson(scope: ClassScope): number {
-  return scope.currentLesson + 1;
+  return scope.courseOrdinal + scope.aheadLessons;
 }
 
 export function tagsInScope(tags: readonly string[], scope: ClassScope): boolean {
@@ -154,7 +165,7 @@ export function filterIdsInScope(
 
 /** The (book, lesson) a global order number points at. */
 export function classPosition(scope: ClassScope): { bookId: string; n: number } {
-  return locateOrdinal(scope.course, scope.currentLesson) ?? { bookId: scope.textbookId, n: scope.lessonInBook };
+  return locateOrdinal(scope.course, scope.courseOrdinal) ?? { bookId: scope.textbookId, n: scope.currentLesson };
 }
 
 /** Global order of one lesson of a book (its own number for an off-course book id). */

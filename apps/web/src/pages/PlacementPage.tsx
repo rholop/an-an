@@ -4,6 +4,7 @@ import {
   DEFAULT_PLACEMENT_CONFIG,
   initPlacementState,
   LEVEL_ORDER,
+  levelItems,
   nextPlacementRound,
   summarizePlacement,
   type Evidence,
@@ -15,6 +16,9 @@ import {
 import { learnerService } from '../db/instance.js';
 import { setCurrentLevel } from '../lib/current-level.js';
 import { useLexicon } from '../lib/useLexicon.js';
+import { useProgressData } from '../lib/study.js';
+import { LearnedMastered } from '../components/LearnedMastered.js';
+import { levelShort, placedAtLine } from '../lib/labels.js';
 import './PlacementPage.css';
 
 type Stage =
@@ -41,17 +45,11 @@ async function applyPlacementResult(state: PlacementState, lexicon: Lexicon, now
   // verification per phase doc §5), since testing every single word isn't
   // feasible. Words at/above the boundary that weren't individually tapped
   // are left untouched (genuinely unseen, no row written).
-  const bulkKnownEvents: Evidence[] = lexicon
-    .allWords()
-    .filter(
-      (w) => w.level !== null && LEVEL_ORDER.indexOf(w.level) < boundaryIdx && !judgedIds.has(w.id),
-    )
-    .map((w) => ({
-      item: { kind: 'word', id: w.id },
-      skill: 'recognition',
-      kind: 'placement_known',
-      at: now,
-    }));
+  // Phase 21: the one level item set (TOCFL-list words of each level).
+  const bulkKnownEvents: Evidence[] = LEVEL_ORDER.slice(0, boundaryIdx)
+    .flatMap((lv) => levelItems(lv, lexicon.allWords()))
+    .filter((i) => !judgedIds.has(i.id))
+    .map((item) => ({ item, skill: 'recognition', kind: 'placement_known', at: now }));
 
   await learnerService.recordBulk([...overrideEvents, ...bulkKnownEvents], now);
   // Phase 7: placement sets "My level" to the first level not yet known (still
@@ -83,16 +81,11 @@ export function PlacementPage() {
   async function startManual(level: Level) {
     setStage({ kind: 'applying' });
     const now = new Date();
-    const boundaryIdx = LEVEL_ORDER.indexOf(level) + 1; // "start at level X": X and below treated known
-    const events: Evidence[] = lexicon
-      .allWords()
-      .filter((w) => w.level !== null && LEVEL_ORDER.indexOf(w.level) < boundaryIdx)
-      .map((w) => ({
-        item: { kind: 'word', id: w.id },
-        skill: 'recognition',
-        kind: 'placement_known',
-        at: now,
-      }));
+    // Phase 21: "Placed at X": X is the level to learn; the levels below it are marked known.
+    const boundaryIdx = LEVEL_ORDER.indexOf(level);
+    const events: Evidence[] = LEVEL_ORDER.slice(0, boundaryIdx)
+      .flatMap((lv) => levelItems(lv, lexicon.allWords()))
+      .map((item) => ({ item, skill: 'recognition', kind: 'placement_known', at: now }));
     await learnerService.recordBulk(events, now);
     await setCurrentLevel(LEVEL_ORDER[Math.min(boundaryIdx, LEVEL_ORDER.length - 1)]!);
     const state: PlacementState = {
@@ -148,7 +141,7 @@ export function PlacementPage() {
             <div className="placement-manual-levels">
               {LEVEL_ORDER.map((level) => (
                 <button key={level} onClick={() => startManual(level)}>
-                  {level}
+                  {levelShort(level)}
                 </button>
               ))}
             </div>
@@ -159,7 +152,7 @@ export function PlacementPage() {
       {stage.kind === 'running' && (
         <div className="placement-round">
           <p className="placement-progress">
-            Tap {totalTaps + 1} · level {stage.round.level}
+            Tap {totalTaps + 1} · level {levelShort(stage.round.level)}
           </p>
           <div className="placement-word">{stage.round.words[stage.answers.length]?.headword}</div>
           <div className="placement-buttons">
@@ -176,29 +169,41 @@ export function PlacementPage() {
       {stage.kind === 'applying' && <p>Saving results…</p>}
 
       {stage.kind === 'done' && (
-        <PlacementSummary state={stage.state} bulkCount={applySummary?.bulkCount ?? 0} />
+        <PlacementSummary state={stage.state} bulkCount={applySummary?.bulkCount ?? 0} lexicon={lexicon} />
       )}
     </div>
   );
 }
 
-function PlacementSummary({ state, bulkCount }: { state: PlacementState; bulkCount: number }) {
+function PlacementSummary({ state, bulkCount, lexicon }: { state: PlacementState; bulkCount: number; lexicon: Lexicon }) {
   const result = summarizePlacement(state);
+  const progress = useProgressData();
+  const below = result.boundaryLevel ? LEVEL_ORDER.slice(0, LEVEL_ORDER.indexOf(result.boundaryLevel)) : [...LEVEL_ORDER];
   return (
     <div className="placement-summary">
-      <p>
-        Placed at <strong>{result.boundaryLevel ?? 'beyond L5'}</strong>
-        {result.boundaryLevel && ` (levels before ${result.boundaryLevel} marked known)`}.
+      <p data-testid="placed-at">
+        {result.boundaryLevel ? placedAtLine(result.boundaryLevel) : 'Placed beyond L5'}.
+        {below.length > 0 && ` ${below.map(levelShort).join(', ')} marked as known.`}
       </p>
-      <p className="placement-bulk-note">{bulkCount} words marked known for light first review.</p>
+      <p className="placement-bulk-note">
+        {bulkCount} words marked known. They show as Imported until you first get them right in review
+        (words you already had are left as they were).
+      </p>
       <h2>Level-by-level summary</h2>
       <ul className="placement-level-summary">
         {LEVEL_ORDER.map((level) => {
           const tally = result.byLevel[level];
-          if (!tally) return null;
           return (
             <li key={level}>
-              {level}: {tally.known}/{tally.total} known
+              {levelShort(level)}
+              {tally ? `: ${tally.known}/${tally.total} known in the test` : ''}
+              {progress && (
+                <LearnedMastered
+                  compact
+                  testId={`placement-progress-${level}`}
+                  p={progress.index.summarize(levelItems(level, lexicon.allWords()))}
+                />
+              )}
             </li>
           );
         })}

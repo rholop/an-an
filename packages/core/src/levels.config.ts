@@ -49,8 +49,12 @@ export function levelLabel(level: Level): string {
   return `${l.id} ${l.nameZh} · ${l.cefr}`;
 }
 
-/** "Level 2 (Basic)" for prose. */
-export function levelName(level: Level): string {
-  const l = levelInfo(level);
-  return level.startsWith('N') ? l.nameEn : `Level ${level.slice(1)} (${l.nameEn})`;
+/** "L2": only in tight chips, with `levelLabel` as the tooltip (Phase 21 Part H). */
+export function levelShort(level: Level): string {
+  return levelInfo(level).id;
+}
+
+/** "TOCFL L2": gate messages and study steps. */
+export function tocflLabel(level: Level): string {
+  return `TOCFL ${levelShort(level)}`;
 }

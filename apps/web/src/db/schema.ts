@@ -112,6 +112,8 @@ export interface RewardRow {
   points: number;
   at: Date;
   refId?: string;
+  /** Phase 21 Undo: takes back the reward with this id. */
+  revokes?: string;
 }
 
 export interface TurnRow {
@@ -208,6 +210,8 @@ export interface GlossReportRow {
   contextSentence: string;
   note?: string;
   at: Date;
+  /** Phase 21: the learner pressed Undo on the report (kept, so a sync can't bring it back). */
+  withdrawnAt?: Date;
 }
 
 /** Phase 7 §B5: cached AI definitions for words NOT in the lexicon, labelled

@@ -11,6 +11,7 @@ import {
   type Textbook,
 } from '@anan/core';
 import { currentSession, db, onSessionChange } from '../db/instance.js';
+import { markStudyDirty } from './study-dirty.js';
 
 /**
  * Phase 12 "My class": per-profile, synced (it lives in the `settings` table,
@@ -31,7 +32,19 @@ export interface StoredMyClass extends MyClassSetting {
 let current: StoredMyClass = { ...DEFAULT_MY_CLASS };
 let loaded = false;
 const listeners = new Set<() => void>();
-const notify = () => listeners.forEach((l) => l());
+const changeListeners = new Set<() => void>();
+// Phase 21: a My class change changes the study focus, so every tab recomputes.
+const notify = () => {
+  listeners.forEach((l) => l());
+  changeListeners.forEach((l) => l());
+  markStudyDirty();
+};
+
+/** Called after every change (load, set, sync reload). */
+export function onMyClassChange(fn: () => void): () => void {
+  changeListeners.add(fn);
+  return () => changeListeners.delete(fn);
+}
 
 function sanitize(v: unknown): StoredMyClass {
   const o = (v ?? {}) as Partial<StoredMyClass>;
@@ -114,13 +127,14 @@ export async function recordLessonCoverage(
   setting: StoredMyClass,
   recorder: CoverageRecorder,
   now: Date = new Date(),
+  /** Phase 21: lessons held back by the TOCFL gate (listed, but not introduced into review yet). */
+  gatedLessonIds: ReadonlySet<string> = new Set(),
 ): Promise<{ events: number; cards: number; coveredThrough: number }> {
   if (!setting.enabled) return { events: 0, cards: 0, coveredThrough: setting.coveredThrough ?? 0 };
   const list = Array.isArray(books) ? (books as readonly Textbook[]) : [books as Textbook];
   const from = setting.coveredThrough ?? 0;
-  const through =
+  const classAt =
     courseOrdinal(LAIXUE_COURSE, setting.textbookId, setting.currentLesson) ?? setting.currentLesson;
-  const all = lessonCoveredEvidence(list, through, now);
   const ordinalOfLesson = (lessonId: string): number => {
     for (const b of list) {
       const l = b.lessons.find((x) => x.id === lessonId);
@@ -128,23 +142,60 @@ export async function recordLessonCoverage(
     }
     return 0;
   };
+  // Coverage stops before the first gated lesson; it resumes (catchUpClassCoverage) once the gate opens.
+  const firstGated = Math.min(
+    ...[...gatedLessonIds].map(ordinalOfLesson).filter((o) => o > from && o <= classAt),
+    Infinity,
+  );
+  const through = Math.min(classAt, firstGated - 1);
+  if (through <= from) return { events: 0, cards: 0, coveredThrough: from };
+  const all = lessonCoveredEvidence(list, through, now);
   const fresh = all.filter((e) => ordinalOfLesson(e.context?.refId ?? '') > from);
   const cards = fresh.length > 0 ? (await recorder.recordBulk(fresh, now)).length : 0;
   return { events: fresh.length, cards, coveredThrough: Math.max(from, through) };
 }
 
+let catchingUp: Promise<number> | undefined;
+/**
+ * Phase 21: lessons up to the class that the TOCFL gate held back join review once the gate opens.
+ * Cheap when there is nothing to do; one run at a time.
+ */
+export function catchUpClassCoverage(
+  books: readonly Textbook[],
+  recorder: CoverageRecorder,
+  gatedLessonIds: ReadonlySet<string>,
+): Promise<number> {
+  if (catchingUp) return catchingUp;
+  const at = current;
+  const classAt = courseOrdinal(LAIXUE_COURSE, at.textbookId, at.currentLesson) ?? at.currentLesson;
+  if (!at.enabled || !loaded || (at.coveredThrough ?? 0) >= classAt || books.length === 0) return Promise.resolve(0);
+  catchingUp = (async () => {
+    const r = await recordLessonCoverage(books, at, recorder, new Date(), gatedLessonIds);
+    if (r.coveredThrough > (current.coveredThrough ?? 0)) {
+      current = { ...current, coveredThrough: r.coveredThrough };
+      await db.settings.put({ key: KEY, value: current });
+    }
+    return r.cards;
+  })().finally(() => {
+    catchingUp = undefined;
+  });
+  return catchingUp;
+}
+
 /** Persist + broadcast a change, and record coverage when a book is given. */
 export async function setMyClass(
   patch: Partial<MyClassSetting>,
-  opts: { books?: readonly Textbook[]; recorder?: CoverageRecorder } = {},
+  opts: { books?: readonly Textbook[]; recorder?: CoverageRecorder; gatedLessonIds?: ReadonlySet<string> } = {},
 ): Promise<{ added: number }> {
   const next = sanitize({ ...current, ...patch });
   current = next;
   loaded = true;
   notify();
+  // Saved at once (not only after the coverage below), so leaving the page right away keeps it.
+  await db.settings.put({ key: KEY, value: current });
   let added = 0;
   if (opts.books && opts.recorder && next.enabled) {
-    const r = await recordLessonCoverage(opts.books, next, opts.recorder);
+    const r = await recordLessonCoverage(opts.books, next, opts.recorder, new Date(), opts.gatedLessonIds);
     added = r.cards;
     // Merge into the CURRENT value: another change may have landed while the coverage was recorded.
     current = { ...current, coveredThrough: Math.max(current.coveredThrough ?? 0, r.coveredThrough) };

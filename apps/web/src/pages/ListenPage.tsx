@@ -3,6 +3,10 @@ import {
   lessonIndex,
   planListenSession,
   studyRank,
+  isUsableSentence,
+  levelIndex,
+  LEVEL_IDS,
+  maxVisibleLesson,
   type Exercise,
   type Level,
   type Lexicon,
@@ -10,7 +14,7 @@ import {
   type SentenceBankEntry,
   type SkillCard,
 } from '@anan/core';
-import { newSessionSeed, sessionMeta } from '@anan/core';
+import { describePlanItem, newSessionSeed, requeueAgain, sessionMeta } from '@anan/core';
 import { logSessionOrder, recentShown } from '../lib/session-recent.js';
 import { ListenExercise, type ListenResult } from '../components/ListenExercise.js';
 import { learnerService } from '../db/instance.js';
@@ -18,9 +22,13 @@ import { ensureListeningCards, recordListeningEvidence, prefetchClips, useListen
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
-import { useTextbookSentences } from '../lib/textbook-data.js';
+import { sentenceOrdinal, useTextbookSentences } from '../lib/textbook-data.js';
+import { useClassScope, useStudyFocus } from '../lib/study.js';
+import { useCurrentLevel } from '../lib/current-level.js';
+import { excludedZh } from '../lib/cloze-reports.js';
+import { db } from '../db/instance.js';
+import { CURRENT_LESSON, UNDO, YOUR_LEVEL, levelShort, lessonLabel, stepName } from '../lib/labels.js';
 
-const SENTENCE_LEVELS: Level[] = ['N1', 'N2', 'L1', 'L2'];
 type Clips = ReturnType<typeof useListeningClips>;
 
 /** The clip an exercise plays, under Phase 15's rules (tone exercises: verified clips only). */
@@ -44,7 +52,8 @@ function withUrl(clips: Clips, kind: 'word' | 'sentence', id: string, verifiedOn
   return url && info ? { url, kind, id, hash: info.hash, text: info.text } : null;
 }
 
-/** Runs a plan: records evidence, skips "Sounds wrong" clips without penalty. */
+/** Runs a plan: records evidence, skips "Sounds wrong" clips without penalty.
+ * Phase 21: a wrong answer comes back once at the end (Again), and Undo takes back the last answer. */
 export function ListenRunner({
   plan,
   lexicon,
@@ -52,6 +61,7 @@ export function ListenRunner({
   cardIds,
   onFinished,
   onEach,
+  requeue = true,
 }: {
   plan: PlanItem[];
   lexicon: Lexicon;
@@ -60,27 +70,61 @@ export function ListenRunner({
   cardIds: ReadonlySet<string>;
   onFinished: (summary: { done: number; correct: number; skipped: number }) => void;
   onEach?: () => void;
+  /** Phase 21: re-queue a missed exercise at the end (off for one-off slots inside Cloze). */
+  requeue?: boolean;
 }) {
+  const [queue, setQueue] = useState<PlanItem[]>(plan);
   const [i, setI] = useState(0);
+  const [attempt, setAttempt] = useState(0);
   const [tally, setTally] = useState({ done: 0, correct: 0, skipped: 0 });
-  const item = plan[i];
+  const [history, setHistory] = useState<
+    Array<{ i: number; queue: PlanItem[]; tally: typeof tally; undos: Array<() => Promise<void>> }>
+  >([]);
+  const item = queue[i];
 
   const advance = useCallback(
     async (r: ListenResult) => {
       const now = new Date();
-      await recordListeningEvidence((e, at) => learnerService.record(e, at), cardIds, r.evidence, now);
+      const undos: Array<() => Promise<void>> = [];
+      await recordListeningEvidence(
+        async (e, at) => {
+          const h = await learnerService.recordUndoable(e, at);
+          undos.push(h.undo);
+        },
+        cardIds,
+        r.evidence,
+        now,
+      );
       const t = {
         done: tally.done + (r.skipped ? 0 : 1),
         correct: tally.correct + (r.correct ? 1 : 0),
         skipped: tally.skipped + (r.skipped ? 1 : 0),
       };
+      // Again (Phase 21): a miss comes back once, spaced from its siblings by the shared rule.
+      const missed = requeue && !r.skipped && !r.correct && item && queue.filter((q) => q === item).length < 2;
+      const spaced = missed ? requeueAgain(queue, i, describePlanItem) : queue;
+      const nextQueue = missed && item ? (spaced.length > queue.length ? spaced : [...queue, item]) : queue;
+      setHistory((h) => (r.skipped ? h : [...h, { i, queue, tally, undos }]));
       setTally(t);
+      setQueue(nextQueue);
       onEach?.();
-      if (i + 1 >= plan.length) onFinished(t);
+      if (i + 1 >= nextQueue.length) onFinished(t);
       else setI(i + 1);
     },
-    [cardIds, i, onEach, onFinished, plan.length, tally],
+    [cardIds, i, item, onEach, onFinished, queue, requeue, tally],
   );
+
+  async function undo() {
+    const last = history[history.length - 1];
+    if (!last) return;
+    setHistory((h) => h.slice(0, -1));
+    for (const u of last.undos) await u();
+    setQueue(last.queue);
+    setTally(last.tally);
+    setI(last.i);
+    setAttempt((a) => a + 1);
+    onEach?.();
+  }
 
   // An exercise whose clip has vanished (flagged elsewhere) is skipped without penalty.
   useEffect(() => {
@@ -91,10 +135,15 @@ export function ListenRunner({
   return (
     <div>
       <p className="textbook-muted">
-        Exercise {i + 1} of {plan.length}
+        Exercise {i + 1} of {queue.length}{' '}
+        {history.length > 0 && (
+          <button type="button" className="link-button" data-testid="listen-undo" onClick={() => void undo()}>
+            {UNDO}
+          </button>
+        )}
       </p>
       <ListenExercise
-        key={i}
+        key={`${i}:${attempt}`}
         exercise={item.exercise}
         lexicon={lexicon}
         clipFor={(e) => exerciseClip(clips, e)}
@@ -124,22 +173,36 @@ export function ListenPage({
   const lexiconState = useLexicon();
   const clips = useListeningClips();
   const enabled = useListeningEnabled();
-  const bank = useSentenceBank(SENTENCE_LEVELS);
+  // Phase 21: sentences up to your level and never past the class (or the active lesson without one).
+  const { level } = useCurrentLevel();
+  const levels = useMemo((): Level[] => LEVEL_IDS.filter((l) => levelIndex(l) <= levelIndex(level)), [level]);
+  const bank = useSentenceBank(levels);
   const tbSentences = useTextbookSentences(true);
+  const scope = useClassScope();
+  const { focus } = useStudyFocus();
+  const [excluded, setExcluded] = useState<Set<string> | null>(null);
+  useEffect(() => {
+    void excludedZh(db).then(setExcluded);
+  }, []);
   const [plan, setPlan] = useState<PlanItem[] | null>(null);
   const [cardIds, setCardIds] = useState<Set<string>>(new Set());
   const [summary, setSummary] = useState<{ done: number; correct: number; skipped: number } | null>(null);
 
-  const sentences: SentenceBankEntry[] = useMemo(
-    () => [
+  const sentences: SentenceBankEntry[] = useMemo(() => {
+    const active = focus?.enabled ? focus.activeLesson : undefined;
+    const limit = scope.enabled ? maxVisibleLesson(scope) : (active?.ordinal ?? 0);
+    const ex = excluded ?? new Set<string>();
+    return [
       ...(bank.status === 'ready' ? bank.sentences : []),
-      ...(tbSentences.status === 'ready' ? tbSentences.sentences : []),
-    ],
-    [bank, tbSentences],
-  );
+      ...(tbSentences.status === 'ready'
+        ? tbSentences.sentences.filter((x) => (sentenceOrdinal(x) ?? Infinity) <= limit)
+        : []),
+    ].filter((x) => isUsableSentence(x.zh, ex));
+  }, [bank, tbSentences, scope, focus, excluded]);
+  const sentencesReady = bank.status === 'ready' && tbSentences.status === 'ready' && excluded !== null;
 
   useEffect(() => {
-    if (lexiconState.status !== 'ready' || !clips.ready || !enabled) return;
+    if (lexiconState.status !== 'ready' || !clips.ready || !enabled || !sentencesReady || plan !== null) return;
     let cancelled = false;
     (async () => {
       const now = new Date();
@@ -176,13 +239,23 @@ export function ListenPage({
       cancelled = true;
     };
     // the plan is built once per session start
-  }, [lexiconState.status, clips.ready, enabled]);
+  }, [lexiconState.status, clips.ready, enabled, sentencesReady]);
 
   if (lexiconState.status !== 'ready') return <p>Loading…</p>;
   return (
     <div className="listen-page" data-testid="listen-page">
       {onExit && <button onClick={onExit}>{exitLabel}</button>}
       <h1>{title}</h1>
+      <p className="textbook-muted" data-testid="listen-context">
+        {YOUR_LEVEL}: {levelShort(level)}
+        {focus?.enabled && focus.activeStep && (
+          <>
+            {' · '}
+            {CURRENT_LESSON}:{' '}
+            {focus.activeLesson ? lessonLabel(focus.activeLesson.n, focus.activeLesson.bookId) : stepName(focus.activeStep)}
+          </>
+        )}
+      </p>
       {!enabled ? (
         <p>Listening practice is off (Credits → Audio).</p>
       ) : !clips.ready ? (

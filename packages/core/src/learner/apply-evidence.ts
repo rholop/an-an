@@ -2,8 +2,10 @@ import { Rating, State, type Card, type FSRS, type Grade } from 'ts-fsrs';
 import { nextLadderState, type ClozeOutcome } from '../cloze/ladder.js';
 import type { Evidence } from '../types.js';
 import { buildFsrs, computeItemState, emptyCard } from './fsrs-instance.js';
+import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 import { REVIEW_PILE_CONFIG } from './review-pile.config.js';
 import { cardSourceFor } from './review-pile.js';
+import { isInReview } from '../progress/terms.js';
 import {
   DEFAULT_LEARNER_CONFIG,
   type LearnerConfig,
@@ -150,7 +152,7 @@ function applyLookupGloss(
   config: LearnerConfig,
   fsrsInstance: FSRS,
 ): ModelUpdate {
-  if (current && (current.state === 'review' || current.state === 'mature')) {
+  if (current && isInReview(current)) {
     const { card } = fsrsInstance.next(current.card, now, Rating.Again);
     return {
       card: withCard(current, card, now, config),
@@ -298,6 +300,82 @@ function applyTextbookCovered(
   return { card: { ...base, state: 'introduced' }, appliedEffect: 'introduce (textbook lesson)' };
 }
 
+/** Phase 21 known_check_passed: the learner passed "I already know this". Learned and Mastered
+ * (until a later lapse contradicts it): review state, long stability, due far ahead. */
+function applyKnownCheck(current: SkillCard | undefined, evidence: Evidence, now: Date, config: LearnerConfig): ModelUpdate {
+  const base = current ?? blankSkillCard(evidence, emptyCard(now), now);
+  const days = PROGRESS_CONFIG.knownStabilityDays;
+  const card: Card = {
+    ...base.card,
+    state: State.Review,
+    stability: Math.max(base.card.stability, days),
+    difficulty: base.card.difficulty || 5,
+    scheduled_days: days,
+    reps: Math.max(base.card.reps, 1),
+    due: new Date(now.getTime() + days * 86_400_000),
+    last_review: now,
+  };
+  return {
+    card: {
+      ...withCard(base, card, now, config),
+      lapses: base.lapses,
+      leech: base.leech,
+      flags: { ...base.flags, knownChecked: true, knownCheckedAt: now, knownCheckLapses: base.lapses },
+    },
+    appliedEffect: 'known-check',
+  };
+}
+
+/** Phase 21 production_unlocked / listening_unlocked: create the card (New, due now) if missing. */
+function applyUnlock(current: SkillCard | undefined, evidence: Evidence, now: Date): ModelUpdate {
+  if (current && current.state !== 'unseen') return { card: undefined, appliedEffect: 'ignored:already-carded' };
+  const base = blankSkillCard(evidence, emptyCard(now), now);
+  return { card: { ...base, state: 'introduced' }, appliedEffect: `introduce (${evidence.skill})` };
+}
+
+/** Phase 21 journal_priority: like a lookup on the production card, plus the priority flag. */
+function applyJournalPriority(
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+  config: LearnerConfig,
+  fsrsInstance: FSRS,
+): ModelUpdate {
+  const looked = applyLookupGloss(current, { ...evidence, context: { ...evidence.context, source: 'journal' } }, now, config, fsrsInstance);
+  const card = looked.card ?? (current ? { ...current, updatedAt: now } : undefined);
+  if (!card) return looked;
+  return { card: { ...card, flags: { ...card.flags, priority: true } }, appliedEffect: `${looked.appliedEffect} + priority` };
+}
+
+/** Phase 21 evidence_undone: the card goes back to how it was before the undone answer, with a NEW
+ * `updatedAt` so sync keeps the undo (an old timestamp would lose to the undone version). */
+function applyUndo(current: SkillCard | undefined, evidence: Evidence, now: Date): ModelUpdate {
+  const restore = evidence.context?.restore as SkillCard | undefined;
+  if (!restore) {
+    // The card didn't exist before: leave a removed (never-shown) card in place of a delete, which sync can't carry.
+    if (!current) return { card: undefined, appliedEffect: 'ignored:nothing-to-undo' };
+    return {
+      card: { ...current, state: 'unseen', card: emptyCard(now), flags: {}, lapses: 0, leech: false, updatedAt: now },
+      appliedEffect: 'undo:removed',
+    };
+  }
+  return {
+    card: { ...restore, card: { ...restore.card, due: new Date(restore.card.due), ...(restore.card.last_review ? { last_review: new Date(restore.card.last_review) } : {}) }, updatedAt: now },
+    appliedEffect: 'undo:restored',
+  };
+}
+
+/** Phase 21 cloze_rung_set: move the cloze ladder without a rating. */
+function applyRungSet(current: SkillCard | undefined, evidence: Evidence, now: Date): ModelUpdate {
+  if (!current) return { card: undefined, appliedEffect: 'ignored:no-card' };
+  const rung = evidence.context?.rung;
+  if (typeof rung !== 'number') return { card: undefined, appliedEffect: 'ignored:no-rung' };
+  return { card: { ...current, clozeRung: rung as SkillCard['clozeRung'], clozeStreak: 0, updatedAt: now }, appliedEffect: `rung:${rung}` };
+}
+
+const carded = (c: SkillCard | undefined): boolean => !!c && c.state !== 'unseen';
+const keep = (): ModelUpdate => ({ card: undefined, appliedEffect: 'ignored:already-carded' });
+
 export type EvidenceHandler = (
   current: SkillCard | undefined,
   evidence: Evidence,
@@ -329,9 +407,10 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   chat_lookup_gloss: (c, e, n, cfg, f) => applyLookupGloss(c, e, n, cfg, f),
   chat_hover_reading: (c, _e, n, cfg) => applyHoverReading(c, n, cfg),
 
-  anki_import_seen: (_c, e, n, cfg) => applyAnkiImportSeen(e, n, cfg),
-  placement_known: (_c, e, n, cfg) => applyPlacement(e, n, cfg, true),
-  placement_unknown: (_c, e, n, cfg) => applyPlacement(e, n, cfg, false),
+  // Phase 21: placement and Anki import only create missing cards; they never overwrite one.
+  anki_import_seen: (c, e, n, cfg) => (carded(c) ? keep() : applyAnkiImportSeen(e, n, cfg)),
+  placement_known: (c, e, n, cfg) => (carded(c) ? keep() : applyPlacement(e, n, cfg, true)),
+  placement_unknown: (c, e, n, cfg) => (c ? keep() : applyPlacement(e, n, cfg, false)),
   textbook_lesson_covered: (c, e, n) => applyTextbookCovered(c, e, n),
 
   // Phase 15: correct on first play = Good; after replays / slow / wrong tone = Hard; wrong = Again.
@@ -341,6 +420,13 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
 
   review_nope: (c, e, n, cfg) => applyNope(c, e, n, cfg),
   review_restore: (c, e, n) => applyRestore(c, e, n),
+
+  known_check_passed: (c, e, n, cfg) => applyKnownCheck(c, e, n, cfg),
+  production_unlocked: (c, e, n) => applyUnlock(c, e, n),
+  listening_unlocked: (c, e, n) => applyUnlock(c, e, n),
+  journal_priority: applyJournalPriority,
+  evidence_undone: (c, e, n) => applyUndo(c, e, n),
+  cloze_rung_set: (c, e, n) => applyRungSet(c, e, n),
 };
 
 /**

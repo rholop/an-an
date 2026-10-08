@@ -17,7 +17,7 @@ test.describe('Cloze page', () => {
 
     // Seed a few due items the same way reader-evidence.spec.ts proves tap
     // evidence works: clicking a token introduces its word (due = now).
-    await page.goto('/');
+    await page.goto('/?page=reader');
     await expect(page.getByText(/Lexicon v2 · \d+ words/)).toBeVisible({ timeout: 15000 });
     await page.waitForFunction(() => Boolean(window.__anan));
     for (let i = 0; i < 3; i++) {
@@ -56,7 +56,7 @@ test.describe('Cloze page', () => {
       .toBe(true);
 
     await page.getByRole('button', { name: 'Next' }).click();
-    await expect(page.getByText(/Item 2 \//)).toBeVisible();
+    await expect(page.getByTestId('cloze-counter')).toHaveText(/^2 of /);
 
     expect(errors, `console errors: ${errors.join('\n')}`).toEqual([]);
   });

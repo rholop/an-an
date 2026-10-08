@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Evidence, GrammarItem, Lexicon, SkillCard, Word } from '@anan/core';
-import { homeLessonOfTags, lessonBadge, nextLeechTreatment } from '@anan/core';
+import { charsInWord, glossFor, homeLessonOfTags, isNewCard, nextLeechTreatment } from '@anan/core';
 import {
   describePlanItem,
   describeSkillCard,
-  emptyCard,
   LISTENING_CONFIG,
   lessonIndex,
   newSessionSeed,
@@ -14,7 +13,11 @@ import {
   sessionMeta,
   type PlanItem,
 } from '@anan/core';
-import { buildReviewSession, pickReviewCards } from '../lib/review-session.js';
+import { buildReviewSession, newSessionCard, pickReviewCards } from '../lib/review-session.js';
+import { AnnotatedInline, useReadingScript } from '../components/AnnotatedInline.js';
+import type { AnnotationScript } from '../components/AnnotatedText.js';
+import { dueNewLine, lessonLabel, NOTHING_DUE, UNDO, waitingSiblings } from '../lib/labels.js';
+import { readingText } from '../lib/reading.js';
 import { NopeButton, NopeToast } from '../components/Nope.js';
 import { nopeWord, wakeSnoozed } from '../lib/nope.js';
 import { getReviewSettings } from '../lib/review-settings.js';
@@ -30,25 +33,6 @@ import { SpeakerButton } from '../components/SpeakerButton.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import './ReviewPage.css';
 
-/** A card for an item that has no card yet: rating it records the first evidence. */
-function newCard(item: SkillCard['item'], now: Date): SkillCard {
-  return {
-    item,
-    skill: 'recognition',
-    card: emptyCard(now),
-    state: 'unseen',
-    lapses: 0,
-    leech: false,
-    leechTreatmentsTried: [],
-    clozeRung: 1,
-    clozeStreak: 0,
-    familiarity: 0,
-    readingDependence: 0,
-    flags: {},
-    updatedAt: now,
-  };
-}
-
 type Grade = 'again' | 'hard' | 'good' | 'easy';
 const GRADES: { grade: Grade; label: string }[] = [
   { grade: 'again', label: 'Again' },
@@ -57,20 +41,39 @@ const GRADES: { grade: Grade; label: string }[] = [
   { grade: 'easy', label: 'Easy' },
 ];
 
-/** `focusCards` (Phase 6 garden): review exactly these cards — e.g. a plot's
- * wilting words, which may not be formally due yet — instead of the due queue. */
+/** `focusCards` (Phase 6 garden, Phase 21 lesson session): review exactly these Due cards (and
+ * `freshCards`, New ones) instead of the due queue. */
 export function ReviewPage({
   focusCards,
+  freshCards,
   onExit,
   exitLabel = '← Back to garden',
   title,
-}: { focusCards?: SkillCard[]; onExit?: () => void; exitLabel?: string; title?: string } = {}) {
+}: {
+  focusCards?: SkillCard[];
+  freshCards?: SkillCard[];
+  onExit?: () => void;
+  exitLabel?: string;
+  title?: string;
+} = {}) {
   const lexiconState = useLexicon();
+  const script = useReadingScript();
   const [queue, setQueue] = useState<SkillCard[] | null>(null);
+  // Phase 21: which session cards are New (never answered), so the header says "N due · M new".
+  const [freshSet, setFreshSet] = useState<Set<SkillCard>>(new Set());
+  // Cards the shared order left for later (sibling gap), so "Nothing due" never hides them.
+  const [deferred, setDeferred] = useState(0);
+  // Phase 21 Part G: Undo for the last answer.
+  const [lastAnswer, setLastAnswer] = useState<{
+    undo: () => Promise<void>;
+    prevQueue: SkillCard[];
+    prevIndex: number;
+    prevSlots: Map<number, PlanItem>;
+    prevDone: Set<number>;
+  } | null>(null);
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [forecast, setForecast] = useState<number[] | null>(null);
-  const [totalDue, setTotalDue] = useState(0);
   // Phase 15: a "Listen" session, and ~20% listening exercises mixed in once an item has a listening card.
   const clips = useListeningClips();
   const listeningOn = useListeningEnabled();
@@ -101,15 +104,18 @@ export function ReviewPage({
     let fresh: SkillCard[] = [];
     if (focusCards) {
       due = focusCards.filter((c) => !c.flags.excluded && !c.flags.snoozed);
+      fresh = (freshCards ?? []).filter((c) => !c.flags.excluded && !c.flags.snoozed);
       setCapNote(null);
     } else {
-      const [all, doneToday, rs] = await Promise.all([
-        learnerService.dueCards(now, 5000),
+      const [all, newCards, doneToday, rs] = await Promise.all([
+        learnerService.dueCards(now),
+        learnerService.newCards(),
         reviewsDoneToday(db, now),
         getReviewSettings(),
       ]);
       const picked = pickReviewCards({
         due: all,
+        newCards,
         doneToday,
         cap: rs.dailyCap,
         ...(focus ? { focus } : {}),
@@ -117,7 +123,7 @@ export function ReviewPage({
         now,
       });
       due = picked.due;
-      fresh = picked.newItems.map((item) => newCard(item, now));
+      fresh = [...picked.fresh, ...picked.newItems.map((item) => newSessionCard(item, now))];
       setCapNote(
         picked.held > 0 || picked.newReason
           ? { held: picked.held, cap: rs.dailyCap, ...(picked.newReason ? { newReason: picked.newReason } : {}) }
@@ -135,12 +141,14 @@ export function ReviewPage({
     });
     logSessionOrder('review', sessionSeed, next.length, sessionMeta(next)?.deferred.length ?? 0);
     setSeed(sessionSeed);
+    setFreshSet(new Set(fresh.filter((c) => isNewCard(c) || c.state === 'unseen')));
+    setDeferred(sessionMeta(next)?.deferred.length ?? 0);
     setQueue(next);
     setIndex(0);
     setRevealed(false);
-    setTotalDue(next.length);
+    setLastAnswer(null);
     setForecast(await dueForecast(db, now, 7));
-  }, [focusCards]);
+  }, [focusCards, freshCards]);
 
   useEffect(() => {
     loadQueue();
@@ -223,7 +231,7 @@ export function ReviewPage({
   }
 
   async function rate(grade: Grade) {
-    if (!current) return;
+    if (!current || !queue) return;
     setNope(null);
     const evidence: Evidence = {
       item: current.item,
@@ -231,7 +239,11 @@ export function ReviewPage({
       kind: `review_${grade}`,
       at: new Date(),
     };
-    await learnerService.record(evidence, evidence.at);
+    const before = { prevQueue: queue, prevIndex: index, prevSlots: slots, prevDone: doneSlots };
+    const handle = await learnerService.recordUndoable(evidence, evidence.at);
+    setLastAnswer({ undo: handle.undo, ...before });
+    // Phase 21: the forecast follows every rating.
+    void dueForecast(db, new Date(), 7).then(setForecast);
     // Phase 19: answered cards count as "just shown" for the next session's sibling gap.
     const w = current.item.kind === 'word' ? lexicon.byId(current.item.id) : undefined;
     noteShown([`${current.item.kind}:${current.item.id}`, ...(w ? [`zh:${w.headword}`] : [])]);
@@ -245,21 +257,49 @@ export function ReviewPage({
         setSlots((m) => new Map([...m].map(([k, v]) => [shift(k), v])));
         setDoneSlots((d) => new Set([...d].map(shift)));
         setQueue(q);
-        setTotalDue((n) => n + 1);
       }
     }
     setRevealed(false);
     setIndex((i) => i + 1);
   }
 
+  /** Phase 21: Undo the last answer (the card, its points and an Again re-queue all go back). */
+  async function undoLast() {
+    if (!lastAnswer) return;
+    await lastAnswer.undo();
+    setQueue(lastAnswer.prevQueue);
+    setIndex(lastAnswer.prevIndex);
+    setSlots(lastAnswer.prevSlots);
+    setDoneSlots(lastAnswer.prevDone);
+    setRevealed(true);
+    setLastAnswer(null);
+    void dueForecast(db, new Date(), 7).then(setForecast);
+  }
+
+  const rest = queue.slice(index);
+  const newLeft = rest.filter((c) => freshSet.has(c)).length;
+  const dueLeft = rest.length - newLeft;
+
   return (
     <div className="review-page">
       {onExit && <button onClick={onExit}>{exitLabel}</button>}
       <h1>{title ?? (focusCards ? 'Water these words' : 'Review')}</h1>
-      <p className="review-meta">
-        {Math.max(queue.length - index, 0)} due now (of {totalDue} this session)
-        {forecast && <span className="review-forecast"> · next 7 days: {forecast.join(', ')}</span>}
+      <p className="review-meta" data-testid="review-counts">
+        {dueNewLine(dueLeft, newLeft)}
+        {forecast && (
+          <span className="review-forecast" title="Due cards per day, today (incl. overdue) first">
+            {' '}
+            · next 7 days: {forecast.join(', ')}
+          </span>
+        )}
       </p>
+      {lastAnswer && (
+        <p className="review-undo">
+          <button type="button" onClick={() => void undoLast()} data-testid="review-undo">
+            {UNDO} last answer
+          </button>
+        </p>
+      )}
 
       {capNote && (
         <p className="review-cap-note" data-testid="review-cap-note">
@@ -295,12 +335,23 @@ export function ReviewPage({
           onFinished={() => setDoneSlots((d) => new Set(d).add(index))}
         />
       ) : !current ? (
-        <p className="review-done">
-          {totalDue === 0 ? 'Nothing due right now.' : 'All done for now — nice work.'}
-        </p>
+        <div className="review-done" data-testid="review-done">
+          {deferred > 0 ? (
+            <p>
+              {waitingSiblings(deferred)}{' '}
+              <button type="button" onClick={() => void loadQueue()}>
+                Check again
+              </button>
+            </p>
+          ) : (
+            <p>{NOTHING_DUE}</p>
+          )}
+        </div>
       ) : (
         <ReviewCard
           card={current}
+          isNew={freshSet.has(current)}
+          script={script}
           word={current.item.kind === 'word' ? lexicon.byId(current.item.id) : undefined}
           grammar={current.item.kind === 'grammar' ? lexicon.grammarItemById(current.item.id) : undefined}
           lexicon={lexicon}
@@ -317,6 +368,8 @@ export function ReviewPage({
 
 function ReviewCard({
   card,
+  isNew,
+  script,
   word,
   grammar,
   lexicon,
@@ -327,6 +380,8 @@ function ReviewCard({
   devPosition,
 }: {
   card: SkillCard;
+  isNew: boolean;
+  script: AnnotationScript;
   word: Word | undefined;
   grammar?: GrammarItem;
   lexicon: Lexicon;
@@ -341,25 +396,24 @@ function ReviewCard({
   // Phase 12: grammar patterns are schedulable items too — pattern on the front,
   // the app's own explanation on the back.
   const lesson = grammar ? homeLessonOfTags(grammar.tags ?? []) : word ? homeLessonOfTags(word.tags) : undefined;
+  // Phase 21 Part I: one gloss rule (glossFor) and the reading setting's script.
+  const gloss = word ? glossFor(word) : '';
+  const reading = word ? readingText(word, script) : '';
   const front = grammar
     ? grammar.pattern
     : card.skill === 'recognition'
       ? (word?.headword ?? '(unknown item)')
-      : (word?.glossEn ?? '(unknown item)');
-  const back = grammar
-    ? grammar.explanationEn
-    : card.skill === 'recognition'
-      ? `${word?.pinyin ?? ''} · ${word?.zhuyin ?? ''} — ${word?.glossEn ?? ''}`
-      : `${word?.headword ?? ''} (${word?.pinyin ?? ''})`;
+      : (gloss || '(unknown item)');
 
   return (
     <div className="review-card">
       <div className="review-card-skill">
+        {isNew && <span className="review-new-chip" data-testid="review-new">New · </span>}
         {grammar ? 'grammar' : card.skill}
         {devPosition && <span data-testid="dev-session-position"> · {devPosition}</span>}
         {lesson !== undefined && (
           <span className="textbook-badge" lang="zh-Hant">
-            {lessonBadge(lesson.n, lesson.bookId)}
+            {lessonLabel(lesson.n, lesson.bookId)}
           </span>
         )}
       </div>
@@ -372,9 +426,27 @@ function ReviewCard({
 
       {revealed ? (
         <>
-          <div className="review-card-back">{back}</div>
+          <div className="review-card-back" data-testid="review-back">
+            {grammar ? (
+              grammar.explanationEn
+            ) : card.skill === 'recognition' ? (
+              <>
+                {reading} — {gloss}
+              </>
+            ) : (
+              <>
+                {/* the answer is shown now, so its words may be looked up */}
+                {word && lexicon ? (
+                  <span lang="zh-Hant">
+                    <AnnotatedInline text={word.headword} lexicon={lexicon} script={script} />
+                  </span>
+                ) : null}{' '}
+                ({reading})
+              </>
+            )}
+          </div>
           {word && <SpeakerButton kind="word" id={word.id} label={word.headword} />}
-          {card.leech && word && <LeechBreakdown card={card} word={word} lexicon={lexicon} />}
+          {card.leech && word && <LeechBreakdown card={card} word={word} lexicon={lexicon} script={script} />}
           <div className="review-actions">
             <div className="review-buttons">
               {GRADES.map(({ grade, label }) => (
@@ -408,10 +480,12 @@ function LeechBreakdown({
   card,
   word,
   lexicon,
+  script,
 }: {
   card: SkillCard;
   word: Word;
   lexicon: Lexicon;
+  script: AnnotationScript;
 }) {
   // Phase 2 only actually implements the char_breakdown treatment (shown
   // below, unconditionally, since that's what this panel is); the other
@@ -422,19 +496,14 @@ function LeechBreakdown({
     <div className="leech-panel">
       <div className="leech-title">Leech — character breakdown</div>
       <div className="leech-chars">
-        {word.chars.map((ch, i) => {
-          const info = lexicon.charInfo(ch);
-          const entry = info.words[0];
-          return (
-            <div className="leech-char" key={i}>
-              <div className="leech-char-glyph">{ch}</div>
-              <div className="leech-char-reading">{entry?.pinyin ?? '?'}</div>
-              <div className="leech-char-gloss">
-                {entry?.glossEn ?? '(not its own lexicon entry)'}
-              </div>
-            </div>
-          );
-        })}
+        {/* Phase 21: each character's reading IN THIS WORD (MOE), not its first dictionary entry */}
+        {charsInWord(word, lexicon).map((c, i) => (
+          <div className="leech-char" key={i}>
+            <div className="leech-char-glyph">{c.ch}</div>
+            <div className="leech-char-reading">{readingText(c, script) || '?'}</div>
+            <div className="leech-char-gloss">{c.glossEn ?? '(not its own lexicon entry)'}</div>
+          </div>
+        ))}
       </div>
       {treatment !== 'char_breakdown' && (
         <div className="leech-stub-note">

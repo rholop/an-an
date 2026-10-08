@@ -102,3 +102,37 @@ export function senseSourceLabel(sense: Pick<Sense, 'basedOn' | 'taiwanOnly'>): 
   const names = [...new Set(sense.basedOn.map((s) => SOURCE_NAMES[s] ?? s))];
   return [names.join(' + '), sense.taiwanOnly ? 'Taiwan' : ''].filter(Boolean).join(' · ');
 }
+
+export interface GlossContext extends SenseContext {
+  /** The sense id the model chose (chat turns). */
+  senseId?: string;
+  /**
+   * true = textbook content (or an item that came from a lesson): the book's own sense.
+   * false = plain text: the resolved sense. Omitted = an item on its own (review, cloze answer,
+   * summary list): the book's sense when the word has one, since that is where it was learned.
+   */
+  textbook?: boolean;
+}
+
+/**
+ * Phase 21 Part I: the ONE way to choose a word's meaning, used by Review, Cloze, Journal, Open chat,
+ * QuickKnownCheck, summaries and popovers: the textbook sense for lesson content, otherwise the
+ * resolved sense (model pick → context rules → primary).
+ */
+export function senseFor(
+  word: Pick<Word, 'senses' | 'primarySenseId' | 'textbookSenseId'>,
+  ctx: GlossContext = {},
+): Sense | undefined {
+  const book = word.textbookSenseId ? word.senses?.find((s) => s.id === word.textbookSenseId) : undefined;
+  if (book && (ctx.textbook === true || (ctx.textbook === undefined && !ctx.senseId && !ctx.prev && !ctx.next)))
+    return book;
+  return resolveSense(word, ctx.senseId, ctx);
+}
+
+/** `senseFor`'s English gloss (falls back to the entry's gloss). */
+export function glossFor(
+  word: Pick<Word, 'senses' | 'primarySenseId' | 'textbookSenseId' | 'glossEn'>,
+  ctx: GlossContext = {},
+): string {
+  return senseFor(word, ctx)?.glossEn ?? word.glossEn;
+}

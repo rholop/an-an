@@ -1,4 +1,5 @@
-import { parseSyllableTone } from '../pinyin.js';
+import { parseTypedPinyinSyllable, parseZhuyinSyllable, toneMismatches, type ParsedSyllable } from '../cloze/grading.js';
+import { normaliseAnswer } from '../journal/normalize.js';
 import { segment } from '../segment.js';
 import type { Lexicon } from '../lexicon.js';
 import type { Evidence, Word } from '../types.js';
@@ -18,27 +19,6 @@ export interface WordDictationResult {
 const HAN = /[\u3400-\u9fff]/;
 const ZHUYIN = /[\u3105-\u312f\u31a0-\u31bf]/;
 
-/** A typed pinyin syllable → base + tone (tone-marked or numeric; undefined tone = none typed). */
-function typedPinyinSyllable(raw: string): { base: string; tone?: number } {
-  const num = /^(.*?)([1-5])$/.exec(raw);
-  if (num) return { base: num[1]!.toLowerCase().replace(/v/g, 'ü').replace(/u:/g, 'ü'), tone: Number(num[2]) };
-  const { base, tone } = parseSyllableTone(raw);
-  const marked = raw.normalize('NFC') !== base; // any diacritic present?
-  return { base: base.toLowerCase().replace(/v/g, 'ü'), ...(marked ? { tone } : {}) };
-}
-
-/** Zhuyin syllable → base + tone. 1st tone has no mark; ˙ marks neutral (typed before or after). */
-function zhuyinSyllable(raw: string): { base: string; tone: number } {
-  let tone = 1;
-  let base = raw;
-  if (/˙/.test(base)) tone = 5;
-  else if (/ˊ/.test(base)) tone = 2;
-  else if (/ˇ/.test(base)) tone = 3;
-  else if (/ˋ/.test(base)) tone = 4;
-  base = base.replace(/[˙ˊˇˋ]/g, '');
-  return { base, tone };
-}
-
 const splitZhuyin = (z: string) => z.trim().split(/\s+/).filter(Boolean);
 
 /** Word dictation: characters, pinyin or zhuyin. Pinyin/zhuyin must carry tones. */
@@ -49,22 +29,18 @@ export function gradeWordDictation(
   const typed = typedRaw.trim();
   if (!typed) return { outcome: 'wrong', toneWrongAt: [], input: 'empty' };
   if (HAN.test(typed)) {
-    const ok = [word.headword, ...word.variants].includes(typed.replace(/\s+/g, ''));
+    const ok = [word.headword, ...word.variants].map(normaliseAnswer).includes(normaliseAnswer(typed));
     return { outcome: ok ? 'correct' : 'wrong', toneWrongAt: [], input: 'characters' };
   }
   const wantTones = wordTones(word);
   if (ZHUYIN.test(typed)) {
-    const want = splitZhuyin(word.zhuyin).map(zhuyinSyllable);
-    // neutral "˙" written after the syllable is also accepted
-    const got = splitZhuyin(typed.replace(/([\u3105-\u312f]+)˙/g, '˙$1')).map(zhuyinSyllable);
-    return compareSyllables(
-      want.map((w) => ({ base: w.base, tone: w.tone })),
-      got.map((g) => ({ base: g.base, tone: g.tone })),
-      'zhuyin',
-    );
+    // Phase 21: the shared zhuyin parser (˙ before or after the syllable).
+    const want = splitZhuyin(word.zhuyin).map(parseZhuyinSyllable);
+    const got = splitZhuyin(typed).map(parseZhuyinSyllable);
+    return compareSyllables(want, got, 'zhuyin');
   }
   const wantBase = toneless(word);
-  const syllables = typed.split(/[\s']+/).filter(Boolean).map(typedPinyinSyllable);
+  const syllables = typed.split(/[\s']+/).filter(Boolean).map(parseTypedPinyinSyllable);
   return compareSyllables(
     wantBase.map((b, i) => ({ base: b, tone: wantTones[i] ?? 5 })),
     syllables,
@@ -74,12 +50,13 @@ export function gradeWordDictation(
 
 function compareSyllables(
   want: Array<{ base: string; tone: number }>,
-  got: Array<{ base: string; tone?: number }>,
+  got: ParsedSyllable[],
   input: 'pinyin' | 'zhuyin',
 ): WordDictationResult {
   if (want.length !== got.length || want.some((w, i) => w.base !== got[i]!.base))
     return { outcome: 'wrong', toneWrongAt: [], input };
-  const bad = want.flatMap((w, i) => (got[i]!.tone !== w.tone ? [i] : []));
+  // Phase 21: the shared rule (an unmarked pinyin syllable is accepted for a neutral tone).
+  const bad = toneMismatches(got, want);
   return bad.length === 0
     ? { outcome: 'correct', toneWrongAt: [], input }
     : { outcome: 'wrong_tone', toneWrongAt: bad, input };

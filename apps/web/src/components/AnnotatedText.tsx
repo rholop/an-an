@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AddToReview } from './AddToReview.js';
 import { createPortal } from 'react-dom';
 import {
-  lessonBadge,
   levelIndex,
   parseSyllableTone,
   senseSourceLabel,
@@ -14,6 +13,8 @@ import {
 } from '@anan/core';
 import { CAN_HOVER_QUERY, SHEET_QUERY, useMediaQuery } from '../lib/useMediaQuery.js';
 import { SpeakerButton } from './SpeakerButton.js';
+import { REPORT_LABEL, wordSourceLabel } from '../lib/labels.js';
+import { recordDefaultLookup, reportDefinition } from '../lib/report-actions.js';
 import './AnnotatedText.css';
 
 export interface AnnotatedToken {
@@ -55,10 +56,13 @@ export interface AnnotatedTextProps {
   onLookup?: (at: AnnotatedToken, kind: 'gloss' | 'reading') => void;
   /** Phase 7: words above this level are highlighted (`an-token--above`). */
   currentLevel?: Level;
-  /** Phase 7: the "Report this definition" button. */
+  /** Phase 7: the "Something's wrong" button on a definition. Phase 21: when omitted, the shared
+   * report (saved for review, toast with Undo) is used, so every popover has it. */
   onReportGloss?: (at: AnnotatedToken) => void;
   /** The surrounding sentence, stored with a report. */
   contextText?: string;
+  /** Phase 21: where a lookup happened, when the page gives no `onLookup` (every popover records). */
+  lookupSource?: 'reader' | 'textbook' | 'journal' | 'chat' | 'cloze' | 'review';
 }
 
 const tokenId = (t: Token) => `${t.start}-${t.end}`;
@@ -142,8 +146,10 @@ function Popover({
   anchor,
   onOverflow,
   sheet,
+  script,
 }: {
   at: AnnotatedToken;
+  script: AnnotationScript;
   onClose: () => void;
   showMoeZh: boolean;
   onReport?: () => void;
@@ -217,7 +223,10 @@ function Popover({
         ×
       </button>
       <div className="an-popover-reading">
-        {at.reading.pinyin} · {at.reading.zhuyin}
+        {/* Phase 21: the chosen script first */}
+        {script === 'zhuyin'
+          ? [at.reading.zhuyin, at.reading.pinyin].filter(Boolean).join(' · ')
+          : [at.reading.pinyin, at.reading.zhuyin].filter(Boolean).join(' · ')}
         {at.reading.confidence === 'low' && (
           <span className="an-confidence-low"> (uncertain reading)</span>
         )}
@@ -254,19 +263,20 @@ function Popover({
         </div>
       )}
       {(at.level || at.textbookHome !== undefined) && (
-        <div className="an-popover-level">
-          {at.level}
-          {at.textbookHome !== undefined && (
-            <span className="textbook-badge" lang="zh-Hant" data-testid="textbook-badge">
-              {lessonBadge(at.textbookHome.n, at.textbookHome.bookId)}
-            </span>
-          )}
+        <div className="an-popover-level" lang="zh-Hant" data-testid={at.textbookHome ? 'textbook-badge' : undefined}>
+          {wordSourceLabel(at.level, at.textbookHome)}
         </div>
       )}
       {at.wordId && <AddToReview wordId={at.wordId} />}
       {onReport && (
-        <button className="an-popover-report" onClick={onReport}>
-          Report this definition
+        <button
+          className="an-popover-report"
+          onClick={onReport}
+          data-testid="report-definition"
+          aria-label={`${REPORT_LABEL} with this definition`}
+          title="Report this definition"
+        >
+          {REPORT_LABEL}
         </button>
       )}
     </span>
@@ -279,10 +289,28 @@ export function AnnotatedText({
   tokens,
   mode,
   script,
-  onLookup,
+  onLookup: onLookupProp,
   currentLevel,
-  onReportGloss,
+  onReportGloss: onReportProp,
+  contextText,
+  lookupSource,
 }: AnnotatedTextProps) {
+  // Phase 21: every popover records lookups and can report a definition, page handler or not;
+  // repeated opens of the same word in one text count as one lookup.
+  const lookedUp = useRef(new Set<string>());
+  const onLookup = (at: AnnotatedToken, kind: 'gloss' | 'reading') => {
+    if (kind === 'gloss') {
+      const key = at.wordId ?? at.token.text;
+      if (lookedUp.current.has(key)) return;
+      lookedUp.current.add(key);
+    }
+    if (onLookupProp) onLookupProp(at, kind);
+    else void recordDefaultLookup(at, kind, lookupSource).catch(() => undefined);
+  };
+  const onReportGloss =
+    onReportProp ??
+    ((at: AnnotatedToken) =>
+      void reportDefinition(at, contextText ?? tokens.map((t) => t.token.text).join('')).catch(() => undefined));
   // Phase 7: the MOE Chinese definition is shown to learners at L3 and above.
   const showMoeZh = Boolean(currentLevel && levelIndex(currentLevel) >= levelIndex('L3'));
   const [openId, setOpenId] = useState<string | null>(null);
@@ -370,11 +398,11 @@ export function AnnotatedText({
                 setRevealId(id);
                 if (!hoveredIds.current.has(id)) {
                   hoveredIds.current.add(id);
-                  onLookup?.(at, 'reading');
+                  onLookup(at, 'reading');
                 }
                 return;
               }
-              if (!isOpen) onLookup?.(at, 'gloss');
+              if (!isOpen) onLookup(at, 'gloss');
               setRevealId(null);
               setOpenId(isOpen ? null : id);
             }}
@@ -386,7 +414,7 @@ export function AnnotatedText({
               if (!hoverLike || !canHover) return; // touch: handled by the tap above
               if (hoveredIds.current.has(id)) return;
               hoveredIds.current.add(id);
-              onLookup?.(at, 'reading');
+              onLookup(at, 'reading');
             }}
           >
             {inner}
@@ -395,7 +423,8 @@ export function AnnotatedText({
                 at={at}
                 onClose={() => setOpenId(null)}
                 showMoeZh={showMoeZh}
-                onReport={onReportGloss ? () => onReportGloss(at) : undefined}
+                onReport={() => onReportGloss(at)}
+                script={script}
                 anchor={rootRef}
                 onOverflow={setReserve}
                 sheet={sheet}
