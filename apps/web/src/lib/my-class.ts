@@ -190,17 +190,32 @@ export async function setMyClass(
   const next = sanitize({ ...current, ...patch });
   current = next;
   loaded = true;
+  const records = Boolean(opts.books && opts.recorder && next.enabled);
+  // Wait for a catch-up already running, then hold the slot so the one notify() below triggers can't
+  // record the same lessons a second time while this coverage is being written.
+  if (records) {
+    await catchingUp?.catch(() => 0);
+  }
+  let release: (n: number) => void = () => {};
+  if (records) catchingUp = new Promise<number>((resolve) => (release = resolve));
   notify();
   // Saved at once (not only after the coverage below), so leaving the page right away keeps it.
   await db.settings.put({ key: KEY, value: current });
   let added = 0;
-  if (opts.books && opts.recorder && next.enabled) {
-    const r = await recordLessonCoverage(opts.books, next, opts.recorder, new Date(), opts.gatedLessonIds);
-    added = r.cards;
-    // Merge into the CURRENT value: another change may have landed while the coverage was recorded.
-    current = { ...current, coveredThrough: Math.max(current.coveredThrough ?? 0, r.coveredThrough) };
-    notify();
+  try {
+    if (records) {
+      const r = await recordLessonCoverage(opts.books!, next, opts.recorder!, new Date(), opts.gatedLessonIds);
+      added = r.cards;
+      // Merge into the CURRENT value: another change may have landed while the coverage was recorded.
+      current = { ...current, coveredThrough: Math.max(current.coveredThrough ?? 0, r.coveredThrough) };
+    }
+  } finally {
+    if (records) {
+      catchingUp = undefined;
+      release(added);
+    }
   }
+  if (records) notify();
   await db.settings.put({ key: KEY, value: current });
   return { added };
 }

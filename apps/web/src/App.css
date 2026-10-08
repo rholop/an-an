@@ -220,7 +220,6 @@ body {
   line-height: 1.5;
   letter-spacing: 0;
   text-transform: none;
-  white-space: nowrap;
   vertical-align: middle;
 }
 .chat-class-section { margin-top: 1.25rem; }
