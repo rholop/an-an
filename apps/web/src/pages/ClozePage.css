@@ -4,7 +4,7 @@
 .cloze-badge {
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
-  background: rgba(127, 127, 127, 0.15);
+  background: var(--surface-2);
   font-size: 0.75rem;
 }
 .cloze-source-label { font-size: 0.8rem; opacity: 0.7; font-style: italic; margin-bottom: 0.75rem; }
@@ -30,7 +30,7 @@
 .cloze-chip {
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  border: 1px solid rgba(127, 127, 127, 0.4);
+  border: 1px solid var(--border);
   background: none;
   cursor: pointer;
   font-size: 1.1rem;
@@ -47,14 +47,14 @@
   margin-bottom: 0.5rem;
 }
 
-.cloze-feedback { margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(127, 127, 127, 0.1); }
-.cloze-feedback--correct { background: rgba(46, 125, 50, 0.12); }
-.cloze-feedback--correct_wrong_tone { background: rgba(239, 108, 0, 0.12); }
-.cloze-feedback--wrong { background: rgba(198, 40, 40, 0.12); }
+.cloze-feedback { margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: color-mix(in srgb, var(--text-muted) 10%, transparent); }
+.cloze-feedback--correct { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.cloze-feedback--correct_wrong_tone { background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.cloze-feedback--wrong { background: color-mix(in srgb, var(--danger) 12%, transparent); }
 
 .cloze-summary { list-style: none; padding: 0; font-size: 1.1rem; }
 
-.cloze-bonus { margin-top: 1rem; padding: 1rem; border-radius: 8px; background: rgba(127, 127, 127, 0.08); }
+.cloze-bonus { margin-top: 1rem; padding: 1rem; border-radius: 8px; background: color-mix(in srgb, var(--text-muted) 8%, transparent); }
 .cloze-bonus-answer { margin-top: 0.5rem; font-weight: bold; }
 
 /* Phase 17: journal review cards */
@@ -63,10 +63,10 @@
   padding: 0 2px;
 }
 .cloze-mark--wrong {
-  background: rgba(211, 47, 47, 0.2);
+  background: color-mix(in srgb, var(--danger) 20%, transparent);
 }
 .cloze-mark--right {
-  background: rgba(46, 125, 50, 0.25);
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
 }
 .cloze-token {
   min-height: 44px;

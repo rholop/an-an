@@ -12,7 +12,7 @@
 .report-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--backdrop);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -23,8 +23,8 @@
   max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
-  background: Canvas;
-  color: CanvasText;
+  background: var(--surface);
+  color: var(--text);
   border-radius: 16px 16px 0 0;
   padding: 16px;
   padding-bottom: max(16px, env(safe-area-inset-bottom));
@@ -71,7 +71,7 @@
   padding: 10px 12px;
   margin: 8px 0;
   border-radius: 8px;
-  background: rgba(46, 125, 50, 0.15);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
 }
 .report-undo,
 .report-dismiss {

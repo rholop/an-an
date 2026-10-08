@@ -3,3 +3,4 @@ export * from './garden.js';
 export * from './scenario-progress.js';
 export * from './streak.js';
 export * from './metrics.js';
+export * from './water-all.js';

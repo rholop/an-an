@@ -29,16 +29,55 @@
   display: block;
   width: 100%;
   border-radius: 4px 4px 0 0;
-  background: var(--accent, #3b82f6);
+  background: var(--accent);
   opacity: 0.7;
 }
 
 .due-forecast-bar--over {
-  background: var(--danger, #dc2626);
+  background: var(--danger);
 }
 
 .due-forecast-day {
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.15;
+  min-height: 2.3em;
+}
+@media (max-width: 639.98px) {
+  .due-forecast-day {
+    font-size: 0.64rem;
+  }
+  .due-forecast-bars {
+    gap: 0.2rem;
+  }
+}
+
+/* Phase 22: Home's two buttons, side by side and equal width at every size. */
+.home-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+}
+.home-actions--loading {
+  min-height: 48px;
+}
+.home-action {
+  min-height: 48px;
+  font-size: 1rem;
+  border-radius: var(--radius);
+}
+.home-actions-quiet {
+  min-height: 48px;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  color: var(--text-muted);
+}
+.due-forecast-now {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
 }

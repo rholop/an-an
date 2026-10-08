@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { isDueListening } from '@anan/core';
 import {
   isUsableSentence,
   levelIndex,
@@ -55,7 +56,8 @@ import { ListenRunner } from './ListenPage.js';
 import { NopeButton, NopeToast } from '../components/Nope.js';
 import { nopeWord } from '../lib/nope.js';
 import { useReviewSettings } from '../lib/review-settings.js';
-import { DEFAULT_SESSION_CONFIG, newItemAllowance } from '@anan/core';
+import { useReviewStatus } from '../lib/review-status.js';
+import { DEFAULT_SESSION_CONFIG, newWordState } from '@anan/core';
 import type { NopeHandle } from '../lib/learner-service.js';
 import type { NopeChoice } from '@anan/core';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
@@ -78,6 +80,7 @@ function describeClozeEntry(e: OrderedEntry): SessionCard {
 }
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
+import { EmptySprout } from '../components/PlantIcons.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { allChatLines, allJournalSentences } from '../db/queries.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -102,7 +105,7 @@ import {
 import { glossFor } from '@anan/core';
 import './ClozePage.css';
 
-type Outcome = 'correct' | 'correct_wrong_tone' | 'wrong';
+export type Outcome = 'correct' | 'correct_wrong_tone' | 'wrong';
 
 function evidenceKindFor(
   outcome: Outcome,
@@ -245,6 +248,7 @@ export function ClozePage() {
 
   const [session, setSession] = useState<SessionEntry[] | null>(null);
   const reviewSettings = useReviewSettings();
+  const capLeft = useReviewStatus()?.status.capLeft;
   // Phase 20: the last Nope in this session (Undo / Change).
   const [nope, setNope] = useState<{ handle: NopeHandle; item: SkillCard['item']; word: string; prev: SessionEntry[]; prevIndex: number } | null>(null);
   const [index, setIndex] = useState(0);
@@ -299,8 +303,14 @@ export function ClozePage() {
     if (!ready || lexiconState.status !== 'ready' || sentenceBankState.status !== 'ready') return null;
     const now = new Date();
     const seed = newSessionSeed('cloze');
-    // Phase 20: no new cards while reviews are backed up, half while a backlog builds.
-    const allowed = newItemAllowance(dueCards!.length, DEFAULT_SESSION_CONFIG.maxNewItems, reviewSettings.dailyCap).allowed;
+    // Phase 20/22: no new cards while reviews are backed up or today's cap is used, half while a backlog
+    // builds (the one rule, core `newWordState`, with today's distinct reviews from `reviewStatus`).
+    const allowed = newWordState({
+      dueNow: dueCards!.length,
+      capLeft: capLeft ?? reviewSettings.dailyCap,
+      cap: reviewSettings.dailyCap,
+      baseNew: DEFAULT_SESSION_CONFIG.maxNewItems,
+    }).newAllowed;
     // Phase 21: the one "new" rule (study focus first, then catch-up lessons); cloze is words only.
     const picked = pickNewForSession({
       newCards: newCards!.filter((c) => c.item.kind === 'word'),
@@ -334,7 +344,7 @@ export function ClozePage() {
       now,
     });
     return { built, seed };
-  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, reviewSettings.dailyCap, learnerLevel]);
+  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, reviewSettings.dailyCap, capLeft, learnerLevel]);
 
   function startSession() {
     if (!planned || lexiconState.status !== 'ready') return;
@@ -369,7 +379,7 @@ export function ClozePage() {
     const rankOf = (c: (typeof cards)[number]) =>
       studyFocus?.enabled ? studyRank(studyFocus, (i) => lessonIdx.get(`${i.kind}:${i.id}`), c.item) : 0;
     const practiced = cards
-      .filter((c) => c.card.reps > 0 && c.card.due <= now)
+      .filter((c) => isDueListening(c, now))
       .map((c, i) => ({ c, i, r: rankOf(c) }))
       .sort((a, b) => a.r - b.r || a.i - b.i)
       .map((x) => x.c);
@@ -608,7 +618,10 @@ export function ClozePage() {
         {!ready || !planned ? (
           <p>Loading your review queue…</p>
         ) : planned.built.length === 0 ? (
-          <p data-testid="cloze-empty">{NOTHING_DUE}</p>
+          <>
+            <EmptySprout />
+            <p data-testid="cloze-empty">{NOTHING_DUE}</p>
+          </>
         ) : (
           <>
             {dueErrorCount > 0 && (
@@ -617,7 +630,7 @@ export function ClozePage() {
                 corrections {dueErrorCount === 1 ? 'is' : 'are'} due.
               </p>
             )}
-            <button onClick={startSession} data-testid="cloze-start">
+            <button className="btn-primary" onClick={startSession} data-testid="cloze-start">
               Start session ({planned.built.length} item{planned.built.length === 1 ? '' : 's'})
             </button>
           </>
@@ -771,7 +784,7 @@ interface ViewShared {
   script: AnnotationScript;
 }
 
-function ExerciseView({
+export function ExerciseView({
   item,
   lexicon,
   onAnswer,

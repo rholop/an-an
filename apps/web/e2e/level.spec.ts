@@ -120,7 +120,8 @@ test.describe('Level picker everywhere + accurate definitions (phase 7)', () => 
     await page.locator('.an-token', { hasText: '機車' }).first().click();
     await page.getByTestId('report-definition').click();
 
-    await page.getByRole('button', { name: 'Credits' }).click();
+    await page.getByTestId('nav-more').click(); // Phase 22: Credits lives in the More menu
+    await page.getByRole('menuitem', { name: 'Credits' }).click();
     const list = page.getByTestId('credits-list');
     for (const name of [
       'CC-CEDICT',

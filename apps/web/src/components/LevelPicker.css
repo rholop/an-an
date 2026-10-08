@@ -16,14 +16,14 @@
 .level-chip {
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
-  border: 1px solid rgba(127, 127, 127, 0.5);
+  border: 1px solid var(--border-strong);
   background: none;
   cursor: pointer;
   font-size: 0.8rem;
 }
 .level-chip--on {
-  background: rgba(21, 101, 192, 0.2);
-  border-color: var(--c-info);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: var(--accent);
   font-weight: bold;
 }
 .level-up-prompt {
@@ -33,6 +33,6 @@
   padding: 0.4rem 0.75rem;
   margin-bottom: 0.75rem;
   border-radius: 8px;
-  background: rgba(46, 125, 50, 0.12);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   font-size: 0.9rem;
 }

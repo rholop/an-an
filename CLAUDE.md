@@ -114,6 +114,7 @@ compares a card's `state` or `stability` to decide them (an architecture test en
 |---|---|---|
 | **New** | Introduced, never answered (`state === 'introduced'`, `reps === 0`) | `isNewCard` |
 | **Due** | Answered at least once, due now, not removed by Nope. `unseen` and New cards are never due | `isDueCard` |
+| **Due now / later today** | The only counts shown for review: due now, more later today (next at …), distinct cards done today, cap left, the new-word state (open, reduced, backlog pause, today's limit). Home, Review, Garden and the nav badge all show these | `reviewStatus` (`core/progress/review-status.ts`, loaded by `useReviewStatus`) |
 | **Learned** | Recognition in review after an answer in this app, or passed "I already know this". Grammar: one correct use. Leeches count as Learned | `ProgressIndex.learned` / `summarize` |
 | **Mastered** | Recognition stability ≥ 21 d and production ≥ 7 d (grammar: 3 correct uses, last one correct). Leeches and imports never count | `ProgressIndex.mastered` / `summarize` |
 | **Imported** | Seeded by Anki or placement, no answer here yet | `ProgressIndex.imported` |
@@ -121,6 +122,11 @@ compares a card's `state` or `stability` to decide them (an architecture test en
 | **Comprehensible** | Known ∪ due ∪ learning (chat, reader and open-chat coverage) | `learnerService.wordSets` |
 | **Current lesson** | The study focus's active lesson (`getStudyFocus`), which follows My class | `study/study-focus.ts` |
 | **Your class** | The My class setting. Labels and visibility only, never priority | `useClassScope` / `currentClassScope` |
+
+**Colours (Phase 22):** every colour is a token in `apps/web/src/theme.css` (light = Solarized
+Light nudged green, dark = Solarized Dark); components use only `var(--…)`. `src/theme.test.ts`
+checks AA contrast and the architecture test fails on a colour written anywhere else. The five
+shared-term icons (seed, sprout, leaf, flower, droplet) are `components/PlantIcons.tsx`.
 
 Progress is always shown as "Learned X% · Mastered Y%" (`LearnedMastered` component).
 New items for any session come from one rule, `pickNewForSession` in `study/queue.ts`.
@@ -148,6 +154,7 @@ Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
 | 19 | Flashcards always mixed: one shared session order, a word's cards never side by side | `docs/flashcard-order.md` |
 | 20 | Nope a review card; daily cap, spread bulk cards, lookups and new words kept in bounds | `docs/review-pile.md` |
 | 21 | Now studying follows your class; one meaning for progress, due, new and labels everywhere | Shared terms above |
+| 22 | Home "💧 Water all" and "Review all", matching due counts, Garden light/dark theme tokens (`apps/web/src/theme.css`), plant icons, nav with More | `22-home-buttons-and-garden-theme.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

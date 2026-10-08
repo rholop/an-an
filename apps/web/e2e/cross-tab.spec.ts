@@ -132,7 +132,10 @@ for (const size of [
       await expect(page.getByTestId('now-studying-catchup')).toContainText('Lesson 2');
       const homeLine = await lmLine(page, page.getByTestId('now-studying-progress'));
       expect(homeLine).toMatch(/^Learned \d+% · Mastered \d+%$/);
-      await expect(page.getByTestId('due-forecast')).toContainText(`${due} reviews due today`);
+      await expect(page.getByTestId('due-forecast')).toContainText(`${due} due now`);
+      // Phase 22: the two Home buttons carry the same counts (one card per due word here).
+      await expect(page.getByTestId('review-all-btn')).toHaveText(`Review all (${due})`);
+      await expect(page.getByTestId('water-all-btn')).toHaveText(`💧 Water all (${due})`);
 
       // Textbook: the same lesson carries the "Current lesson" chip and the same numbers.
       await page.goto('/?page=textbook');
@@ -165,6 +168,7 @@ for (const size of [
       // Review: the same due count as Home.
       await page.goto('/?page=review');
       await expect(page.getByTestId('review-counts')).toContainText(new RegExp(`^${due} due · `));
+      await expect(page.getByTestId('review-status')).toContainText(`${due} due now`);
     });
   });
 }
@@ -193,7 +197,7 @@ test.describe('every tab stays fresh without a reload', () => {
     await expect(page.getByTestId('now-studying-name')).toContainText(LESSON_3);
 
     // 2. A finished review: Home's due count drops while Home stays on screen.
-    await expect(page.getByTestId('due-forecast')).toContainText(`${due} reviews due today`);
+    await expect(page.getByTestId('due-forecast')).toContainText(`${due} due now`);
     await page.evaluate(
       (id) =>
         window.__anan.learnerService.record(
@@ -202,7 +206,7 @@ test.describe('every tab stays fresh without a reload', () => {
         ),
       DUE_WORDS[0]!,
     );
-    await expect(page.getByTestId('due-forecast')).toContainText(`${due - 1} reviews due today`);
+    await expect(page.getByTestId('due-forecast')).toContainText(`${due - 1} due now`);
     // ...and the Review tab, reached by the nav (no reload), agrees.
     await page.getByRole('button', { name: 'Review', exact: true }).click();
     await expect(page.getByTestId('review-counts')).toContainText(new RegExp(`^${due - 1} due · `));

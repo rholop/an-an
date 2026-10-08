@@ -12,13 +12,13 @@
 }
 .garden-plot {
   padding: 0.75rem 1rem;
-  border-radius: 10px;
-  background: rgba(46, 125, 50, 0.1);
-  border: 1px solid rgba(46, 125, 50, 0.3);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent-soft) 7%, var(--surface));
+  border: 1px solid var(--border);
 }
 .garden-plot--thirsty {
-  background: rgba(191, 144, 0, 0.1);
-  border-color: rgba(191, 144, 0, 0.4);
+  background: color-mix(in srgb, var(--water) 7%, var(--surface));
+  border-color: color-mix(in srgb, var(--water) 45%, var(--border));
 }
 .garden-plot header {
   display: flex;
@@ -43,17 +43,19 @@
 }
 .garden-tile {
   position: relative;
+  border: 1px solid transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
   min-width: 3rem;
   padding: 0.25rem 0.35rem;
   border-radius: 8px;
-  background: rgba(127, 127, 127, 0.1);
+  background: var(--surface-2);
 }
 .garden-plant {
   font-size: 1.4rem;
   line-height: 1.2;
+  display: inline-flex;
   transition: transform 0.2s;
 }
 .garden-word {
@@ -79,7 +81,7 @@
   right: -2px;
   font-size: 0.7rem;
   font-weight: bold;
-  color: var(--c-gold);
+  color: var(--info-text);
 }
 .garden-water {
   cursor: pointer;
@@ -121,6 +123,6 @@
 }
 
 /* Phase 14: the active study step */
-.garden-plot--active { outline: 2px solid var(--accent, #3a7); }
-.garden-tile--active { box-shadow: 0 0 0 2px var(--accent, #3a7) inset; }
+.garden-plot--active { outline: 2px solid var(--accent); }
+.garden-tile--active { box-shadow: 0 0 0 2px var(--accent) inset; }
 .garden-leech-mark { font-size: 0.7rem; color: var(--c-bad); margin-left: 0.15rem; }

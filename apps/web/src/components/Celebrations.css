@@ -1,0 +1,89 @@
+.mini-plant {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 0.5rem;
+  pointer-events: none;
+}
+.mini-plant svg {
+  display: block;
+  overflow: visible;
+}
+.mp-pot {
+  fill: var(--seed);
+}
+.mp-stem {
+  stroke: var(--accent-soft);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  fill: none;
+}
+.mp-leaf path {
+  fill: var(--accent-soft);
+}
+.mp-can-body {
+  fill: var(--water);
+}
+.mp-can-spout,
+.mp-can-handle {
+  stroke: var(--water);
+  stroke-width: 3;
+  stroke-linecap: round;
+  fill: none;
+}
+.mp-drops circle {
+  fill: var(--water);
+  opacity: 0;
+}
+.mp-can {
+  transform-origin: 80px 22px;
+}
+/* under 400 ms: tip, pour, settle */
+.mp-can--pour {
+  animation: mp-tip 380ms ease-in-out;
+}
+.mp-can--pour .mp-drops circle {
+  animation: mp-drop 380ms ease-in forwards;
+}
+.mp-leaf--new {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mp-grow 380ms ease-out;
+}
+@keyframes mp-tip {
+  0% { transform: rotate(0deg); }
+  45% { transform: rotate(-22deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes mp-drop {
+  0% { opacity: 0; transform: translateY(0); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(14px); }
+}
+@keyframes mp-grow {
+  0% { transform: scale(0.6); }
+  100% { transform: scale(1); }
+}
+
+.petal-burst {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 0;
+  vertical-align: middle;
+  pointer-events: none;
+}
+.petal {
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50% 0;
+  background: var(--bloom);
+  opacity: 0;
+  animation: petal 560ms ease-out 1;
+}
+@keyframes petal {
+  0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(0.6); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(-28px) scale(1); }
+}

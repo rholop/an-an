@@ -1,0 +1,44 @@
+.plant-icon {
+  display: inline-block;
+  vertical-align: -0.15em;
+  flex: none;
+}
+.plant-icon .pi-seed { fill: var(--seed); }
+.plant-icon .pi-line { stroke: var(--surface); stroke-width: 1; stroke-linecap: round; }
+.plant-icon .pi-stem { stroke: var(--accent-soft); stroke-width: 1.4; stroke-linecap: round; }
+.plant-icon .pi-leaf { fill: var(--accent-soft); }
+.plant-icon .pi-vein { stroke: var(--surface); stroke-width: 0.9; stroke-linecap: round; }
+.plant-icon .pi-petal { fill: var(--bloom); }
+.plant-icon .pi-heart { fill: var(--warn); }
+.plant-icon .pi-drop { fill: var(--water); }
+.plant-icon .pi-shine { stroke: var(--surface); stroke-width: 1; stroke-linecap: round; opacity: 0.8; }
+
+.plant-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.plant-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.empty-sprout {
+  display: block;
+  max-width: 96px;
+  max-height: 96px;
+  margin: 0.5rem auto 0.25rem;
+}
+.empty-sprout .es-line {
+  fill: none;
+  stroke: var(--accent-soft);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.empty-sprout .es-leaf {
+  fill: color-mix(in srgb, var(--accent-soft) 18%, transparent);
+}

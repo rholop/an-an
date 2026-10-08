@@ -69,6 +69,10 @@ export function isAnswered(c: Pick<SkillCard, 'card'>): boolean {
 /** Listening "practised": answered at least once (auto-created cards with no answer don't count). */
 export const isPractisedListening = (c: Pick<SkillCard, 'card'>): boolean => c.card.reps > 0;
 
+/** Listening extras in a session: practised listening cards that are due now (their own queue). */
+export const isDueListening = (c: Pick<SkillCard, 'card'>, now: Date): boolean =>
+  c.card.reps > 0 && c.card.due.getTime() <= now.getTime();
+
 /** Listening "strong". */
 export const isStrongListening = (c: Pick<SkillCard, 'card'>, cfg: ProgressConfig = PROGRESS_CONFIG): boolean =>
   c.card.reps > 0 && c.card.stability >= cfg.listeningStrongDays;

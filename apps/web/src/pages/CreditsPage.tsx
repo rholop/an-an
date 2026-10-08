@@ -59,6 +59,13 @@ export const CREDITS: {
     href: 'https://www.unicode.org/charts/unihan.html',
     terms: 'Copyright © Unicode, Inc.',
   },
+  {
+    name: 'Nunito typeface (Vernon Adams, Cyreal; via Google Fonts)',
+    what: 'The rounded font for English headings. Served from this site (Latin subset).',
+    licence: 'SIL Open Font License 1.1',
+    href: 'https://fonts.google.com/specimen/Nunito',
+    terms: 'Free to use, bundle and redistribute with the app.',
+  },
 ];
 
 /** Phase 10 §7: per-profile switch for every speaker button. */

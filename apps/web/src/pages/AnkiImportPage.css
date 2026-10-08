@@ -15,7 +15,7 @@
 .anki-actions button {
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  border: 1px solid rgba(127, 127, 127, 0.4);
+  border: 1px solid var(--border);
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -24,7 +24,7 @@
 .anki-done { color: var(--c-good); }
 
 .anki-preview { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.anki-preview th, .anki-preview td { text-align: left; padding: 0.3rem 0.5rem; border-bottom: 1px solid rgba(127, 127, 127, 0.2); }
+.anki-preview th, .anki-preview td { text-align: left; padding: 0.3rem 0.5rem; border-bottom: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent); }
 .anki-row--matched td:nth-child(2) { color: var(--c-good); }
 .anki-row--ambiguous td:nth-child(2) { color: var(--c-warn); }
 .anki-row--unmatched td:nth-child(2) { color: var(--c-bad); }

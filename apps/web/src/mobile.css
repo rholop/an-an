@@ -126,7 +126,7 @@ body {
     bottom: calc(var(--tabbar-h) + 8px);
     z-index: 5;
     padding: 0.5rem 0;
-    background: Canvas;
+    background: var(--surface);
   }
   :root .review-buttons {
     display: grid;
@@ -158,7 +158,7 @@ body {
     position: sticky;
     bottom: calc(var(--tabbar-h) + 8px);
     z-index: 5;
-    background: Canvas;
+    background: var(--surface);
     padding: 0.5rem 0;
   }
   :root .cloze-input-row input {
@@ -178,7 +178,7 @@ body {
     bottom: calc(var(--tabbar-h) + 8px);
     z-index: 5;
     padding: 0.5rem 0;
-    background: Canvas;
+    background: var(--surface);
   }
   :root .reader-nav button {
     min-height: 56px;
@@ -208,7 +208,7 @@ body {
     display: grid;
     gap: 0.15rem;
     padding: 0.6rem 0.75rem;
-    border: 1px solid rgba(127, 127, 127, 0.3);
+    border: 1px solid var(--border);
     border-radius: 10px;
   }
   :root .anki-preview td,

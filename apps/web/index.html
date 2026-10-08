@@ -16,9 +16,9 @@
     <!-- 'default' follows the phone's light/dark appearance (white or black bar with matching text). -->
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="format-detection" content="telephone=no" />
-    <!-- Browser chrome colour per scheme; src/lib/theme.ts overrides both when Light/Dark is forced. -->
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121212" />
+    <!-- Browser chrome colour per scheme: the theme's --bg (src/theme.css). -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f3f4e3" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#002b36" />
     <!-- Apply a stored light/dark choice before first paint (no flash). Kept in sync by src/lib/theme.ts. -->
     <script>
       try {

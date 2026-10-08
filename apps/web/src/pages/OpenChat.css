@@ -10,7 +10,7 @@
   text-align: left;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  border: 1px dashed rgba(127, 127, 127, 0.5);
+  border: 1px dashed var(--border-strong);
   background: none;
   cursor: pointer;
   font: inherit;
@@ -28,7 +28,7 @@
   font-size: 0.85rem;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
-  background: rgba(127, 127, 127, 0.12);
+  background: var(--surface-2);
 }
 
 .open-topic-picker h2 {
@@ -80,8 +80,8 @@
     bottom: 0;
     margin-top: auto;
     padding: 0.4rem 0 calc(0.4rem + env(safe-area-inset-bottom, 0px));
-    background: Canvas;
-    border-top: 1px solid rgba(127, 127, 127, 0.3);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
   }
   .kb-open .open-chat-topic .open-topic-row {
     padding-bottom: 0.4rem;

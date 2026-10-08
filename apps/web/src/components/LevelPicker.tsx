@@ -6,14 +6,18 @@ export function LevelPicker({
   value,
   onChange,
   label = 'My level',
+  shownLabel = label,
 }: {
   value: Level;
   onChange: (level: Level) => void;
+  /** Accessible name (contains the visible label). */
   label?: string;
+  /** Phase 22: the header shows just "Level". */
+  shownLabel?: string;
 }) {
   return (
     <label className="level-picker">
-      <span className="level-picker-label">{label}</span>
+      <span className="level-picker-label">{shownLabel}</span>
       <select value={value} onChange={(e) => onChange(e.target.value as Level)} aria-label={label}>
         {LEVELS.map((l) => (
           <option key={l.id} value={l.id}>

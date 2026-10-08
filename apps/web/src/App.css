@@ -1,52 +1,3 @@
-:root {
-  /* "Auto" follows the device; the header toggle sets data-theme to force one. */
-  color-scheme: light dark;
-
-  /* Semantic colours. Light values are the originals; dark values are lighter
-     variants so text in these colours stays readable on a dark background. */
-  --c-good: #2e7d32;
-  --c-info: #1565c0;
-  --c-purple: #6a1b9a;
-  --c-warn: #ef6c00;
-  --c-bad: #c62828;
-  --c-brown: #4e342e;
-  --c-gold: #b8860b;
-  --c-muted: #666;
-}
-:root[data-theme='light'] {
-  color-scheme: light;
-}
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --c-good: #81c784;
-  --c-info: #64b5f6;
-  --c-purple: #ce93d8;
-  --c-warn: #ffb74d;
-  --c-bad: #ff8a80;
-  --c-brown: #bcaaa4;
-  --c-gold: #f0c24b;
-  --c-muted: #aaa;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --c-good: #81c784;
-    --c-info: #64b5f6;
-    --c-purple: #ce93d8;
-    --c-warn: #ffb74d;
-    --c-bad: #ff8a80;
-    --c-brown: #bcaaa4;
-    --c-gold: #f0c24b;
-    --c-muted: #aaa;
-  }
-}
-body {
-  margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    sans-serif;
-}
 .app {
   max-width: 900px;
   margin: 0 auto;
@@ -55,19 +6,64 @@ body {
 .app-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  padding: 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
-.app-nav button {
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
+.app-nav-item {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text);
+  padding: 0.45rem 0.8rem;
+  min-height: 40px;
 }
-.app-nav button:disabled {
-  font-weight: bold;
-  cursor: default;
-  /* the current page's tab: keep it readable in both themes (default disabled grey is not) */
-  color: CanvasText;
-  opacity: 0.75;
+.app-nav-item:hover:not(:disabled) {
+  background: var(--surface-2);
+  border-color: transparent;
+}
+.app-nav-item--on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+.app-nav-item--on:hover:not(:disabled) {
+  background: var(--accent);
+}
+.app-nav-more {
+  position: relative;
+  margin-left: auto;
+}
+.app-nav-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 30;
+  display: grid;
+  min-width: 12rem;
+  padding: 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+}
+.app-nav-menu button {
+  text-align: left;
+  border-color: transparent;
+  background: transparent;
+  min-height: 40px;
+}
+.app-nav-menu button:hover {
+  background: var(--surface-2);
+}
+.app-nav-menu button[aria-current='page'] {
+  font-weight: 700;
+  color: var(--accent);
 }
 
 .reader-meta {
@@ -98,7 +94,7 @@ body {
   margin-top: 1.5rem;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  background: rgba(127, 127, 127, 0.08);
+  background: var(--surface-2);
 }
 .warning {
   padding: 0.25rem 0;
@@ -142,14 +138,14 @@ body {
 .reader-chip {
   padding: 0.3rem 0.9rem;
   border-radius: 999px;
-  border: 1px solid rgba(127, 127, 127, 0.5);
+  border: 1px solid var(--border-strong);
   background: transparent;
   color: inherit;
   cursor: pointer;
 }
 .reader-chip--on {
-  background: rgba(33, 150, 243, 0.2);
-  border-color: rgba(33, 150, 243, 0.8);
+  background: color-mix(in srgb, var(--water) 20%, transparent);
+  border-color: color-mix(in srgb, var(--water) 80%, transparent);
   font-weight: 600;
 }
 .reader-reason,
@@ -228,8 +224,40 @@ body {
 .garden-textbook-filter { display: inline-block; margin: 0.5rem 0; font-size: 0.9rem; }
 
 .level-class-hint {
+  position: relative;
+  display: inline-flex;
+}
+.level-class-hint-btn {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0;
+  min-width: 32px;
+  min-height: 32px;
+}
+.level-class-hint-text {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 30;
+  width: max-content;
+  max-width: 16rem;
+  padding: 0.4rem 0.6rem;
   font-size: 0.8rem;
-  color: var(--muted, #666);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
+}
+/* the text stays in the page for screen readers and tests; shown on tap or hover */
+.level-class-hint:not(.level-class-hint--open):not(:hover) .level-class-hint-text {
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
 }
 
 /* Phase 21: a small inline text button (Undo, lesson links). */
@@ -238,10 +266,34 @@ body {
   border: 0;
   padding: 0.25rem 0;
   min-height: 32px;
-  color: var(--c-info);
+  color: var(--accent);
   text-decoration: underline;
   cursor: pointer;
   font: inherit;
 }
 .cloze-undo { margin-left: auto; }
 .cloze-answered-sentence { font-size: 1.1rem; }
+
+/* Phase 22: due-now count on the Review tab */
+.nav-due-badge {
+  display: inline-block;
+  min-width: 1.2em;
+  margin-left: 0.35rem;
+  padding: 0 0.3em;
+  border-radius: 999px;
+  background: var(--info-text);
+  color: var(--on-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+.tabbar-icon {
+  position: relative;
+}
+.tabbar-icon .nav-due-badge {
+  position: absolute;
+  top: -0.3rem;
+  left: 60%;
+  margin: 0;
+}

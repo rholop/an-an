@@ -1,0 +1,15 @@
+.water-all h1 {
+  margin: 0.5rem 0 0.25rem;
+}
+.water-all-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.water-all-done {
+  text-align: center;
+  padding: 0.5rem 0 1rem;
+}
+.water-all-summary {
+  font-size: 1.15rem;
+  font-weight: 700;
+}

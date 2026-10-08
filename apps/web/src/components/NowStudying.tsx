@@ -4,6 +4,8 @@ import { lessonLabel, lessonOnly, STUDY_THIS_LESSON, stepName } from '../lib/lab
 import { updateStudySettings, useStudyFocus, useStudySettings } from '../lib/study.js';
 import { StudyLessonView } from '../pages/TextbookPage.js';
 import { ReviewPage } from '../pages/ReviewPage.js';
+import { PetalBurst } from './Celebrations.js';
+import { FlowerIcon } from './PlantIcons.js';
 import './NowStudying.css';
 
 /** Phase 14 §5: the "Now studying" card at the top of home — the active step, its mastery,
@@ -31,7 +33,8 @@ export function NowStudying() {
     <section className="now-studying" aria-label="Now studying" data-testid="now-studying">
       {celebrate.length > 0 && (
         <p className="now-studying-cheer" role="status" data-testid="lesson-mastered">
-          🎉 {celebrate.map((id) => lessonName(id)).join(', ')} mastered!{' '}
+          <PetalBurst />
+          <FlowerIcon /> {celebrate.map((id) => lessonName(id)).join(', ')} mastered!{' '}
           <button onClick={dismissCelebration}>Nice</button>
         </p>
       )}

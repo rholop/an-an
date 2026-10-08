@@ -93,4 +93,44 @@ describe('Phase 21 architecture', () => {
       ],
     );
   });
+
+  it('due counts come only from reviewStatus (Phase 22): no screen counts due cards itself', () => {
+    // The old per-screen counters are gone; the new-word rule is core `newWordState` via reviewStatus.
+    expect(offenders(/\b(dueForecast|reviewsDoneToday)\b/, () => false)).toEqual([]);
+    expect(
+      offenders(/\bnewItemAllowance\(/, (rel) => rel.startsWith('packages/core/src/learner/')),
+    ).toEqual([]);
+    // Pages and components never decide "due" themselves (repo queries and core do).
+    expect(
+      offenders(/\bisDueCard\(|\.card\.due\s*[<>]=?|\bdueCards\([^)]*\)\)?\.length/, (rel) => !/^apps\/web\/src\/(pages|components|App\.tsx)/.test(rel))).toEqual([]);
+    // Home, Review and Garden show the shared status.
+    for (const rel of ['apps/web/src/pages/GardenPage.tsx', 'apps/web/src/pages/ReviewPage.tsx'])
+      expect(FILES.find((f) => f.rel === rel)!.text).toMatch(/useReviewStatus\(/);
+  });
+
+  it('every colour is a theme token (Phase 22): none written outside src/theme.css', () => {
+    const colour = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(|\b(Canvas|CanvasText|ButtonFace|ButtonText|GrayText)\b/;
+    const css: { rel: string; text: string }[] = [];
+    const walk = (dir: string) => {
+      for (const name of readdirSync(dir)) {
+        const full = path.join(dir, name);
+        if (statSync(full).isDirectory()) walk(full);
+        else if (name.endsWith('.css')) css.push({ rel: path.relative(REPO, full).split(path.sep).join('/'), text: readFileSync(full, 'utf8') });
+      }
+    };
+    walk(path.join(REPO, 'apps/web/src'));
+    expect(css.some((f) => f.rel === 'apps/web/src/theme.css')).toBe(true);
+    const hits: string[] = [];
+    for (const f of css) {
+      if (f.rel === 'apps/web/src/theme.css') continue;
+      f.text.split('\n').forEach((line, i) => {
+        if (colour.test(line.replace(/\/\*.*?\*\//g, ''))) hits.push(`${f.rel}:${i + 1}: ${line.trim()}`);
+      });
+    }
+    expect(hits).toEqual([]);
+    // inline styles and SVG fills in components use tokens too (HTML entities like &#x… aside)
+    expect(
+      offenders(/(color|fill|stroke|background)\s*[:=]\s*['"{]?\s*(#[0-9a-fA-F]{3,8}\b|rgba?\()/, (rel) => !rel.startsWith('apps/web/src/')),
+    ).toEqual([]);
+  });
 });

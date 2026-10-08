@@ -4,7 +4,7 @@ import {
   lessonCoreItems,
   pickNewForSession,
   describeSkillCard,
-  newItemAllowance,
+  newWordState,
   PRIORITY_CONFIG,
   orderSession,
   studyRank,
@@ -103,6 +103,7 @@ export function pickReviewCards(input: {
   due: readonly SkillCard[];
   /** Phase 21: New cards (introduced, never answered), e.g. from My class or a lookup. */
   newCards?: readonly SkillCard[];
+  /** Distinct cards answered in Review today (`reviewStatus().doneToday`). */
   doneToday: number;
   cap: number;
   focus?: StudyFocus;
@@ -125,7 +126,14 @@ export function pickReviewCards(input: {
     focus && idx ? (c: SkillCard) => studyRank(focus, (i) => idx.get(`${i.kind}:${i.id}`), c.item) : undefined;
   const remaining = Math.max(0, input.cap - input.doneToday);
   const due = capDueCards(input.due, { remaining, now: input.now, ...(rank ? { rank } : {}) });
-  const allowance = newItemAllowance(input.due.length + input.doneToday, input.baseNew ?? PRIORITY_CONFIG.reviewNewItems, input.cap);
+  // Phase 22: the one new-word rule (core `newWordState`): paused only when more is due now than the
+  // whole cap, and "today's limit" once the cap is used up (not a backlog).
+  const allowance = newWordState({
+    dueNow: input.due.length,
+    capLeft: remaining,
+    cap: input.cap,
+    baseNew: input.baseNew ?? PRIORITY_CONFIG.reviewNewItems,
+  });
   const roomForNew = Math.max(0, remaining - due.length);
   // One "new" rule for every session (core `pickNewForSession`): New cards and study-order items
   // together, never more than the allowance (Phase 20) — My class cards are no longer uncapped.
@@ -133,14 +141,14 @@ export function pickReviewCards(input: {
     newCards: input.newCards ?? [],
     ...(focus ? { focus } : {}),
     ...(idx ? { lessonIdx: idx } : {}),
-    allowed: Math.min(allowance.allowed, roomForNew),
+    allowed: Math.min(allowance.newAllowed, roomForNew),
   });
   return {
     due,
     fresh: picked.cards,
     newItems: picked.items,
     held: input.due.length - due.length,
-    newPaused: allowance.paused,
-    ...(allowance.reason ? { newReason: allowance.reason } : {}),
+    newPaused: allowance.newAllowed === 0 && allowance.newState !== 'open',
+    ...(allowance.newMessage ? { newReason: allowance.newMessage } : {}),
   };
 }

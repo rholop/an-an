@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Evidence, GrammarItem, Lexicon, SkillCard, Word } from '@anan/core';
+import { isDueListening } from '@anan/core';
 import { charsInWord, glossFor, homeLessonOfTags, isNewCard, nextLeechTreatment } from '@anan/core';
 import {
+  keepDeferred,
   describePlanItem,
   describeSkillCard,
   LISTENING_CONFIG,
@@ -16,24 +18,25 @@ import {
 import { buildReviewSession, newSessionCard, pickReviewCards } from '../lib/review-session.js';
 import { AnnotatedInline, useReadingScript } from '../components/AnnotatedInline.js';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
-import { dueNewLine, lessonLabel, NOTHING_DUE, UNDO, waitingSiblings } from '../lib/labels.js';
+import { dueNewLine, dueNowLine, FORECAST_REST_OF_TODAY, lessonLabel, NOTHING_DUE, UNDO, waitingSiblings } from '../lib/labels.js';
 import { readingText } from '../lib/reading.js';
 import { NopeButton, NopeToast } from '../components/Nope.js';
 import { nopeWord, wakeSnoozed } from '../lib/nope.js';
 import { getReviewSettings } from '../lib/review-settings.js';
+import { loadReviewStatus, useReviewStatus } from '../lib/review-status.js';
 import type { NopeChoice } from '@anan/core';
 import type { NopeHandle } from '../lib/learner-service.js';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { ListenPage, ListenRunner } from './ListenPage.js';
-import { db, learnerService } from '../db/instance.js';
+import { learnerService } from '../db/instance.js';
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
-import { dueForecast, reviewsDoneToday } from '../db/queries.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
+import { DueIcon, EmptySprout } from '../components/PlantIcons.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import './ReviewPage.css';
 
-type Grade = 'again' | 'hard' | 'good' | 'easy';
+export type Grade = 'again' | 'hard' | 'good' | 'easy';
 const GRADES: { grade: Grade; label: string }[] = [
   { grade: 'again', label: 'Again' },
   { grade: 'hard', label: 'Hard' },
@@ -42,19 +45,25 @@ const GRADES: { grade: Grade; label: string }[] = [
 ];
 
 /** `focusCards` (Phase 6 garden, Phase 21 lesson session): review exactly these Due cards (and
- * `freshCards`, New ones) instead of the due queue. */
+ * `freshCards`, New ones) instead of the due queue. `reviewAll` (Phase 22 Home "Review all"): every
+ * card due now up to the daily cap, no new words. `keepEvery`: a sibling the gap would hold back
+ * goes at the end instead, so the session is exactly the count on the button that opened it. */
 export function ReviewPage({
   focusCards,
   freshCards,
   onExit,
   exitLabel = '← Back to garden',
   title,
+  reviewAll = false,
+  keepEvery = reviewAll,
 }: {
   focusCards?: SkillCard[];
   freshCards?: SkillCard[];
   onExit?: () => void;
   exitLabel?: string;
   title?: string;
+  reviewAll?: boolean;
+  keepEvery?: boolean;
 } = {}) {
   const lexiconState = useLexicon();
   const script = useReadingScript();
@@ -73,7 +82,8 @@ export function ReviewPage({
   } | null>(null);
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
-  const [forecast, setForecast] = useState<number[] | null>(null);
+  // Phase 22: the same numbers as Home (core `reviewStatus`), live.
+  const reviewState = useReviewStatus();
   // Phase 15: a "Listen" session, and ~20% listening exercises mixed in once an item has a listening card.
   const clips = useListeningClips();
   const listeningOn = useListeningEnabled();
@@ -107,16 +117,18 @@ export function ReviewPage({
       fresh = (freshCards ?? []).filter((c) => !c.flags.excluded && !c.flags.snoozed);
       setCapNote(null);
     } else {
-      const [all, newCards, doneToday, rs] = await Promise.all([
+      const [all, newCards, rs] = await Promise.all([
         learnerService.dueCards(now),
-        learnerService.newCards(),
-        reviewsDoneToday(db, now),
+        reviewAll ? Promise.resolve([]) : learnerService.newCards(),
         getReviewSettings(),
       ]);
+      // Phase 22: today's distinct reviewed cards, from the one review status.
+      const { status } = await loadReviewStatus(now, rs.dailyCap);
       const picked = pickReviewCards({
         due: all,
         newCards,
-        doneToday,
+        doneToday: status.doneToday,
+        ...(reviewAll ? { baseNew: 0 } : {}),
         cap: rs.dailyCap,
         ...(focus ? { focus } : {}),
         lessonIdx: lessonIndex(getStudyBooks()),
@@ -131,7 +143,7 @@ export function ReviewPage({
       );
     }
     const sessionSeed = newSessionSeed('review');
-    const next = buildReviewSession({
+    const ordered = buildReviewSession({
       due,
       fresh,
       ...(focus ? { focus } : {}),
@@ -139,6 +151,7 @@ export function ReviewPage({
       seed: sessionSeed,
       recent: recentShown(now),
     });
+    const next = keepEvery ? keepDeferred(ordered) : ordered;
     logSessionOrder('review', sessionSeed, next.length, sessionMeta(next)?.deferred.length ?? 0);
     setSeed(sessionSeed);
     setFreshSet(new Set(fresh.filter((c) => isNewCard(c) || c.state === 'unseen')));
@@ -147,8 +160,7 @@ export function ReviewPage({
     setIndex(0);
     setRevealed(false);
     setLastAnswer(null);
-    setForecast(await dueForecast(db, now, 7));
-  }, [focusCards, freshCards]);
+  }, [focusCards, freshCards, reviewAll, keepEvery]);
 
   useEffect(() => {
     loadQueue();
@@ -165,7 +177,7 @@ export function ReviewPage({
     (async () => {
       const now = new Date();
       const cards = await ensureListeningCards(clips.hasClip, now);
-      const practiced = cards.filter((c) => c.card.reps > 0 && c.card.due <= now);
+      const practiced = cards.filter((c) => isDueListening(c, now));
       const n = Math.min(practiced.length, Math.round(queue.length * LISTENING_CONFIG.mixShare));
       if (n <= 0) return;
       const plan = planListenSession({
@@ -242,8 +254,6 @@ export function ReviewPage({
     const before = { prevQueue: queue, prevIndex: index, prevSlots: slots, prevDone: doneSlots };
     const handle = await learnerService.recordUndoable(evidence, evidence.at);
     setLastAnswer({ undo: handle.undo, ...before });
-    // Phase 21: the forecast follows every rating.
-    void dueForecast(db, new Date(), 7).then(setForecast);
     // Phase 19: answered cards count as "just shown" for the next session's sibling gap.
     const w = current.item.kind === 'word' ? lexicon.byId(current.item.id) : undefined;
     noteShown([`${current.item.kind}:${current.item.id}`, ...(w ? [`zh:${w.headword}`] : [])]);
@@ -273,7 +283,6 @@ export function ReviewPage({
     setDoneSlots(lastAnswer.prevDone);
     setRevealed(true);
     setLastAnswer(null);
-    void dueForecast(db, new Date(), 7).then(setForecast);
   }
 
   const rest = queue.slice(index);
@@ -284,15 +293,21 @@ export function ReviewPage({
     <div className="review-page">
       {onExit && <button onClick={onExit}>{exitLabel}</button>}
       <h1>{title ?? (focusCards ? 'Water these words' : 'Review')}</h1>
+      {reviewState && (
+        <p className="review-status" data-testid="review-status">
+          <DueIcon /> {dueNowLine(reviewState.status)}
+        </p>
+      )}
       <p className="review-meta" data-testid="review-counts">
         {dueNewLine(dueLeft, newLeft)}
-        {forecast && (
-          <span className="review-forecast" title="Due cards per day, today (incl. overdue) first">
+        {reviewState && (
+          <span className="review-forecast" title={`Reviews per day: ${FORECAST_REST_OF_TODAY.toLowerCase()} first (cards due now not included)`}>
             {' '}
-            · next 7 days: {forecast.join(', ')}
+            · {FORECAST_REST_OF_TODAY.toLowerCase()}, then next 6 days: {reviewState.forecast.join(', ')}
           </span>
         )}
       </p>
+
       {lastAnswer && (
         <p className="review-undo">
           <button type="button" onClick={() => void undoLast()} data-testid="review-undo">
@@ -336,6 +351,7 @@ export function ReviewPage({
         />
       ) : !current ? (
         <div className="review-done" data-testid="review-done">
+          <EmptySprout />
           {deferred > 0 ? (
             <p>
               {waitingSiblings(deferred)}{' '}
@@ -366,7 +382,7 @@ export function ReviewPage({
   );
 }
 
-function ReviewCard({
+export function ReviewCard({
   card,
   isNew,
   script,
@@ -465,7 +481,7 @@ function ReviewCard({
       ) : (
         <div className="review-actions">
           <div className="review-reveal-row">
-            <button className="review-reveal" onClick={onReveal}>
+            <button className="review-reveal btn-primary" onClick={onReveal}>
               Show answer
             </button>
             <NopeButton onNope={onNope} />

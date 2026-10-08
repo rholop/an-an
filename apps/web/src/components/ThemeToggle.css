@@ -1,6 +1,6 @@
 .theme-toggle {
   display: inline-flex;
-  border: 1px solid rgba(127, 127, 127, 0.5);
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
   overflow: hidden;
   font-size: 0.8rem;
@@ -13,9 +13,9 @@
   cursor: pointer;
 }
 .theme-toggle-btn + .theme-toggle-btn {
-  border-left: 1px solid rgba(127, 127, 127, 0.35);
+  border-left: 1px solid var(--border);
 }
 .theme-toggle-btn--on {
-  background: rgba(127, 127, 127, 0.28);
+  background: color-mix(in srgb, var(--text-muted) 28%, transparent);
   font-weight: 600;
 }

@@ -11,8 +11,6 @@ import {
   LAIXUE_COURSE,
   lessonDone,
   lessonProgress,
-  newItemAllowance,
-  PRIORITY_CONFIG,
   requeueAgain,
   type GrammarItem,
   type Lesson,
@@ -28,12 +26,11 @@ import { AnnotatedInline, AnnotatedWord, useReadingScript } from '../components/
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { db, learnerService } from '../db/instance.js';
-import { reviewsDoneToday } from '../db/queries.js';
+import { loadReviewStatus } from '../lib/review-status.js';
 import { setMyClass, useMyClass } from '../lib/my-class.js';
 import { buildGrammarExercises, describeGrammarExercise, type GrammarExercise } from '../lib/textbook-session.js';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import { lessonSessionCards, newSessionCard } from '../lib/review-session.js';
-import { getReviewSettings } from '../lib/review-settings.js';
 import { excludedZh } from '../lib/cloze-reports.js';
 import {
   bookSubtitle,
@@ -442,7 +439,7 @@ function LessonDetail({
         </p>
       )}
       {progress && <ProgressRow p={progress} />}
-      <button className="textbook-study-btn" onClick={onStudy} data-testid="study-lesson">
+      <button className="textbook-study-btn btn-primary" onClick={onStudy} data-testid="study-lesson">
         {STUDY_THIS_LESSON}
       </button>{' '}
       <button onClick={() => setChecking((c) => !c)} data-testid="mark-known">
@@ -684,14 +681,14 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
     let cancelled = false;
     (async () => {
       const now = new Date();
-      const [due, newCards, doneToday, rs, focus] = await Promise.all([
+      const [due, newCards, { status }, focus] = await Promise.all([
         learnerService.dueCards(now),
         learnerService.newCards(),
-        reviewsDoneToday(db, now),
-        getReviewSettings(),
+        loadReviewStatus(now),
         getStudyFocusNow(now).catch(() => undefined),
       ]);
-      const allowance = newItemAllowance(due.length + doneToday, PRIORITY_CONFIG.reviewNewItems, rs.dailyCap);
+      // Phase 22: the same new-word rule and message as Home and Review.
+      const allowance = { allowed: status.newAllowed, reason: status.newMessage };
       const picked = lessonSessionCards({
         due,
         newCards,

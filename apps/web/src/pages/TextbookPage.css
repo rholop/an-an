@@ -15,7 +15,7 @@
   display: grid;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border: 1px solid rgba(127, 127, 127, 0.3);
+  border: 1px solid var(--border);
   border-radius: 12px;
   margin: 1rem 0;
 }
@@ -29,7 +29,7 @@
   gap: 0.5rem;
 }
 .textbook-lesson {
-  border: 1px solid rgba(127, 127, 127, 0.3);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.5rem 0.75rem;
 }
@@ -89,7 +89,7 @@
 .textbook-bar {
   height: 6px;
   border-radius: 3px;
-  background: rgba(127, 127, 127, 0.25);
+  background: color-mix(in srgb, var(--text-muted) 25%, transparent);
   margin: 0.25rem 0;
   overflow: hidden;
 }
@@ -127,7 +127,7 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(127, 127, 127, 0.3);
+  border-bottom: 1px solid var(--border);
   margin-bottom: 0.75rem;
 }
 .textbook-exercise {
@@ -157,7 +157,7 @@
   font-size: 1.2rem;
   padding: 0.25rem 0.9rem;
   border-radius: 8px;
-  border: 1px solid rgba(127, 127, 127, 0.5);
+  border: 1px solid var(--border-strong);
   background: transparent;
   color: inherit;
   cursor: pointer;

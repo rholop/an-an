@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  endOfDay,
   groupPlots,
   isTextbookTagged,
   wiltingCards,
@@ -24,16 +25,15 @@ import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useStudyFocus } from '../lib/study.js';
 import { NowStudying } from '../components/NowStudying.js';
-import { DueForecast } from '../components/DueForecast.js';
+import { DueForecast, HomeReviewActions } from '../components/DueForecast.js';
+import { EmptySprout, PlantLegend, StageIcon } from '../components/PlantIcons.js';
+import { learnerService } from '../db/instance.js';
+import { useReviewStatus } from '../lib/review-status.js';
+import { useReviewSettings } from '../lib/review-settings.js';
+import { WaterAllPage } from './WaterAllPage.js';
 import { ReviewPage } from './ReviewPage.js';
 import './GardenPage.css';
 
-const STAGE_ICON: Record<GrowthStage, string> = {
-  seed: '🌰',
-  sprout: '🌱',
-  plant: '🌿',
-  bloom: '🌸',
-};
 /** Phase 21: the plant art keeps its metaphor; the words are the shared terms. */
 const STAGE_LABEL: Record<GrowthStage, string> = {
   seed: TERM.new,
@@ -62,6 +62,10 @@ export function GardenPage() {
   // Phase 12: only words from the class textbook (offered once any exist in the garden).
   const [textbookOnly, setTextbookOnly] = useState(false);
   const [focus, setFocus] = useState<SkillCard[] | null>(null);
+  // Phase 22: Home's "Water all", "Review all" and "Review early" sessions.
+  const [session, setSession] = useState<'water-all' | 'review-all' | { early: SkillCard[] } | null>(null);
+  const reviewState = useReviewStatus();
+  const { dailyCap } = useReviewSettings();
   // Phase 14: tiles that belong to the active study step are highlighted.
   const { focus: studyFocus } = useStudyFocus();
   const activeIds = new Set(
@@ -88,16 +92,19 @@ export function GardenPage() {
     return <p>Failed to load scenarios: {scenariosState.error}</p>;
   if (!snapshot) return <p>Loading…</p>;
 
+  const backHome = () => {
+    setSession(null);
+    setFocus(null);
+    setRefresh((k) => k + 1);
+    window.scrollTo(0, 0);
+  };
+  if (session === 'water-all') return <WaterAllPage onExit={backHome} />;
+  if (session === 'review-all')
+    return <ReviewPage reviewAll title="Review all" exitLabel="← Back to home" onExit={backHome} />;
+  if (session && typeof session === 'object')
+    return <ReviewPage focusCards={session.early} keepEvery title="Review early" exitLabel="← Back to home" onExit={backHome} />;
   if (focus) {
-    return (
-      <ReviewPage
-        focusCards={focus}
-        onExit={() => {
-          setFocus(null);
-          setRefresh((k) => k + 1);
-        }}
-      />
-    );
+    return <ReviewPage focusCards={focus} keepEvery onExit={backHome} />;
   }
 
   const lexicon = lexiconState.status === 'ready' ? lexiconState.lexicon : null;
@@ -123,7 +130,16 @@ export function GardenPage() {
     <div className="garden-page">
       <h1>Word garden</h1>
       <NowStudying />
-      <DueForecast />
+      <HomeReviewActions
+        loaded={reviewState}
+        onWaterAll={() => setSession('water-all')}
+        onReviewAll={() => setSession('review-all')}
+        onReviewEarly={() =>
+          void learnerService.dueCards(endOfDay(new Date())).then((early) => setSession({ early }))
+        }
+      />
+      <DueForecast loaded={reviewState} dailyCap={dailyCap} />
+      {snapshot.plants.length === 0 && <EmptySprout />}
       <p className="garden-meta">
         {shownPlants.length === 0
           ? snapshot.plants.length === 0
@@ -131,14 +147,7 @@ export function GardenPage() {
             : 'No words at the selected levels yet.'
           : `${shownPlants.length} words · ${wilting === 0 ? 'nothing due right now' : `${wilting} need water (${TERM.due.toLowerCase()})`}`}
       </p>
-      <p className="garden-legend">
-        {(Object.keys(STAGE_ICON) as GrowthStage[]).map((s) => (
-          <span key={s}>
-            {STAGE_ICON[s]} {STAGE_LABEL[s]}{' '}
-          </span>
-        ))}
-        · drooping = {TERM.due.toLowerCase()}, needs water · ⚠ = tricky word (never {TERM.mastered})
-      </p>
+      <PlantLegend extra={<span>⚠ tricky word (never {TERM.mastered})</span>} />
       <LevelChips selected={levelFilter} onChange={setLevelFilter} current={level} />
       {(hasTextbookWords || textbookOnly) && (
         <label className="garden-textbook-filter">
@@ -206,7 +215,7 @@ function PlotView({
         ))}
       </div>
       {plot.wiltingCount > 0 ? (
-        <button className="garden-water" onClick={onWater}>
+        <button className="garden-water btn-water" onClick={onWater}>
           💧 Water {plot.wiltingCount} {plot.wiltingCount === 1 ? 'word' : 'words'}
         </button>
       ) : (
@@ -237,7 +246,7 @@ function Tile({
       data-stage={plant.stage}
     >
       <span className="garden-plant" aria-hidden="true">
-        {STAGE_ICON[plant.stage]}
+        <StageIcon stage={plant.stage} />
       </span>
       <span className="garden-word" lang="zh-Hant">
         {word ? <AnnotatedWord word={word} script={script} /> : plant.headword}

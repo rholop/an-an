@@ -43,8 +43,8 @@ test.describe('light / dark theme toggle', () => {
     expect(brightness(await canvas(page))).toBeLessThan(60);
     // the text colour flips too, so words stay readable
     await expect
-      .poll(async () => page.evaluate(() => getComputedStyle(document.body).color))
-      .toMatch(/rgb\((2[0-9]{2}|1[5-9][0-9])/);
+      .poll(async () => brightness(await page.evaluate(() => getComputedStyle(document.body).color)))
+      .toBeGreaterThan(140); // Solarized Dark body text (#93a1a1)
 
     // device dark + Light forced = light
     await page.emulateMedia({ colorScheme: 'dark' });

@@ -37,7 +37,7 @@
   color: inherit;
 }
 .gate-big:hover:not(:disabled) {
-  background: rgba(127, 127, 127, 0.15);
+  background: var(--surface-2);
 }
 .gate-big--small {
   font-size: 1.1rem;
@@ -89,9 +89,9 @@
   min-width: 8rem;
   padding: 0.25rem;
   border-radius: 8px;
-  border: 1px solid rgba(127, 127, 127, 0.5);
-  background: Canvas;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-pop);
 }
 .profile-menu button {
   text-align: left;
@@ -106,7 +106,7 @@
   font-weight: bold;
 }
 .profile-menu button:hover {
-  background: rgba(127, 127, 127, 0.15);
+  background: var(--surface-2);
 }
 
 /* ---- phones ---- */

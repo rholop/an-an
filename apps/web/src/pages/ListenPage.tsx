@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { isDueListening } from '@anan/core';
 import {
   lessonIndex,
   planListenSession,
@@ -212,7 +213,7 @@ export function ListenPage({
       const rank = focus?.enabled
         ? (id: string) => studyRank(focus, (it) => idx.get(`${it.kind}:${it.id}`), { kind: 'word', id })
         : undefined;
-      const practiced = listening.filter((c: SkillCard) => c.card.reps > 0 && c.card.due <= now);
+      const practiced = listening.filter((c: SkillCard) => isDueListening(c, now));
       const fresh = listening.filter((c) => c.card.reps === 0).map((c) => c.item.id);
       const lessonFresh = onlyWordIds ? [...onlyWordIds].filter((id) => !listening.some((c) => c.item.id === id)) : [];
       const seed = newSessionSeed('listen');

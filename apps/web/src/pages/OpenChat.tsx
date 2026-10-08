@@ -407,7 +407,7 @@ export function OpenChatView({
                   spellCheck={false}
                   disabled={sending}
                 />
-                <button onClick={sendMessage} disabled={sending || !input.trim()}>
+                <button className="btn-primary" onClick={sendMessage} disabled={sending || !input.trim()}>
                   {sending ? '…' : 'Send'}
                 </button>
                 <button

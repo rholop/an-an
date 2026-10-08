@@ -48,6 +48,8 @@ export function wordSourceLabel(level: Level | null | undefined, home?: { n: num
 }
 /** Header picker: "Your level". */
 export const YOUR_LEVEL = 'Your level';
+/** Phase 22: the header picker's one label. */
+export const LEVEL = 'Level';
 
 // --- progress terms -------------------------------------------------------------------------
 export const TERM = {
@@ -71,6 +73,24 @@ export const lessonsMasteredLine = (done: number, total: number): string =>
 export const coverageLine = (share: number): string => `You know about ${pct(share)} of the words here`;
 /** Review header: "12 due · 3 new". */
 export const dueNewLine = (due: number, fresh: number): string => `${due} ${TERM.due.toLowerCase()} · ${fresh} ${TERM.new.toLowerCase()}`;
+/** Phase 22: a clock time for "next at …" ("3:40 pm"). */
+export const timeOfDay = (d: Date): string =>
+  d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toLowerCase().replace(/\s+/g, ' ');
+/** Phase 22: "3 more later today (next at 3:40 pm)". */
+export const laterTodayLine = (n: number, next?: Date): string =>
+  `${n} more later today${next ? ` (next at ${timeOfDay(next)})` : ''}`;
+/** Phase 22: the one review status line: "3 due now", plus later today when there are any. */
+export const dueNowLine = (s: { dueNow: number; laterToday: number; nextDueAt?: Date }): string =>
+  `${s.dueNow} ${TERM.due.toLowerCase()} now${s.laterToday > 0 ? ` · ${laterTodayLine(s.laterToday, s.nextDueAt)}` : ''}`;
+export const waterAllLabel = (n: number): string => `💧 Water all (${n})`;
+export const reviewAllLabel = (n: number): string => `Review all (${n})`;
+export const REVIEW_EARLY = 'Review early';
+export const ALL_WATERED = 'All watered 🌱';
+export const COME_BACK_TOMORROW = 'All watered 🌱 Come back tomorrow.';
+export const FORECAST_REST_OF_TODAY = 'Rest of today';
+/** Phase 22: Water all's end-of-session line. */
+export const wateredSummary = (words: number, perked: number): string =>
+  `Watered ${words} word${words === 1 ? '' : 's'} 🌱${perked > 0 ? ` ${perked} perked up to ${TERM.learned}` : ''}`;
 /** Listening progress (Part C): practised = answered at least once; strong = listening stability
  * ≥ PROGRESS_CONFIG.listeningStrongDays. Listening never counts toward Mastered, so it keeps its own word. */
 export const listeningLine = (practised: number, strong: number): string =>

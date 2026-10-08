@@ -55,15 +55,15 @@
   color: inherit;
 }
 .journal-hl--error {
-  background: rgba(198, 40, 40, 0.28);
+  background: color-mix(in srgb, var(--danger) 28%, transparent);
   box-shadow: inset 0 -2px 0 var(--c-bad);
 }
 .journal-hl--unnatural {
-  background: rgba(239, 160, 0, 0.3);
-  box-shadow: inset 0 -2px 0 #ef9a00;
+  background: color-mix(in srgb, var(--warn) 30%, transparent);
+  box-shadow: inset 0 -2px 0 var(--warn);
 }
 .journal-hl--mainland_style {
-  background: rgba(21, 101, 192, 0.28);
+  background: color-mix(in srgb, var(--water) 28%, transparent);
   box-shadow: inset 0 -2px 0 var(--c-info);
 }
 .journal-legend {
@@ -90,7 +90,7 @@
   margin: 1rem 0;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  background: rgba(127, 127, 127, 0.08);
+  background: var(--surface-2);
 }
 .journal-issue--flagged {
   opacity: 0.6;
@@ -102,7 +102,7 @@
 }
 .journal-more {
   padding-left: 0.75rem;
-  border-left: 3px solid rgba(127, 127, 127, 0.4);
+  border-left: 3px solid var(--border);
 }
 
 .journal-brackets,
@@ -111,7 +111,7 @@
   margin-top: 1rem;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  background: rgba(127, 127, 127, 0.08);
+  background: var(--surface-2);
 }
 
 .journal-progress {

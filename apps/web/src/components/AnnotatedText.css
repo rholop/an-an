@@ -11,7 +11,7 @@
   padding: 0 1px;
 }
 .an-token:hover {
-  background: rgba(127, 127, 127, 0.12);
+  background: var(--surface-2);
 }
 
 /* Per-token level colour coding (reader page §9) */
@@ -107,14 +107,14 @@
   left: 0;
   top: 100%;
   z-index: 10;
-  background: var(--an-popover-bg, #1f1f1f);
-  color: var(--an-popover-fg, #fff);
+  background: var(--popover-bg);
+  color: var(--popover-fg);
   border-radius: 6px;
   padding: 8px 12px;
   font-size: 0.9rem;
   line-height: 1.4;
   white-space: nowrap;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-pop);
 }
 .an-popover-close {
   position: absolute;
@@ -137,16 +137,10 @@
   opacity: 0.8;
 }
 
-@media (prefers-color-scheme: light) {
-  .an-popover {
-    --an-popover-bg: #2a2a2a;
-    --an-popover-fg: #fff;
-  }
-}
 
 /* Phase 7: above the learner's chosen level — shown with a background AND a dotted underline, so it never depends on colour alone. */
 .an-token--above {
-  background: rgba(239, 160, 0, 0.22);
+  background: color-mix(in srgb, var(--warn) 22%, transparent);
   text-decoration: underline dotted;
   text-underline-offset: 4px;
 }
@@ -167,7 +161,7 @@
 .an-popover-moe {
   font-size: 0.85rem;
   margin-top: 0.3rem;
-  border-top: 1px solid rgba(127, 127, 127, 0.3);
+  border-top: 1px solid var(--border);
   padding-top: 0.25rem;
 }
 .an-popover-moe p {
@@ -208,14 +202,14 @@
     padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px));
     font-size: 1rem;
     white-space: normal;
-    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--shadow-pop);
   }
   .an-sheet-grabber {
     display: block;
     width: 40px;
     height: 5px;
     border-radius: 3px;
-    background: rgba(255, 255, 255, 0.4);
+    background: color-mix(in srgb, var(--surface) 40%, transparent);
     margin: -8px auto 8px;
   }
   .an-popover--sheet .an-popover-close {

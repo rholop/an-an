@@ -267,11 +267,13 @@ test.describe('keyboards and inputs', () => {
       expect(b).toBeGreaterThanOrEqual(44);
     await page.getByTestId('open-chat-topic-input').fill('food');
     await page.getByRole('button', { name: 'Start' }).click();
-    await expect(page.locator('.chat-input')).toBeVisible();
-    const input = (await page.locator('.chat-input').boundingBox())!;
-    expect(input.y + input.height).toBeLessThanOrEqual(visible + 1);
-    const stuck = (await page.getByRole('button', { name: "I'm stuck" }).boundingBox())!;
-    expect(stuck.y + stuck.height).toBeLessThanOrEqual(visible + 1);
+    // the chat re-renders as its first reply arrives: poll the boxes instead of reading one too early
+    const bottom = async (l: import('@playwright/test').Locator) => {
+      const b = await l.boundingBox().catch(() => null);
+      return b ? b.y + b.height : Infinity;
+    };
+    await expect.poll(() => bottom(page.locator('.chat-input'))).toBeLessThanOrEqual(visible + 1);
+    await expect.poll(() => bottom(page.getByRole('button', { name: "I'm stuck" }))).toBeLessThanOrEqual(visible + 1);
   });
 
   test('chat: input is 16px+ (no iOS zoom), suggestions scroll in one row, "I\'m stuck" is reachable without scrolling', async ({

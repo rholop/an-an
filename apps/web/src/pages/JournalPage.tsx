@@ -453,7 +453,7 @@ function WriteStage({
           {error}
         </p>
       )}
-      <button className="journal-submit" onClick={submit} disabled={busy || !text.trim()}>
+      <button className="journal-submit btn-primary" onClick={submit} disabled={busy || !text.trim()}>
         {busy ? 'Checking…' : 'Submit for feedback'}
       </button>
     </section>

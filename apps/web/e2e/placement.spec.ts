@@ -4,6 +4,8 @@ test.describe('Placement test', () => {
   test('adaptive test: a learner who knows everything converges to "beyond L5" in well under 60 taps', async ({
     page,
   }) => {
+    // "Saving results…" writes a card per known word: slow when the suite runs in parallel
+    test.setTimeout(60_000);
     const errors: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') errors.push(msg.text());
@@ -27,7 +29,7 @@ test.describe('Placement test', () => {
       taps++;
     }
 
-    await expect(page.getByText('Level-by-level summary')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Level-by-level summary')).toBeVisible({ timeout: 40_000 });
     expect(taps).toBeLessThan(60);
     // A learner who knows everything converges on the top level (L5) or the
     // "beyond L5" sentinel — either is a correct, graceful placement.

@@ -1,6 +1,5 @@
 import {
   clozeSourceSentences,
-  isActiveCard,
   type ChatLineSource,
   type JournalSentenceSource,
   type Scenario,
@@ -8,49 +7,12 @@ import {
 } from '@anan/core';
 import type { AnanDB } from './schema.js';
 
-/** Count of cards due on each of the next `days` calendar days (today
- * first), for the review screen's forecast. Direct Dexie query — not part
- * of the core LearnerRepo contract. */
-export async function dueForecast(db: AnanDB, now: Date, days = 7): Promise<number[]> {
-  const dayStart = (offset: number) => {
-    const d = new Date(now);
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() + offset);
-    return d;
-  };
-
-  const counts: number[] = [];
-  for (let i = 0; i < days; i++) {
-    const from = dayStart(i);
-    const to = dayStart(i + 1);
-    // Today = overdue + due before local midnight. Phase 20: removed cards ("Not now", "Never show")
-    // don't count. Phase 21: only Due cards (answered at least once): New cards are never "due".
-    const range = i === 0 ? db.items.where('card.due').below(to) : db.items.where('card.due').between(from, to, true, false);
-    const count = await range
-      .filter((r) => r.skill !== 'listening' && r.state !== 'unseen' && r.card.reps > 0 && isActiveCard(r))
-      .count();
-    counts.push(count);
-  }
-  return counts;
-}
-
-/** Phase 20: reviews already done today (they count toward the daily cap). */
-export async function reviewsDoneToday(db: AnanDB, now: Date): Promise<number> {
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  return db.evidence
-    .where('at')
-    .between(start, now, true, true)
-    .filter((e) => e.kind === 'review_again' || e.kind === 'review_hard' || e.kind === 'review_good' || e.kind === 'review_easy')
-    .count();
-}
-
 /** All cards ever touched (any state past 'unseen'), for consumers that need
  * the learner's whole history rather than just what's currently due —
  * `currentFrontierLevel()` and pinyin fading's per-word `readingDisplay()`
  * both need this, and neither fits the `LearnerRepo.dueCards()`/`knownSet()`
  * contract (which is deliberately narrow — see Phase 2). Not part of
- * LearnerRepo for the same reason dueForecast isn't: a direct Dexie
+ * LearnerRepo: a direct Dexie
  * convenience, not a cross-storage-backend API. */
 export async function allTouchedCards(db: AnanDB): Promise<SkillCard[]> {
   const rows = await db.items.where('state').notEqual('unseen').toArray();

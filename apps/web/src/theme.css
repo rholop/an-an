@@ -1,0 +1,258 @@
+/*
+ * Phase 22: every colour in the app lives here, as a token. Components use only these
+ * (an architecture test fails on a colour written anywhere else).
+ *
+ * Light ("Garden light", the default): Solarized Light nudged green.
+ * Dark: Solarized Dark with the accents brightened for contrast.
+ * "Auto" (no data-theme) follows the system; Light / Dark set data-theme on <html>.
+ *
+ * Text tokens (--text, --text-muted, --accent, --info-text, --warn-text, --danger-text,
+ * --bloom-text) pass WCAG AA (4.5:1) on --bg, --surface and --surface-2 in both themes;
+ * src/theme.test.ts checks it. --accent-soft, --water, --warn, --danger, --bloom and --focus are
+ * for fills, icons, borders and bars (3:1), never small text.
+ */
+:root {
+  color-scheme: light dark;
+
+  --bg: #f3f4e3;
+  --surface: #fbfbf1;
+  --surface-2: #e9edd6;
+  --border: #d5dcc0;
+  --border-strong: #b9c4a0;
+  --text: #073642;
+  --text-muted: #516a71;
+  /* Solarized green darkened until text on the light backgrounds passes AA (#5f7a00 was 4.4:1). */
+  --accent: #577000;
+  /* Solarized green (#859900), a shade darker so icons and bars reach 3:1 on the light backgrounds. */
+  --accent-soft: #7a8c00;
+  --on-accent: #fbfbf1;
+  --water: #268bd2;
+  --bloom: #d33682;
+  --warn: #b58900;
+  --danger: #dc322f;
+  --focus: #23877f;
+  --seed: #93653a;
+  /* text-safe variants of the accent colours */
+  --info-text: #1b6aa2;
+  --warn-text: #826000;
+  --danger-text: #b3261e;
+  --bloom-text: #a8256a;
+  --seed-text: #74502e;
+
+  --shadow: 0 1px 2px color-mix(in srgb, #073642 8%, transparent), 0 2px 8px color-mix(in srgb, #073642 6%, transparent);
+  --shadow-pop: 0 4px 16px color-mix(in srgb, #073642 22%, transparent);
+  --backdrop: color-mix(in srgb, #002b36 45%, transparent);
+  --popover-bg: #073642;
+  --popover-fg: #eee8d5;
+
+  --radius: 12px;
+  --radius-sm: 10px;
+
+  --font-body: system-ui, -apple-system, 'Segoe UI', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  --font-heading: 'Nunito', system-ui, -apple-system, 'Segoe UI', 'Noto Sans TC', 'PingFang TC', sans-serif;
+}
+
+/* Dark: Solarized Dark. */
+:root[data-theme='dark'] {
+  --bg: #002b36;
+  --surface: #073642;
+  --surface-2: #04313d;
+  --border: #1d4f5c;
+  --border-strong: #2f6674;
+  --text: #93a1a1;
+  --text-muted: #8fa0a1;
+  --accent: #a6bf00;
+  --accent-soft: #9fb800;
+  --on-accent: #002b36;
+  --water: #4fa8e8;
+  --bloom: #f07ab0;
+  --warn: #d4a90e;
+  --danger: #ff7a6e;
+  --focus: #35c2b6;
+  --seed: #c79a6b;
+  --info-text: #4fa8e8;
+  --warn-text: #d4a90e;
+  --danger-text: #ff7a6e;
+  --bloom-text: #f07ab0;
+  --seed-text: #c79a6b;
+  --shadow: none;
+  --shadow-pop: 0 4px 16px color-mix(in srgb, #000000 45%, transparent);
+  --backdrop: color-mix(in srgb, #000000 55%, transparent);
+  --popover-bg: #eee8d5;
+  --popover-fg: #073642;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #002b36;
+    --surface: #073642;
+    --surface-2: #04313d;
+    --border: #1d4f5c;
+    --border-strong: #2f6674;
+    --text: #93a1a1;
+    --text-muted: #8fa0a1;
+    --accent: #a6bf00;
+    --accent-soft: #9fb800;
+    --on-accent: #002b36;
+    --water: #4fa8e8;
+    --bloom: #f07ab0;
+    --warn: #d4a90e;
+    --danger: #ff7a6e;
+    --focus: #35c2b6;
+    --seed: #c79a6b;
+    --info-text: #4fa8e8;
+    --warn-text: #d4a90e;
+    --danger-text: #ff7a6e;
+    --bloom-text: #f07ab0;
+    --seed-text: #c79a6b;
+    --shadow: none;
+    --shadow-pop: 0 4px 16px color-mix(in srgb, #000000 45%, transparent);
+    --backdrop: color-mix(in srgb, #000000 55%, transparent);
+    --popover-bg: #eee8d5;
+    --popover-fg: #073642;
+  }
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* Older names, kept so every component reads the same tokens. */
+:root {
+  --c-good: var(--accent);
+  --c-info: var(--info-text);
+  --c-purple: var(--bloom-text);
+  --c-warn: var(--warn-text);
+  --c-bad: var(--danger-text);
+  --c-brown: var(--seed-text);
+  --c-gold: var(--warn-text);
+  --c-muted: var(--text-muted);
+  --muted: var(--text-muted);
+}
+
+/* Nunito (SIL OFL 1.1), served from this site: English headings only. */
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url('/fonts/nunito-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ---- base ---------------------------------------------------------------------------------- */
+
+html {
+  background: var(--bg);
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  accent-color: var(--accent);
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: 0.005em;
+}
+h2,
+h3 {
+  font-weight: 700;
+}
+a,
+.link-button {
+  color: var(--accent);
+}
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Buttons: outlined by default (secondary), filled accent for primary actions. */
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+button.btn-primary,
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+button.btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 88%, var(--text));
+}
+button.btn-water {
+  background: color-mix(in srgb, var(--water) 14%, var(--surface));
+  border-color: var(--water);
+  color: var(--text);
+  font-weight: 700;
+}
+button.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  text-decoration: underline;
+}
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+input[type='checkbox'],
+input[type='radio'] {
+  border-radius: 0;
+}
+select {
+  padding: 0.25rem 0.4rem;
+}
+
+/* Cards and sheets. */
+.card,
+.now-studying,
+.garden-plot,
+.review-card,
+.textbook-lesson,
+.placement-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.chip {
+  border-radius: 999px;
+}
+
+/* Everything that animates: off with reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

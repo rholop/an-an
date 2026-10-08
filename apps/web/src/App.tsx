@@ -8,7 +8,7 @@ import {
   type Level,
 } from '@anan/core';
 import { LevelPicker } from './components/LevelPicker.js';
-import { MoreSheet, TabBar } from './components/TabBar.js';
+import { MoreSheet, TabBar, TopNav } from './components/TabBar.js';
 import { ThemeToggle } from './components/ThemeToggle.js';
 import { useProfile } from './components/ProfileGate.js';
 import { PROFILES } from './profiles.js';
@@ -19,8 +19,9 @@ import { installViewportTracking } from './lib/viewport.js';
 import { useMyClass } from './lib/my-class.js';
 import { useProgressData, useStudyContextRegistration } from './lib/study.js';
 import { ToastHost } from './components/ToastHost.js';
+import { useReviewStatus } from './lib/review-status.js';
 import { currentSession } from './db/instance.js';
-import { HOME, YOUR_LEVEL, levelLabel, levelShort, navTextbookLabel, pct } from './lib/labels.js';
+import { LEVEL, levelLabel, levelShort, navTextbookLabel, pct } from './lib/labels.js';
 // Phase 21: the stored target retention is applied at start, on profile switch and after a sync.
 import './lib/retention.js';
 import './lib/audio-slow.js';
@@ -122,13 +123,8 @@ function LevelHeader({ route }: { route: Route }) {
   return (
     <header className="app-header">
       <ProfileChip />
-      <span className="level-picker-label">{YOUR_LEVEL}</span>
-      <LevelPicker value={level} onChange={(l) => void setLevel(l)} />
-      {classOn && (
-        <span className="level-class-hint" data-testid="level-class-hint">
-          {classLevelHint(classBook, classLesson)}
-        </span>
-      )}
+      <LevelPicker value={level} onChange={(l) => void setLevel(l)} shownLabel={LEVEL} />
+      {classOn && <ClassLevelHint text={classLevelHint(classBook, classLesson) ?? ""} />}
       <div className="header-theme">
         <ThemeToggle />
       </div>
@@ -142,6 +138,28 @@ function LevelHeader({ route }: { route: Route }) {
         </div>
       )}
     </header>
+  );
+}
+
+/** Phase 22: which level the class book matches, behind a small info tap (saves header space). */
+function ClassLevelHint({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className={`level-class-hint${open ? ' level-class-hint--open' : ''}`} data-testid="level-class-hint">
+      <button
+        type="button"
+        className="level-class-hint-btn"
+        aria-label={`Your class level: ${text}`}
+        aria-expanded={open}
+        title={text}
+        onClick={() => setOpen((o) => !o)}
+      >
+        ⓘ
+      </button>
+      <span className="level-class-hint-text" role="note">
+        {text}
+      </span>
+    </span>
   );
 }
 
@@ -220,6 +238,8 @@ export function App() {
   useStudyContextRegistration();
   useLookupGateRegistration();
   const [moreOpen, setMoreOpen] = useState(false);
+  // Phase 22: the nav's due badge is the same number as Home and Review.
+  const reviewState = useReviewStatus();
   // The tab bar only exists on a phone-width screen (the CSS hides it above 640px too,
   // but then it would still be in the page and duplicate the top nav's labels).
   const isPhoneWidth = useMediaQuery('(max-width: 639.98px)');
@@ -233,57 +253,12 @@ export function App() {
   return (
     <div className="app">
       <LevelHeader route={route} />
-      <nav className="app-nav">
-        <button onClick={() => setRoute('garden')} disabled={route === 'garden'}>
-          {HOME}
-        </button>
-        <button onClick={() => setRoute('reader')} disabled={route === 'reader'}>
-          Reader
-        </button>
-        <button onClick={() => setRoute('chat')} disabled={route === 'chat'}>
-          Chat
-        </button>
-        <button onClick={() => setRoute('cloze')} disabled={route === 'cloze'}>
-          Cloze
-        </button>
-        <button onClick={() => setRoute('journal')} disabled={route === 'journal'}>
-          Journal
-        </button>
-        <button onClick={() => setRoute('progress')} disabled={route === 'progress'}>
-          Progress
-        </button>
-        <button onClick={() => setRoute('review')} disabled={route === 'review'}>
-          Review
-        </button>
-        <button
-          onClick={() => setRoute('textbook')}
-          disabled={route === 'textbook'}
-          data-testid="nav-textbook"
-        >
-          {myClass.enabled ? navTextbookLabel(myClass.currentLesson) : 'Textbook'}
-        </button>
-        <button onClick={() => setRoute('review-settings')} disabled={route === 'review-settings'}>
-          Settings
-        </button>
-        <button onClick={() => setRoute('placement')} disabled={route === 'placement'}>
-          Placement
-        </button>
-        <button onClick={() => setRoute('anki-import')} disabled={route === 'anki-import'}>
-          Anki import
-        </button>
-        <button onClick={() => setRoute('reported')} disabled={route === 'reported'}>
-          Reported
-        </button>
-        <button onClick={() => setRoute('credits')} disabled={route === 'credits'}>
-          Credits
-        </button>
-        <button onClick={() => setRoute('audio-review')} disabled={route === 'audio-review'}>
-          Audio review
-        </button>
-        <button onClick={() => setRoute('zhuyin-test')} disabled={route === 'zhuyin-test'}>
-          Zhuyin rendering test
-        </button>
-      </nav>
+      <TopNav
+        route={route}
+        onGo={go}
+        textbookLabel={myClass.enabled ? navTextbookLabel(myClass.currentLesson) : 'Textbook'}
+        dueNow={reviewState?.status.dueNow ?? 0}
+      />
       {/* reserved height: the tab bar and footer never jump when a screen finishes loading */}
       <main className="page-slot">
         <Suspense fallback={<div className="page-loading" aria-busy="true" />}>
@@ -306,7 +281,13 @@ export function App() {
       </main>
       <ToastHost />
       {isPhoneWidth && (
-        <TabBar route={route} onGo={go} moreOpen={moreOpen} onMore={() => setMoreOpen((o) => !o)} />
+        <TabBar
+          route={route}
+          onGo={go}
+          moreOpen={moreOpen}
+          onMore={() => setMoreOpen((o) => !o)}
+          dueNow={reviewState?.status.dueNow ?? 0}
+        />
       )}
       {isPhoneWidth && moreOpen && (
         <MoreSheet

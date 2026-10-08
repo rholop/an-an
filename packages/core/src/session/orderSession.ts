@@ -287,3 +287,11 @@ export function placeExtras<T, E>(
   });
   return placed;
 }
+
+/** Phase 22: a session that must cover every card it was given ("Review all (N)", "Water all (N)"):
+ * siblings the gap would defer go at the end instead of waiting for the next session. */
+export function keepDeferred<T>(session: readonly T[]): T[] {
+  const meta = sessionMeta(session);
+  if (!meta || meta.deferred.length === 0) return [...session];
+  return mark([...session, ...meta.deferred], { seed: meta.seed, deferred: [] });
+}
