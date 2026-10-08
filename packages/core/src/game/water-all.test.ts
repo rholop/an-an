@@ -32,7 +32,7 @@ const card = (
 });
 
 describe('Water all (Phase 22 Part B)', () => {
-  const cards = [
+  const cards: SkillCard[] = [
     card('捷運', 'recognition', -5),
     card('捷運', 'production', -1),
     card('機車', 'recognition', -30),
@@ -40,7 +40,7 @@ describe('Water all (Phase 22 Part B)', () => {
     card('垃圾車', 'recognition', 3), // later today: not thirsty yet
     card('還', 'recognition', -4, { flags: { snoozed: true } }), // Not now
     card('長', 'listening', -4), // its own queue
-    { ...card('了', 'recognition', -4), item: { kind: 'grammar', id: 'gram-le' } },
+    { ...card('了', 'recognition', -4), item: { kind: 'grammar' as const, id: 'gram-le' } },
   ];
 
   it('covers every word that needs water, and counts words not cards', () => {

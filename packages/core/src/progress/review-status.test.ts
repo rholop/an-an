@@ -75,17 +75,17 @@ describe('reviewStatus (Phase 22 Part A)', () => {
   });
 
   it('due now never mixes with later today; New, unseen, removed and listening cards are never due', () => {
-    const cards = [
+    const cards: SkillCard[] = [
       card('due1', at(7)),
       card('due2', at(0, 0, -3)),
       card('due2', at(9), { skill: 'production' }),
       card('later', at(12)),
-      card('new', at(7), { state: 'introduced', card: { ...createEmptyCard(at(7)), reps: 0 } }),
+      card('new', at(7), { state: 'introduced', card: { ...createEmptyCard(at(7)), reps: 0 } as SkillCard['card'] }),
       card('unseen', at(7), { state: 'unseen' }),
       card('nope', at(7), { flags: { snoozed: true } }),
       card('nope2', at(12), { flags: { excluded: true } }),
       card('listen', at(7), { skill: 'listening' }),
-      { ...card('gram', at(8)), item: { kind: 'grammar', id: 'gram-le' } },
+      { ...card('gram', at(8)), item: { kind: 'grammar' as const, id: 'gram-le' } },
     ];
     const s = reviewStatus({ cards, evidence: [], now: NOW, cap: 80 });
     expect(s.dueNow).toBe(4);
