@@ -13,7 +13,8 @@
     "journal-eval": "tsx scripts/journal-eval.ts",
     "sync-rollback": "tsx scripts/sync-rollback.ts",
     "journal-cloze-eval": "tsx scripts/journal-cloze-eval.ts",
-    "stories-eval": "tsx scripts/stories-eval.ts"
+    "stories-eval": "tsx scripts/stories-eval.ts",
+    "smoke": "tsx scripts/smoke-proxy.ts"
   },
   "dependencies": {
     "@anan/core": "workspace:*",

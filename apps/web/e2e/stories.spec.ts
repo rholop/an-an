@@ -47,6 +47,15 @@ test.describe('Graded stories (phase 24)', () => {
 
     // Easier / Just right / Harder is remembered per profile
     await page.getByTestId('story-difficulty-harder').click();
+    // the setting is written a moment later (debounced): wait for it before reloading
+    await expect
+      .poll(() =>
+        page.evaluate(async () => {
+          const db = (window as unknown as { __anan: { db: { settings: { get: (k: string) => Promise<{ value?: unknown } | undefined> } } } }).__anan.db;
+          return (await db.settings.get('storyDifficulty'))?.value;
+        }),
+      )
+      .toBe('harder');
     await page.reload();
     await expect(page.getByTestId('story-difficulty-harder')).toHaveAttribute('aria-checked', 'true', { timeout: 20_000 });
     await page.getByTestId('story-difficulty-middle').click();
@@ -135,5 +144,32 @@ test.describe('Graded stories (phase 24)', () => {
       timeout: 20_000,
     });
     expect(errors).toEqual([]);
+  });
+});
+
+test.describe('Story write failure (phase 25)', () => {
+  test('a 502 from the proxy shows "Try again" with Retry, never the raw error', async ({ page }) => {
+    test.setTimeout(60_000);
+    await seedKnownWords(page);
+    let calls = 0;
+    await page.route('**/v1/story', (route) => {
+      calls++;
+      return route.fulfill({
+        status: 502,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'story_failed', providers: [{ name: 'openai', reason: 'bad_request' }, { name: 'gemini', reason: 'invalid_json' }] }),
+      });
+    });
+    await page.goto('/?page=reader');
+    await expect(page.getByTestId('stories-section')).toBeVisible({ timeout: 20_000 });
+    await page.getByTestId('next-story').click();
+    const error = page.getByTestId('story-error');
+    await expect(error).toHaveText(/Couldn't write a story right now\. Try again\./, { timeout: 20_000 });
+    await expect(error).not.toContainText(/502|bad_request|openai|gemini|story_failed/);
+    const before = calls;
+    expect(before).toBeGreaterThan(0);
+    await page.getByTestId('story-retry').click();
+    await expect.poll(() => calls, { timeout: 20_000 }).toBeGreaterThan(before);
+    await expect(page.getByTestId('story-error')).toBeVisible({ timeout: 20_000 });
   });
 });

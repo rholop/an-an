@@ -1,8 +1,16 @@
 import OpenAI from 'openai';
 import { SentenceGenResponseSchema, TurnResponseSchema, type TurnHistoryEntry } from '@anan/core';
 import { SENTENCE_GEN_RESPONSE_JSON_SCHEMA, TURN_RESPONSE_JSON_SCHEMA } from '../json-schema.js';
+import { applyZodLimits, trimToLimits } from '../zod-limits.js';
+
+const TURN_SCHEMA = applyZodLimits(TURN_RESPONSE_JSON_SCHEMA, TurnResponseSchema);
+const SENTENCE_SCHEMA = applyZodLimits(
+  SENTENCE_GEN_RESPONSE_JSON_SCHEMA,
+  SentenceGenResponseSchema,
+);
 import {
   ProviderRetryableError,
+  schemaName,
   type ProviderAdapter,
   type JsonTaskAdapter,
   type JsonTaskRequest,
@@ -27,12 +35,23 @@ function toOpenAiMessages(
   ];
 }
 
-function isRetryable(err: unknown): 'rate_limit' | 'quota' | undefined {
+/**
+ * Phase 25: every OpenAI request failure falls back to the other provider (as Gemini's do), with
+ * a reason the 502 body can name. Before this a 400 (e.g. a bad schema name) was a plain Error,
+ * so the route 502'd without ever trying Gemini.
+ */
+export function toProviderError(err: unknown): ProviderRetryableError {
   const status = (err as { status?: number })?.status;
-  if (status === 429) return 'rate_limit';
   const message = err instanceof Error ? err.message : String(err);
-  if (/insufficient_quota|quota/i.test(message)) return 'quota';
-  return undefined;
+  if (/insufficient_quota/i.test(message))
+    return new ProviderRetryableError('OpenAI quota', 'quota');
+  if (status === 429) return new ProviderRetryableError('OpenAI rate_limit', 'rate_limit');
+  if (status === 401 || status === 403) return new ProviderRetryableError('OpenAI auth', 'auth');
+  if (status !== undefined && status >= 400 && status < 500)
+    return new ProviderRetryableError(`OpenAI bad request: ${message}`, 'bad_request');
+  if (status !== undefined && status >= 500)
+    return new ProviderRetryableError(`OpenAI server error: ${message}`, 'server_error');
+  return new ProviderRetryableError(`OpenAI request error: ${message}`, 'request_error');
 }
 
 export class OpenAiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonTaskAdapter {
@@ -54,19 +73,17 @@ export class OpenAiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
         messages: toOpenAiMessages(systemPrompt, history),
         response_format: {
           type: 'json_schema',
-          json_schema: { name: 'turn_response', schema: TURN_RESPONSE_JSON_SCHEMA, strict: false },
+          json_schema: { name: 'turn_response', schema: TURN_SCHEMA, strict: false },
         },
       });
     } catch (err) {
-      const retryable = isRetryable(err);
-      if (retryable) throw new ProviderRetryableError(`OpenAI ${retryable}`, retryable);
-      throw err;
+      throw toProviderError(err);
     }
 
     const text = completion.choices[0]?.message?.content ?? '';
     let parsed;
     try {
-      parsed = TurnResponseSchema.parse(JSON.parse(text));
+      parsed = TurnResponseSchema.parse(trimToLimits(JSON.parse(text), TURN_SCHEMA));
     } catch (err) {
       throw new ProviderRetryableError(
         `OpenAI returned invalid JSON: ${err instanceof Error ? err.message : String(err)}`,
@@ -98,21 +115,19 @@ export class OpenAiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
           type: 'json_schema',
           json_schema: {
             name: 'sentence_gen_response',
-            schema: SENTENCE_GEN_RESPONSE_JSON_SCHEMA,
+            schema: SENTENCE_SCHEMA,
             strict: false,
           },
         },
       });
     } catch (err) {
-      const retryable = isRetryable(err);
-      if (retryable) throw new ProviderRetryableError(`OpenAI ${retryable}`, retryable);
-      throw err;
+      throw toProviderError(err);
     }
 
     const text = completion.choices[0]?.message?.content ?? '';
     let parsed;
     try {
-      parsed = SentenceGenResponseSchema.parse(JSON.parse(text));
+      parsed = SentenceGenResponseSchema.parse(trimToLimits(JSON.parse(text), SENTENCE_SCHEMA));
     } catch (err) {
       throw new ProviderRetryableError(
         `OpenAI returned invalid JSON: ${err instanceof Error ? err.message : String(err)}`,
@@ -143,16 +158,14 @@ export class OpenAiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
         response_format: {
           type: 'json_schema',
           json_schema: {
-            name: req.task,
+            name: schemaName(req.task),
             schema: req.jsonSchema as Record<string, unknown>,
             strict: false,
           },
         },
       });
     } catch (err) {
-      const retryable = isRetryable(err);
-      if (retryable) throw new ProviderRetryableError(`OpenAI ${retryable}`, retryable);
-      throw err;
+      throw toProviderError(err);
     }
 
     let parsed: T;

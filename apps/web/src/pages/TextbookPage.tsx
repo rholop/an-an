@@ -47,6 +47,7 @@ import {
   NEXT,
   STUDY_THIS_LESSON,
   NEXT_STORY,
+  RETRY,
   STORY_UNAVAILABLE,
   STORY_WRITING,
   TERM,
@@ -688,32 +689,34 @@ function StoryStep({ lexicon, onDone }: { lexicon: Lexicon; onDone: () => void }
   const [difficulty] = useStoryDifficulty();
   const [story, setStory] = useState<StoryRecord | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  async function write() {
+    setBusy(true);
+    setFailed(false);
+    try {
+      setStory(await service.next(level, difficulty));
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  }
   if (story)
     return <StoryView story={story} service={service} lexicon={lexicon} level={level} exitLabel={`${NEXT} →`} onExit={onDone} />;
   return (
     <div className="textbook-story-step" data-testid="study-story-step">
       <p>Read a short story made from this lesson&apos;s words and the ones you already know.</p>
-      <button
-        type="button"
-        className="btn-primary"
-        disabled={busy}
-        aria-busy={busy}
-        onClick={async () => {
-          setBusy(true);
-          setError(null);
-          try {
-            setStory(await service.next(level, difficulty));
-          } catch {
-            setError(STORY_UNAVAILABLE);
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
+      <button type="button" className="btn-primary" disabled={busy} aria-busy={busy} onClick={() => void write()}>
         {busy ? STORY_WRITING : `${NEXT_STORY} →`}
       </button>
-      {error && <p role="status">{error}</p>}
+      {failed && (
+        <p role="status" data-testid="story-error">
+          {STORY_UNAVAILABLE}{' '}
+          <button type="button" data-testid="story-retry" disabled={busy} onClick={() => void write()}>
+            {RETRY}
+          </button>
+        </p>
+      )}
     </div>
   );
 }

@@ -22,11 +22,48 @@ export interface SentenceProviderResult {
 export class ProviderRetryableError extends Error {
   constructor(
     message: string,
-    public readonly reason: 'rate_limit' | 'quota' | 'invalid_json' | 'request_error',
+    public readonly reason: ProviderFailureReason,
   ) {
     super(message);
     this.name = 'ProviderRetryableError';
   }
+}
+
+export type ProviderFailureReason =
+  | 'rate_limit'
+  | 'quota'
+  | 'invalid_json'
+  | 'request_error'
+  | 'bad_request'
+  | 'auth'
+  | 'server_error'
+  | 'not_configured';
+
+/** Phase 25: every provider that was tried failed. The 502 body names each one and why (never a
+ * key or a prompt). */
+export class ProvidersFailedError extends Error {
+  constructor(
+    readonly providers: Array<{
+      name: 'gemini' | 'openai';
+      reason: ProviderFailureReason | 'error';
+    }>,
+    /** For the server log only (never sent to the browser). */
+    causes: unknown[] = [],
+  ) {
+    super(
+      `all providers failed: ${providers.map((p) => `${p.name} ${p.reason}`).join(', ')}${causes.length ? ` (${causes.map(String).join(' | ')})` : ''}`,
+    );
+    this.name = 'ProvidersFailedError';
+  }
+}
+
+/** OpenAI's json_schema.name must match [a-zA-Z0-9_-]{1,64}: '/v1/story-check' → 'v1_story_check'. */
+export function schemaName(task: string): string {
+  const name = task
+    .replace(/[^a-zA-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 64);
+  return name || 'response';
 }
 
 export interface ProviderAdapter {

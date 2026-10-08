@@ -2,6 +2,7 @@ import type { TurnHistoryEntry } from '@anan/core';
 import { PromptCache } from './cache.js';
 import {
   ProviderRetryableError,
+  ProvidersFailedError,
   type JsonTaskAdapter,
   type JsonTaskRequest,
   type JsonTaskResult,
@@ -42,6 +43,8 @@ async function withFallback<
   call: (adapter: A) => Promise<R>,
   logAttempt: AttemptLogger,
 ): Promise<{ result: R; fallbackReason?: string }> {
+  const reasonOf = (e: unknown) =>
+    e instanceof ProviderRetryableError ? e.reason : ('error' as const);
   try {
     const result = await call(primary);
     logAttempt({ event: 'provider_attempt', provider: primary.name, ok: true });
@@ -53,10 +56,19 @@ async function withFallback<
       ok: false,
       error: String(err),
     });
-    if (!(err instanceof ProviderRetryableError)) throw err;
-    if (fallback.configured === false) {
+    if (!(err instanceof ProviderRetryableError))
+      throw new ProvidersFailedError([{ name: primary.name, reason: 'error' }], [err]);
+    if (fallback.configured === false || fallback === primary) {
       logAttempt({ event: 'provider_skipped', provider: fallback.name, reason: 'not configured' });
-      throw err;
+      throw new ProvidersFailedError(
+        [
+          { name: primary.name, reason: err.reason },
+          ...(fallback === primary
+            ? []
+            : [{ name: fallback.name, reason: 'not_configured' as const }]),
+        ],
+        [err],
+      );
     }
     try {
       const result = await call(fallback);
@@ -75,7 +87,13 @@ async function withFallback<
         fallbackFor: primary.name,
         error: String(fallbackErr),
       });
-      throw fallbackErr;
+      throw new ProvidersFailedError(
+        [
+          { name: primary.name, reason: err.reason },
+          { name: fallback.name, reason: reasonOf(fallbackErr) },
+        ],
+        [err, fallbackErr],
+      );
     }
   }
 }
@@ -124,7 +142,10 @@ export function createOrchestrator(
     async run(systemPrompt, history, opts) {
       const historyJson = JSON.stringify(history);
       const alternate = opts?.alternate === true && fallback.configured !== false;
-      const cacheKey = PromptCache.keyFor(alternate ? `alt\n${systemPrompt}` : systemPrompt, historyJson);
+      const cacheKey = PromptCache.keyFor(
+        alternate ? `alt\n${systemPrompt}` : systemPrompt,
+        historyJson,
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         return {
@@ -226,7 +247,9 @@ export function createJsonOrchestrator(
       // Swap the order when asked to avoid the usual first choice — but only
       // if the other one can actually answer.
       const swap =
-        opts.avoidProvider === primary.name && fallback.configured !== false && fallback !== primary;
+        opts.avoidProvider === primary.name &&
+        fallback.configured !== false &&
+        fallback !== primary;
       const [first, second] = swap ? [fallback, primary] : [primary, fallback];
       const cacheKey = PromptCache.keyFor(
         `${req.task}\n${swap ? 'swap\n' : ''}${req.systemPrompt}`,

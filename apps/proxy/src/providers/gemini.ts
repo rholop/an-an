@@ -1,6 +1,13 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { SentenceGenResponseSchema, TurnResponseSchema, type TurnHistoryEntry } from '@anan/core';
 import { SENTENCE_GEN_RESPONSE_JSON_SCHEMA, TURN_RESPONSE_JSON_SCHEMA } from '../json-schema.js';
+import { applyZodLimits, trimToLimits } from '../zod-limits.js';
+
+const TURN_SCHEMA = applyZodLimits(TURN_RESPONSE_JSON_SCHEMA, TurnResponseSchema);
+const SENTENCE_SCHEMA = applyZodLimits(
+  SENTENCE_GEN_RESPONSE_JSON_SCHEMA,
+  SentenceGenResponseSchema,
+);
 import {
   ProviderRetryableError,
   type ProviderAdapter,
@@ -75,7 +82,7 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
       generationConfig: {
         responseMimeType: 'application/json',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        responseSchema: TURN_RESPONSE_JSON_SCHEMA as any,
+        responseSchema: TURN_SCHEMA as any,
       },
     });
 
@@ -92,7 +99,7 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
     const text = result.response.text();
     let parsed;
     try {
-      parsed = TurnResponseSchema.parse(JSON.parse(text));
+      parsed = TurnResponseSchema.parse(trimToLimits(JSON.parse(text), TURN_SCHEMA));
     } catch (err) {
       throw new ProviderRetryableError(
         `Gemini returned invalid JSON: ${err instanceof Error ? err.message : String(err)}`,
@@ -119,7 +126,7 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
       generationConfig: {
         responseMimeType: 'application/json',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        responseSchema: SENTENCE_GEN_RESPONSE_JSON_SCHEMA as any,
+        responseSchema: SENTENCE_SCHEMA as any,
       },
     });
 
@@ -133,7 +140,7 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
     const text = result.response.text();
     let parsed;
     try {
-      parsed = SentenceGenResponseSchema.parse(JSON.parse(text));
+      parsed = SentenceGenResponseSchema.parse(trimToLimits(JSON.parse(text), SENTENCE_SCHEMA));
     } catch (err) {
       throw new ProviderRetryableError(
         `Gemini returned invalid JSON: ${err instanceof Error ? err.message : String(err)}`,

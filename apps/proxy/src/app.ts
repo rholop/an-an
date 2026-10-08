@@ -88,6 +88,18 @@ import {
   type JournalPrompts,
 } from './prompt.js';
 import type { RateLimiter } from './rate-limit.js';
+import { ProvidersFailedError } from './providers/types.js';
+import { applyZodLimits, trimToLimits } from './zod-limits.js';
+
+/** Phase 25: '/v1/story-check' → {"error":"story_check_failed","providers":[{"name":"openai","reason":"bad_request"}, …]}.
+ * Names which provider failed and why; never a key or a prompt. */
+export function failureBody(
+  route: string,
+  err: unknown,
+): { error: string; providers?: ProvidersFailedError['providers'] } {
+  const error = `${route.replace(/^\/v1\//, '').replace(/[^a-zA-Z0-9]+/g, '_')}_failed`;
+  return err instanceof ProvidersFailedError ? { error, providers: err.providers } : { error };
+}
 import type { ScenarioStore } from './scenarios.js';
 
 export interface AppDeps {
@@ -249,7 +261,8 @@ export function createApp(deps: AppDeps): Hono {
   // (The /v1/* guard above already enforces the code; there is no public route.)
   app.get('/v1/textbook/:bookId/:kind', async (c) => {
     const kind = c.req.param('kind');
-    if (kind !== 'dialogues' && kind !== 'examples') return c.json({ error: 'unknown resource' }, 404);
+    if (kind !== 'dialogues' && kind !== 'examples')
+      return c.json({ error: 'unknown resource' }, 404);
     const data = await deps.textbook?.get(c.req.param('bookId'), kind as TextbookPrivateKind);
     if (data === undefined) return c.json({ error: 'textbook text not installed' }, 404);
     return c.json(data, 200, { 'cache-control': 'private, max-age=3600' });
@@ -281,7 +294,10 @@ export function createApp(deps: AppDeps): Hono {
     if (typeof body === 'object' && body !== null && (body as { mode?: unknown }).mode === 'open') {
       const openParsed = OpenTurnRequestSchema.safeParse(body);
       if (!openParsed.success) {
-        return c.json({ error: 'invalid open TurnRequest', details: openParsed.error.flatten() }, 400);
+        return c.json(
+          { error: 'invalid open TurnRequest', details: openParsed.error.flatten() },
+          400,
+        );
       }
       if (!deps.openChat) return c.json({ error: 'open chat is not configured' }, 501);
       const openRequest = openParsed.data;
@@ -290,9 +306,13 @@ export function createApp(deps: AppDeps): Hono {
         openRequest.feedback,
       );
       try {
-        const { result, log: runLog } = await deps.orchestrator.run(openPrompt, openRequest.history, {
-          alternate: openRequest.alternateProvider === true,
-        });
+        const { result, log: runLog } = await deps.orchestrator.run(
+          openPrompt,
+          openRequest.history,
+          {
+            alternate: openRequest.alternateProvider === true,
+          },
+        );
         const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
         deps.rateLimiter.recordUsage(installId, totalTokens);
         log({ route: '/v1/turn', mode: 'open', installId, totalTokens, ...runLog });
@@ -300,7 +320,7 @@ export function createApp(deps: AppDeps): Hono {
         return c.json(result.response);
       } catch (err) {
         log({ route: '/v1/turn', mode: 'open', installId, error: String(err) });
-        return c.json({ error: 'turn generation failed' }, 502);
+        return c.json({ ...failureBody('/v1/turn', err), message: 'turn generation failed' }, 502);
       }
     }
 
@@ -339,7 +359,7 @@ export function createApp(deps: AppDeps): Hono {
       return c.json(result.response);
     } catch (err) {
       log({ route: '/v1/turn', installId, scenarioId: turnRequest.scenarioId, error: String(err) });
-      return c.json({ error: 'turn generation failed' }, 502);
+      return c.json({ ...failureBody('/v1/turn', err), message: 'turn generation failed' }, 502);
     }
   });
 
@@ -392,7 +412,10 @@ export function createApp(deps: AppDeps): Hono {
         headword: sentenceRequest.word.headword,
         error: String(err),
       });
-      return c.json({ error: 'sentence generation failed' }, 502);
+      return c.json(
+        { ...failureBody('/v1/sentences', err), message: 'sentence generation failed' },
+        502,
+      );
     }
   });
 
@@ -435,12 +458,14 @@ export function createApp(deps: AppDeps): Hono {
         400,
       );
 
+    const limited = applyZodLimits(jsonSchema, responseSchema);
     try {
       const { result, log: runLog } = await orchestrator.run(
         {
           task: route,
-          jsonSchema,
-          parse: (raw) => responseSchema.parse(raw),
+          // Phase 25: the schema the model sees carries the zod limits; small overruns are trimmed
+          jsonSchema: limited,
+          parse: (raw) => responseSchema.parse(trimToLimits(raw, limited)),
           ...build(parsed.data),
         },
         { avoidProvider: avoid?.(parsed.data) },
@@ -453,7 +478,7 @@ export function createApp(deps: AppDeps): Hono {
       return c.json(result.response);
     } catch (err) {
       log({ route, installId, error: String(err) });
-      return c.json({ error: `${route} failed` }, 502);
+      return c.json(failureBody(route, err), 502);
     }
   }
 
@@ -589,7 +614,10 @@ export function createApp(deps: AppDeps): Hono {
       StoryRequestSchema,
       StoryResponseSchema,
       STORY_JSON_SCHEMA,
-      (req) => ({ systemPrompt: buildStoryPrompt(st.prompts.write, req), userMessage: storyUserMessage(req) }),
+      (req) => ({
+        systemPrompt: buildStoryPrompt(st.prompts.write, req),
+        userMessage: storyUserMessage(req),
+      }),
       st.orchestrator,
     );
   });

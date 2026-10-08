@@ -2,10 +2,10 @@
 // the topic picker and the library (newest first, lesson badge, read / unread).
 import { useEffect, useState } from 'react';
 import { storyMinutes, type Level, type Lexicon, type StoryDifficulty, type StoryRecord } from '@anan/core';
-import { lessonLabel, EASIER_NOW, NEXT_STORY, STORIES, STORY_DIFFICULTY, STORY_UNAVAILABLE, STORY_WRITING, storyPitch } from '../lib/labels.js';
+import { lessonLabel, EASIER_NOW, NEXT_STORY, STORIES, STORY_DIFFICULTY, RETRY, STORY_UNAVAILABLE, STORY_WRITING, storyPitch } from '../lib/labels.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
 import { FAKE_STORY_KEY, canWriteStories, prepareStories, storyFakeOn, storyLesson, useStoryDifficulty } from '../lib/stories.js';
-import { STORY_TOPIC_CHIPS, StoryUnavailableError, type StoryAsk, type StoryService } from '../lib/story-service.js';
+import { STORY_TOPIC_CHIPS, type StoryAsk, type StoryService } from '../lib/story-service.js';
 import './StoryView.css';
 
 interface Props {
@@ -28,7 +28,8 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
   const [pick, setPick] = useState<TopicPick>({ kind: 'lesson' });
   const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  /** The ask that failed (Retry repeats it), or null. */
+  const [failed, setFailed] = useState<Omit<StoryAsk, 'level' | 'difficulty'> | 'next' | null>(null);
   const [tick, setTick] = useState(0);
   const [fake, setFake] = useState(storyFakeOn());
   useEffect(() => onStudyDirty(() => setTick((t) => t + 1)), []);
@@ -60,13 +61,13 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
   async function run(ask: Omit<StoryAsk, 'level' | 'difficulty'> | 'next') {
     if (busy) return;
     setBusy(true);
-    setError(null);
+    setFailed(null);
     try {
       const story = ask === 'next' ? await service.next(level, difficulty) : await service.write({ ...ask, level, difficulty });
       setTick((t) => t + 1);
       onOpen(story);
-    } catch (err) {
-      setError(err instanceof StoryUnavailableError ? STORY_UNAVAILABLE : `${STORY_UNAVAILABLE} (${err instanceof Error ? err.message : String(err)})`);
+    } catch {
+      setFailed(ask);
     } finally {
       setBusy(false);
     }
@@ -101,9 +102,12 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
           ))}
         </div>
       </div>
-      {error && (
+      {failed && (
         <p className="stories-error" role="status" data-testid="story-error">
-          {error}
+          {STORY_UNAVAILABLE}{' '}
+          <button type="button" data-testid="story-retry" disabled={busy} onClick={() => void run(failed)}>
+            {RETRY}
+          </button>
         </p>
       )}
 

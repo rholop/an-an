@@ -1,7 +1,7 @@
 // Phase 24: graded stories. Builds the request from the vocabulary ladder, writes the story through
 // the proxy, validates it in code (rung shares, Taiwan / traditional, length, questions), has the
 // other provider read it independently, and keeps it in the profile's synced library. A story that
-// fails is never shown: "Couldn't write a good story right now".
+// fails is never shown: STORY_UNAVAILABLE ("Couldn't write a story right now. Try again.").
 import {
   runStoryPipeline,
   storyBudget,

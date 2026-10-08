@@ -177,7 +177,9 @@ export const UNRELIABLE_REPLY = "Couldn't get a reliable reply, try again";
 // --- Phase 24: graded stories ---------------------------------------------------------------
 export const STORIES = 'Stories';
 export const NEXT_STORY = 'Next story';
-export const STORY_UNAVAILABLE = "Couldn't write a good story right now";
+/** Phase 25: the only thing a failed story write ever shows (never a raw error), with RETRY. */
+export const STORY_UNAVAILABLE = "Couldn't write a story right now. Try again.";
+export const RETRY = 'Retry';
 export const STORY_WRITING = 'Writing a story…';
 export const READ_AGAIN = 'Read again';
 export const EASIER_NOW = "You'll find this one easier now";
