@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
+import { eveningZone } from '../fixtures.js';
 
 declare global {
   interface Window {
@@ -32,7 +33,7 @@ export const WORDS = {
 /** localStorage state the app reads at start-up (same keys as e2e/fixtures.ts). */
 export async function prepareContext(page: Page, session: Session, theme: Theme): Promise<void> {
   await page.context().addInitScript(
-    ([s, t]) => {
+    ([s, t, zone]) => {
       const set = (k: string, v: string) => {
         if (localStorage.getItem(k) === null) localStorage.setItem(k, v);
       };
@@ -40,8 +41,10 @@ export async function prepareContext(page: Page, session: Session, theme: Theme)
       if (s === 'signed-in') set('anan.profile', 'ron');
       set('anan.sync.disabled', '1');
       localStorage.setItem('anan.theme', t as string);
+      // Phase 23: a zone where it is evening now, so the review session holds today's cards
+      set('anan.sessions.defaultZone', zone as string);
     },
-    [session, theme],
+    [session, theme, eveningZone()],
   );
 }
 
@@ -362,6 +365,7 @@ export const ROUTES: RouteDef[] = [
   ...(
     [
       'progress',
+      'pinyin',
       'textbook',
       'placement',
       'anki-import',

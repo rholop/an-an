@@ -6,6 +6,12 @@ import {
   LEVEL_IDS,
   levelIndex,
   levelItems,
+  isPracticeSkill,
+  pinyinShare,
+  toneConfusions,
+  tonePairs,
+  type ToneConfusion,
+  type SkillCard,
   dayKey,
   formatDuration,
   REWARD_TABLE,
@@ -18,11 +24,12 @@ import {
 import { JournalProgress } from '../components/JournalProgress.js';
 import { AnnotatedInline, useReadingScript } from '../components/AnnotatedInline.js';
 import { LearnedMastered } from '../components/LearnedMastered.js';
-import { coverageLine, levelLabel } from '../lib/labels.js';
+import { coverageLine, levelLabel, PINYIN_TAB, toneConfusionLine, toneLabel } from '../lib/labels.js';
 import { readTargetRetention } from '../lib/retention.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
 import { useProgressData } from '../lib/study.js';
 import { db, gameService } from '../db/instance.js';
+import { allReadingCards } from '../db/queries.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -40,6 +47,8 @@ export function ProgressPage() {
   const [snapshot, setSnapshot] = useState<GameSnapshot | null>(null);
   const [retention, setRetention] = useState<ReturnType<typeof actualRetention> | null>(null);
   const [streakConfig, setStreakConfig] = useState<StreakConfig | null>(null);
+  const [tones, setTones] = useState<ToneConfusion[]>([]);
+  const [readingCards, setReadingCards] = useState<SkillCard[]>([]);
   const script = useReadingScript();
   const progressData = useProgressData();
   // Phase 21: every count re-reads after a change (a review, a sync merge, a setting).
@@ -67,6 +76,9 @@ export function ProgressPage() {
       if (cancelled) return;
       setSnapshot(snap);
       setRetention(actualRetention(activeEvidence(evidence), target));
+      setTones(toneConfusions(activeEvidence(evidence), new Date()));
+      const reading = await allReadingCards(db);
+      if (!cancelled) setReadingCards(reading);
       setStreakConfig(streak);
     })();
     return () => {
@@ -185,6 +197,48 @@ export function ProgressPage() {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {progressData && (
+        <section data-testid="progress-pinyin">
+          <h2>{PINYIN_TAB}</h2>
+          <LearnedMastered
+            testId="progress-all"
+            pinyin={pinyinShare(progressData.index, [...progressData.cards, ...readingCards]).share}
+            p={progressData.index.summarize(
+              [...new Map(progressData.cards.filter((c) => !isPracticeSkill(c.skill)).map((c) => [`${c.item.kind}:${c.item.id}`, c.item])).values()].filter(
+                (i) => !progressData.index.removed(i),
+              ),
+            )}
+          />
+          {tones.length === 0 ? (
+            <p className="progress-muted" data-testid="tone-confusion-none">
+              No tone mix-ups this week.
+            </p>
+          ) : (
+            <>
+              <p data-testid="tone-confusion-line">{toneConfusionLine(tonePairs(tones)[0]!.a, tonePairs(tones)[0]!.b, tonePairs(tones)[0]!.count)}</p>
+              <table className="progress-table" data-testid="tone-confusion-table">
+                <thead>
+                  <tr>
+                    <th>Right tone</th>
+                    <th>You said</th>
+                    <th>Times</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tones.slice(0, 8).map((t) => (
+                    <tr key={`${t.expected}>${t.given}`}>
+                      <td data-label="Right tone">{toneLabel(t.expected)}</td>
+                      <td data-label="You said">{toneLabel(t.given)}</td>
+                      <td data-label="Times">×{t.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
         </section>
       )}
 

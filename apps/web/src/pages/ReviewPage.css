@@ -53,3 +53,43 @@
 
 /* Phase 20: Nope sits beside Show answer and after the grade buttons. */
 .review-reveal-row { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+
+/* Phase 23: card faces */
+.review-card-ask { color: var(--text-muted); margin: -0.75rem 0 1rem; }
+.review-recall-input {
+  display: block;
+  width: 100%;
+  max-width: 16rem;
+  margin: -0.5rem auto 1rem;
+  text-align: center;
+  font-size: 1.2rem;
+}
+.review-pick-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.review-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-height: 56px;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  cursor: pointer;
+}
+.review-pick:disabled { cursor: default; opacity: 1; }
+.review-pick-zh { font-size: 1.6rem; }
+.review-pick-info { font-size: 0.8rem; color: var(--text-muted); }
+.review-pick--right { border-color: var(--accent); border-width: 2px; }
+.review-pick--wrong { border-color: var(--danger); border-width: 2px; }
+.review-typed { font-weight: 600; margin: 0 0 0.75rem; }
+.review-typed--ok { color: var(--accent); }
+.review-typed--bad { color: var(--danger-text); }
+.review-say-reading { font-size: 1.4rem; }
+.review-sandhi-note { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.75rem; }

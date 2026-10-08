@@ -71,6 +71,9 @@ const ReportedPage = lazy(() =>
 const ReviewSettingsPage = lazy(() =>
   import('./pages/ReviewSettingsPage.js').then((m) => ({ default: m.ReviewSettingsPage })),
 );
+const PinyinPage = lazy(() =>
+  import('./pages/PinyinPage.js').then((m) => ({ default: m.PinyinPage })),
+);
 const ZhuyinTestPage = lazy(() =>
   import('./pages/ZhuyinTestPage.js').then((m) => ({ default: m.ZhuyinTestPage })),
 );
@@ -83,6 +86,7 @@ export type Route =
   | 'garden'
   | 'progress'
   | 'review'
+  | 'pinyin'
   | 'textbook'
   | 'placement'
   | 'anki-import'
@@ -269,6 +273,7 @@ export function App() {
           {route === 'garden' && <GardenPage />}
           {route === 'progress' && <ProgressPage />}
           {route === 'review' && <ReviewPage />}
+          {route === 'pinyin' && <PinyinPage />}
           {route === 'textbook' && <TextbookPage />}
           {route === 'placement' && <PlacementPage />}
           {route === 'anki-import' && <AnkiImportPage />}

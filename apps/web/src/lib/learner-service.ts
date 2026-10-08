@@ -111,19 +111,20 @@ export class LearnerService {
   private async applyOne(
     evidence: Evidence,
     now: Date,
-  ): Promise<{ card: SkillCard | undefined; prior: SkillCard | undefined; uid?: string; unlocked?: Evidence }> {
+  ): Promise<{ card: SkillCard | undefined; prior: SkillCard | undefined; uid?: string; unlocked: Evidence[] }> {
     const prior = await this.repo.getCard(evidence.item, evidence.skill);
     const result = applyEvidence(prior, evidence, now, this.config, this.fsrsInstance);
     const writes: SkillCard[] = result.card ? [result.card] : [];
     const events: Evidence[] = [evidence];
-    let unlocked: Evidence | undefined;
+    const unlocked: Evidence[] = [];
     if (result.card && evidence.skill === 'recognition') {
       const hasProduction = !!(await this.repo.getCard(evidence.item, 'production'));
-      unlocked = productionUnlockFor(result.card, hasProduction, now);
-      if (unlocked) {
-        const prod = applyEvidence(undefined, unlocked, now, this.config, this.fsrsInstance).card;
+      const production = productionUnlockFor(result.card, hasProduction, now);
+      if (production) {
+        const prod = applyEvidence(undefined, production, now, this.config, this.fsrsInstance).card;
         if (prod) writes.push(prod);
-        events.push(unlocked);
+        events.push(production);
+        unlocked.push(production);
       }
     }
     if (writes.length > 0) await this.repo.putCards(writes);
@@ -131,7 +132,7 @@ export class LearnerService {
     let uid: string | undefined;
     if (repo.appendEvidenceUids) [uid] = await repo.appendEvidenceUids(events);
     else await this.repo.appendEvidence(events);
-    return { card: result.card, prior, ...(uid ? { uid } : {}), ...(unlocked ? { unlocked } : {}) };
+    return { card: result.card, prior, ...(uid ? { uid } : {}), unlocked };
   }
 
   async record(raw: Evidence, now: Date = new Date()): Promise<SkillCard | undefined> {
@@ -172,8 +173,8 @@ export class LearnerService {
             context: { source: evidence.context?.source ?? 'review', ...(uid ? { refId: uid } : {}), ...(prior ? { restore: prior } : {}) },
           },
         ];
-        if (unlocked)
-          undos.push({ item: unlocked.item, skill: 'production', kind: 'evidence_undone', at, context: { source: 'review' } });
+        for (const u of unlocked)
+          undos.push({ item: u.item, skill: u.skill, kind: 'evidence_undone', at, context: { source: 'review' } });
         for (const u of undos) await this.applyOne(u, at);
         if (this.onUndone && awarded !== undefined) await this.onUndone(awarded, at).catch(() => undefined);
         this.onChanged?.();
@@ -201,7 +202,8 @@ export class LearnerService {
       if (r.card) latest.set(keyOf(e), r.card);
       return r;
     });
-    // Production cards unlocked by this batch (one per word).
+    // Production cards unlocked by this batch (one per word). Reading cards (Phase 23) are added by
+    // `ensureFaceCards` when Review or Pinyin & tones opens, so an answer writes only what it changes.
     const unlockEvents: Evidence[] = [];
     for (const [k, c] of latest) {
       if (!c || c.skill !== 'recognition' || !k.endsWith('|recognition')) continue;
@@ -279,7 +281,7 @@ export class LearnerService {
     const repo = this.repo as Partial<ItemCardsRepo> & LearnerRepo;
     if (repo.cardsOfItem) return repo.cardsOfItem(item);
     const all = await Promise.all(
-      (['recognition', 'production', 'listening'] as const).map((s) => repo.getCard(item, s)),
+      (['recognition', 'production', 'listening', 'reading'] as const).map((s) => repo.getCard(item, s)),
     );
     return all.filter((c): c is SkillCard => !!c);
   }

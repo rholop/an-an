@@ -46,3 +46,6 @@ export * from './listening/index.js';
 export * from './session/orderSession.js';
 export * from './learner/review-pile.js';
 export * from './learner/review-pile.config.js';
+export * from './review/faces.js';
+export * from './confusables/index.js';
+export * from './pinyin-practice/index.js';

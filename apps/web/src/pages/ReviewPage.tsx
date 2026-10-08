@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Evidence, GrammarItem, Lexicon, SkillCard, Word } from '@anan/core';
-import { isDueListening } from '@anan/core';
-import { charsInWord, glossFor, homeLessonOfTags, isNewCard, nextLeechTreatment } from '@anan/core';
+import type { Evidence, SkillCard } from '@anan/core';
+import { isDueListening, isNewCard } from '@anan/core';
 import {
   keepDeferred,
   describePlanItem,
@@ -16,14 +15,13 @@ import {
   type PlanItem,
 } from '@anan/core';
 import { buildReviewSession, newSessionCard, pickReviewCards } from '../lib/review-session.js';
-import { AnnotatedInline, useReadingScript } from '../components/AnnotatedInline.js';
-import type { AnnotationScript } from '../components/AnnotatedText.js';
-import { dueNewLine, dueNowLine, FORECAST_REST_OF_TODAY, lessonLabel, NOTHING_DUE, UNDO, waitingSiblings } from '../lib/labels.js';
-import { readingText } from '../lib/reading.js';
-import { NopeButton, NopeToast } from '../components/Nope.js';
+import { useReadingScript } from '../components/AnnotatedInline.js';
+import { dueNewLine, NOTHING_DUE, REVIEW_EARLY, sessionLine, UNDO, waitingSiblings } from '../lib/labels.js';
+import { NopeToast } from '../components/Nope.js';
 import { nopeWord, wakeSnoozed } from '../lib/nope.js';
-import { getReviewSettings } from '../lib/review-settings.js';
-import { loadReviewStatus, useReviewStatus } from '../lib/review-status.js';
+import { loadSessionCards, useReviewStatus } from '../lib/review-status.js';
+import { noteConfusion, useConfusables } from '../lib/confusables.js';
+import { ReviewCard, type Grade, type RateExtra } from './ReviewCard.js';
 import type { NopeChoice } from '@anan/core';
 import type { NopeHandle } from '../lib/learner-service.js';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
@@ -31,18 +29,12 @@ import { ensureListeningCards, useListeningClips, useListeningEnabled } from '..
 import { ListenPage, ListenRunner } from './ListenPage.js';
 import { learnerService } from '../db/instance.js';
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
-import { SpeakerButton } from '../components/SpeakerButton.js';
+import { ensureFaceCards } from '../lib/face-cards.js';
 import { DueIcon, EmptySprout } from '../components/PlantIcons.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import './ReviewPage.css';
 
-export type Grade = 'again' | 'hard' | 'good' | 'easy';
-const GRADES: { grade: Grade; label: string }[] = [
-  { grade: 'again', label: 'Again' },
-  { grade: 'hard', label: 'Hard' },
-  { grade: 'good', label: 'Good' },
-  { grade: 'easy', label: 'Easy' },
-];
+export { ReviewCard, type Grade, type RateExtra } from './ReviewCard.js';
 
 /** `focusCards` (Phase 6 garden, Phase 21 lesson session): review exactly these Due cards (and
  * `freshCards`, New ones) instead of the due queue. `reviewAll` (Phase 22 Home "Review all"): every
@@ -67,6 +59,7 @@ export function ReviewPage({
 } = {}) {
   const lexiconState = useLexicon();
   const script = useReadingScript();
+  const confusables = useConfusables(lexiconState.status === 'ready' ? lexiconState.lexicon : null);
   const [queue, setQueue] = useState<SkillCard[] | null>(null);
   // Phase 21: which session cards are New (never answered), so the header says "N due · M new".
   const [freshSet, setFreshSet] = useState<Set<SkillCard>>(new Set());
@@ -84,6 +77,8 @@ export function ReviewPage({
   const [revealed, setRevealed] = useState(false);
   // Phase 22: the same numbers as Home (core `reviewStatus`), live.
   const reviewState = useReviewStatus();
+  // Phase 23: between sessions, "Review early" opens the next session's cards here.
+  const [early, setEarly] = useState(false);
   // Phase 15: a "Listen" session, and ~20% listening exercises mixed in once an item has a listening card.
   const clips = useListeningClips();
   const listeningOn = useListeningEnabled();
@@ -117,19 +112,24 @@ export function ReviewPage({
       fresh = (freshCards ?? []).filter((c) => !c.flags.excluded && !c.flags.snoozed);
       setCapNote(null);
     } else {
-      const [all, newCards, rs] = await Promise.all([
-        learnerService.dueCards(now),
+      // Phase 23: the cards of this review session (morning / evening), or the next one's when
+      // "Review early" was asked for between sessions.
+      await ensureFaceCards(now).catch(() => 0);
+      const [inSession, newCards] = await Promise.all([
+        loadSessionCards(now, early ? { early: true } : {}),
         reviewAll ? Promise.resolve([]) : learnerService.newCards(),
-        getReviewSettings(),
       ]);
-      // Phase 22: today's distinct reviewed cards, from the one review status.
-      const { status } = await loadReviewStatus(now, rs.dailyCap);
+      const { status } = inSession;
+      // between sessions, the next session's words keep their new faces for that session
+      const upcoming =
+        status.session === 'between' && !early ? (await loadSessionCards(now, { early: true })).cards : [];
       const picked = pickReviewCards({
-        due: all,
+        holdFaceWords: upcoming.map((c) => `${c.item.kind}:${c.item.id}`),
+        due: inSession.cards,
         newCards,
-        doneToday: status.doneToday,
+        doneThisSession: status.doneThisSession,
         ...(reviewAll ? { baseNew: 0 } : {}),
-        cap: rs.dailyCap,
+        cap: status.cap,
         ...(focus ? { focus } : {}),
         lessonIdx: lessonIndex(getStudyBooks()),
         now,
@@ -138,7 +138,7 @@ export function ReviewPage({
       fresh = [...picked.fresh, ...picked.newItems.map((item) => newSessionCard(item, now))];
       setCapNote(
         picked.held > 0 || picked.newReason
-          ? { held: picked.held, cap: rs.dailyCap, ...(picked.newReason ? { newReason: picked.newReason } : {}) }
+          ? { held: picked.held, cap: status.cap, ...(picked.newReason ? { newReason: picked.newReason } : {}) }
           : null,
       );
     }
@@ -160,7 +160,7 @@ export function ReviewPage({
     setIndex(0);
     setRevealed(false);
     setLastAnswer(null);
-  }, [focusCards, freshCards, reviewAll, keepEvery]);
+  }, [focusCards, freshCards, reviewAll, keepEvery, early]);
 
   useEffect(() => {
     loadQueue();
@@ -242,7 +242,7 @@ export function ReviewPage({
     setNope({ ...nope, handle });
   }
 
-  async function rate(grade: Grade) {
+  async function rate(grade: Grade, extra: RateExtra) {
     if (!current || !queue) return;
     setNope(null);
     const evidence: Evidence = {
@@ -250,7 +250,9 @@ export function ReviewPage({
       skill: current.skill,
       kind: `review_${grade}`,
       at: new Date(),
+      context: { source: 'review', face: extra.face, ...(extra.pickedId ? { pickedId: extra.pickedId } : {}) },
     };
+    if (extra.pickedId) noteConfusion(confusables, current.item.id, extra.pickedId);
     const before = { prevQueue: queue, prevIndex: index, prevSlots: slots, prevDone: doneSlots };
     const handle = await learnerService.recordUndoable(evidence, evidence.at);
     setLastAnswer({ undo: handle.undo, ...before });
@@ -293,19 +295,13 @@ export function ReviewPage({
     <div className="review-page">
       {onExit && <button onClick={onExit}>{exitLabel}</button>}
       <h1>{title ?? (focusCards ? 'Water these words' : 'Review')}</h1>
-      {reviewState && (
+      {reviewState && !focusCards && (
         <p className="review-status" data-testid="review-status">
-          <DueIcon /> {dueNowLine(reviewState.status)}
+          <DueIcon /> {sessionLine(reviewState.status)}
         </p>
       )}
       <p className="review-meta" data-testid="review-counts">
         {dueNewLine(dueLeft, newLeft)}
-        {reviewState && (
-          <span className="review-forecast" title={`Reviews per day: ${FORECAST_REST_OF_TODAY.toLowerCase()} first (cards due now not included)`}>
-            {' '}
-            · {FORECAST_REST_OF_TODAY.toLowerCase()}, then next 6 days: {reviewState.forecast.join(', ')}
-          </span>
-        )}
       </p>
 
       {lastAnswer && (
@@ -359,12 +355,20 @@ export function ReviewPage({
                 Check again
               </button>
             </p>
+          ) : !focusCards && !early && reviewState && reviewState.status.nextSession.count > 0 ? (
+            <p>
+              {NOTHING_DUE}{' '}
+              <button type="button" className="link-button" onClick={() => setEarly(true)} data-testid="review-early">
+                {REVIEW_EARLY}
+              </button>
+            </p>
           ) : (
             <p>{NOTHING_DUE}</p>
           )}
         </div>
       ) : (
         <ReviewCard
+          key={`${index}:${current.item.kind}:${current.item.id}:${current.skill}`}
           card={current}
           isNew={freshSet.has(current)}
           script={script}
@@ -375,6 +379,7 @@ export function ReviewPage({
           onReveal={() => setRevealed(true)}
           onRate={rate}
           onNope={() => void sayNope()}
+          confusables={confusables}
           devPosition={import.meta.env.DEV ? `#${index + 1} of ${queue.length} · seed ${seed}` : undefined}
         />
       )}
@@ -382,150 +387,3 @@ export function ReviewPage({
   );
 }
 
-export function ReviewCard({
-  card,
-  isNew,
-  script,
-  word,
-  grammar,
-  lexicon,
-  revealed,
-  onReveal,
-  onRate,
-  onNope,
-  devPosition,
-}: {
-  card: SkillCard;
-  isNew: boolean;
-  script: AnnotationScript;
-  word: Word | undefined;
-  grammar?: GrammarItem;
-  lexicon: Lexicon;
-  revealed: boolean;
-  onReveal: () => void;
-  onRate: (grade: Grade) => void;
-  /** Phase 20: take this word out of review. */
-  onNope: () => void;
-  /** Phase 19 Part C (dev builds): the card's place in the session, to check spacing by eye. */
-  devPosition?: string;
-}) {
-  // Phase 12: grammar patterns are schedulable items too — pattern on the front,
-  // the app's own explanation on the back.
-  const lesson = grammar ? homeLessonOfTags(grammar.tags ?? []) : word ? homeLessonOfTags(word.tags) : undefined;
-  // Phase 21 Part I: one gloss rule (glossFor) and the reading setting's script.
-  const gloss = word ? glossFor(word) : '';
-  const reading = word ? readingText(word, script) : '';
-  const front = grammar
-    ? grammar.pattern
-    : card.skill === 'recognition'
-      ? (word?.headword ?? '(unknown item)')
-      : (gloss || '(unknown item)');
-
-  return (
-    <div className="review-card">
-      <div className="review-card-skill">
-        {isNew && <span className="review-new-chip" data-testid="review-new">New · </span>}
-        {grammar ? 'grammar' : card.skill}
-        {devPosition && <span data-testid="dev-session-position"> · {devPosition}</span>}
-        {lesson !== undefined && (
-          <span className="textbook-badge" lang="zh-Hant">
-            {lessonLabel(lesson.n, lesson.bookId)}
-          </span>
-        )}
-      </div>
-      <div
-        className="review-card-front"
-        lang={grammar || card.skill === 'recognition' ? 'zh-Hant' : undefined}
-      >
-        {front}
-      </div>
-
-      {revealed ? (
-        <>
-          <div className="review-card-back" data-testid="review-back">
-            {grammar ? (
-              grammar.explanationEn
-            ) : card.skill === 'recognition' ? (
-              <>
-                {reading} — {gloss}
-              </>
-            ) : (
-              <>
-                {/* the answer is shown now, so its words may be looked up */}
-                {word && lexicon ? (
-                  <span lang="zh-Hant">
-                    <AnnotatedInline text={word.headword} lexicon={lexicon} script={script} />
-                  </span>
-                ) : null}{' '}
-                ({reading})
-              </>
-            )}
-          </div>
-          {word && <SpeakerButton kind="word" id={word.id} label={word.headword} />}
-          {card.leech && word && <LeechBreakdown card={card} word={word} lexicon={lexicon} script={script} />}
-          <div className="review-actions">
-            <div className="review-buttons">
-              {GRADES.map(({ grade, label }) => (
-                <button
-                  key={grade}
-                  className={`review-btn review-btn--${grade}`}
-                  onClick={() => onRate(grade)}
-                >
-                  {label}
-                </button>
-              ))}
-              <NopeButton onNope={onNope} />
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className="review-actions">
-          <div className="review-reveal-row">
-            <button className="review-reveal btn-primary" onClick={onReveal}>
-              Show answer
-            </button>
-            <NopeButton onNope={onNope} />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LeechBreakdown({
-  card,
-  word,
-  lexicon,
-  script,
-}: {
-  card: SkillCard;
-  word: Word;
-  lexicon: Lexicon;
-  script: AnnotationScript;
-}) {
-  // Phase 2 only actually implements the char_breakdown treatment (shown
-  // below, unconditionally, since that's what this panel is); the other
-  // three rotation slots are stubs — this note just previews what the
-  // rotation would suggest trying next.
-  const treatment = nextLeechTreatment({ leechTreatmentsTried: card.leechTreatmentsTried });
-  return (
-    <div className="leech-panel">
-      <div className="leech-title">Leech — character breakdown</div>
-      <div className="leech-chars">
-        {/* Phase 21: each character's reading IN THIS WORD (MOE), not its first dictionary entry */}
-        {charsInWord(word, lexicon).map((c, i) => (
-          <div className="leech-char" key={i}>
-            <div className="leech-char-glyph">{c.ch}</div>
-            <div className="leech-char-reading">{readingText(c, script) || '?'}</div>
-            <div className="leech-char-gloss">{c.glossEn ?? '(not its own lexicon entry)'}</div>
-          </div>
-        ))}
-      </div>
-      {treatment !== 'char_breakdown' && (
-        <div className="leech-stub-note">
-          ({treatment.replace('_', ' ')} — coming in a later phase)
-        </div>
-      )}
-    </div>
-  );
-}

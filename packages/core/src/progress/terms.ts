@@ -7,7 +7,7 @@ import { isActiveCard } from '../learner/review-pile.js';
 import type { SkillCard } from '../learner/types.js';
 import type { Level } from '../levels.config.js';
 import type { Lesson } from '../textbook/types.js';
-import type { Evidence, ItemRef, Word } from '../types.js';
+import type { Evidence, ItemRef, Skill, Word } from '../types.js';
 import { PROGRESS_CONFIG, type ProgressConfig } from './progress.config.js';
 
 export const itemKeyOf = (i: ItemRef): string => `${i.kind}:${i.id}`;
@@ -50,6 +50,17 @@ export function isDueCard(c: Pick<SkillCard, 'state' | 'card' | 'flags'>, now: D
   return c.state !== 'unseen' && c.card.reps > 0 && c.card.due.getTime() <= now.getTime() && isActiveCard(c);
 }
 
+/** Answered at least once and not removed by Nope: the card takes part in review sessions. */
+export function isScheduledCard(c: Pick<SkillCard, 'state' | 'card' | 'flags'>): boolean {
+  return c.state !== 'unseen' && c.card.reps > 0 && isActiveCard(c);
+}
+
+/** Phase 23 **Due** in a session: scheduled, and due before the session's cutoff (the morning session
+ * holds everything due before the evening opens; see `progress/review-sessions.ts`). */
+export function isDueBefore(c: Pick<SkillCard, 'state' | 'card' | 'flags'>, cutoff: Date): boolean {
+  return isScheduledCard(c) && c.card.due.getTime() < cutoff.getTime();
+}
+
 /** **Learned** (one card): in review after an answer in this app, or the learner said they know it. */
 export function isLearnedCard(c: Pick<SkillCard, 'state' | 'card' | 'flags'>): boolean {
   if (!isInReview(c)) return false;
@@ -83,6 +94,28 @@ export function readingMayFade(
   cfg: { readingFadeStabilityDays: number; readingFadeMaxDependence: number } = PROGRESS_CONFIG,
 ): boolean {
   return c.card.stability >= cfg.readingFadeStabilityDays && c.readingDependence < cfg.readingFadeMaxDependence;
+}
+
+/** Listening (Phase 15) and reading (Phase 23) are practice skills: scheduled like the others, but
+ * never part of Learned, Mastered, lesson mastery or comprehension. */
+export const isPracticeSkill = (s: Skill): boolean => s === 'listening' || s === 'reading';
+/** Phase 23: skills Review shows (Meaning, Pick / Recall, Say it). Listening has its own tab only. */
+export const isReviewSkill = (s: Skill): boolean => s !== 'listening';
+
+/** Recognition card reached learning (answered in this app, not New; imports wait for an answer):
+ * unlocks its reading card (Phase 23). */
+export const unlocksReading = (c: Pick<SkillCard, 'state' | 'card' | 'flags' | 'skill' | 'item'>): boolean =>
+  c.skill === 'recognition' &&
+  c.item.kind === 'word' &&
+  c.state !== 'unseen' &&
+  c.state !== 'introduced' &&
+  (inAppAnswers(c) > 0 || saidKnown(c)) &&
+  isActiveCard(c);
+
+/** The evidence that creates a word's reading card once its recognition card is learning. */
+export function readingUnlockFor(updated: SkillCard, hasReading: boolean, at: Date): Evidence | undefined {
+  if (hasReading || !unlocksReading(updated)) return undefined;
+  return { item: updated.item, skill: 'reading', kind: 'reading_unlocked', at, context: { source: 'review' } };
 }
 
 /** Recognition card Learned: unlocks its listening card (Phase 15, with a clip). */
@@ -194,7 +227,7 @@ export class ProgressIndex {
 
   constructor(inputs: ProgressIndexInputs) {
     for (const c of inputs.cards) {
-      if (c.skill === 'listening') continue;
+      if (isPracticeSkill(c.skill)) continue;
       this.bySkill.set(`${itemKeyOf(c.item)}|${c.skill}`, c);
     }
     this.known = new Set(inputs.knownItems ?? []);
@@ -331,10 +364,21 @@ export class ProgressIndex {
 export function learnedWordIds(index: ProgressIndex, cards: readonly SkillCard[]): Set<string> {
   const out = new Set<string>();
   for (const c of cards) {
-    if (c.item.kind !== 'word' || c.skill === 'listening') continue;
+    if (c.item.kind !== 'word' || isPracticeSkill(c.skill)) continue;
     if (index.learned(c.item)) out.add(c.item.id);
   }
   return out;
+}
+
+/**
+ * Phase 23 Part C: "Pinyin 80%": the share of Learned words whose reading card (Pinyin & tones) is
+ * Learned too. Reading is practice: it never changes Learned or Mastered.
+ */
+export function pinyinShare(index: ProgressIndex, cards: readonly SkillCard[]): { share: number; learned: number; withPinyin: number } {
+  const learned = learnedWordIds(index, cards);
+  let withPinyin = 0;
+  for (const c of cards) if (c.skill === 'reading' && c.item.kind === 'word' && learned.has(c.item.id) && isLearnedCard(c)) withPinyin++;
+  return { share: learned.size === 0 ? 0 : withPinyin / learned.size, learned: learned.size, withPinyin };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -368,7 +412,7 @@ export function wordSets(cards: readonly SkillCard[], now: Date, inputs: Omit<Pr
   const learningIds = new Set<string>();
   const newIds = new Set<string>();
   for (const c of cards) {
-    if (c.item.kind !== 'word' || c.skill === 'listening' || c.state === 'unseen') continue;
+    if (c.item.kind !== 'word' || isPracticeSkill(c.skill) || c.state === 'unseen') continue;
     if (!isActiveCard(c) && !c.flags.markedKnown) continue;
     const id = c.item.id;
     if (isDueCard(c, now)) dueIds.add(id);

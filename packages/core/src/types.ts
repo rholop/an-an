@@ -3,8 +3,10 @@
 
 export type { Level } from './levels.config.js';
 import type { Level } from './levels.config.js';
-/** Phase 15 brings back `listening` (scheduled by FSRS like the others; never part of Phase 14 mastery). */
-export type Skill = 'recognition' | 'production' | 'listening';
+/** Phase 15 brings back `listening` (scheduled by FSRS like the others; never part of Phase 14 mastery).
+ * Phase 23 adds `reading`: knowing a word's pinyin and tones from its characters (Review "Say it" and
+ * the Pinyin & tones tab; not part of lesson mastery either). */
+export type Skill = 'recognition' | 'production' | 'listening' | 'reading';
 export type ItemState = 'unseen' | 'introduced' | 'learning' | 'review' | 'mature';
 
 export interface Word {
@@ -104,10 +106,18 @@ export interface Evidence {
     /** Phase 21: an answer was undone. `context.refId` = the undone evidence row; `context.restore` = the card before it. */
     | 'evidence_undone'
     /** Phase 21: set the cloze ladder rung without a rating (lesson grammar step, error bank). */
-    | 'cloze_rung_set';
+    | 'cloze_rung_set'
+    /** Phase 23 pinyin & tones: right pinyin and tones (Good). */
+    | 'reading_correct'
+    /** Right sounds, a wrong tone (Hard). `context.tones` says which. */
+    | 'reading_tone_wrong'
+    /** Wrong sounds or wrong word (Again). */
+    | 'reading_wrong'
+    /** Phase 23: the recognition card reached learning, so the word's reading card is created (New). */
+    | 'reading_unlocked';
   at: Date;
   context?: {
-    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook';
+    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook' | 'pinyin';
     refId?: string;
     /** Phase 5: a journal_misuse the learner corrected themselves. */
     selfFixed?: boolean;
@@ -121,6 +131,12 @@ export interface Evidence {
     restore?: unknown;
     /** Phase 21 cloze_rung_set: the rung to set. */
     rung?: number;
+    /** Phase 23: which Review face was answered (the production ladder moves on 'pick' / 'recall'). */
+    face?: 'meaning' | 'pick' | 'recall' | 'say' | 'grammar';
+    /** Phase 23: a wrong pick (Pick the Mandarin, look-alikes, homophones): the word picked instead. */
+    pickedId?: string;
+    /** Phase 23 reading_tone_wrong: per wrong syllable, the right tone and the one given (5 = neutral). */
+    tones?: { expected: number; given: number }[];
   };
 }
 

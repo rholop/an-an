@@ -2,78 +2,97 @@ import { useEffect, useState } from 'react';
 import {
   activeEvidence,
   PRIORITY_CONFIG,
-  reviewForecast,
   reviewStatus,
+  sessionCards,
+  sessionForecast,
+  statusEvidenceSince,
   type Evidence,
+  type ForecastDay,
   type ReviewStatus,
+  type SessionWindow,
   type SkillCard,
 } from '@anan/core';
 import { db } from '../db/instance.js';
-import { getReviewSettings, useReviewSettings } from './review-settings.js';
+import { getReviewSettings, useReviewSettings, type ReviewSettings } from './review-settings.js';
 import { onStudyDirty } from './study-dirty.js';
 
 /**
  * Phase 22 Part A: the one place the app loads review numbers. Home, Review, Garden and the nav
  * all show what this returns (core `reviewStatus`), so a count on one screen always matches the
- * others and the session a button opens.
+ * others and the session a button opens. Phase 23: the numbers are per review session (morning /
+ * evening in the profile's time zone).
  */
 export interface LoadedReviewStatus {
   status: ReviewStatus;
-  /** [rest of today, tomorrow, …] (cards due now are `status.dueNow`, not a bar). */
-  forecast: number[];
+  /** Two bars a day (morning, evening) for the next 7 days. */
+  forecast: ForecastDay[];
+  settings: ReviewSettings;
 }
 
-async function todaysEvidence(now: Date): Promise<Evidence[]> {
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  const rows = await db.evidence.where('at').between(start, now, true, true).toArray();
+async function sessionEvidence(now: Date, settings: ReviewSettings): Promise<Evidence[]> {
+  const since = statusEvidenceSince(now, settings);
+  const rows = await db.evidence.where('at').between(since, now, true, true).toArray();
   return activeEvidence(rows);
+}
+
+async function allCards(): Promise<SkillCard[]> {
+  const rows = await db.items.toArray();
+  return rows.map(({ pk: _pk, ...c }) => c as SkillCard);
 }
 
 export async function loadReviewStatus(
   now: Date = new Date(),
-  cap?: number,
+  settings?: ReviewSettings,
 ): Promise<LoadedReviewStatus> {
-  const [rows, evidence, rs] = await Promise.all([
-    db.items.toArray(),
-    todaysEvidence(now),
-    cap === undefined ? getReviewSettings() : Promise.resolve({ dailyCap: cap }),
-  ]);
-  const cards = rows.map(({ pk: _pk, ...c }) => c as SkillCard);
+  const s = settings ?? (await getReviewSettings());
+  const [cards, evidence] = await Promise.all([allCards(), sessionEvidence(now, s)]);
   return {
-    status: reviewStatus({
-      cards,
-      evidence,
-      now,
-      cap: rs.dailyCap,
-      baseNew: PRIORITY_CONFIG.reviewNewItems,
-    }),
-    forecast: reviewForecast(cards, now, 7),
+    status: reviewStatus({ cards, evidence, now, settings: s, baseNew: PRIORITY_CONFIG.reviewNewItems }),
+    forecast: sessionForecast({ cards, evidence, now, settings: s, days: 7 }),
+    settings: s,
   };
 }
 
-/** Live review status: refreshes after any study change, a cap change, and when the next
- * later-today card falls due (so "3 more later today" turns into "3 due now" on its own). */
+/** This session's cards (or with `early`, between sessions, the next session's), and the status. */
+export async function loadSessionCards(
+  now: Date = new Date(),
+  opts: { early?: boolean } = {},
+): Promise<{ cards: SkillCard[]; window?: SessionWindow } & LoadedReviewStatus> {
+  const s = await getReviewSettings();
+  const [cards, evidence] = await Promise.all([allCards(), sessionEvidence(now, s)]);
+  const picked = sessionCards({ cards, evidence, now, settings: s, ...(opts.early ? { early: true } : {}) });
+  return {
+    ...picked,
+    status: reviewStatus({ cards, evidence, now, settings: s, baseNew: PRIORITY_CONFIG.reviewNewItems }),
+    forecast: sessionForecast({ cards, evidence, now, settings: s, days: 7 }),
+    settings: s,
+  };
+}
+
+/** Live review status: refreshes after any study change, a settings change (session times, time
+ * zone, cap), and when a session opens or ends. */
 export function useReviewStatus(): LoadedReviewStatus | null {
   const [value, setValue] = useState<LoadedReviewStatus | null>(null);
   const [tick, setTick] = useState(0);
-  const { dailyCap } = useReviewSettings();
+  const settings = useReviewSettings();
   useEffect(() => onStudyDirty(() => setTick((t) => t + 1)), []);
   useEffect(() => {
     let cancelled = false;
-    loadReviewStatus(new Date(), dailyCap)
+    loadReviewStatus(new Date(), settings)
       .then((v) => !cancelled && setValue(v))
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [tick, dailyCap]);
-  const next = value?.status.nextDueAt?.getTime();
+  }, [tick, settings]);
+  const boundary = value
+    ? Math.min(value.status.sessionEndsAt?.getTime() ?? Infinity, value.status.nextSession.opensAt.getTime())
+    : undefined;
   useEffect(() => {
-    if (next === undefined) return;
-    // setTimeout's limit is ~24.8 days; "later today" is always well under it.
-    const id = setTimeout(() => setTick((t) => t + 1), Math.max(1000, next - Date.now() + 500));
+    if (boundary === undefined || !Number.isFinite(boundary)) return;
+    // setTimeout's limit is ~24.8 days; the next session boundary is always within a day.
+    const id = setTimeout(() => setTick((t) => t + 1), Math.max(1000, boundary - Date.now() + 500));
     return () => clearTimeout(id);
-  }, [next]);
+  }, [boundary]);
   return value;
 }

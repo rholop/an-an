@@ -1,5 +1,6 @@
 import {
   clozeSourceSentences,
+  isPracticeSkill,
   type ChatLineSource,
   type JournalSentenceSource,
   type Scenario,
@@ -16,8 +17,14 @@ import type { AnanDB } from './schema.js';
  * convenience, not a cross-storage-backend API. */
 export async function allTouchedCards(db: AnanDB): Promise<SkillCard[]> {
   const rows = await db.items.where('state').notEqual('unseen').toArray();
-  // Phase 15: listening cards are a separate queue (see `allListeningCards`).
-  return rows.filter((r) => r.skill !== 'listening').map(({ pk: _pk, ...card }) => card);
+  // Phase 15/23: listening and reading cards are practice (see `allListeningCards`, `allReadingCards`).
+  return rows.filter((r) => !isPracticeSkill(r.skill)).map(({ pk: _pk, ...card }) => card);
+}
+
+/** Phase 23: every reading card (Pinyin & tones, Say it). */
+export async function allReadingCards(db: AnanDB): Promise<SkillCard[]> {
+  const rows = await db.items.filter((r) => r.skill === 'reading').toArray();
+  return rows.map(({ pk: _pk, ...card }) => card);
 }
 
 export async function allListeningCards(db: AnanDB): Promise<SkillCard[]> {

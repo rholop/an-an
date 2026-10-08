@@ -14,6 +14,7 @@ export type CardSource =
   | 'study_order'
   | 'cloze'
   | 'listening'
+  | 'pinyin'
   | 'added'
   | 'other';
 
@@ -48,6 +49,12 @@ export interface SkillCard {
   /** Consecutive no-hint-correct answers at the current rung — resets on
    * promotion, on a hint, and on a lapse. */
   clozeStreak: number;
+  /** Phase 23 production ladder in Review: 'pick' (Pick the Mandarin from 4) until 2 correct picks in
+   * a row, then 'recall' (Recall the Mandarin); a lapse moves it back. Absent = from the card's
+   * strength (`productionRung`). */
+  prodRung?: 'pick' | 'recall';
+  /** Correct picks in a row at the 'pick' rung. */
+  prodStreak?: number;
   /** Weak-signal counter nudged by chat_read_no_lookup; see applyEvidence. */
   familiarity: number;
   /** 0 (reads characters, no pinyin dependence) .. 1 (always needs pinyin). */

@@ -1,4 +1,4 @@
-import { isActiveCard, isDueCard, isNewCard, type Evidence, type ItemRef, type LearnerRepo, type Skill, type SkillCard } from '@anan/core';
+import { isActiveCard, isDueCard, isNewCard, isReviewSkill, type Evidence, type ItemRef, type LearnerRepo, type Skill, type SkillCard } from '@anan/core';
 import { type AnanDB, itemPk } from './schema.js';
 
 function stripPk(row: SkillCard & { pk: string }): SkillCard {
@@ -41,18 +41,18 @@ export class DexieLearnerRepo implements LearnerRepo {
       .belowOrEqual(now)
       // Phase 21: Due = answered at least once (core `isDueCard`): an `unseen` row (placement
       // "don't know", an undone first answer) or a never-answered `introduced` card (that is New) is never due.
-      .filter((r) => r.skill !== 'listening' && isDueCard(r, now))
+      .filter((r) => isReviewSkill(r.skill) && isDueCard(r, now))
       .limit(Number.isFinite(limit) ? limit : Number.MAX_SAFE_INTEGER)
       .toArray();
     return rows.map(stripPk);
   }
 
-  /** Phase 21: New cards (introduced, never answered), any skill but listening, still in the queues. */
+  /** Phase 21: New cards (introduced, never answered), any Review skill (reading included; listening has its own tab), still in the queues. */
   async newCards(): Promise<SkillCard[]> {
     const rows = await this.db.items
       .where('state')
       .equals('introduced')
-      .filter((r) => r.skill !== 'listening' && isNewCard(r) && isActiveCard(r))
+      .filter((r) => isReviewSkill(r.skill) && isNewCard(r) && isActiveCard(r))
       .toArray();
     return rows.map(stripPk);
   }
@@ -69,7 +69,7 @@ export class DexieLearnerRepo implements LearnerRepo {
 
   /** Phase 20: every card of one item (all skills). */
   async cardsOfItem(item: ItemRef): Promise<SkillCard[]> {
-    const skills: Skill[] = ['recognition', 'production', 'listening'];
+    const skills: Skill[] = ['recognition', 'production', 'listening', 'reading'];
     const rows = await this.db.items.bulkGet(skills.map((s) => itemPk(item, s)));
     return rows.filter((r): r is NonNullable<typeof r> => !!r).map(stripPk);
   }

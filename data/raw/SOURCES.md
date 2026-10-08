@@ -17,6 +17,7 @@ CC BY-ND 3.0 TW (shown verbatim), Unihan is under the Unicode terms of use.
 | `kaikki-chinese.jsonl` | English Wiktionary, Chinese entries, via wiktextract (≈1.2 GB) — Taiwan/Mainland tagged senses | https://kaikki.org/dictionary/Chinese/kaikki.org-dictionary-Chinese.jsonl.gz (gunzip to this name) | 2026-10-01 | no (ignored) |
 | `cedict_1_0_ts_utf-8_mdbg.zip` | Latest CC-CEDICT release | https://www.mdbg.net/chinese/export/cedict/cedict_1_0_ts_utf-8_mdbg.zip | 2026-10-01 — **not read by the build yet**: CC-CEDICT arrives per reading through the ivankra merge | no (ignored) |
 | `Unihan_Readings.txt` (from `Unihan.zip`) | Per-character definitions (`kDefinition`) for the character-breakdown help → `data/build/char-glosses.v1.json` | https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip | 2026-10-01 | no (ignored) |
+| `Unihan_IRGSources.txt`, `Unihan_DictionaryLikeData.txt` (from `Unihan.zip`) | Phase 23 look-alike characters: radical + strokes (`kRSUnicode`, `kTotalStrokes`) and phonetic groups (`kPhonetic`) → `packages/core/src/data/char-shapes.generated.ts` (`pnpm --filter @anan/data-pipeline gen:char-shapes`). unicode.org was unreachable from the build machine on 2026-10-08, so these two files were written from the same Unihan fields in the `cjk-unihan` npm package's database | https://www.unicode.org/Public/UCD/latest/ucd/Unihan.zip | 2026-10-08 | no (ignored) |
 
 The build still runs without the optional files: `build-lexicon.ts` skips each
 optional source whose file is absent and records which sources were used in

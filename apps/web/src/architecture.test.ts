@@ -55,7 +55,9 @@ describe('Phase 21 architecture', () => {
       // where the item state itself is computed from FSRS (the definition, not a reading of it)
       rel === 'packages/core/src/learner/fsrs-instance.ts' ||
       // which listening exercise types a word has unlocked (a difficulty ladder, not a progress number)
-      rel === 'packages/core/src/listening/exercises.ts';
+      rel === 'packages/core/src/listening/exercises.ts' ||
+      // which Review face a production card starts on (the Pick → Recall ladder, Phase 23)
+      rel === 'packages/core/src/review/faces.ts';
     expect(offenders(stateCmp, allowed)).toEqual([]);
     expect(offenders(stabilityCmp, allowed)).toEqual([]);
   });
@@ -106,6 +108,18 @@ describe('Phase 21 architecture', () => {
     // Home, Review and Garden show the shared status.
     for (const rel of ['apps/web/src/pages/GardenPage.tsx', 'apps/web/src/pages/ReviewPage.tsx'])
       expect(FILES.find((f) => f.rel === rel)!.text).toMatch(/useReviewStatus\(/);
+  });
+
+  it('review sessions come only from core (Phase 23): no screen works out morning / evening itself', () => {
+    // Session windows are core `sessionAt` / `sessionWindows` in the profile's time zone; screens
+    // read them through reviewStatus. getHours() would use the device zone, not the profile's.
+    expect(
+      offenders(/\.getHours\(\)|\bsessionWindows\(|\bsessionAt\(/, (rel) => !/^apps\/web\/src\/(pages|components|App\.tsx)/.test(rel)),
+    ).toEqual([]);
+    // Practice skills (listening, reading) never count toward Learned / Mastered: one rule in core.
+    expect(
+      offenders(/skill\s*!==\s*'listening'/, (rel) => rel.startsWith('packages/core/src/progress/') || rel.startsWith('packages/core/src/listening/')),
+    ).toEqual([]);
   });
 
   it('every colour is a theme token (Phase 22): none written outside src/theme.css', () => {

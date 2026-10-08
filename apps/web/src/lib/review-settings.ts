@@ -1,15 +1,25 @@
 import { useSyncExternalStore } from 'react';
-import { REVIEW_PILE_CONFIG } from '@anan/core';
+import { DEFAULT_SESSION_SETTINGS, isValidTimeZone, sanitizeSessionSettings, type SessionSettings } from '@anan/core';
 import { currentSession, db, onSessionChange } from '../db/instance.js';
 import { setBulkCapSource } from './learner-service.js';
 
-/** Phase 20: Settings → Review. Per profile (the `settings` table syncs with the profile). */
-export interface ReviewSettings {
-  dailyCap: number;
-}
+/** Phase 20: Settings → Review. Per profile (the `settings` table syncs with the profile).
+ * Phase 23: the two review sessions (time zone, times) and the cap per session. */
+export type ReviewSettings = SessionSettings;
 
 const KEY = 'reviewSettings';
-const DEFAULTS: ReviewSettings = { dailyCap: REVIEW_PILE_CONFIG.dailyCap };
+/** The time zone a profile starts with: America/New_York, unless this device names another. */
+const DEVICE_ZONE_KEY = 'anan.sessions.defaultZone';
+function defaults(): ReviewSettings {
+  let zone: string | null = null;
+  try {
+    zone = localStorage.getItem(DEVICE_ZONE_KEY);
+  } catch {
+    zone = null;
+  }
+  return { ...DEFAULT_SESSION_SETTINGS, ...(zone && isValidTimeZone(zone) ? { timeZone: zone } : {}) };
+}
+const DEFAULTS: ReviewSettings = defaults();
 
 let settings: ReviewSettings = { ...DEFAULTS };
 let loaded = false;
@@ -17,9 +27,10 @@ const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
 
 export function sanitizeReviewSettings(v: unknown): ReviewSettings {
-  const o = (v ?? {}) as Partial<ReviewSettings>;
-  const cap = typeof o.dailyCap === 'number' && Number.isFinite(o.dailyCap) ? Math.round(o.dailyCap) : DEFAULTS.dailyCap;
-  return { dailyCap: Math.min(500, Math.max(10, cap)) };
+  const o = (v ?? {}) as Partial<ReviewSettings> & { dailyCap?: unknown };
+  // Phase 20 stored a daily cap: it becomes the cap per session.
+  const capPerSession = o.capPerSession ?? (typeof o.dailyCap === 'number' ? o.dailyCap : undefined);
+  return sanitizeSessionSettings({ ...DEFAULTS, ...o, ...(capPerSession !== undefined ? { capPerSession } : {}) });
 }
 
 async function load(): Promise<void> {
@@ -39,7 +50,7 @@ onSessionChange((s) => {
   if (s) void load();
 });
 
-setBulkCapSource(() => settings.dailyCap);
+setBulkCapSource(() => settings.capPerSession);
 
 /** After a sync merge replaced the database contents. */
 export function reloadReviewSettings(): void {

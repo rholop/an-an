@@ -1,6 +1,7 @@
 import {
-  capDueCards,
+  capMixedCards,
   emptyCard,
+  REVIEW_FACE_CONFIG,
   lessonCoreItems,
   pickNewForSession,
   describeSkillCard,
@@ -82,10 +83,11 @@ export function lessonSessionCards(input: {
 }): { due: SkillCard[]; fresh: SkillCard[]; newItems: ItemRef[] } {
   const words = lessonCoreItems(input.lesson as Lesson).filter((i) => i.kind === 'word');
   const keys = new Set(words.map((i) => `${i.kind}:${i.id}`));
-  const mine = (c: SkillCard) => keys.has(`${c.item.kind}:${c.item.id}`);
+  // Phase 23: reading (pinyin) cards aren't part of lesson mastery: they stay in Review and Pinyin & tones.
+  const mine = (c: SkillCard) => c.skill !== 'reading' && keys.has(`${c.item.kind}:${c.item.id}`);
   const due = input.due.filter(mine).slice(0, input.maxDue ?? 40);
   const picked = pickNewForSession({
-    newCards: input.newCards,
+    newCards: input.newCards.filter((c) => c.skill !== 'reading'),
     ...(input.focus ? { focus: input.focus } : {}),
     ...(input.lessonIdx ? { lessonIdx: input.lessonIdx } : {}),
     allowed: input.allowedNew,
@@ -96,20 +98,24 @@ export function lessonSessionCards(input: {
 }
 
 /**
- * Phase 20: today's review cards under the daily cap (study order first, then the cards most
+ * Phase 20: this session's review cards under the cap (study order first, then the cards most
  * likely forgotten), and how many new items may join (none in a backlog, half when it's building).
+ * Phase 23: per review session, mixed ~40/40/20 across meaning, production and reading when the cap
+ * bites; new production / reading faces of words already being learned have their own allowance.
  */
 export function pickReviewCards(input: {
   due: readonly SkillCard[];
   /** Phase 21: New cards (introduced, never answered), e.g. from My class or a lookup. */
   newCards?: readonly SkillCard[];
-  /** Distinct cards answered in Review today (`reviewStatus().doneToday`). */
-  doneToday: number;
+  /** Distinct cards answered in Review this session (`reviewStatus().doneThisSession`). */
+  doneThisSession: number;
   cap: number;
   focus?: StudyFocus;
   lessonIdx?: ReadonlyMap<string, string>;
   now: Date;
   baseNew?: number;
+  /** Phase 23: words due in the next session too (between sessions): their new faces wait as well. */
+  holdFaceWords?: Iterable<string>;
 }): {
   due: SkillCard[];
   /** New cards that join this session. */
@@ -124,8 +130,8 @@ export function pickReviewCards(input: {
   const idx = input.lessonIdx;
   const rank =
     focus && idx ? (c: SkillCard) => studyRank(focus, (i) => idx.get(`${i.kind}:${i.id}`), c.item) : undefined;
-  const remaining = Math.max(0, input.cap - input.doneToday);
-  const due = capDueCards(input.due, { remaining, now: input.now, ...(rank ? { rank } : {}) });
+  const remaining = Math.max(0, input.cap - input.doneThisSession);
+  const due = capMixedCards(input.due, { remaining, now: input.now, ...(rank ? { rank } : {}) });
   // Phase 22: the one new-word rule (core `newWordState`): paused only when more is due now than the
   // whole cap, and "today's limit" once the cap is used up (not a backlog).
   const allowance = newWordState({
@@ -137,11 +143,24 @@ export function pickReviewCards(input: {
   const roomForNew = Math.max(0, remaining - due.length);
   // One "new" rule for every session (core `pickNewForSession`): New cards and study-order items
   // together, never more than the allowance (Phase 20) — My class cards are no longer uncapped.
+  // Phase 23: a word's new Pick / Say it card waits while the word itself is due this session, so
+  // it never pushes the due card out (a word's cards are kept apart, Phase 19).
+  const dueWords = new Set([...due.map((c) => `${c.item.kind}:${c.item.id}`), ...(input.holdFaceWords ?? [])]);
+  const newCards = (input.newCards ?? []).filter((c) => c.skill === 'recognition' || !dueWords.has(`${c.item.kind}:${c.item.id}`));
   const picked = pickNewForSession({
-    newCards: input.newCards ?? [],
+    newCards,
     ...(focus ? { focus } : {}),
     ...(idx ? { lessonIdx: idx } : {}),
     allowed: Math.min(allowance.newAllowed, roomForNew),
+    // new faces follow the same pause / halving as new words
+    allowedFaces: Math.min(
+      allowance.newState === 'open'
+        ? REVIEW_FACE_CONFIG.newFacesPerSession
+        : allowance.newState === 'reduced'
+          ? Math.floor(REVIEW_FACE_CONFIG.newFacesPerSession / 2)
+          : 0,
+      Math.max(0, roomForNew - allowance.newAllowed),
+    ),
   });
   return {
     due,

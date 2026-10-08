@@ -58,7 +58,7 @@ The game is **purely text-based: no audio, TTS, listening or speech features.** 
 // Seven levels, from packages/core/src/levels.config.ts (the single source of truth):
 // N1 準備級一級, N2 準備級二級, L1 入門級 (A1), L2 基礎級 (A2), L3 進階級 (B1), L4 高階級 (B2), L5 流利級 (C1–C2).
 type Level = 'N1' | 'N2' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
-type Skill = 'recognition' | 'production';
+type Skill = 'recognition' | 'production' | 'listening' | 'reading';   // listening (Phase 15) and reading (Phase 23) are practice skills: never Learned / Mastered
 type ItemState = 'unseen' | 'introduced' | 'learning' | 'review' | 'mature';
 
 interface Word {                 // one lexicon entry = one word + sense
@@ -114,7 +114,10 @@ compares a card's `state` or `stability` to decide them (an architecture test en
 |---|---|---|
 | **New** | Introduced, never answered (`state === 'introduced'`, `reps === 0`) | `isNewCard` |
 | **Due** | Answered at least once, due now, not removed by Nope. `unseen` and New cards are never due | `isDueCard` |
-| **Due now / later today** | The only counts shown for review: due now, more later today (next at …), distinct cards done today, cap left, the new-word state (open, reduced, backlog pause, today's limit). Home, Review, Garden and the nav badge all show these | `reviewStatus` (`core/progress/review-status.ts`, loaded by `useReviewStatus`) |
+| **Review session** | Phase 23: two a day in the profile's time zone (default America/New_York): morning 04:00–10:00 holds cards due before 16:00, evening 16:00–04:00 holds cards due before 10:00 tomorrow. A session nobody does rolls into the next. Cap per session (80) and up to 5 new words per session. Between sessions: "Morning review done · Evening review opens at 4 pm (31 cards)" + Review early | `sessionAt` / `sessionWindows` (`core/progress/review-sessions.ts`) |
+| **Due now / this session** | The only counts shown for review: this session's cards, the next session (opens at …, count), distinct cards done this session, cap left, the new-word state (open, reduced, backlog pause, session limit). Home, Review, Garden and the nav badge all show these | `reviewStatus` (`core/progress/review-status.ts`, loaded by `useReviewStatus`) |
+| **Review face** | Phase 23: recognition = Meaning, production = Pick the Mandarin (4 same-length look-alikes from `core/confusables`, Unihan radical/strokes/phonetic) then Recall after 2 right picks in a row (a lapse goes back to Pick), reading = Say it. Mixed ~40/40/20 | `reviewFace`, `capMixedCards` (`core/review/faces.ts`) |
+| **Pinyin %** | Phase 23: Learned words whose reading card is Learned too, shown as "Learned X% · Mastered Y% · Pinyin Z%". Reading never changes Learned or Mastered | `pinyinShare` |
 | **Learned** | Recognition in review after an answer in this app, or passed "I already know this". Grammar: one correct use. Leeches count as Learned | `ProgressIndex.learned` / `summarize` |
 | **Mastered** | Recognition stability ≥ 21 d and production ≥ 7 d (grammar: 3 correct uses, last one correct). Leeches and imports never count | `ProgressIndex.mastered` / `summarize` |
 | **Imported** | Seeded by Anki or placement, no answer here yet | `ProgressIndex.imported` |
@@ -155,6 +158,7 @@ Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
 | 20 | Nope a review card; daily cap, spread bulk cards, lookups and new words kept in bounds | `docs/review-pile.md` |
 | 21 | Now studying follows your class; one meaning for progress, due, new and labels everywhere | Shared terms above |
 | 22 | Home "💧 Water all" and "Review all", matching due counts, Garden light/dark theme tokens (`apps/web/src/theme.css`), plant icons, nav with More | `22-home-buttons-and-garden-theme.md` |
+| 23 | Morning and evening review sessions (profile time zone, cap per session), Review faces (Meaning, Pick, Recall, Say it) with look-alike options, "Pinyin & tones" tab (7 tap exercises on the `reading` skill, tone confusion table on Progress) | `23-review-sessions-and-pinyin-practice.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

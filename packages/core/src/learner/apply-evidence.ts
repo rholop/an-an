@@ -6,6 +6,7 @@ import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 import { REVIEW_PILE_CONFIG } from './review-pile.config.js';
 import { cardSourceFor } from './review-pile.js';
 import { isInReview } from '../progress/terms.js';
+import { nextProductionRung } from '../review/faces.js';
 import {
   DEFAULT_LEARNER_CONFIG,
   type LearnerConfig,
@@ -326,7 +327,7 @@ function applyKnownCheck(current: SkillCard | undefined, evidence: Evidence, now
   };
 }
 
-/** Phase 21 production_unlocked / listening_unlocked: create the card (New, due now) if missing. */
+/** Phase 21 production_unlocked / listening_unlocked (Phase 23: reading_unlocked): create the card (New, due now) if missing. */
 function applyUnlock(current: SkillCard | undefined, evidence: Evidence, now: Date): ModelUpdate {
   if (current && current.state !== 'unseen') return { card: undefined, appliedEffect: 'ignored:already-carded' };
   const base = blankSkillCard(evidence, emptyCard(now), now);
@@ -373,6 +374,25 @@ function applyRungSet(current: SkillCard | undefined, evidence: Evidence, now: D
   return { card: { ...current, clozeRung: rung as SkillCard['clozeRung'], clozeStreak: 0, updatedAt: now }, appliedEffect: `rung:${rung}` };
 }
 
+/** A Review answer; on a production face (Phase 23) it also moves the Pick → Recall ladder. */
+function applyReviewAnswer(
+  current: SkillCard | undefined,
+  evidence: Evidence,
+  now: Date,
+  grade: Grade,
+  config: LearnerConfig,
+  fsrsInstance: FSRS,
+): ModelUpdate {
+  const rated = applyFsrsRating(current, evidence, now, grade, config, fsrsInstance);
+  const face = evidence.context?.face;
+  if (!rated.card || evidence.skill !== 'production' || (face !== 'pick' && face !== 'recall')) return rated;
+  const ladder = nextProductionRung(current ?? rated.card, face, grade !== Rating.Again);
+  return {
+    card: { ...rated.card, ...ladder },
+    appliedEffect: `${rated.appliedEffect} + face:${ladder.prodRung}(streak ${ladder.prodStreak})`,
+  };
+}
+
 const carded = (c: SkillCard | undefined): boolean => !!c && c.state !== 'unseen';
 const keep = (): ModelUpdate => ({ card: undefined, appliedEffect: 'ignored:already-carded' });
 
@@ -389,10 +409,10 @@ export type EvidenceHandler = (
  * rather than scattered if/else, per the phase doc's explicit requirement.
  */
 export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
-  review_again: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Again, cfg, f),
-  review_hard: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
-  review_good: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
-  review_easy: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Easy, cfg, f),
+  review_again: (c, e, n, cfg, f) => applyReviewAnswer(c, e, n, Rating.Again, cfg, f),
+  review_hard: (c, e, n, cfg, f) => applyReviewAnswer(c, e, n, Rating.Hard, cfg, f),
+  review_good: (c, e, n, cfg, f) => applyReviewAnswer(c, e, n, Rating.Good, cfg, f),
+  review_easy: (c, e, n, cfg, f) => applyReviewAnswer(c, e, n, Rating.Easy, cfg, f),
 
   cloze_correct_nohint: (c, e, n, cfg, f) =>
     applyClozeAnswer(c, e, n, cfg, f, 'correct', Rating.Good),
@@ -427,6 +447,12 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   journal_priority: applyJournalPriority,
   evidence_undone: (c, e, n) => applyUndo(c, e, n),
   cloze_rung_set: (c, e, n) => applyRungSet(c, e, n),
+
+  // Phase 23 pinyin & tones: right = Good; right sounds, wrong tone = Hard; wrong = Again.
+  reading_correct: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Good, cfg, f),
+  reading_tone_wrong: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
+  reading_wrong: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Again, cfg, f),
+  reading_unlocked: (c, e, n) => applyUnlock(c, e, n),
 };
 
 /**

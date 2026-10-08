@@ -54,7 +54,7 @@ export const CREDITS: {
   },
   {
     name: 'Unicode Unihan database',
-    what: 'Per-character English definitions for the character-breakdown help. Optional source.',
+    what: 'Per-character English definitions for the character-breakdown help (optional), and each character’s radical, stroke count and phonetic group, used to pick look-alike characters in Review and Pinyin & tones.',
     licence: 'Unicode Terms of Use (permissive)',
     href: 'https://www.unicode.org/charts/unihan.html',
     terms: 'Copyright © Unicode, Inc.',

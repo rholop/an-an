@@ -8,7 +8,7 @@ import {
 import { z } from 'zod';
 
 const ItemRefSchema = z.object({ kind: z.enum(['word', 'grammar']), id: z.string() });
-const SkillSchema = z.enum(['recognition', 'production', 'listening']);
+const SkillSchema = z.enum(['recognition', 'production', 'listening', 'reading']);
 const ItemStateSchema = z.enum(['unseen', 'introduced', 'learning', 'review', 'mature']);
 const LeechTreatmentSchema = z.enum([
   'new_context',
@@ -44,6 +44,9 @@ export const SkillCardSchema = z.object({
   // about index/store shape, not every new field).
   clozeRung: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(1),
   clozeStreak: z.number().default(0),
+  // Phase 23 (additive): the production ladder in Review.
+  prodRung: z.enum(['pick', 'recall']).optional(),
+  prodStreak: z.number().optional(),
   familiarity: z.number(),
   readingDependence: z.number(),
   flags: z.object({
@@ -73,6 +76,7 @@ export const SkillCardSchema = z.object({
       'study_order',
       'cloze',
       'listening',
+      'pinyin',
       'added',
       'other',
     ])
@@ -109,6 +113,11 @@ const EvidenceKindSchema = z.enum([
   'journal_priority',
   'evidence_undone',
   'cloze_rung_set',
+  // Phase 23
+  'reading_correct',
+  'reading_tone_wrong',
+  'reading_wrong',
+  'reading_unlocked',
 ]);
 
 export const EvidenceSchema = z.object({
@@ -119,7 +128,7 @@ export const EvidenceSchema = z.object({
   at: z.coerce.date(),
   context: z
     .object({
-      source: z.enum(['chat', 'journal', 'cloze', 'review', 'placement', 'reader', 'textbook']),
+      source: z.enum(['chat', 'journal', 'cloze', 'review', 'placement', 'reader', 'textbook', 'pinyin']),
       refId: z.string().optional(),
       selfFixed: z.boolean().optional(),
       choice: z.enum(['not_now', 'known', 'never']).optional(),
@@ -128,6 +137,10 @@ export const EvidenceSchema = z.object({
       // Phase 21: the card before an undone answer, and a cloze rung set without a rating.
       restore: z.unknown().optional(),
       rung: z.number().optional(),
+      // Phase 23: Review face, a wrong pick, and the tones of a tone mistake.
+      face: z.enum(['meaning', 'pick', 'recall', 'say', 'grammar']).optional(),
+      pickedId: z.string().optional(),
+      tones: z.array(z.object({ expected: z.number(), given: z.number() })).optional(),
     })
     .optional(),
 });

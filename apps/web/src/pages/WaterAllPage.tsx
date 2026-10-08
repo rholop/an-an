@@ -33,13 +33,15 @@ import { useCurrentLevel } from '../lib/current-level.js';
 import { NOTHING_DUE, UNDO, wateredSummary } from '../lib/labels.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { useAnswerInputMode, useReadingSettings } from '../lib/reading.js';
+import { loadSessionCards } from '../lib/review-status.js';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
 import { ExerciseView, type Outcome } from './ClozePage.js';
 import { ListenRunner } from './ListenPage.js';
-import { ReviewCard, type Grade } from './ReviewPage.js';
+import { ReviewCard, type Grade, type RateExtra } from './ReviewCard.js';
+import { noteConfusion, useConfusables } from '../lib/confusables.js';
 import './WaterAllPage.css';
 
 type Entry = WaterEntry<SessionItem>;
@@ -79,14 +81,15 @@ export function WaterAllPage({ onExit }: { onExit: () => void }) {
     (async () => {
       const now = new Date();
       const lexicon = lexiconState.lexicon;
-      const [all, sets, chat, ex] = await Promise.all([
+      const [all, inSession, sets, chat, ex] = await Promise.all([
         learnerService.allCards(),
+        loadSessionCards(now),
         learnerService.wordSets(now),
         allChatLines(db, scenariosState.scenarios),
         excludedZh(db),
       ]);
       const journal = await allJournalSentences(db, ex);
-      const cards = waterAllCards(all, now, (id) => Boolean(lexicon.byId(id)));
+      const cards = waterAllCards(inSession.cards, (id) => Boolean(lexicon.byId(id)));
       const index = new ProgressIndex({ cards: all });
       const learnedBefore = new Set(
         cards.filter((c) => index.learned(c.item)).map((c) => c.item.id),
@@ -123,7 +126,8 @@ export function WaterAllPage({ onExit }: { onExit: () => void }) {
       learnedBefore={sources.learnedBefore}
       clozeFor={(card) => {
         const word = lexicon.byId(card.item.id);
-        if (!word) return null;
+        // Phase 23: a reading card is a "Say it" flashcard, never a cloze.
+        if (!word || card.skill === 'reading') return null;
         const source = selectClozeSource(word, {
           lexicon,
           knownIds: sources.knownIds,
@@ -154,6 +158,7 @@ function WaterSession({
   onExit: () => void;
 }) {
   const { script } = useReadingSettings();
+  const confusables = useConfusables(lexicon);
   const [inputMode, setInputMode] = useAnswerInputMode();
   const [seed] = useState(() => newSessionSeed('water'));
   const [entries, setEntries] = useState<Entry[]>(() =>
@@ -269,12 +274,19 @@ function WaterSession({
     }
   }
 
-  function rate(grade: Grade) {
+  function rate(grade: Grade, extra: RateExtra) {
     if (!entry) return;
     const at = new Date();
+    if (extra.pickedId) noteConfusion(confusables, entry.card.item.id, extra.pickedId);
     void answer(
       entry,
-      { item: entry.card.item, skill: entry.card.skill, kind: `review_${grade}`, at },
+      {
+        item: entry.card.item,
+        skill: entry.card.skill,
+        kind: `review_${grade}`,
+        at,
+        context: { source: 'review', face: extra.face, ...(extra.pickedId ? { pickedId: extra.pickedId } : {}) },
+      },
       grade === 'good' || grade === 'easy',
       grade === 'again',
     );
@@ -410,6 +422,7 @@ function WaterSession({
               onReveal={() => setRevealed(true)}
               onRate={rate}
               onNope={() => void sayNope(entry)}
+              confusables={confusables}
             />
           ) : (
             <p>Loading…</p>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  endOfDay,
   groupPlots,
   isTextbookTagged,
   wiltingCards,
@@ -27,9 +26,7 @@ import { useStudyFocus } from '../lib/study.js';
 import { NowStudying } from '../components/NowStudying.js';
 import { DueForecast, HomeReviewActions } from '../components/DueForecast.js';
 import { EmptySprout, PlantLegend, StageIcon } from '../components/PlantIcons.js';
-import { learnerService } from '../db/instance.js';
-import { useReviewStatus } from '../lib/review-status.js';
-import { useReviewSettings } from '../lib/review-settings.js';
+import { loadSessionCards, useReviewStatus } from '../lib/review-status.js';
 import { WaterAllPage } from './WaterAllPage.js';
 import { ReviewPage } from './ReviewPage.js';
 import './GardenPage.css';
@@ -62,10 +59,9 @@ export function GardenPage() {
   // Phase 12: only words from the class textbook (offered once any exist in the garden).
   const [textbookOnly, setTextbookOnly] = useState(false);
   const [focus, setFocus] = useState<SkillCard[] | null>(null);
-  // Phase 22: Home's "Water all", "Review all" and "Review early" sessions.
+  // Phase 22: Home's "Water all", "Review all" and "Review early" (Phase 23: the next session now).
   const [session, setSession] = useState<'water-all' | 'review-all' | { early: SkillCard[] } | null>(null);
   const reviewState = useReviewStatus();
-  const { dailyCap } = useReviewSettings();
   // Phase 14: tiles that belong to the active study step are highlighted.
   const { focus: studyFocus } = useStudyFocus();
   const activeIds = new Set(
@@ -135,10 +131,10 @@ export function GardenPage() {
         onWaterAll={() => setSession('water-all')}
         onReviewAll={() => setSession('review-all')}
         onReviewEarly={() =>
-          void learnerService.dueCards(endOfDay(new Date())).then((early) => setSession({ early }))
+          void loadSessionCards(new Date(), { early: true }).then(({ cards }) => setSession({ early: cards }))
         }
       />
-      <DueForecast loaded={reviewState} dailyCap={dailyCap} />
+      <DueForecast loaded={reviewState} />
       {snapshot.plants.length === 0 && <EmptySprout />}
       <p className="garden-meta">
         {shownPlants.length === 0

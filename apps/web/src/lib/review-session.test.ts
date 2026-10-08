@@ -97,7 +97,7 @@ describe('lesson session (Phase 19)', () => {
 
   it('Phase 21: New cards are capped in Review like new items (My class cards no longer uncapped)', () => {
     const newCards = WORDS.map((w) => card(w.id, 'recognition'));
-    const r = pickReviewCards({ due: [], newCards, doneToday: 0, cap: 80, now: NOW, baseNew: 3 });
+    const r = pickReviewCards({ due: [], newCards, doneThisSession: 0, cap: 80, now: NOW, baseNew: 3 });
     expect(r.fresh).toHaveLength(3);
     expect(r.due).toHaveLength(0);
   });

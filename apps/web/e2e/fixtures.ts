@@ -6,9 +6,21 @@ import { test as base, expect } from '@playwright/test';
  * specs never share one server copy). Specs for the gate and for sync import
  * plain `@playwright/test` instead.
  */
+/**
+ * Phase 23: review comes in two sessions (morning, evening) in the profile's time zone. Specs run
+ * at any hour, so the fixture picks a zone where it is about 18:00 now: inside the evening
+ * session, whose cards are everything due before tomorrow 10:00. (Etc/GMT-k is UTC+k.)
+ */
+export function eveningZone(now: Date = new Date()): string {
+  let k = 18 - now.getUTCHours();
+  if (k > 14) k -= 24;
+  if (k < -12) k += 24;
+  return k === 0 ? 'Etc/GMT' : `Etc/GMT${k > 0 ? '-' : '+'}${Math.abs(k)}`;
+}
+
 export const test = base.extend({
   context: async ({ context }, use) => {
-    await context.addInitScript(() => {
+    await context.addInitScript((zone: string) => {
       const setIfAbsent = (k: string, v: string) => {
         if (localStorage.getItem(k) === null) localStorage.setItem(k, v);
       };
@@ -20,7 +32,8 @@ export const test = base.extend({
       setIfAbsent('anan.study.disabled', '1');
       // Phase 15: listening exercises add steps and slots; specs for the plain flows switch them off.
       setIfAbsent('anan.listening.disabled', '1');
-    });
+      setIfAbsent('anan.sessions.defaultZone', zone);
+    }, eveningZone());
     await use(context);
   },
 });

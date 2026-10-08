@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Route } from '../App.js';
-import { HOME } from '../lib/labels.js';
+import { HOME, PINYIN_TAB } from '../lib/labels.js';
 import { BottomSheet } from './BottomSheet.js';
 import { SproutIcon } from './PlantIcons.js';
 import { ThemeToggle } from './ThemeToggle.js';
@@ -15,6 +15,8 @@ import './TabBar.css';
 export const PRIMARY: { route: Route; label: string }[] = [
   { route: 'garden', label: HOME },
   { route: 'review', label: 'Review' },
+  // Phase 23: pronunciation practice, next to Review on desktop, in More on phones
+  { route: 'pinyin', label: PINYIN_TAB },
   { route: 'cloze', label: 'Cloze' },
   { route: 'chat', label: 'Chat' },
   { route: 'journal', label: 'Journal' },

@@ -73,21 +73,52 @@ export const lessonsMasteredLine = (done: number, total: number): string =>
 export const coverageLine = (share: number): string => `You know about ${pct(share)} of the words here`;
 /** Review header: "12 due · 3 new". */
 export const dueNewLine = (due: number, fresh: number): string => `${due} ${TERM.due.toLowerCase()} · ${fresh} ${TERM.new.toLowerCase()}`;
-/** Phase 22: a clock time for "next at …" ("3:40 pm"). */
-export const timeOfDay = (d: Date): string =>
-  d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).toLowerCase().replace(/\s+/g, ' ');
-/** Phase 22: "3 more later today (next at 3:40 pm)". */
-export const laterTodayLine = (n: number, next?: Date): string =>
-  `${n} more later today${next ? ` (next at ${timeOfDay(next)})` : ''}`;
-/** Phase 22: the one review status line: "3 due now", plus later today when there are any. */
-export const dueNowLine = (s: { dueNow: number; laterToday: number; nextDueAt?: Date }): string =>
-  `${s.dueNow} ${TERM.due.toLowerCase()} now${s.laterToday > 0 ? ` · ${laterTodayLine(s.laterToday, s.nextDueAt)}` : ''}`;
+/** Phase 23: a clock time in the profile's time zone ("4 pm", "3:40 pm"), right on any device. */
+export const timeOfDay = (d: Date, timeZone?: string): string => {
+  const opts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', ...(timeZone ? { timeZone } : {}) };
+  return d.toLocaleTimeString('en-US', opts).toLowerCase().replace(/\s+/g, ' ').replace(':00 ', ' ');
+};
+/** Phase 23: the two review sessions. */
+export const SESSION_NAME = { morning: 'Morning review', evening: 'Evening review' } as const;
+const cardCount = (n: number) => `${n} card${n === 1 ? '' : 's'}`;
+/** "Evening review opens at 4 pm (31 cards)" ("… tomorrow" when it opens on another local day). */
+export const nextSessionLine = (
+  next: { name: 'morning' | 'evening'; opensAt: Date; count: number },
+  timeZone: string,
+  now: Date = new Date(),
+): string => {
+  const day = (d: Date) => d.toLocaleDateString('en-CA', { timeZone });
+  const tomorrow = day(next.opensAt) !== day(now) ? ' tomorrow' : '';
+  return `${SESSION_NAME[next.name]} opens at ${timeOfDay(next.opensAt, timeZone)}${tomorrow} (${cardCount(next.count)})`;
+};
+/** Phase 23: the one review status line. In a session: "Morning review · 23 cards". Between
+ * sessions: "Morning review done · Evening review opens at 4 pm (31 cards)". */
+export const sessionLine = (
+  s: {
+    session: 'morning' | 'evening' | 'between';
+    sessionCards: number;
+    previousSession: { name: 'morning' | 'evening'; left: number };
+    nextSession: { name: 'morning' | 'evening'; opensAt: Date; count: number };
+    timeZone: string;
+  },
+  now: Date = new Date(),
+): string => {
+  if (s.session !== 'between') return `${SESSION_NAME[s.session]} · ${cardCount(s.sessionCards)}`;
+  const prev = s.previousSession;
+  const done =
+    prev.left > 0
+      ? `${cardCount(prev.left)} left from the ${prev.name} review`
+      : `${SESSION_NAME[prev.name]} done`;
+  return `${done} · ${nextSessionLine(s.nextSession, s.timeZone, now)}`;
+};
+/** Forecast column: "Today", then weekday names, in the profile's zone. */
+export const forecastDayLabel = (day: string, today: string): string =>
+  day === today ? 'Today' : new Date(`${day}T12:00:00Z`).toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
 export const waterAllLabel = (n: number): string => `💧 Water all (${n})`;
 export const reviewAllLabel = (n: number): string => `Review all (${n})`;
 export const REVIEW_EARLY = 'Review early';
 export const ALL_WATERED = 'All watered 🌱';
-export const COME_BACK_TOMORROW = 'All watered 🌱 Come back tomorrow.';
-export const FORECAST_REST_OF_TODAY = 'Rest of today';
+export const NOTHING_NEXT_SESSION = 'All watered 🌱 Nothing waiting for the next session yet.';
 /** Phase 22: Water all's end-of-session line. */
 export const wateredSummary = (words: number, perked: number): string =>
   `Watered ${words} word${words === 1 ? '' : 's'} 🌱${perked > 0 ? ` ${perked} perked up to ${TERM.learned}` : ''}`;
@@ -95,6 +126,23 @@ export const wateredSummary = (words: number, perked: number): string =>
  * ≥ PROGRESS_CONFIG.listeningStrongDays. Listening never counts toward Mastered, so it keeps its own word. */
 export const listeningLine = (practised: number, strong: number): string =>
   `Listening: ${practised} practised, ${strong} strong`;
+// --- Phase 23: Review faces and pinyin practice -----------------------------------------------
+export const FACE_LABEL = {
+  meaning: 'Meaning',
+  pick: 'Pick the Mandarin',
+  recall: 'Recall the Mandarin',
+  say: 'Say it',
+  grammar: 'Grammar',
+} as const;
+export const PINYIN_TAB = 'Pinyin & tones';
+/** "Pinyin 80%": share of Learned words whose reading card is Learned too. */
+export const pinyinShareLine = (share: number): string => `Pinyin ${pct(share)}`;
+const toneName = (t: number) => (t === 5 ? 'neutral' : ['1st', '2nd', '3rd', '4th'][t - 1] ?? `${t}`);
+/** "You mix up 2nd and 3rd tone most (14 times this week)". */
+export const toneConfusionLine = (a: number, b: number, count: number): string =>
+  `You mix up ${toneName(a)} and ${toneName(b)} tone most (${count} time${count === 1 ? '' : 's'} this week)`;
+export const toneLabel = toneName;
+
 export const placedAtLine = (level: Level): string => `Placed at ${levelShort(level)}`;
 
 // --- actions --------------------------------------------------------------------------------

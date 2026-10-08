@@ -1,27 +1,24 @@
 // Phase 22 Part B: "💧 Water all" — one mixed session over every word in the garden that needs
-// water (a Due card), across all plots and levels. Each Due card becomes a flashcard or a cloze,
+// water (a card in this review session, Phase 23), across all plots and levels. Each Due card becomes a flashcard or a cloze,
 // in the shared session order (Phase 19); listening extras are placed by the caller. Every card
 // it was given is in the session (siblings the gap would defer go at the end), so the count on
 // the button is exactly what opens. Pure; the seed makes it repeatable.
 
 import { hashText } from '../hash.js';
 import type { SkillCard } from '../learner/types.js';
-import { isDueCard } from '../progress/terms.js';
+import { isReviewSkill } from '../progress/terms.js';
 import { describeSkillCard, keepDeferred, orderSession } from '../session/orderSession.js';
 
 export type WaterEntry<S> =
   { kind: 'flash'; card: SkillCard } | { kind: 'cloze'; card: SkillCard; item: S };
 
-/** The Due cards Water all covers: word cards due now (one plant may have two). */
+/** The cards Water all covers: this session's word cards (`sessionCards`; one plant may have
+ * several). */
 export function waterAllCards(
-  cards: readonly SkillCard[],
-  now: Date,
+  sessionCards: readonly SkillCard[],
   inGarden: (wordId: string) => boolean = () => true,
 ): SkillCard[] {
-  return cards.filter(
-    (c) =>
-      c.item.kind === 'word' && c.skill !== 'listening' && isDueCard(c, now) && inGarden(c.item.id),
-  );
+  return sessionCards.filter((c) => c.item.kind === 'word' && isReviewSkill(c.skill) && inGarden(c.item.id));
 }
 
 /** Distinct words in `cards` (what "Water all (N)" counts). */

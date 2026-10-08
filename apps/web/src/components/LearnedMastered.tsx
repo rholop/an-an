@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { learnedMasteredLine, pct, PROGRESS_INFO, TERM } from '../lib/labels.js';
+import { learnedMasteredLine, pct, pinyinShareLine, PROGRESS_INFO, TERM } from '../lib/labels.js';
 import { LeafIcon } from './PlantIcons.js';
 import './LearnedMastered.css';
 
@@ -12,10 +12,13 @@ export function LearnedMastered({
   p,
   compact = false,
   testId,
+  pinyin,
 }: {
   p: { learnedShare: number; masteredShare: number; leeches?: number; imported?: number };
   compact?: boolean;
   testId?: string;
+  /** Phase 23: "· Pinyin 80%" (Learned words whose reading is Learned too); practice only. */
+  pinyin?: number;
 }) {
   const [info, setInfo] = useState(false);
   return (
@@ -36,6 +39,7 @@ export function LearnedMastered({
         {learnedMasteredLine(p)}
         {p.leeches ? <span className="lm-leech" title="Tricky words count as Learned but never Mastered"> · {p.leeches} tricky</span> : null}
         {p.imported ? <span className="lm-imported"> · {p.imported} {TERM.imported.toLowerCase()}</span> : null}
+        {pinyin !== undefined ? <span className="lm-pinyin" data-testid="pinyin-share"> · {pinyinShareLine(pinyin)}</span> : null}
         <button
           type="button"
           className="lm-info"

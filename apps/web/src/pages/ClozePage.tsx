@@ -194,7 +194,8 @@ export function ClozePage() {
       setExcluded(ex);
       setJournalSentences(journal);
       setErrorItems(errors);
-      setDueCards(due);
+      // Phase 23: reading cards (pinyin and tones) are practised in Review's Say it and their own tab.
+      setDueCards(due.filter((c) => c.skill !== 'reading'));
       setNewCards(fresh);
       setKnownIds(known);
       setChatLines(lines);
@@ -307,13 +308,13 @@ export function ClozePage() {
     // builds (the one rule, core `newWordState`, with today's distinct reviews from `reviewStatus`).
     const allowed = newWordState({
       dueNow: dueCards!.length,
-      capLeft: capLeft ?? reviewSettings.dailyCap,
-      cap: reviewSettings.dailyCap,
+      capLeft: capLeft ?? reviewSettings.capPerSession,
+      cap: reviewSettings.capPerSession,
       baseNew: DEFAULT_SESSION_CONFIG.maxNewItems,
     }).newAllowed;
     // Phase 21: the one "new" rule (study focus first, then catch-up lessons); cloze is words only.
     const picked = pickNewForSession({
-      newCards: newCards!.filter((c) => c.item.kind === 'word'),
+      newCards: newCards!.filter((c) => c.item.kind === 'word' && c.skill !== 'reading'),
       focus: studyFocus,
       lessonIdx,
       allowed,
@@ -344,7 +345,7 @@ export function ClozePage() {
       now,
     });
     return { built, seed };
-  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, reviewSettings.dailyCap, capLeft, learnerLevel]);
+  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, reviewSettings.capPerSession, capLeft, learnerLevel]);
 
   function startSession() {
     if (!planned || lexiconState.status !== 'ready') return;

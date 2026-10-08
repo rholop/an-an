@@ -41,3 +41,15 @@
 .review-settings-filters select {
   min-height: 44px;
 }
+
+/* Phase 23: the two review sessions */
+.review-settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.5rem 0;
+}
+.review-settings-row select {
+  max-width: 100%;
+}

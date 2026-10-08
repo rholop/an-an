@@ -87,7 +87,7 @@ describe('Nope in the app (Phase 20)', () => {
 describe('daily cap (Phase 20)', () => {
   it('300 cards due: a session of at most 80, and no new cards that day', () => {
     const due = Array.from({ length: 300 }, (_, i) => card(`w${i}`, 'recognition'));
-    const r = pickReviewCards({ due, doneToday: 0, cap: 80, now: NOW });
+    const r = pickReviewCards({ due, doneThisSession: 0, cap: 80, now: NOW });
     expect(r.due).toHaveLength(80);
     expect(r.held).toBe(220);
     expect(r.newItems).toHaveLength(0);
@@ -96,7 +96,7 @@ describe('daily cap (Phase 20)', () => {
 
   it('reviews already done today count toward the cap', () => {
     const due = Array.from({ length: 50 }, (_, i) => card(`w${i}`, 'recognition'));
-    expect(pickReviewCards({ due, doneToday: 60, cap: 80, now: NOW }).due).toHaveLength(20);
+    expect(pickReviewCards({ due, doneThisSession: 60, cap: 80, now: NOW }).due).toHaveLength(20);
   });
 });
 

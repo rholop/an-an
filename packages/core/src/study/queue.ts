@@ -58,7 +58,23 @@ export function pickNewForSession<T extends SkillCard>(input: {
   onlyItems?: ReadonlySet<string>;
   /** Extra items with no card to introduce after the focus's (e.g. a lesson's own new items). */
   extraItems?: readonly ItemRef[];
+  /** Phase 23: New production / reading cards (new faces of words already being learned) get
+   * their own allowance instead of using the new-word one. Absent = they share `allowed`. */
+  allowedFaces?: number;
 }): { cards: T[]; items: ItemRef[] } {
+  if (input.allowedFaces !== undefined) {
+    const isFace = (c: T) => c.skill === 'production' || c.skill === 'reading';
+    const { allowedFaces, ...rest } = input;
+    const words = pickNewForSession({ ...rest, newCards: input.newCards.filter((c) => !isFace(c)) });
+    const faces = pickNewForSession({
+      ...rest,
+      newCards: input.newCards.filter(isFace),
+      allowed: allowedFaces,
+      extraItems: [],
+      ...(rest.focus ? { focus: { ...rest.focus, newItemsAllowed: [] } } : {}),
+    });
+    return { cards: [...words.cards, ...faces.cards], items: words.items };
+  }
   const n = Math.max(0, Math.floor(input.allowed));
   if (n === 0) return { cards: [], items: [] };
   const key = (i: ItemRef) => `${i.kind}:${i.id}`;

@@ -15,6 +15,7 @@ import { markStudyDirty } from '../lib/study-dirty.js';
 import { NOPE_LABELS, nopeSnapshot } from '../lib/nope.js';
 import { applyCleanup, cleanupPreview, removedWords } from '../lib/review-cleanup.js';
 import { updateReviewSettings, useReviewSettings } from '../lib/review-settings.js';
+import { SESSION_NAME } from '../lib/labels.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { ReadingControls } from '../components/ReadingControls.js';
 import { useAnswerInputMode, type AnswerInputMode } from '../lib/reading.js';
@@ -127,23 +128,80 @@ export function ReviewSettingsPage() {
       <SharedSettings />
       <h2 className="review-settings-group">Review</h2>
 
-      <section>
-        <h2>Daily review cap</h2>
-        <label>
+      <section data-testid="session-settings">
+        <h2>Review sessions</h2>
+        <p className="review-settings-muted">
+          Reviews come in two sessions a day instead of at exact times. The morning session holds every card due
+          before the evening opens; the evening session holds every card due before the next morning ends. A
+          session you skip rolls into the next one.
+        </p>
+        <label className="review-settings-row">
+          Time zone{' '}
+          <select
+            value={settings.timeZone}
+            onChange={(e) => void updateReviewSettings({ timeZone: e.target.value })}
+            data-testid="session-time-zone"
+          >
+            {timeZones(settings.timeZone).map((z) => (
+              <option key={z} value={z}>
+                {z.replace(/_/g, ' ')}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="review-settings-row">
+          {SESSION_NAME.morning}: opens{' '}
+          <input
+            type="time"
+            value={settings.morningOpens}
+            onChange={(e) => e.target.value && void updateReviewSettings({ morningOpens: e.target.value })}
+            aria-label="Morning session opens"
+            data-testid="morning-opens"
+          />{' '}
+          ends{' '}
+          <input
+            type="time"
+            value={settings.morningEnds}
+            onChange={(e) => e.target.value && void updateReviewSettings({ morningEnds: e.target.value })}
+            aria-label="Morning session ends"
+            data-testid="morning-ends"
+          />
+        </div>
+        <div className="review-settings-row">
+          {SESSION_NAME.evening}: opens{' '}
+          <input
+            type="time"
+            value={settings.eveningOpens}
+            onChange={(e) => e.target.value && void updateReviewSettings({ eveningOpens: e.target.value })}
+            aria-label="Evening session opens"
+            data-testid="evening-opens"
+          />{' '}
+          ends{' '}
+          <input
+            type="time"
+            value={settings.eveningEnds}
+            onChange={(e) => e.target.value && void updateReviewSettings({ eveningEnds: e.target.value })}
+            aria-label="Evening session ends"
+            data-testid="evening-ends"
+          />{' '}
+          <span className="review-settings-muted">(the next day if earlier)</span>
+        </div>
+        <label className="review-settings-row">
           At most{' '}
           <input
             type="number"
             min={10}
             max={500}
-            value={settings.dailyCap}
-            onChange={(e) => void updateReviewSettings({ dailyCap: Number(e.target.value) })}
-            data-testid="daily-cap"
+            value={settings.capPerSession}
+            onChange={(e) => void updateReviewSettings({ capPerSession: Number(e.target.value) })}
+            data-testid="session-cap"
           />{' '}
-          reviews a day
+          reviews a session
         </label>
         <p className="review-settings-muted">
-          When more are due, review shows the most important first (your current lesson and level, then the words
-          you're most likely to forget). The rest stay due for later. New words pause until you catch up.
+          When a session holds more, review shows the most important first (your current lesson and level, then the
+          words you're most likely to forget). The rest wait for the next session. New words pause until you catch
+          up.
         </p>
       </section>
 
@@ -319,4 +377,17 @@ function Removed({
       {rows.length > 300 && <p className="review-settings-muted">Showing 300 of {rows.length}; search to narrow.</p>}
     </section>
   );
+}
+
+/** Time zones to offer: every zone the browser knows, or a short list (the chosen one always included). */
+function timeZones(current: string): string[] {
+  const all = (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf?.('timeZone') ?? [
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'Europe/London',
+    'Asia/Taipei',
+  ];
+  return all.includes(current) ? all : [current, ...all];
 }

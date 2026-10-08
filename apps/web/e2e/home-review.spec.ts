@@ -78,52 +78,79 @@ async function open(page: Page, route: string) {
   await page.waitForFunction(() => Boolean((window as unknown as { __anan?: unknown }).__anan));
 }
 
-test("the owner's scenario: 0 due now, 3 later today, 85 done: Home and Review agree, and it is today's limit", async ({
+/** A zone where it is about `hour`:00 now (Etc/GMT-k is UTC+k). */
+function zoneAt(hour: number, now: Date = new Date()): string {
+  let k = hour - now.getUTCHours();
+  if (k > 14) k -= 24;
+  if (k < -12) k += 24;
+  return k === 0 ? 'Etc/GMT' : `Etc/GMT${k > 0 ? '-' : '+'}${Math.abs(k)}`;
+}
+
+test("the owner's scenario (Phase 23): 2 pm, morning review done, 3 cards due before 4 pm: Home and Review say the evening review opens at 4 pm", async ({
   page,
 }) => {
-  const midnight = new Date();
-  midnight.setHours(24, 0, 0, 0);
-  test.skip(
-    midnight.getTime() - Date.now() < 10 * 60_000,
-    'too close to midnight for "later today"',
-  );
+  // it is about 14:00 in the profile's zone: between the morning (until 10:00) and evening (from 16:00) sessions
+  await page.addInitScript((zone) => localStorage.setItem('anan.sessions.defaultZone', zone), zoneAt(14));
   await open(page, 'garden');
-  await seedCards(page, WORDS.slice(0, 3), 'later-today');
-  await seedReviewsDone(page, 85);
+  await seedCards(page, WORDS.slice(0, 3), 45 * 60_000);
 
   await open(page, 'garden');
   const status = page.getByTestId('home-review-status');
-  await expect(status).toContainText(
-    /0 due now · 3 more later today \(next at \d{1,2}:\d{2} [ap]m\)/,
-  );
-  await expect(page.getByTestId('home-new-state')).toHaveText(
-    "You've done today's 80 reviews. New words return tomorrow.",
-  );
-  await expect(page.getByText('New words paused until your reviews catch up')).toHaveCount(0);
-  // no buttons with nothing due: one quiet line with "Review early"
-  await expect(page.getByTestId('home-actions-quiet')).toContainText(
-    'All watered 🌱 · 3 more later today',
-  );
+  await expect(status).toContainText('Morning review done · Evening review opens at 4 pm (3 cards)');
+  await expect(page.getByText('New words paused until')).toHaveCount(0);
+  // no buttons between sessions: one quiet line with "Review early"
+  await expect(page.getByTestId('home-actions-quiet')).toContainText('Evening review opens at 4 pm (3 cards)');
   await expect(page.getByTestId('review-all-btn')).toHaveCount(0);
-  // the forecast's first bar is the rest of today
-  await expect(page.getByTestId('due-forecast').locator('.due-forecast-day').first()).toHaveText(
-    'Rest of today',
-  );
+  // the forecast: two bars a day; today's evening holds the 3 cards
+  const first = page.getByTestId('due-forecast').locator('li').first();
+  await expect(first.locator('.due-forecast-day')).toHaveText('Today');
+  await expect(first.locator('.due-forecast-n')).toHaveText('0·3');
+  await expect(first.getByTestId('forecast-morning')).toBeVisible();
   const homeLine = await status.innerText();
 
   await page.getByRole('button', { name: 'Review', exact: true }).click();
   await expect(page.getByTestId('review-status')).toHaveText(homeLine);
-  await expect(page.getByTestId('review-cap-note')).toContainText(
-    "You've done today's 80 reviews. New words return tomorrow.",
-  );
-  await expect(page.getByText('paused until your reviews catch up')).toHaveCount(0);
   await expect(page.getByTestId('review-counts')).toContainText(/^0 due · 0 new/);
 
-  // "Review early" opens the later-today cards now
+  // "Review early" opens the evening session's cards now
   await page.getByRole('button', { name: 'Home', exact: true }).click();
   await page.getByTestId('review-early').click();
   await expect(page.getByRole('heading', { name: 'Review early' })).toBeVisible();
   await expect(page.getByTestId('review-counts')).toContainText(/^3 due · 0 new/);
+});
+
+test('the cap is per session: 85 answers this evening hold the rest and pause new words until the next session', async ({ page }) => {
+  await open(page, 'garden');
+  await seedCards(page, WORDS.slice(0, 3), -60_000);
+  await seedReviewsDone(page, 85);
+  await open(page, 'garden');
+  await expect(page.getByTestId('home-new-state')).toHaveText("You've done this session's 80 reviews. New words return next session.");
+  await page.getByRole('button', { name: 'Review', exact: true }).click();
+  await expect(page.getByTestId('review-cap-note')).toContainText("You've done this session's 80 reviews.");
+});
+
+test('changing the session times in Settings updates Home and Review without a reload', async ({ page }) => {
+  await open(page, 'garden');
+  await seedCards(page, WORDS.slice(0, 2), -60_000);
+  await open(page, 'garden');
+  const status = page.getByTestId('home-review-status');
+  // it is about 18:00 in the profile's zone (the fixture): the evening session is open
+  await expect(status).toContainText('Evening review · 2 cards');
+  // the evening session now opens at 8 pm: it is between sessions, and the 2 cards wait for it
+  await page.getByRole('button', { name: /^More/ }).click();
+  await page.getByRole('menuitem', { name: 'Settings' }).or(page.getByRole('button', { name: 'Settings' })).first().click();
+  await page.getByTestId('evening-opens').fill('20:00');
+  await page.getByRole('button', { name: 'Home', exact: true }).click();
+  await expect(status).toContainText('Morning review done · Evening review opens at 8 pm (2 cards)');
+  await page.getByRole('button', { name: 'Review', exact: true }).click();
+  await expect(page.getByTestId('review-status')).toContainText('Evening review opens at 8 pm (2 cards)');
+  await expect(page.getByTestId('review-counts')).toContainText(/^0 due · /);
+  // and back: the session opens again in place
+  await page.getByRole('button', { name: /^More/ }).click();
+  await page.getByRole('menuitem', { name: 'Settings' }).or(page.getByRole('button', { name: 'Settings' })).first().click();
+  await page.getByTestId('evening-opens').fill('16:00');
+  await page.getByRole('button', { name: 'Home', exact: true }).click();
+  await expect(status).toContainText('Evening review · 2 cards');
 });
 
 test('Review all (N) opens exactly N cards, and Water all (N) covers exactly N words', async ({
@@ -134,7 +161,7 @@ test('Review all (N) opens exactly N cards, and Water all (N) covers exactly N w
   await open(page, 'garden');
   await expect(page.getByTestId('review-all-btn')).toHaveText('Review all (4)');
   await expect(page.getByTestId('water-all-btn')).toHaveText('💧 Water all (4)');
-  await expect(page.getByTestId('home-review-status')).toContainText('4 due now');
+  await expect(page.getByTestId('home-review-status')).toContainText('Evening review · 4 cards');
 
   await page.getByTestId('review-all-btn').click();
   await expect(page.getByRole('heading', { name: 'Review all' })).toBeVisible();
@@ -176,5 +203,5 @@ test('Review all (N) opens exactly N cards, and Water all (N) covers exactly N w
   await expect(page.locator('.water-all-summary')).toContainText(/Watered 4 words 🌱/);
   await page.getByRole('button', { name: 'Back to home' }).last().click();
   // watered words are no longer due (any missed cloze came back once and was answered too)
-  await expect(page.getByTestId('home-review-status')).toContainText(/\d+ due now/);
+  await expect(page.getByTestId('home-review-status')).toContainText(/Evening review · \d+ cards?/);
 });

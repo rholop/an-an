@@ -41,6 +41,12 @@ export function cardSourceFor(e: Pick<Evidence, 'kind' | 'context'>): CardSource
       return 'study_order';
     case 'listening_unlocked':
       return 'listening';
+    case 'reading_correct':
+    case 'reading_tone_wrong':
+    case 'reading_wrong':
+      return 'pinyin';
+    case 'reading_unlocked':
+      return 'study_order';
     case 'journal_priority':
       return 'journal';
     case 'chat_lookup_gloss':
@@ -67,6 +73,7 @@ export const SOURCE_LABELS: Record<CardSource, string> = {
   study_order: 'new words from the study order',
   cloze: 'cloze',
   listening: 'listening',
+  pinyin: 'pinyin practice',
   added: 'added by you',
   other: 'other',
 };
