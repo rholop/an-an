@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { LevelSchema } from '../chat/level-schema.js';
-import { ProviderNameSchema } from '../journal/types.js';
 
 /** Phase 24 wire shapes. POST /v1/story writes a story; POST /v1/story-check reads it independently. */
 
@@ -71,7 +70,6 @@ export const StoryCheckRequestSchema = z.object({
   questions: z
     .array(z.object({ q: z.string().min(1).max(120), options: z.array(z.string().min(1).max(60)).min(2).max(5) }))
     .max(6),
-  avoidProvider: ProviderNameSchema.optional(),
 });
 export type StoryCheckRequest = z.infer<typeof StoryCheckRequestSchema>;
 

@@ -6,323 +6,275 @@ import {
   createJsonOrchestrator,
   createOrchestrator,
   createSentenceOrchestrator,
+  type RetryPolicy,
 } from './orchestrator.js';
+import { fakeSentenceGenResponse, fakeTurnResponse } from './providers/fake.js';
 import {
-  FakeJsonAdapter,
-  fakeSentenceGenResponse,
-  fakeTurnResponse,
-  FakeProviderAdapter,
-  FakeSentenceGenAdapter,
-} from './providers/fake.js';
-import type { JsonTaskRequest, JsonTaskResult, SentenceProviderResult } from './providers/types.js';
+  ModelsFailedError,
+  ProviderRetryableError,
+  type JsonTaskAdapter,
+  type JsonTaskRequest,
+  type JsonTaskResult,
+  type ProviderAdapter,
+  type ProviderFailureReason,
+  type ProviderResult,
+  type SentenceGenAdapter,
+  type SentenceProviderResult,
+} from './providers/types.js';
+
+/**
+ * Phase 25: Gemini only. The task model is tried, retried once after a wait on a retryable error
+ * (429, 5xx, timeout, invalid JSON), then the fallback Gemini model is tried once. Auth errors and
+ * plain errors are never retried.
+ */
 
 const history: TurnHistoryEntry[] = [{ role: 'learner', zh: '我要一杯珍珠奶茶' }];
+const usage = { inputTokens: 10, outputTokens: 10 };
 
-describe('createOrchestrator', () => {
-  it('Phase 21: alternate = start with the fallback provider (and cache it separately)', async () => {
-    const gemini = new FakeProviderAdapter('gemini', { kind: 'success', response: fakeTurnResponse() });
-    const openai = new FakeProviderAdapter('openai', { kind: 'success', response: fakeTurnResponse() });
-    const orchestrator = createOrchestrator(gemini, openai, new PromptCache());
-    await orchestrator.run('system prompt', history);
-    const { log } = await orchestrator.run('system prompt', history, { alternate: true });
-    expect(log.provider).toBe('openai');
-    expect(log.cached).toBe(false);
-    expect(gemini.calls).toBe(1);
-    expect(openai.calls).toBe(1);
-  });
+type Outcome = 'ok' | ProviderFailureReason | Error;
 
-  it('serves from Gemini (primary) on a normal success', async () => {
-    const gemini = new FakeProviderAdapter('gemini', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    const openai = new FakeProviderAdapter('openai', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    const orchestrator = createOrchestrator(gemini, openai, new PromptCache());
+/** A Gemini model whose calls follow a script (the last entry repeats). */
+class ScriptedModel implements ProviderAdapter, SentenceGenAdapter, JsonTaskAdapter {
+  calls = 0;
+  constructor(
+    readonly model: string,
+    private readonly script: Outcome[],
+    private readonly retryAfterMs?: number,
+  ) {}
+  private next(): void {
+    const o = this.script[Math.min(this.calls, this.script.length - 1)]!;
+    this.calls++;
+    if (o instanceof Error) throw o;
+    if (o !== 'ok') throw new ProviderRetryableError(o, o, o === 'rate_limited' ? this.retryAfterMs : undefined);
+  }
+  async generateTurn(): Promise<ProviderResult> {
+    this.next();
+    return { response: fakeTurnResponse(), model: this.model, usage };
+  }
+  async generateSentences(): Promise<SentenceProviderResult> {
+    this.next();
+    return { response: fakeSentenceGenResponse(), model: this.model, usage };
+  }
+  async generateJson<T>(req: JsonTaskRequest<T>): Promise<JsonTaskResult<T>> {
+    this.next();
+    return { response: req.parse({ ok: true }), model: this.model, usage };
+  }
+}
 
-    const { log } = await orchestrator.run('system prompt', history);
-    expect(log.provider).toBe('gemini');
-    expect(log.cached).toBe(false);
+const waits: number[] = [];
+const policy: RetryPolicy = {
+  backoffMs: 1_000,
+  maxWaitMs: 8_000,
+  sleep: async (ms) => {
+    waits.push(ms);
+  },
+};
+const quiet = () => undefined;
+
+describe('createOrchestrator (Gemini only)', () => {
+  it('serves from the task model on a normal success', async () => {
+    const primary = new ScriptedModel('gemini-task', ['ok']);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const { log } = await createOrchestrator(primary, fallback, new PromptCache(), quiet, policy).run('p', history);
+    expect(log).toMatchObject({ model: 'gemini-task', cached: false });
     expect(log.fallbackReason).toBeUndefined();
-    expect(gemini.calls).toBe(1);
-    expect(openai.calls).toBe(0);
+    expect([primary.calls, fallback.calls]).toEqual([1, 0]);
   });
 
-  it('forcing a Gemini 429 makes the turn succeed via OpenAI (phase-3 acceptance criterion)', async () => {
-    const gemini = new FakeProviderAdapter('gemini', { kind: 'error', reason: 'rate_limit' });
-    const openai = new FakeProviderAdapter('openai', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    const orchestrator = createOrchestrator(gemini, openai, new PromptCache());
-
-    const { result, log } = await orchestrator.run('system prompt', history);
-    expect(log.provider).toBe('openai');
-    expect(log.fallbackReason).toBe('rate_limit');
-    expect(result.response.reply_zh).toBe('你好！');
-    expect(gemini.calls).toBe(1);
-    expect(openai.calls).toBe(1);
+  it('a 429 waits and retries the same model once', async () => {
+    waits.length = 0;
+    const primary = new ScriptedModel('gemini-task', ['rate_limited', 'ok']);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const { log } = await createOrchestrator(primary, fallback, new PromptCache(), quiet, policy).run('p', history);
+    expect(log).toMatchObject({ model: 'gemini-task', fallbackReason: 'rate_limited' });
+    expect(waits).toEqual([1_000]);
+    expect([primary.calls, fallback.calls]).toEqual([2, 0]);
   });
 
-  it('also falls back on Gemini quota exhaustion', async () => {
-    const gemini = new FakeProviderAdapter('gemini', { kind: 'error', reason: 'quota' });
-    const openai = new FakeProviderAdapter('openai', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    const { log } = await createOrchestrator(gemini, openai, new PromptCache()).run('p', history);
-    expect(log.provider).toBe('openai');
-    expect(log.fallbackReason).toBe('quota');
+  it("honours a 429's retry-after, but never waits longer than the cap", async () => {
+    waits.length = 0;
+    const short = new ScriptedModel('gemini-task', ['rate_limited', 'ok'], 3_000);
+    await createOrchestrator(short, undefined, new PromptCache(), quiet, policy).run('p', history);
+    expect(waits).toEqual([3_000]);
+    waits.length = 0;
+    const long = new ScriptedModel('gemini-task', ['rate_limited'], 60_000);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const { log } = await createOrchestrator(long, fallback, new PromptCache(), quiet, policy).run('p', history);
+    expect(waits).toEqual([]);
+    expect(long.calls).toBe(1);
+    expect(log.model).toBe('gemini-fallback');
   });
 
-  it('also falls back when Gemini returns invalid JSON', async () => {
-    const gemini = new FakeProviderAdapter('gemini', { kind: 'error', reason: 'invalid_json' });
-    const openai = new FakeProviderAdapter('openai', {
-      kind: 'success',
-      response: fakeTurnResponse(),
+  for (const reason of ['rate_limited', 'server_error', 'timeout', 'invalid_json'] as const)
+    it(`${reason} twice on the task model: the fallback Gemini model answers`, async () => {
+      const primary = new ScriptedModel('gemini-task', [reason]);
+      const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+      const { log } = await createOrchestrator(primary, fallback, new PromptCache(), quiet, policy).run('p', history);
+      expect(log).toMatchObject({ model: 'gemini-fallback', fallbackReason: reason });
+      expect([primary.calls, fallback.calls]).toEqual([2, 1]);
     });
-    const { log } = await createOrchestrator(gemini, openai, new PromptCache()).run('p', history);
-    expect(log.provider).toBe('openai');
-    expect(log.fallbackReason).toBe('invalid_json');
+
+  it('quota and bad requests skip the same-model retry and go to the fallback model', async () => {
+    for (const reason of ['quota', 'bad_request', 'request_error'] as const) {
+      const primary = new ScriptedModel('gemini-task', [reason]);
+      const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+      const { log } = await createOrchestrator(primary, fallback, new PromptCache(), quiet, policy).run('p', history);
+      expect(log.model, reason).toBe('gemini-fallback');
+      expect(primary.calls, reason).toBe(1);
+    }
   });
 
-  it('falls back to OpenAI on a Gemini request error and logs each provider tried', async () => {
-    const gemini = new FakeProviderAdapter('gemini', { kind: 'error', reason: 'request_error' });
-    const openai = new FakeProviderAdapter('openai', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    const attempts: Record<string, unknown>[] = [];
-    const { log } = await createOrchestrator(gemini, openai, new PromptCache(), (e) =>
-      attempts.push(e),
-    ).run('p', history);
-    expect(log.provider).toBe('openai');
-    expect(log.fallbackReason).toBe('request_error');
-    expect(attempts.map((a) => [a.provider, a.ok])).toEqual([
-      ['gemini', false],
-      ['openai', true],
+  it('an auth error is never retried', async () => {
+    const primary = new ScriptedModel('gemini-task', ['auth']);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const err = await createOrchestrator(primary, fallback, new PromptCache(), quiet, policy)
+      .run('p', history)
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ModelsFailedError);
+    expect((err as ModelsFailedError).attempts).toEqual([{ model: 'gemini-task', reason: 'auth' }]);
+    expect(fallback.calls).toBe(0);
+  });
+
+  it('a plain error propagates without a retry', async () => {
+    const primary = new ScriptedModel('gemini-task', [new Error('network down')]);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const err = await createOrchestrator(primary, fallback, new PromptCache(), quiet, policy)
+      .run('p', history)
+      .catch((e: unknown) => e);
+    expect((err as ModelsFailedError).attempts).toEqual([{ model: 'gemini-task', reason: 'error' }]);
+    expect([primary.calls, fallback.calls]).toEqual([1, 0]);
+  });
+
+  it('when every try fails, the error lists each model and why', async () => {
+    const primary = new ScriptedModel('gemini-task', ['server_error', 'timeout']);
+    const fallback = new ScriptedModel('gemini-fallback', ['rate_limited']);
+    const err = await createOrchestrator(primary, fallback, new PromptCache(), quiet, policy)
+      .run('p', history)
+      .catch((e: unknown) => e);
+    expect((err as ModelsFailedError).attempts).toEqual([
+      { model: 'gemini-task', reason: 'server_error' },
+      { model: 'gemini-task', reason: 'timeout' },
+      { model: 'gemini-fallback', reason: 'rate_limited' },
     ]);
   });
 
-  it('rethrows the Gemini error when OpenAI is not configured', async () => {
-    const gemini = new FakeProviderAdapter('gemini', {
-      kind: 'error',
-      reason: 'request_error',
-      message: 'Gemini request error: 400',
-    });
-    const openai = Object.assign(
-      new FakeProviderAdapter('openai', { kind: 'success', response: fakeTurnResponse() }),
-      { configured: false },
+  it('without a fallback model (or the same one) only the task model is tried', async () => {
+    const primary = new ScriptedModel('gemini-task', ['server_error']);
+    await expect(createOrchestrator(primary, undefined, new PromptCache(), quiet, policy).run('p', history)).rejects.toBeInstanceOf(
+      ModelsFailedError,
     );
-    const attempts: Record<string, unknown>[] = [];
-    await expect(
-      createOrchestrator(gemini, openai, new PromptCache(), (e) => attempts.push(e)).run(
-        'p',
-        history,
-      ),
-    ).rejects.toThrow('Gemini request error: 400');
-    expect(openai.calls).toBe(0);
-    expect(attempts.some((a) => a.event === 'provider_skipped')).toBe(true);
+    const same = new ScriptedModel('gemini-task', ['ok']);
+    await expect(createOrchestrator(primary, same, new PromptCache(), quiet, policy).run('q', history)).rejects.toBeInstanceOf(
+      ModelsFailedError,
+    );
+    expect(same.calls).toBe(0);
   });
 
-  it('does NOT fall back on a non-retryable error (propagates instead)', async () => {
-    const gemini = new FakeProviderAdapter('gemini', {
-      kind: 'throw',
-      error: new Error('network down'),
-    });
-    const openai = new FakeProviderAdapter('openai', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    await expect(
-      createOrchestrator(gemini, openai, new PromptCache()).run('p', history),
-    ).rejects.toThrow('network down');
-    expect(openai.calls).toBe(0);
+  it('no new try starts after the deadline (nginx gives up at 60 s)', async () => {
+    let t = 0;
+    const slow: RetryPolicy = { ...policy, deadlineMs: 35_000, now: () => t };
+    const primary = new ScriptedModel('gemini-task', ['timeout']);
+    const orig = primary.generateTurn.bind(primary);
+    primary.generateTurn = async () => {
+      t += 25_000; // each try runs into the 25 s timeout
+      return orig();
+    };
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    await expect(createOrchestrator(primary, fallback, new PromptCache(), quiet, slow).run('p', history)).rejects.toBeInstanceOf(
+      ModelsFailedError,
+    );
+    expect([primary.calls, fallback.calls]).toEqual([2, 0]);
   });
 
-  it('propagates the error when BOTH providers fail', async () => {
-    const gemini = new FakeProviderAdapter('gemini', { kind: 'error', reason: 'rate_limit' });
-    const openai = new FakeProviderAdapter('openai', { kind: 'error', reason: 'rate_limit' });
-    await expect(
-      createOrchestrator(gemini, openai, new PromptCache()).run('p', history),
-    ).rejects.toThrow();
+  it('Phase 21: alternate = start with the fallback model (and cache it separately)', async () => {
+    const primary = new ScriptedModel('gemini-task', ['ok']);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const orchestrator = createOrchestrator(primary, fallback, new PromptCache(), quiet, policy);
+    await orchestrator.run('p', history);
+    const { log } = await orchestrator.run('p', history, { alternate: true });
+    expect(log).toMatchObject({ model: 'gemini-fallback', cached: false });
+    expect([primary.calls, fallback.calls]).toEqual([1, 1]);
   });
 
-  it('caches a successful result, keyed by the full prompt, and serves the cache without calling either provider again', async () => {
-    const gemini = new FakeProviderAdapter('gemini', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    const openai = new FakeProviderAdapter('openai', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    const cache = new PromptCache();
-    const orchestrator = createOrchestrator(gemini, openai, cache);
-
-    await orchestrator.run('system prompt', history);
-    const second = await orchestrator.run('system prompt', history);
-
-    expect(second.log.cached).toBe(true);
-    expect(gemini.calls).toBe(1); // not called again
-  });
-
-  it('does not share the cache across different prompts/history', async () => {
-    const gemini = new FakeProviderAdapter('gemini', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    const openai = new FakeProviderAdapter('openai', {
-      kind: 'success',
-      response: fakeTurnResponse(),
-    });
-    const cache = new PromptCache();
-    const orchestrator = createOrchestrator(gemini, openai, cache);
-
-    await orchestrator.run('system prompt A', history);
-    const second = await orchestrator.run('system prompt B', history);
-
-    expect(second.log.cached).toBe(false);
-    expect(gemini.calls).toBe(2);
+  it('caches a success keyed by the full prompt and history', async () => {
+    const primary = new ScriptedModel('gemini-task', ['ok']);
+    const orchestrator = createOrchestrator(primary, undefined, new PromptCache(), quiet, policy);
+    await orchestrator.run('p', history);
+    const again = await orchestrator.run('p', history);
+    expect(again.log.cached).toBe(true);
+    await orchestrator.run('p', [...history, { role: 'npc', zh: '好' }]);
+    await orchestrator.run('other prompt', history);
+    expect(primary.calls).toBe(3);
   });
 });
 
-describe('createSentenceOrchestrator', () => {
-  it('serves from Gemini (primary) on a normal success', async () => {
-    const gemini = new FakeSentenceGenAdapter('gemini', {
-      kind: 'success',
-      response: fakeSentenceGenResponse(),
-    });
-    const openai = new FakeSentenceGenAdapter('openai', {
-      kind: 'success',
-      response: fakeSentenceGenResponse(),
-    });
-    const orchestrator = createSentenceOrchestrator(
-      gemini,
-      openai,
-      new PromptCache<SentenceProviderResult>(),
-    );
-
-    const { log } = await orchestrator.run('system prompt');
-    expect(log.provider).toBe('gemini');
-    expect(log.cached).toBe(false);
-    expect(gemini.calls).toBe(1);
-    expect(openai.calls).toBe(0);
-  });
-
-  it('forcing a Gemini 429 makes the request succeed via OpenAI', async () => {
-    const gemini = new FakeSentenceGenAdapter('gemini', { kind: 'error', reason: 'rate_limit' });
-    const openai = new FakeSentenceGenAdapter('openai', {
-      kind: 'success',
-      response: fakeSentenceGenResponse(),
-    });
-    const orchestrator = createSentenceOrchestrator(
-      gemini,
-      openai,
-      new PromptCache<SentenceProviderResult>(),
-    );
-
-    const { result, log } = await orchestrator.run('system prompt');
-    expect(log.provider).toBe('openai');
-    expect(log.fallbackReason).toBe('rate_limit');
-    expect(result.response.sentences).toHaveLength(1);
-  });
-
-  it('does NOT fall back on a non-retryable error', async () => {
-    const gemini = new FakeSentenceGenAdapter('gemini', {
-      kind: 'throw',
-      error: new Error('network down'),
-    });
-    const openai = new FakeSentenceGenAdapter('openai', {
-      kind: 'success',
-      response: fakeSentenceGenResponse(),
-    });
-    await expect(
-      createSentenceOrchestrator(gemini, openai, new PromptCache<SentenceProviderResult>()).run(
-        'p',
-      ),
-    ).rejects.toThrow('network down');
-    expect(openai.calls).toBe(0);
-  });
-
-  it('caches a successful result, keyed by the prompt alone (no history)', async () => {
-    const gemini = new FakeSentenceGenAdapter('gemini', {
-      kind: 'success',
-      response: fakeSentenceGenResponse(),
-    });
-    const openai = new FakeSentenceGenAdapter('openai', {
-      kind: 'success',
-      response: fakeSentenceGenResponse(),
-    });
-    const cache = new PromptCache<SentenceProviderResult>();
-    const orchestrator = createSentenceOrchestrator(gemini, openai, cache);
-
-    await orchestrator.run('system prompt');
-    const second = await orchestrator.run('system prompt');
-
-    expect(second.log.cached).toBe(true);
-    expect(gemini.calls).toBe(1);
+describe('createSentenceOrchestrator (Gemini only)', () => {
+  it('retries, falls back to the other Gemini model, and caches by prompt', async () => {
+    const primary = new ScriptedModel('gemini-task', ['invalid_json']);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const orchestrator = createSentenceOrchestrator(primary, fallback, new PromptCache<SentenceProviderResult>(), quiet, policy);
+    const { log } = await orchestrator.run('p');
+    expect(log.model).toBe('gemini-fallback');
+    expect((await orchestrator.run('p')).log.cached).toBe(true);
+    expect([primary.calls, fallback.calls]).toEqual([2, 1]);
   });
 });
 
 describe('buildEffectiveSystemPrompt', () => {
   it('returns the prompt unchanged with no feedback', () => {
-    expect(buildEffectiveSystemPrompt('base prompt')).toBe('base prompt');
+    expect(buildEffectiveSystemPrompt('base')).toBe('base');
   });
 
   it('appends feedback as a clearly-delimited addendum', () => {
-    const result = buildEffectiveSystemPrompt('base prompt', 'avoid the word 哲學');
-    expect(result).toContain('base prompt');
-    expect(result).toContain('avoid the word 哲學');
+    const out = buildEffectiveSystemPrompt('base', 'too hard');
+    expect(out.startsWith('base')).toBe(true);
+    expect(out).toContain('too hard');
   });
 });
 
-describe('createJsonOrchestrator', () => {
+describe('createJsonOrchestrator (Gemini only)', () => {
   const req: JsonTaskRequest<{ ok: boolean }> = {
-    task: 'journal_review',
-    systemPrompt: 'sys',
-    userMessage: 'entry',
+    task: '/v1/journal-verify',
+    systemPrompt: 'check this',
+    userMessage: '我喜歡喝茶。',
     jsonSchema: {},
     parse: (raw) => raw as { ok: boolean },
   };
-  const ok = { kind: 'success', respond: () => ({ ok: true }) } as const;
 
-  it('falls back to OpenAI on a Gemini 429 and on invalid JSON', async () => {
-    for (const reason of ['rate_limit', 'invalid_json'] as const) {
-      const gemini = new FakeJsonAdapter('gemini', { kind: 'error', reason });
-      const openai = new FakeJsonAdapter('openai', ok);
-      const { log } = await createJsonOrchestrator(
-        gemini,
-        openai,
-        new PromptCache<JsonTaskResult<unknown>>(),
-      ).run(req);
-      expect(log.provider).toBe('openai');
-      expect(log.fallbackReason).toBe(reason);
-    }
+  it('the checker (journal verify, story check) is a fresh call on the checker model', async () => {
+    const primary = new ScriptedModel('gemini-task', ['ok']);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const checker = new ScriptedModel('gemini-check', ['ok']);
+    const orch = createJsonOrchestrator(primary, fallback, new PromptCache<JsonTaskResult<unknown>>(), quiet, { checker, policy });
+    const { log } = await orch.run(req, { checker: true });
+    expect(log.model).toBe('gemini-check');
+    // a writer call with the same prompt does not reuse the checker's cached answer
+    expect((await orch.run(req)).log).toMatchObject({ model: 'gemini-task', cached: false });
+    expect([primary.calls, checker.calls]).toEqual([1, 1]);
   });
 
-  it('does not fall back on a non-retryable error', async () => {
-    const gemini = new FakeJsonAdapter('gemini', { kind: 'throw', error: new Error('auth') });
-    const openai = new FakeJsonAdapter('openai', ok);
-    await expect(
-      createJsonOrchestrator(gemini, openai, new PromptCache<JsonTaskResult<unknown>>()).run(req),
-    ).rejects.toThrow('auth');
-    expect(openai.calls).toBe(0);
+  it('when the checker model fails, the fallback model checks', async () => {
+    const primary = new ScriptedModel('gemini-task', ['ok']);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const checker = new ScriptedModel('gemini-check', ['quota']);
+    const orch = createJsonOrchestrator(primary, fallback, new PromptCache<JsonTaskResult<unknown>>(), quiet, { checker, policy });
+    expect((await orch.run(req, { checker: true })).log.model).toBe('gemini-fallback');
+    expect(primary.calls).toBe(0);
+  });
+
+  it('forcing the primary Gemini model to fail: the route succeeds on GEMINI_MODEL_FALLBACK', async () => {
+    const primary = new ScriptedModel('gemini-task', ['server_error']);
+    const fallback = new ScriptedModel('gemini-fallback', ['ok']);
+    const orch = createJsonOrchestrator(primary, fallback, new PromptCache<JsonTaskResult<unknown>>(), quiet, { policy });
+    expect((await orch.run(req)).log.model).toBe('gemini-fallback');
   });
 
   it('caches per task + prompt + message', async () => {
-    const gemini = new FakeJsonAdapter('gemini', ok);
-    const orch = createJsonOrchestrator(
-      gemini,
-      new FakeJsonAdapter('openai', ok),
-      new PromptCache<JsonTaskResult<unknown>>(),
-    );
+    const primary = new ScriptedModel('gemini-task', ['ok']);
+    const orch = createJsonOrchestrator(primary, undefined, new PromptCache<JsonTaskResult<unknown>>(), quiet, { policy });
     await orch.run(req);
     expect((await orch.run(req)).log.cached).toBe(true);
-    await orch.run({ ...req, userMessage: 'other entry' });
-    await orch.run({ ...req, task: 'journal_check' });
-    expect(gemini.calls).toBe(3);
+    await orch.run({ ...req, userMessage: '別的' });
+    expect(primary.calls).toBe(2);
   });
 });

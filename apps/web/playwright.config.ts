@@ -14,13 +14,15 @@ export default defineConfig({
       reuseExistingServer: true,
     },
     {
-      // The real proxy (no AI keys: AI calls fail, sync works) so the sync and
-      // household-code specs exercise the actual endpoints.
+      // The real proxy (a placeholder Gemini key: AI calls fail, sync works) so the sync and
+      // household-code specs exercise the actual endpoints. Phase 25: the proxy refuses to
+      // start without GEMINI_API_KEY.
       command: 'pnpm --filter @anan/proxy exec tsx src/server.ts',
       port: 3002,
       reuseExistingServer: true,
       env: {
         SITE_CODE: 'tofu',
+        GEMINI_API_KEY: 'e2e-placeholder-not-a-key',
         PORT: '3002',
         CORS_ORIGIN: 'http://localhost:5183',
         SYNC_DIR: syncDir(),

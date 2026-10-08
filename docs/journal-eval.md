@@ -2,7 +2,7 @@
 
 **Status: baseline not yet recorded.** Phase 5's acceptance criterion asks for the 10 fixture entries in
 [`data/journal-eval/entries.v1.json`](../data/journal-eval/entries.v1.json) to be run through the *real* model and
-each correction given a human verdict. That needs a Gemini or OpenAI key, which wasn't available when Phase 5 was
+each correction given a human verdict. That needs a Gemini key, which wasn't available when Phase 5 was
 implemented, so this file is a placeholder rather than a result.
 
 To record the baseline:

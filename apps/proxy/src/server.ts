@@ -10,14 +10,7 @@ import {
   createSentenceOrchestrator,
 } from './orchestrator.js';
 import { GeminiAdapter } from './providers/gemini.js';
-import { OpenAiAdapter } from './providers/openai.js';
-import type {
-  JsonTaskAdapter,
-  JsonTaskResult,
-  ProviderAdapter,
-  SentenceGenAdapter,
-  SentenceProviderResult,
-} from './providers/types.js';
+import type { JsonTaskResult, SentenceProviderResult } from './providers/types.js';
 import {
   loadGlossPromptTemplates,
   loadJournalPromptTemplates,
@@ -38,91 +31,57 @@ const envFile = fileURLToPath(new URL('../.env', import.meta.url));
 if (existsSync(envFile)) process.loadEnvFile(envFile);
 
 const env = loadEnv();
-/** OpenAI only when explicitly enabled (it is not free): otherwise Gemini-only. */
-const openAiKey = env.OPENAI_ENABLED ? env.OPENAI_API_KEY : undefined;
-if (env.OPENAI_API_KEY && !env.OPENAI_ENABLED)
-  console.warn('[an-an-proxy] OPENAI_API_KEY is set but OPENAI_ENABLED is not: OpenAI is never called.');
+
+// Phase 25: Gemini only (free tier; the owner's decision). Without a key nothing works.
+if (!env.GEMINI_API_KEY) {
+  console.error(
+    '[an-an-proxy] GEMINI_API_KEY is not set. Refusing to start: every AI route needs it. ' +
+      'Set GEMINI_API_KEY (e.g. in apps/proxy/.env) — see apps/proxy/README.md.',
+  );
+  process.exit(1);
+}
 
 if (!env.SITE_CODE) {
   console.error(
-    '[an-an-proxy] SITE_CODE is not set. Refusing to start: without it anyone could spend the AI keys and read/overwrite saved progress. ' +
+    '[an-an-proxy] SITE_CODE is not set. Refusing to start: without it anyone could spend the AI key and read/overwrite saved progress. ' +
       'Set SITE_CODE (e.g. in apps/proxy/.env) — see apps/proxy/README.md.',
   );
   process.exit(1);
 }
 
-if (!env.GEMINI_API_KEY && !openAiKey) {
-  console.warn(
-    '[an-an-proxy] WARNING: neither GEMINI_API_KEY nor OPENAI_API_KEY is set. ' +
-      '/v1/turn, /v1/sentences and /v1/journal-* will fail on every request until at least one is configured (see apps/proxy/README.md).',
+const key = env.GEMINI_API_KEY;
+/** The task models, the fallback model (a different free-tier Gemini model) and the checker. */
+const gemini = new GeminiAdapter(key, env.GEMINI_MODEL_TURN);
+const geminiJournal = new GeminiAdapter(key, env.GEMINI_MODEL_JOURNAL);
+const geminiFallback = new GeminiAdapter(key, env.GEMINI_MODEL_FALLBACK);
+const geminiCheck = new GeminiAdapter(key, env.GEMINI_MODEL_CHECK);
+const jsonOrchestrator = (ttlMs?: number) =>
+  createJsonOrchestrator(
+    geminiJournal,
+    geminiFallback,
+    new PromptCache<JsonTaskResult<unknown>>(ttlMs),
+    undefined,
+    { checker: geminiCheck },
   );
-} else if (!env.GEMINI_API_KEY) {
-  console.warn(
-    '[an-an-proxy] GEMINI_API_KEY not set — running OpenAI-only (no fallback provider).',
-  );
-} else if (!openAiKey) {
-  console.warn(
-    '[an-an-proxy] OPENAI_API_KEY not set — running Gemini-only (no fallback provider).',
-  );
-}
-
-class DisabledAdapter implements ProviderAdapter, SentenceGenAdapter, JsonTaskAdapter {
-  readonly configured = false;
-  constructor(public readonly name: 'gemini' | 'openai') {}
-  async generateTurn(): Promise<never> {
-    throw new Error(`${this.name} is not configured (missing API key)`);
-  }
-  async generateSentences(): Promise<never> {
-    throw new Error(`${this.name} is not configured (missing API key)`);
-  }
-  async generateJson(): Promise<never> {
-    throw new Error(`${this.name} is not configured (missing API key)`);
-  }
-}
-
-type AnyAdapter = ProviderAdapter & SentenceGenAdapter & JsonTaskAdapter;
-
-const gemini: AnyAdapter = env.GEMINI_API_KEY
-  ? new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_TURN)
-  : new DisabledAdapter('gemini');
-const openai: AnyAdapter = openAiKey
-  ? new OpenAiAdapter(openAiKey, env.OPENAI_MODEL_TURN)
-  : new DisabledAdapter('openai');
-
-// Journal tasks get their own models (env-configured), same keys.
-const geminiJournal: JsonTaskAdapter = env.GEMINI_API_KEY
-  ? new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_JOURNAL)
-  : new DisabledAdapter('gemini');
-const openaiJournal: JsonTaskAdapter = openAiKey
-  ? new OpenAiAdapter(openAiKey, env.OPENAI_MODEL_JOURNAL)
-  : new DisabledAdapter('openai');
 
 const app = createApp({
   env,
   scenarioStore: loadScenarioStore(),
   promptTemplate: loadPromptTemplate(env.PROMPT_VERSION),
-  orchestrator: createOrchestrator(gemini, openai, new PromptCache()),
+  orchestrator: createOrchestrator(gemini, geminiFallback, new PromptCache()),
   sentencePromptTemplate: loadSentenceGenPromptTemplate(env.PROMPT_VERSION),
   sentenceOrchestrator: createSentenceOrchestrator(
     gemini,
-    openai,
+    geminiFallback,
     new PromptCache<SentenceProviderResult>(),
   ),
   gloss: {
     prompts: loadGlossPromptTemplates(env.PROMPT_VERSION),
-    orchestrator: createJsonOrchestrator(
-      geminiJournal,
-      openaiJournal,
-      new PromptCache<JsonTaskResult<unknown>>(),
-    ),
+    orchestrator: jsonOrchestrator(),
   },
   journal: {
     prompts: loadJournalPromptTemplates(env.PROMPT_VERSION),
-    orchestrator: createJsonOrchestrator(
-      geminiJournal,
-      openaiJournal,
-      new PromptCache<JsonTaskResult<unknown>>(),
-    ),
+    orchestrator: jsonOrchestrator(),
   },
   openChat: (() => {
     const prompts = loadOpenChatPromptTemplates(env.PROMPT_VERSION);
@@ -131,16 +90,12 @@ const app = createApp({
       promptTemplate: prompts.turn,
       topicWordsPrompt: prompts.topicWords,
       // A topic's word list rarely changes: keep it for a day, per process.
-      topicWordsOrchestrator: createJsonOrchestrator(
-        geminiJournal,
-        openaiJournal,
-        new PromptCache<JsonTaskResult<unknown>>(24 * 60 * 60_000),
-      ),
+      topicWordsOrchestrator: jsonOrchestrator(24 * 60 * 60_000),
     };
   })(),
   story: {
     prompts: loadStoryPromptTemplates(env.PROMPT_VERSION),
-    orchestrator: createJsonOrchestrator(geminiJournal, openaiJournal, new PromptCache<JsonTaskResult<unknown>>()),
+    orchestrator: jsonOrchestrator(),
   },
   siteCode: env.SITE_CODE,
   sync: new FileSyncStore(env.SYNC_DIR ?? fileURLToPath(new URL('../sync-data', import.meta.url))),

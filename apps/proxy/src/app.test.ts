@@ -117,7 +117,7 @@ function fakeJournalOrchestrator(
 ): JsonOrchestrator {
   return createJsonOrchestrator(
     new FakeJsonAdapter('gemini', { kind: 'success', respond: (req) => respond(req.task) }),
-    new FakeJsonAdapter('openai', { kind: 'success', respond: (req) => respond(req.task) }),
+    new FakeJsonAdapter('gemini-fallback', { kind: 'success', respond: (req) => respond(req.task) }),
     new PromptCache<JsonTaskResult<unknown>>(),
   );
 }
@@ -291,14 +291,14 @@ describe('POST /v1/turn', () => {
     expect(res.status).toBe(429);
   });
 
-  it('returns 502 when both providers fail', async () => {
+  it('returns 503 (never 502: Cloudflare hides it) when every model fails', async () => {
     const app = buildApp({ orchestrator: fakeOrchestrator('throw') });
     const res = await app.request('/v1/turn', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-install-id': 'client-1' },
       body: JSON.stringify(validTurnRequest),
     });
-    expect(res.status).toBe(502);
+    expect(res.status).toBe(503);
   });
 
   it('records token usage against the rate limiter after a successful turn', async () => {
@@ -376,14 +376,14 @@ describe('POST /v1/sentences', () => {
     expect((await req()).status).toBe(429);
   });
 
-  it('returns 502 when both providers fail', async () => {
+  it('returns 503 (never 502: Cloudflare hides it) when every model fails', async () => {
     const app = buildApp({ sentenceOrchestrator: fakeSentenceOrchestrator('throw') });
     const res = await app.request('/v1/sentences', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-install-id': 'client-1' },
       body: JSON.stringify(validSentenceGenRequest),
     });
-    expect(res.status).toBe(502);
+    expect(res.status).toBe(503);
   });
 
   it('records token usage against the rate limiter after a successful generation', async () => {
@@ -435,11 +435,11 @@ describe('journal routes', () => {
     ).toBe(400);
   });
 
-  it('502s when the provider returns something that is not a JournalReview', async () => {
+  it('503s when the provider returns something that is not a JournalReview', async () => {
     const app = buildApp({
       journalOrchestrator: fakeJournalOrchestrator(() => ({ issues: 'nope' })),
     });
-    expect((await post(app, '/v1/journal-review', reviewReq)).status).toBe(502);
+    expect((await post(app, '/v1/journal-review', reviewReq)).status).toBe(503);
   });
 
   it('puts the learner text in the user message, never the system prompt', async () => {
@@ -487,10 +487,10 @@ describe('journal routes', () => {
   });
 
   describe('Phase 17 routes', () => {
-    const spyAdapter = (name: 'gemini' | 'openai', respond: () => unknown, seen: string[]) => {
+    const spyAdapter = (name: string, respond: () => unknown, seen: string[]) => {
       const inner = new FakeJsonAdapter(name, { kind: 'success', respond });
       return {
-        name,
+        model: name,
         generateJson: <T>(req: Parameters<typeof inner.generateJson<T>>[0]) => {
           seen.push(`${name}|${req.userMessage}`);
           return inner.generateJson(req);
@@ -502,7 +502,7 @@ describe('journal routes', () => {
       const seen: { system: string; user: string }[] = [];
       const inner = new FakeJsonAdapter('gemini', { kind: 'success', respond: () => fakeJournalReview });
       const spy = {
-        name: 'gemini' as const,
+        model: 'gemini',
         generateJson: <T>(req: Parameters<typeof inner.generateJson<T>>[0]) => {
           seen.push({ system: req.systemPrompt, user: req.userMessage });
           return inner.generateJson(req);
@@ -547,46 +547,44 @@ describe('journal routes', () => {
           sentences: [{ ...sentences[0], edits: [{ ...sentences[0]!.edits[0], kind: 'nope' }] }],
         })),
       });
-      expect((await post(bad, '/v1/journal-review', reviewReq)).status).toBe(502);
+      expect((await post(bad, '/v1/journal-review', reviewReq)).status).toBe(503);
     });
 
-    it('journal-verify never receives the original, and prefers the provider that did not write the correction', async () => {
+    it('journal-verify never receives the original, and runs as a fresh call on the checker model', async () => {
       const seen: string[] = [];
       const ok = () => ({ ok: true, problem: '', meaningMatches: true });
       const app = buildApp({
         journalOrchestrator: createJsonOrchestrator(
           spyAdapter('gemini', ok, seen),
-          spyAdapter('openai', ok, seen),
+          spyAdapter('gemini-fallback', ok, seen),
           new PromptCache<JsonTaskResult<unknown>>(),
+          undefined,
+          { checker: spyAdapter('gemini-check', ok, seen) },
         ),
       });
       const res = await post(app, '/v1/journal-verify', {
         zh: '我姓印，名字叫羅恩。',
         en: 'My surname is Yin.',
-        avoidProvider: 'gemini',
       });
       expect(res.status).toBe(200);
-      expect(res.headers.get('x-served-by')).toBe('openai');
+      expect(res.headers.get('x-served-by')).toBe('gemini-check');
       expect(seen).toHaveLength(1);
-      expect(seen[0]).toContain('openai|');
+      expect(seen[0]).toContain('gemini-check|');
       expect(seen[0]).toContain('我姓印，名字叫羅恩。');
       expect(seen[0]).toContain('My surname is Yin.');
-      // without a preference the usual first choice answers
-      const again = await post(app, '/v1/journal-verify', { zh: '我去台灣。' });
-      expect(again.headers.get('x-served-by')).toBe('gemini');
       expect((await post(app, '/v1/journal-verify', { zh: '' })).status).toBe(400);
     });
 
-    it('avoiding a provider that is the only one configured still gets an answer', async () => {
+    it('without a separate checker model, the task model checks', async () => {
       const ok = () => ({ ok: true, problem: '', meaningMatches: true });
       const app = buildApp({
         journalOrchestrator: createJsonOrchestrator(
           new FakeJsonAdapter('gemini', { kind: 'success', respond: ok }),
-          { name: 'openai', configured: false, generateJson: async () => { throw new Error('off'); } },
+          undefined,
           new PromptCache<JsonTaskResult<unknown>>(),
         ),
       });
-      const res = await post(app, '/v1/journal-verify', { zh: '我去台灣。', avoidProvider: 'gemini' });
+      const res = await post(app, '/v1/journal-verify', { zh: '我去台灣。' });
       expect(res.status).toBe(200);
       expect(res.headers.get('x-served-by')).toBe('gemini');
     });
@@ -596,7 +594,7 @@ describe('journal routes', () => {
       const app = buildApp({
         journalOrchestrator: createJsonOrchestrator(
           spyAdapter('gemini', () => ({ answers: ['是'], confident: true }), seen),
-          spyAdapter('openai', () => ({ answers: ['是'], confident: true }), seen),
+          spyAdapter('gemini-fallback', () => ({ answers: ['是'], confident: true }), seen),
           new PromptCache<JsonTaskResult<unknown>>(),
         ),
       });
@@ -644,7 +642,7 @@ describe('journal routes', () => {
     const bad = buildApp({
       journalOrchestrator: fakeJournalOrchestrator(() => ({ ok: 'maybe' })),
     });
-    expect((await post(bad, '/v1/cloze-check', { sentence: '我去。' })).status).toBe(502);
+    expect((await post(bad, '/v1/cloze-check', { sentence: '我去。' })).status).toBe(503);
   });
 
   it('POST /v1/journal-check and /v1/journal-explain validate and answer', async () => {
@@ -736,9 +734,9 @@ describe('gloss routes (phase 7)', () => {
     expect(seen[0]!.system).toMatch(/never invent/i);
   });
 
-  it('502s on a response that is not a GlossAdjudicationResponse', async () => {
+  it('503s on a response that is not a GlossAdjudicationResponse', async () => {
     const app = buildApp({ glossOrchestrator: fakeJournalOrchestrator(() => ({ senses: [] })) });
-    expect((await post(app, '/v1/gloss', glossReq)).status).toBe(502);
+    expect((await post(app, '/v1/gloss', glossReq)).status).toBe(503);
   });
 
   it('POST /v1/define answers for an out-of-lexicon word', async () => {
@@ -995,7 +993,7 @@ describe('Phase 24 graded stories', () => {
     const app = buildApp({
       storyOrchestrator: createJsonOrchestrator(
         new FakeJsonAdapter('gemini', { kind: 'success', respond }),
-        new FakeJsonAdapter('openai', { kind: 'success', respond }),
+        new FakeJsonAdapter('gemini-fallback', { kind: 'success', respond }),
         new PromptCache<JsonTaskResult<unknown>>(),
       ),
     });
@@ -1013,13 +1011,13 @@ describe('Phase 24 graded stories', () => {
     expect((await post(app, '/v1/story', { ...req, topic: '' })).status).toBe(400);
   });
 
-  it('POST /v1/story-check reads only the story (no prompt, no lists) on the other provider', async () => {
+  it('POST /v1/story-check reads only the story (no prompt, no lists) on the checker model', async () => {
     const seen: string[] = [];
     const check = { natural: true, coherent: true, taiwan: true, summaryMatches: true, problems: [], correctOptions: [[0]] };
-    const spy = (name: 'gemini' | 'openai') => {
+    const spy = (name: string) => {
       const inner = new FakeJsonAdapter(name, { kind: 'success', respond: () => check });
       return {
-        name,
+        model: name,
         generateJson: <T>(r: Parameters<typeof inner.generateJson<T>>[0]) => {
           seen.push(`${name}|${r.systemPrompt}|${r.userMessage}`);
           return inner.generateJson(r);
@@ -1027,16 +1025,17 @@ describe('Phase 24 graded stories', () => {
       };
     };
     const app = buildApp({
-      storyOrchestrator: createJsonOrchestrator(spy('gemini'), spy('openai'), new PromptCache<JsonTaskResult<unknown>>()),
+      storyOrchestrator: createJsonOrchestrator(spy('gemini'), spy('gemini-fallback'), new PromptCache<JsonTaskResult<unknown>>(), undefined, {
+        checker: spy('gemini-check'),
+      }),
     });
     const res = await post(app, '/v1/story-check', {
       paragraphs: ['我今天想喝茶。'],
       summaryEn: 'Someone wants tea.',
       questions: [{ q: '他想喝什麼？', options: ['茶', '水', '咖啡'] }],
-      avoidProvider: 'gemini',
     });
     expect(res.status).toBe(200);
-    expect(res.headers.get('x-served-by')).toBe('openai');
+    expect(res.headers.get('x-served-by')).toBe('gemini-check');
     expect(seen[0]).toContain('我今天想喝茶。');
     expect(seen[0]).not.toContain('Rung');
   });

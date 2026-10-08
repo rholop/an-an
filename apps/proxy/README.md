@@ -1,7 +1,7 @@
 # @anan/proxy
 
-Small Hono server that sits in front of Gemini (default) and OpenAI
-(fallback) so the browser never sees an API key. See CLAUDE.md §"LLM
+Small Hono server that sits in front of Google Gemini (free tier, the only
+AI provider since Phase 25) so the browser never sees an API key. See CLAUDE.md §"LLM
 providers" and `phase-documents/03-validated-chat.md` for the design this
 implements.
 
@@ -10,11 +10,13 @@ implements.
 - `POST /v1/turn` — the endpoint the chat UI calls. Builds the system
   prompt for the requested scenario (`data/build/scenarios.json`, compiled
   from `data/scenarios/*.yaml` — run `pnpm pipeline:build` first), calls
-  Gemini, and on a rate limit / quota error / invalid JSON falls back to
-  OpenAI once. Logs which provider actually served the request.
+  Gemini. A retryable failure (429, 5xx, timeout, invalid JSON) is retried
+  once on the same model after a short wait (a 429's retry-after is
+  honoured), then once on `GEMINI_MODEL_FALLBACK`. Authentication errors
+  are never retried. Logs which model actually served the request.
 - `POST /v1/sentences` — called by `packages/data-pipeline`'s offline batch
   sentence-bank build (phase doc 04 §1), never during a live review
-  session. Same Gemini-primary/OpenAI-fallback/cache/rate-limit machinery
+  session. Same retry/fallback-model/cache/rate-limit machinery
   as `/v1/turn`, just a different prompt (`data/prompts/sentence-gen.*.md`)
   and response shape (`SentenceGenResponse`) — see `scripts/scripted-run.ts`
   for a Phase-3-style harness pattern, or `data-pipeline`'s
@@ -35,9 +37,11 @@ implements.
 - `POST /v1/journal-check` — is the learner's own alternative fix of a
   flagged span acceptable? `POST /v1/journal-explain` — the "explain more"
   follow-up. All three journal routes share one generic
-  `JsonTaskAdapter`/`createJsonOrchestrator` (Gemini first, OpenAI fallback,
-  cached by task + prompt + message). Prompts: `data/prompts/journal-*.md`;
-  models: `GEMINI_MODEL_JOURNAL` / `OPENAI_MODEL_JOURNAL`.
+  `JsonTaskAdapter`/`createJsonOrchestrator` (task model, then the fallback
+  Gemini model, cached by task + prompt + message). Prompts:
+  `data/prompts/journal-*.md`; model: `GEMINI_MODEL_JOURNAL`. The
+  independent checkers (`/v1/journal-verify`, `/v1/story-check`) are a fresh
+  call on `GEMINI_MODEL_CHECK` that never sees the writer's prompt.
 - `POST /v1/gloss` (phase doc 07 §B2) — offline gloss adjudication, called by
   `packages/data-pipeline`'s `build:glosses` (never at runtime): given a word,
   its TOCFL POS, MOE definitions and candidate senses, the model CHOOSES and
@@ -45,7 +49,7 @@ implements.
   answer. Returns an `x-total-tokens` header so the batch can log its cost.
   `POST /v1/define` — runtime fallback for a word that is not in the lexicon
   (the web app labels it "AI-generated" and queues it for review). Both reuse
-  the journal JSON orchestrator (Gemini first, OpenAI fallback, cached).
+  the journal JSON orchestrator (cached).
 - `pnpm --filter @anan/proxy journal-eval` runs the fixture entries in
   `data/journal-eval/` through a live proxy and writes `docs/journal-eval.md`.
 
@@ -108,16 +112,17 @@ most:
 
 | Var | Required | Notes |
 |---|---|---|
-| `GEMINI_API_KEY` | one of these two | Free tier. Get one at [aistudio.google.com](https://aistudio.google.com/apikey). |
-| `OPENAI_API_KEY` | no | Fallback provider, used only with `OPENAI_ENABLED=1` (off by default: OpenAI is not free, so the proxy is Gemini-only). |
-| `OPENAI_ENABLED` | no | `1` to allow OpenAI calls. Default `0`. |
+| `GEMINI_API_KEY` | **yes** (server won't start without it) | Free tier. Get one at [aistudio.google.com](https://aistudio.google.com/apikey). |
+| `GEMINI_MODEL_TURN` / `GEMINI_MODEL_JOURNAL` | no | The model per task. |
+| `GEMINI_MODEL_FALLBACK` | no | A different free-tier Gemini model, tried once after the task model fails twice. |
+| `GEMINI_MODEL_CHECK` | no | The independent checker (journal verify, story check). |
 | `SITE_CODE` | **yes** (server won't start without it) | The household code; see below. |
 | `SYNC_DIR` | no | Where per-profile saved copies go (default `apps/proxy/sync-data`). |
 
-With only one of the two set, the proxy runs single-provider (no
-fallback) rather than refusing to start — a loud warning is logged instead.
-With neither set, the server still starts (health checks still work) but
-every `/v1/turn` call fails with a 502.
+A 502 names each model that was tried and why, never a key or a prompt:
+`{"error":"story_check_failed","attempts":[{"model":"gemini-…","reason":"rate_limited"}]}`.
+`pnpm smoke:proxy` (with `GEMINI_API_KEY` set) sends one tiny request per route
+to each configured model and fails if Gemini rejects one; it is skipped without a key.
 
 ## Local development
 

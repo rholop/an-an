@@ -264,7 +264,7 @@ export class OpenChatService {
     // Phase 21 Part J: a reply that still fails the Taiwan / traditional check is never shown: one
     // more try on the other provider, then "Couldn't get a reliable reply, try again".
     if (!best.report.taiwanness.isClean) {
-      const response = await generate({ ...base, feedback: openChatFeedback(best.report, this.config.limits), alternateProvider: true });
+      const response = await generate({ ...base, feedback: openChatFeedback(best.report, this.config.limits), alternateModel: true });
       const report = validateOpenChatTurn(response, ctx, this.config.limits);
       attempts.push({ response, report });
       if (!report.taiwanness.isClean) throw new UnreliableReplyError();

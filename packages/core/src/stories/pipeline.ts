@@ -82,12 +82,9 @@ export async function runStoryPipeline(input: {
   const best = pickBestStoryAttempt(attempts);
   if (!best.report.pass) return { ok: false, reasons: best.report.failed, attempts };
 
-  // The independent reader: the other provider, shown only the story, its summary and questions.
+  // The independent reader: a fresh call on the checker model, shown only the story, its summary and questions.
   const checked = { ...best.res, questions: best.questions };
-  const check = await input.llm.checkStory({
-    ...storyCheckRequest(checked),
-    ...(best.servedBy === 'gemini' || best.servedBy === 'openai' ? { avoidProvider: best.servedBy } : {}),
-  });
+  const check = await input.llm.checkStory(storyCheckRequest(checked));
   if (!storyCheckPasses(check)) return { ok: false, reasons: ['independent check', ...check.problems], attempts, check };
   const agreed = checkStoryQuestions(best.questions, check).questions;
   if (agreed.length < STORY_CONFIG.questions.min) return { ok: false, reasons: ['questions'], attempts, check };

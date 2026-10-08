@@ -4,20 +4,18 @@ import { PromptCache } from './cache.js';
 import { JSON_ROUTES } from './json-routes.js';
 import { createJsonOrchestrator } from './orchestrator.js';
 import { GeminiAdapter } from './providers/gemini.js';
-import { OpenAiAdapter } from './providers/openai.js';
-import { ProvidersFailedError, schemaName, type JsonTaskRequest } from './providers/types.js';
+import { ModelsFailedError, type JsonTaskRequest } from './providers/types.js';
 import { failureBody } from './app.js';
 import { applyZodLimits, schemaAt, trimToLimits, zodLimits } from './zod-limits.js';
 
 /**
- * Phase 25: contract tests for every JSON route against the REAL adapters (no network: the SDK
- * clients are swapped for recorders). The story 502 came from a request OpenAI rejects
- * (json_schema.name '/v1/story') that no fake-adapter test could see.
+ * Phase 25: contract tests for every JSON route against the REAL Gemini adapter (no network: the
+ * SDK client is swapped for a recorder). The story 502 came from a request a provider rejected,
+ * which no fake-adapter test could see.
  */
 
 type Json = Record<string, unknown>;
-const NAME = /^[a-zA-Z0-9_-]{1,64}$/;
-/** Keywords both Gemini's responseSchema and OpenAI's json_schema accept. */
+/** Keywords Gemini's responseSchema accepts (an OpenAPI-3 subset). */
 const SUPPORTED = new Set([
   'type',
   'properties',
@@ -70,31 +68,8 @@ function sample(schema: Json): unknown {
   }
 }
 
-function openAi(
-  respond: (req: { response_format: { json_schema: { name: string; schema: Json } } }) => unknown,
-) {
-  const adapter = new OpenAiAdapter('test-key', 'gpt-test');
-  const calls: Array<{ response_format: { json_schema: { name: string; schema: Json } } }> = [];
-  (adapter as unknown as { client: unknown }).client = {
-    chat: {
-      completions: {
-        create: async (req: (typeof calls)[number]) => {
-          calls.push(req);
-          const r = respond(req);
-          if (r instanceof Error) throw r;
-          return {
-            choices: [{ message: { content: JSON.stringify(r) } }],
-            usage: { prompt_tokens: 1, completion_tokens: 1 },
-          };
-        },
-      },
-    },
-  };
-  return { adapter, calls };
-}
-
-function gemini(respond: (cfg: { generationConfig: { responseSchema: Json } }) => unknown) {
-  const adapter = new GeminiAdapter('test-key', 'gemini-test');
+function gemini(respond: (cfg: { generationConfig: { responseSchema: Json } }) => unknown, model = 'gemini-test') {
+  const adapter = new GeminiAdapter('test-key', model);
   const configs: Array<{ generationConfig: { responseSchema: Json } }> = [];
   (adapter as unknown as { client: unknown }).client = {
     getGenerativeModel: (cfg: (typeof configs)[number]) => {
@@ -130,14 +105,12 @@ const task = (route: string, zod: z.ZodTypeAny, json: object): JsonTaskRequest<u
 const httpError = (status: number, message: string) =>
   Object.assign(new Error(message), { status });
 
-describe('JSON route contracts (Phase 25)', () => {
-  it('the schema name is always one OpenAI accepts', () => {
-    expect(schemaName('/v1/story-check')).toBe('v1_story_check');
-    for (const r of JSON_ROUTES) expect(schemaName(r.route)).toMatch(NAME);
-  });
+const policy = { backoffMs: 0, maxWaitMs: 0, sleep: async () => undefined };
+const quiet = () => undefined;
 
+describe('JSON route contracts (Phase 25, Gemini only)', () => {
   for (const { route, zod, json } of JSON_ROUTES) {
-    it(`${route}: the real OpenAI and Gemini requests are valid and carry the zod limits`, async () => {
+    it(`${route}: the real Gemini request is valid and carries the zod limits`, async () => {
       const limits = zodLimits(zod);
       const limited = applyZodLimits(json, zod);
       // every zod limit is in the schema the model sees
@@ -145,32 +118,18 @@ describe('JSON route contracts (Phase 25)', () => {
         const node = schemaAt(limited, l.path);
         if (node) expect(node[l.keyword], `${route} ${l.path} ${l.keyword}`).toBe(l.value);
       }
-      for (const k of keywords(limited))
-        expect(SUPPORTED.has(k), `${route}: keyword ${k}`).toBe(true);
+      for (const k of keywords(limited)) expect(SUPPORTED.has(k), `${route}: keyword ${k}`).toBe(true);
 
       const answer = sample(limited);
-      const o = openAi(() => answer);
       const g = gemini(() => answer);
-      if (route === '/v1/turn') {
-        await o.adapter.generateTurn('system', []).catch(() => undefined);
-        await g.adapter.generateTurn('system', []).catch(() => undefined);
-      } else if (route === '/v1/sentences') {
-        await o.adapter.generateSentences('system').catch(() => undefined);
-        await g.adapter.generateSentences('system').catch(() => undefined);
-      } else {
-        await o.adapter.generateJson(task(route, zod, json)).catch(() => undefined);
-        await g.adapter.generateJson(task(route, zod, json)).catch(() => undefined);
-      }
-      const sentOpenAi = o.calls[0]!.response_format.json_schema;
-      expect(sentOpenAi.name).toMatch(NAME);
-      const sentGemini = g.configs[0]!.generationConfig.responseSchema;
-      for (const sent of [sentOpenAi.schema, sentGemini]) {
-        for (const k of keywords(sent))
-          expect(SUPPORTED.has(k), `${route}: sent keyword ${k}`).toBe(true);
-        for (const l of limits) {
-          const node = schemaAt(sent as Json, l.path);
-          if (node) expect(node[l.keyword], `${route} sent ${l.path}`).toBe(l.value);
-        }
+      if (route === '/v1/turn') await g.adapter.generateTurn('system', []).catch(() => undefined);
+      else if (route === '/v1/sentences') await g.adapter.generateSentences('system').catch(() => undefined);
+      else await g.adapter.generateJson(task(route, zod, json)).catch(() => undefined);
+      const sent = g.configs[0]!.generationConfig.responseSchema;
+      for (const k of keywords(sent)) expect(SUPPORTED.has(k), `${route}: sent keyword ${k}`).toBe(true);
+      for (const l of limits) {
+        const node = schemaAt(sent as Json, l.path);
+        if (node) expect(node[l.keyword], `${route} sent ${l.path}`).toBe(l.value);
       }
     });
   }
@@ -188,61 +147,71 @@ describe('JSON route contracts (Phase 25)', () => {
     const story = JSON_ROUTES.find((r) => r.route === '/v1/story')!;
     const s = applyZodLimits(story.json, story.zod);
     const base = sample(s) as Json;
-    const q = {
-      q_zh: '他喝什麼？',
-      q_en: 'What?',
-      options: [
-        { zh: '茶', en: 'tea' },
-        { zh: '水', en: 'water' },
-      ],
-      answer: 0,
-    };
+    const q = { q_zh: '他喝什麼？', q_en: 'What?', options: [{ zh: '茶', en: 'tea' }, { zh: '水', en: 'water' }], answer: 0 };
     const raw = { ...base, questions: Array.from({ length: 7 }, () => q) };
     expect(() => story.zod.parse(raw)).toThrow();
-    expect(
-      (story.zod.parse(trimToLimits(raw, s)) as { questions: unknown[] }).questions,
-    ).toHaveLength(6);
+    expect((story.zod.parse(trimToLimits(raw, s)) as { questions: unknown[] }).questions).toHaveLength(6);
   });
 
-  it('forcing Gemini to fail: every JSON route succeeds via OpenAI', async () => {
-    for (const { route, zod, json } of JSON_ROUTES.filter(
-      (r) => r.route !== '/v1/turn' && r.route !== '/v1/sentences',
-    )) {
+  it('forcing the primary Gemini model to fail: every JSON route succeeds on GEMINI_MODEL_FALLBACK', async () => {
+    for (const { route, zod, json } of JSON_ROUTES.filter((r) => r.route !== '/v1/turn' && r.route !== '/v1/sentences')) {
       const limited = applyZodLimits(json, zod);
-      const o = openAi(() => sample(limited));
-      const g = gemini(() => httpError(500, 'boom'));
-      const orch = createJsonOrchestrator(g.adapter, o.adapter, new PromptCache(), () => undefined);
+      const primary = gemini(() => httpError(503, 'The model is overloaded'), 'gemini-primary');
+      const fallback = gemini(() => sample(limited), 'gemini-fallback');
+      const orch = createJsonOrchestrator(primary.adapter, fallback.adapter, new PromptCache(), quiet, { policy });
       const { result } = await orch.run(task(route, zod, json));
-      expect(result.provider, route).toBe('openai');
+      expect(result.model, route).toBe('gemini-fallback');
+      expect(primary.configs.length, route).toBe(2); // tried, then retried once
     }
   });
 
-  it('OpenAI chosen first (story-check avoids Gemini) and rejecting the request: Gemini answers', async () => {
+  it('Gemini errors get reasons: 429 → rate_limited (with retry-after), 401 → auth (never retried)', async () => {
     const r = JSON_ROUTES.find((x) => x.route === '/v1/story-check')!;
     const limited = applyZodLimits(r.json, r.zod);
-    const o = openAi(() => httpError(400, "Invalid 'response_format.json_schema.name'"));
-    const g = gemini(() => sample(limited));
-    const orch = createJsonOrchestrator(g.adapter, o.adapter, new PromptCache(), () => undefined);
-    const { result } = await orch.run(task(r.route, r.zod, r.json), { avoidProvider: 'gemini' });
-    expect(o.calls).toHaveLength(1);
-    expect(result.provider).toBe('gemini');
+    const authFail = gemini(() => httpError(401, 'API key not valid'), 'gemini-primary');
+    const fallback = gemini(() => sample(limited), 'gemini-fallback');
+    const orch = createJsonOrchestrator(authFail.adapter, fallback.adapter, new PromptCache(), quiet, { policy });
+    const err = await orch.run(task(r.route, r.zod, r.json)).catch((e: unknown) => e);
+    expect((err as ModelsFailedError).attempts).toEqual([{ model: 'gemini-primary', reason: 'auth' }]);
+    expect(fallback.configs).toHaveLength(0);
+
+    const limitedErr = Object.assign(httpError(429, 'Resource has been exhausted'), {
+      errorDetails: [{ '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '7s' }],
+    });
+    const waits: number[] = [];
+    const rl = gemini(() => limitedErr, 'gemini-primary');
+    const ok = gemini(() => sample(limited), 'gemini-fallback');
+    const orch2 = createJsonOrchestrator(rl.adapter, ok.adapter, new PromptCache(), quiet, {
+      policy: { backoffMs: 1000, maxWaitMs: 8000, sleep: async (ms) => void waits.push(ms) },
+    });
+    expect((await orch2.run(task(r.route, r.zod, r.json))).result.model).toBe('gemini-fallback');
+    expect(waits).toEqual([7000]);
   });
 
-  it('when both fail, the 502 body names each provider and why (no key, no prompt)', async () => {
+  it('story-check runs on the checker model', async () => {
     const r = JSON_ROUTES.find((x) => x.route === '/v1/story-check')!;
-    const o = openAi(() => httpError(400, 'bad'));
-    const g = gemini(() => ({ nonsense: true }));
-    const orch = createJsonOrchestrator(g.adapter, o.adapter, new PromptCache(), () => undefined);
-    const err = await orch
-      .run(task(r.route, r.zod, r.json), { avoidProvider: 'gemini' })
-      .catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(ProvidersFailedError);
+    const limited = applyZodLimits(r.json, r.zod);
+    const writer = gemini(() => sample(limited), 'gemini-writer');
+    const checker = gemini(() => sample(limited), 'gemini-check');
+    const orch = createJsonOrchestrator(writer.adapter, undefined, new PromptCache(), quiet, { checker: checker.adapter, policy });
+    expect((await orch.run(task(r.route, r.zod, r.json), { checker: true })).result.model).toBe('gemini-check');
+    expect(writer.configs).toHaveLength(0);
+  });
+
+  it('when every model fails, the 503 body names each model and why (no key, no prompt)', async () => {
+    const r = JSON_ROUTES.find((x) => x.route === '/v1/story-check')!;
+    const checker = gemini(() => httpError(429, 'rate limit'), 'gemini-check');
+    const fallback = gemini(() => ({ nonsense: true }), 'gemini-fallback');
+    const orch = createJsonOrchestrator(fallback.adapter, fallback.adapter, new PromptCache(), quiet, { checker: checker.adapter, policy });
+    const err = await orch.run(task(r.route, r.zod, r.json), { checker: true }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ModelsFailedError);
     const body = failureBody(r.route, err);
     expect(body).toEqual({
       error: 'story_check_failed',
-      providers: [
-        { name: 'openai', reason: 'bad_request' },
-        { name: 'gemini', reason: 'invalid_json' },
+      attempts: [
+        { model: 'gemini-check', reason: 'rate_limited' },
+        { model: 'gemini-check', reason: 'rate_limited' },
+        { model: 'gemini-fallback', reason: 'invalid_json' },
       ],
     });
     expect(JSON.stringify(body)).not.toMatch(/test-key|system|user/);

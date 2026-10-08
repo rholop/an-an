@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useChatPausesStories } from '../lib/stories.js';
 import {
   formatDuration,
   classLevelHint,
@@ -63,6 +64,8 @@ export function ChatPage({
 }: { initialScenarioId?: string; onExit?: () => void } = {}) {
   const lexiconState = useLexicon();
   const scenariosState = useScenarios();
+  // Phase 25: background stories wait while a chat is open (the free quota goes to the chat)
+  useChatPausesStories();
 
   const myClass = useMyClass();
   const textbookState = useTextbook();
@@ -92,7 +95,7 @@ export function ChatPage({
   const [levelFilter, setLevelFilter] = useState<Level[]>([learnerLevel]);
   useEffect(() => setLevelFilter([learnerLevel]), [learnerLevel]);
 
-  // Dev-only escape hatch: this sandbox has no real Gemini/OpenAI keys, so
+  // Dev-only escape hatch: this sandbox has no real Gemini key, so
   // the proxy's DisabledAdapter will reject every real turn. Flip to the
   // fake tutor to exercise the rest of the chat UI without a live LLM.
   const [useFakeLLM, setUseFakeLLM] = useState(false);

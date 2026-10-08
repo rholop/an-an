@@ -250,7 +250,7 @@ async function wrongOptionIsWrong(
 ): Promise<boolean> {
   const e = plan.edits[0]!;
   const probe = withFill(vs.corrected, plan.blank!, e.before);
-  const res = await verifySentenceText(deps, probe, { avoidProvider: vs.servedBy });
+  const res = await verifySentenceText(deps, probe);
   // a sentence the checker likes with the learner's wording means the "fix" is optional
   return !res.ok;
 }
@@ -325,7 +325,6 @@ async function finalizePlan(
         if (tried++ >= MAX_SOLVER_ALTERNATIVES) break;
         const res = await verifySentenceText(deps, withFill(vs.corrected, blank, alt), {
           en: vs.en,
-          avoidProvider: vs.servedBy,
         });
         if (res.ok) accepted.push(alt);
       }

@@ -4,7 +4,7 @@
  * independent check by the other provider) against a LIVE proxy, for two seeded learners. Writes
  * docs/stories-eval.md with every story that would be shown, its shares and a blank verdict line.
  *
- *   pnpm --filter @anan/proxy dev   # one terminal (needs GEMINI_API_KEY and OPENAI_API_KEY)
+ *   pnpm --filter @anan/proxy dev   # one terminal (needs GEMINI_API_KEY)
  *   pnpm eval:stories               # another
  *
  * Env: PROXY_URL (default http://localhost:3002), SITE_CODE (the household code).
@@ -141,7 +141,7 @@ const TOPICS = (lessonTopic: string) => [
   'plans for the weekend',
 ];
 
-async function post(route: string, body: unknown): Promise<{ json: unknown; servedBy?: 'gemini' | 'openai' }> {
+async function post(route: string, body: unknown): Promise<{ json: unknown; servedBy?: string }> {
   const res = await fetch(`${proxyUrl}${route}`, {
     method: 'POST',
     headers: {

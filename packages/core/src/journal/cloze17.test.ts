@@ -129,7 +129,7 @@ describe('Part B: nothing that failed the check is ever shown', () => {
     expect(vs.corrected).toBe('我姓印，名字叫羅恩。');
   });
 
-  it('the checker is told to avoid the provider that wrote the correction, and never sees the original', async () => {
+  it('the checker (a fresh call on the checker model) never sees the original', async () => {
     const llm = scriptedJournalLLM();
     await verifyCorrected(baseDeps(llm), {
       original,
@@ -139,7 +139,7 @@ describe('Part B: nothing that failed the check is ever shown', () => {
       servedBy: 'gemini',
       now,
     });
-    expect(llm.calls.verify[0]).toMatchObject({ zh: rev.corrected, avoidProvider: 'gemini' });
+    expect(llm.calls.verify[0]).toEqual({ zh: rev.corrected, ...(llm.calls.verify[0]?.en ? { en: llm.calls.verify[0].en } : {}) });
     expect(JSON.stringify(llm.calls.verify)).not.toContain(original);
   });
 

@@ -46,8 +46,8 @@ export const OpenTurnRequestSchema = z.object({
   hardTopic: z.boolean().optional(),
   history: z.array(TurnHistoryEntrySchema),
   feedback: z.string().optional(),
-  /** Phase 21: retry once on the other provider after repeated Taiwan / traditional failures. */
-  alternateProvider: z.boolean().optional(),
+  /** Phase 21/25: retry once on the fallback Gemini model after repeated Taiwan / traditional failures. */
+  alternateModel: z.boolean().optional(),
   learnerLevel: LevelSchema,
   scaffolding: z.enum(['high', 'medium', 'low']),
   englishFallback: z.boolean(),

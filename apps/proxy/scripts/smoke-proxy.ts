@@ -1,11 +1,11 @@
 /**
  * Phase 25: optional LIVE smoke test. The contract tests (src/contract.test.ts) check the request
- * shape offline; this sends one tiny request per JSON route to each provider that has a key and
- * fails if a provider REJECTS the request (bad_request / auth), which is what broke /v1/story.
+ * shape offline; this sends one tiny request per JSON route to each configured Gemini model and
+ * fails if Gemini REJECTS the request (bad_request / auth), which is what broke /v1/story.
  * A reply that does not match the schema is reported but is not a failure here: that is the
  * route's validation job.
  *
- *   GEMINI_API_KEY=… OPENAI_API_KEY=… pnpm smoke:proxy
+ *   GEMINI_API_KEY=… pnpm smoke:proxy
  *
  * With PROXY_URL set (e.g. https://holop.dev/an-an/api) it also checks GET /v1/health there.
  * With no keys and no PROXY_URL it prints "skipped" and exits 0.
@@ -13,26 +13,18 @@
 import { JSON_ROUTES } from '../src/json-routes.js';
 import { loadEnv } from '../src/env.js';
 import { GeminiAdapter } from '../src/providers/gemini.js';
-import { OpenAiAdapter } from '../src/providers/openai.js';
 import { ProviderRetryableError } from '../src/providers/types.js';
 import { applyZodLimits, trimToLimits } from '../src/zod-limits.js';
 
 const env = loadEnv();
 const proxyUrl = process.env.PROXY_URL;
-const adapters: Array<{ name: string; adapter: OpenAiAdapter | GeminiAdapter }> = [];
+const adapters: Array<{ name: string; adapter: GeminiAdapter }> = [];
 if (env.GEMINI_API_KEY)
-  adapters.push({
-    name: 'gemini',
-    adapter: new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_JOURNAL),
-  });
-if (env.OPENAI_API_KEY && env.OPENAI_ENABLED)
-  adapters.push({
-    name: 'openai',
-    adapter: new OpenAiAdapter(env.OPENAI_API_KEY, env.OPENAI_MODEL_JOURNAL),
-  });
+  for (const model of new Set([env.GEMINI_MODEL_JOURNAL, env.GEMINI_MODEL_TURN, env.GEMINI_MODEL_FALLBACK, env.GEMINI_MODEL_CHECK]))
+    adapters.push({ name: model, adapter: new GeminiAdapter(env.GEMINI_API_KEY, model) });
 
 if (adapters.length === 0 && !proxyUrl) {
-  console.log('smoke:proxy skipped: no GEMINI_API_KEY / OPENAI_API_KEY and no PROXY_URL.');
+  console.log('smoke:proxy skipped: no GEMINI_API_KEY and no PROXY_URL.');
   process.exit(0);
 }
 
@@ -64,7 +56,7 @@ for (const { name, adapter } of adapters) {
           systemPrompt: prompt,
           userMessage: '{}',
           jsonSchema: limited,
-          parse: (raw) => zod.parse(trimToLimits(raw, limited)),
+          parse: (raw: unknown) => zod.parse(trimToLimits(raw, limited)),
         });
       console.log(`ok       ${name} ${route}`);
     } catch (err) {
@@ -78,5 +70,5 @@ for (const { name, adapter } of adapters) {
   }
 }
 
-console.log(failed ? `${failed} request(s) rejected.` : 'No provider rejected a request.');
+console.log(failed ? `${failed} request(s) rejected.` : 'Gemini rejected no request.');
 process.exit(failed ? 1 : 0);

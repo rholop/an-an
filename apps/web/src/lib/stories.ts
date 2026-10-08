@@ -1,6 +1,6 @@
 // Phase 24: one StoryService per lexicon, the per-profile difficulty, and the background
 // "keep 2 ready" step shared by Home and the Reader.
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { Lexicon, Level, StoryDifficulty, StoryLLM, StoryRecord, Textbook } from '@anan/core';
 import { db, learnerService } from '../db/instance.js';
 import { getSiteCode } from './api.js';
@@ -50,16 +50,36 @@ export function useStoryDifficulty(): [StoryDifficulty, (d: StoryDifficulty) => 
   return [d === 'easier' || d === 'harder' ? d : 'middle', setD];
 }
 
+/** Phase 25: open chats (scenario or open chat). Background stories wait while any is open, so
+ * the free Gemini quota goes to the conversation first. */
+let chatting = 0;
+export function useChatPausesStories(): void {
+  useEffect(() => {
+    chatting++;
+    return () => {
+      chatting--;
+    };
+  }, []);
+}
+export const chatIsOpen = (): boolean => chatting > 0;
+
 const prepared = new Set<string>();
-/** Keeps two stories ready for the current lesson, once per lesson / level / difficulty per visit. */
+/** Keeps two stories ready for the current lesson (written one at a time, never while a chat is
+ * open), once per lesson / level / difficulty per visit. */
 export function prepareStories(service: StoryService, level: Level, difficulty: StoryDifficulty, lessonKey: string): void {
-  if (!canWriteStories()) return;
+  if (!canWriteStories() || chatIsOpen()) return;
   // Automated browsers (the e2e specs) never write in the background, except with the fake writer.
   if (typeof navigator !== 'undefined' && navigator.webdriver && !storyFakeOn()) return;
   const key = `${level}|${difficulty}|${lessonKey}|${storyFakeOn() ? 'fake' : 'live'}`;
   if (prepared.has(key)) return;
   prepared.add(key);
-  void service.ensureReady(level, difficulty).catch(() => undefined);
+  void service
+    .ensureReady(level, difficulty, new Date(), () => !chatIsOpen())
+    .then(() => {
+      // paused by a chat: try again on the next visit
+      if (chatIsOpen()) prepared.delete(key);
+    })
+    .catch(() => undefined);
 }
 
 /** The book and lesson number a story was written for (for its badge). */

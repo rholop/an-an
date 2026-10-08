@@ -59,7 +59,8 @@ export const EditKindSchema = z.enum([
 ]);
 export type EditKind = z.infer<typeof EditKindSchema>;
 
-export const ProviderNameSchema = z.enum(['gemini', 'openai']);
+/** Phase 25: the Gemini model that served a reply (from the proxy's x-served-by header). */
+export const ProviderNameSchema = z.string().min(1).max(100);
 export type ProviderName = z.infer<typeof ProviderNameSchema>;
 
 export const SentenceEditSchema = z.object({
@@ -116,8 +117,6 @@ export const JournalVerifyRequestSchema = z.object({
   zh: z.string().min(1).max(300),
   /** When given, the checker also confirms the Chinese means this. */
   en: z.string().max(400).optional(),
-  /** Use the other provider from the one that wrote the correction. */
-  avoidProvider: ProviderNameSchema.optional(),
 });
 export type JournalVerifyRequest = z.infer<typeof JournalVerifyRequestSchema>;
 

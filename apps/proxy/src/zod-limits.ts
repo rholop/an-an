@@ -4,7 +4,7 @@ import type { z } from 'zod';
  * Phase 25: the JSON schema a model is given must say what the zod check will enforce, or a model
  * can return a 7th question that the check then rejects (and the route 502s). `applyZodLimits`
  * copies every array min/max and string max from the zod schema into the provider schema
- * (`minItems`, `maxItems`, `maxLength`: keywords both Gemini and OpenAI accept); `trimToLimits`
+ * (`minItems`, `maxItems`, `maxLength`: keywords Gemini's responseSchema accepts); `trimToLimits`
  * cuts harmless overruns (a list longer than `maxItems`) before the zod check runs.
  */
 

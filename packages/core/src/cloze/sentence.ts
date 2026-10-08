@@ -46,7 +46,7 @@ export type SentenceBankFile = z.infer<typeof SentenceBankFileSchema>;
 
 // apps/proxy's POST /v1/sentences — the pipeline's batch generation calls
 // this (reusing the orchestrator's provider-fallback/cache/budget plumbing)
-// rather than the pipeline talking to Gemini/OpenAI directly (CLAUDE.md:
+// rather than the pipeline talking to Gemini directly (CLAUDE.md:
 // "A small backend LLM proxy holds the API keys").
 
 export const SentenceGenRequestSchema = z.object({

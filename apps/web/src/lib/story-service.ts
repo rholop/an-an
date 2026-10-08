@@ -250,9 +250,15 @@ export class StoryService {
   }
 
   /** Keeps `readyAhead` unread stories for the current lesson, in the background. Failures are quiet. */
-  async ensureReady(level: Level, difficulty: StoryDifficulty, now: Date = new Date()): Promise<number> {
+  async ensureReady(
+    level: Level,
+    difficulty: StoryDifficulty,
+    now: Date = new Date(),
+    /** Phase 25: checked before each story (one at a time); false pauses (e.g. while chatting). */
+    keepGoing: () => boolean = () => true,
+  ): Promise<number> {
     let ready = (await this.readyFor(level, now)).filter((s) => s.difficulty === difficulty).length;
-    while (ready < STORY_CONFIG.readyAhead) {
+    while (ready < STORY_CONFIG.readyAhead && keepGoing()) {
       try {
         await this.write({ level, difficulty, kind: 'lesson' }, now);
       } catch {

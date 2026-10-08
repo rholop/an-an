@@ -8,6 +8,7 @@ import {
   type ProviderResult,
   type SentenceGenAdapter,
   type SentenceProviderResult,
+  type ProviderFailureReason,
 } from './types.js';
 
 /** Test-only adapter — scripted behavior, no network. Used by orchestrator
@@ -16,12 +17,12 @@ export class FakeProviderAdapter implements ProviderAdapter {
   calls = 0;
 
   constructor(
-    public readonly name: 'gemini' | 'openai',
+    public readonly model: string,
     private readonly behavior:
       | { kind: 'success'; response: TurnResponse }
       | {
           kind: 'error';
-          reason: 'rate_limit' | 'quota' | 'invalid_json' | 'request_error';
+          reason: ProviderFailureReason;
           message?: string;
         }
       | { kind: 'throw'; error: Error },
@@ -38,8 +39,7 @@ export class FakeProviderAdapter implements ProviderAdapter {
     }
     return {
       response: this.behavior.response,
-      provider: this.name,
-      model: `fake-${this.name}`,
+      model: this.model,
       usage: { inputTokens: 10, outputTokens: 10 },
     };
   }
@@ -64,12 +64,12 @@ export class FakeSentenceGenAdapter implements SentenceGenAdapter {
   calls = 0;
 
   constructor(
-    public readonly name: 'gemini' | 'openai',
+    public readonly model: string,
     private readonly behavior:
       | { kind: 'success'; response: SentenceGenResponse }
       | {
           kind: 'error';
-          reason: 'rate_limit' | 'quota' | 'invalid_json' | 'request_error';
+          reason: ProviderFailureReason;
           message?: string;
         }
       | { kind: 'throw'; error: Error },
@@ -86,8 +86,7 @@ export class FakeSentenceGenAdapter implements SentenceGenAdapter {
     }
     return {
       response: this.behavior.response,
-      provider: this.name,
-      model: `fake-${this.name}`,
+      model: this.model,
       usage: { inputTokens: 10, outputTokens: 10 },
     };
   }
@@ -115,10 +114,10 @@ export class FakeJsonAdapter implements JsonTaskAdapter {
   calls = 0;
 
   constructor(
-    public readonly name: 'gemini' | 'openai',
+    public readonly model: string,
     private readonly behavior:
       | { kind: 'success'; respond: (req: JsonTaskRequest<unknown>) => unknown }
-      | { kind: 'error'; reason: 'rate_limit' | 'quota' | 'invalid_json' | 'request_error' }
+      | { kind: 'error'; reason: ProviderFailureReason }
       | { kind: 'throw'; error: Error },
   ) {}
 
@@ -135,8 +134,7 @@ export class FakeJsonAdapter implements JsonTaskAdapter {
     }
     return {
       response,
-      provider: this.name,
-      model: `fake-${this.name}`,
+      model: this.model,
       usage: { inputTokens: 10, outputTokens: 10 },
     };
   }

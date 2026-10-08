@@ -14,7 +14,7 @@ vi.mock('@google/generative-ai', () => ({
   },
 }));
 
-const { GeminiAdapter, LEARNER_ARRIVES_MESSAGE, buildGeminiChat } = await import('./gemini.js');
+const { GeminiAdapter, LEARNER_ARRIVES_MESSAGE, buildGeminiChat, toProviderError } = await import('./gemini.js');
 
 const npcOpener: TurnHistoryEntry = { role: 'npc', zh: '歡迎光臨！要喝什麼？' };
 const learnerReply: TurnHistoryEntry = { role: 'learner', zh: '我要一杯珍珠奶茶' };
@@ -62,14 +62,30 @@ describe('GeminiAdapter', () => {
     expect(send).toHaveBeenCalledWith('我要一杯珍珠奶茶');
   });
 
-  it('wraps a non-429 request error as a retryable request_error', async () => {
-    startChat.mockReturnValue({
-      sendMessage: vi.fn().mockRejectedValue(new Error('[400 Bad Request] invalid argument')),
+  it('gives every Gemini failure a reason (Phase 25)', async () => {
+    const cases: Array<[Error, string]> = [
+      [new Error('[400 Bad Request] invalid argument'), 'bad_request'],
+      [Object.assign(new Error('[429 Too Many Requests] Resource has been exhausted'), { status: 429 }), 'rate_limited'],
+      [new Error('[503 Service Unavailable] The model is overloaded'), 'server_error'],
+      [Object.assign(new Error('[403 Forbidden] API key not valid'), { status: 403 }), 'auth'],
+      [Object.assign(new Error('This operation was aborted'), { name: 'AbortError' }), 'timeout'],
+      [new Error('fetch failed'), 'request_error'],
+    ];
+    for (const [thrown, reason] of cases) {
+      startChat.mockReturnValue({ sendMessage: vi.fn().mockRejectedValue(thrown) });
+      const err = await new GeminiAdapter('key', 'gemini-test')
+        .generateTurn('sys', [learnerReply])
+        .catch((e: unknown) => e);
+      expect(err).toBeInstanceOf(ProviderRetryableError);
+      expect((err as ProviderRetryableError).reason, thrown.message).toBe(reason);
+    }
+  });
+
+  it("reads a 429's retry delay", () => {
+    const err = Object.assign(new Error('[429] quota'), {
+      status: 429,
+      errorDetails: [{ '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '12s' }],
     });
-    const err = await new GeminiAdapter('key', 'gemini-test')
-      .generateTurn('sys', [learnerReply])
-      .catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(ProviderRetryableError);
-    expect((err as ProviderRetryableError).reason).toBe('request_error');
+    expect(toProviderError(err)).toMatchObject({ reason: 'rate_limited', retryAfterMs: 12_000 });
   });
 });

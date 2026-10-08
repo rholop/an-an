@@ -10,7 +10,7 @@ export interface SentenceGenClient {
 
 /**
  * Calls apps/proxy's POST /v1/sentences (phase doc 04 §1) — the pipeline
- * never talks to Gemini/OpenAI directly or holds an API key itself
+ * never talks to Gemini directly or holds an API key itself
  * (CLAUDE.md: "A small backend LLM proxy holds the API keys"). One retry on
  * a 429 (rate limit): a batch job hitting the same proxy budget a live
  * learner uses is exactly the case the proxy's "busy, retrying" framing

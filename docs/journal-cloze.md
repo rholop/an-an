@@ -77,7 +77,7 @@ the owner's example, 2–3 mistakes, missing 是/的/了, measure words, word or
 mainland words, names, numbers, particles, already-correct ones).
 
 ```
-pnpm --filter @anan/proxy dev   # needs a Gemini and/or OpenAI key
+pnpm --filter @anan/proxy dev   # needs a Gemini key
 pnpm eval:journal               # writes docs/journal-cloze-eval.md
 ```
 

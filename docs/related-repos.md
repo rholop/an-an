@@ -48,12 +48,12 @@ prior art for apps/proxy, specifically:
   `@google/generative-ai` (`^0.21.0`), `genAI.getGenerativeModel()` /
   `generateContent()` / `generateContentStream()`. Note: that code streams
   free-form text (no JSON-schema / structured-output mode) and has no
-  Gemini→OpenAI fallback logic — An'an's proxy needs both, so treat this as
+  model-fallback logic — An'an's proxy needs both, so treat this as
   "how to call the SDK" reference, not a drop-in adapter.
 - **Provider routing pattern**: `server/src/services/aiRouter.ts` keeps an
   ordered list of `{ provider, model, label }` tiers per task and falls back
   down the list on failure/quota exhaustion — the same shape as this
-  project's required Gemini-then-OpenAI fallback.
+  project's fallback from one Gemini model to another (Phase 25: Gemini only).
 - **CI/CD**: `.github/workflows/ci.yml` (test+build on push/PR) and
   `.github/workflows/deploy.yml` (on push to `main`: SSH into the droplet
   via `appleboy/ssh-action` using `secrets.HOST`/`USERNAME`/`SSH_KEY`, `git

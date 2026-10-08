@@ -134,8 +134,8 @@ describe('StoryService (Phase 24)', () => {
     expect(req.rungs.r1).toContain('朋友');
     expect(req.topic).toContain('Theme 1');
     expect(req.length).toEqual({ min: 80, max: 150 });
-    // independent: never the provider that wrote it
-    expect(llm.checkCalls[0]!.avoidProvider).toBe('gemini');
+    // independent: the checker only sees the story, its summary and questions
+    expect(Object.keys(llm.checkCalls[0]!).sort()).toEqual(['paragraphs', 'questions', 'summaryEn']);
     expect(story.lessonId).toBe('laixue-1-L01');
     expect(story.rung1Share).toBeGreaterThanOrEqual(0.9);
     expect(story.newWords.map((x) => x.text)).toEqual(['咖啡', '便利商店']);

@@ -111,7 +111,7 @@ export class FakeTutorLLM implements TutorLLM {
    * dropped, as the real flow would). */
   async fixJournalSentence(
     req: JournalSentenceFixRequest,
-  ): Promise<{ review: ModelSentenceReview; servedBy?: 'gemini' | 'openai' }> {
+  ): Promise<{ review: ModelSentenceReview; servedBy?: string }> {
     const review = this.journal.fixSentence?.(req);
     if (!review) throw new Error('no fix scripted');
     return { review, servedBy: 'gemini' };

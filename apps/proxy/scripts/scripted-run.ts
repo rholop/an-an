@@ -6,7 +6,7 @@
 // + validator (no HTTP, no apps/web) so it exercises exactly the regenerate-
 // on-fail loop ChatService uses.
 //
-// Needs GEMINI_API_KEY and/or OPENAI_API_KEY in the environment (or
+// Needs GEMINI_API_KEY in the environment (or
 // apps/proxy/.env) to hit a real model. Without one, pass --fake to run
 // against a small set of canned scenario-appropriate replies instead — that
 // proves the harness, reporting, and attempts/cost accounting work, but
@@ -36,7 +36,6 @@ import {
 import { buildSystemPrompt, loadPromptTemplate } from '../src/prompt.js';
 import { PromptCache } from '../src/cache.js';
 import { GeminiAdapter } from '../src/providers/gemini.js';
-import { OpenAiAdapter } from '../src/providers/openai.js';
 import type { ProviderAdapter, ProviderResult } from '../src/providers/types.js';
 import { loadScenarioStore } from '../src/scenarios.js';
 
@@ -70,7 +69,7 @@ const FAKE_REPLIES: Record<string, { zh: string; bad?: boolean }[]> = {
 class ScriptedFakeAdapter implements ProviderAdapter {
   private i = 0;
   constructor(
-    public readonly name: 'gemini' | 'openai',
+    public readonly model: string,
     private readonly replies: { zh: string; bad?: boolean }[],
   ) {}
 
@@ -88,8 +87,7 @@ class ScriptedFakeAdapter implements ProviderAdapter {
     const approxInput = Math.round((systemPrompt.length + JSON.stringify(history).length) / 4);
     return {
       response,
-      provider: this.name,
-      model: `fake-${this.name}`,
+      model: this.model,
       usage: { inputTokens: approxInput, outputTokens: Math.round(reply.zh.length / 2) },
     };
   }
@@ -181,7 +179,7 @@ async function runScenario(
     history.push({ role: 'npc', zh: lastResult!.result.response.reply_zh });
     reports.push({
       turn,
-      provider: lastResult!.log.provider,
+      provider: lastResult!.log.model,
       cached: lastResult!.log.cached,
       tokens: lastResult!.log.usage.inputTokens + lastResult!.log.usage.outputTokens,
       attempts,
@@ -195,7 +193,7 @@ async function runScenario(
 
 function printReport(scenarioId: string, reports: TurnReport[]): void {
   console.log(`\n=== ${scenarioId} ===`);
-  console.log('turn  provider  cached  tokens  attempts  coverage  pass');
+  console.log('turn  model     cached  tokens  attempts  coverage  pass');
   for (const r of reports) {
     console.log(
       `${String(r.turn).padStart(4)}  ${r.provider.padEnd(8)}  ${String(r.cached).padEnd(6)}  ${String(r.tokens).padStart(6)}  ${String(r.attempts).padStart(8)}  ${(r.coverage * 100).toFixed(0).padStart(7)}%  ${r.pass ? 'pass' : 'FAIL (shown w/ gloss)'}`,
@@ -222,34 +220,26 @@ async function main(): Promise<void> {
     console.log(
       "(--fake: using canned scenario replies, not a real model — see this script's header comment)",
     );
-    primary = new ScriptedFakeAdapter('gemini', []); // overridden per-scenario below
-    fallback = new ScriptedFakeAdapter('openai', []);
+    primary = new ScriptedFakeAdapter('fake-primary', []); // overridden per-scenario below
+    fallback = new ScriptedFakeAdapter('fake-fallback', []);
   } else {
-    if (!env.GEMINI_API_KEY && !env.OPENAI_API_KEY) {
-      console.error(
-        'No GEMINI_API_KEY or OPENAI_API_KEY set, and --fake not passed. Nothing to run against.',
-      );
-      console.error(
-        'Set a key in apps/proxy/.env, or run with --fake for a dry run of the harness itself.',
-      );
+    if (!env.GEMINI_API_KEY) {
+      console.error('No GEMINI_API_KEY set, and --fake not passed. Nothing to run against.');
+      console.error('Set it in apps/proxy/.env, or run with --fake for a dry run of the harness itself.');
       process.exit(1);
     }
-    primary = env.GEMINI_API_KEY
-      ? new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_TURN)
-      : new OpenAiAdapter(env.OPENAI_API_KEY!, env.OPENAI_MODEL_TURN);
-    fallback = env.OPENAI_API_KEY
-      ? new OpenAiAdapter(env.OPENAI_API_KEY, env.OPENAI_MODEL_TURN)
-      : new GeminiAdapter(env.GEMINI_API_KEY!, env.GEMINI_MODEL_TURN);
+    primary = new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_TURN);
+    fallback = new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_FALLBACK);
   }
 
   for (const scenario of scenarioStore.all()) {
     if (FAKE) {
       primary = new ScriptedFakeAdapter(
-        'gemini',
+        'fake-primary',
         FAKE_REPLIES[scenario.id] ?? [{ zh: scenario.opener.zh }],
       );
       fallback = new ScriptedFakeAdapter(
-        'openai',
+        'fake-fallback',
         FAKE_REPLIES[scenario.id] ?? [{ zh: scenario.opener.zh }],
       );
     }

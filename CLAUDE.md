@@ -18,7 +18,7 @@ The game is **purely text-based: no audio, TTS, listening or speech features.** 
 - **Sits alongside Anki, not replacing it.** An existing Anki deck can be imported to mark words as "seen". The game focuses on context, production and output. Its own scheduler still runs, for in-game items.
 - **Seed vocabulary: SC-TOP TOCFL 8,000-word list** (Novice 1–2, Levels 1–6). The NAER/TBCL 14,425-word list is a possible later extension; don't build for it now, but don't make it impossible either.
 - **Stack:** React + TypeScript PWA built with Vite. Progress stored **locally first** in IndexedDB via **Dexie**, with JSON export/import for backup. A **small backend LLM proxy** holds the API keys, rate-limits and caches. It deploys next to the site (e.g. as a serverless function on the same host).
-- **LLM providers: Google Gemini (free tier) as the default, OpenAI as the fallback.** Both sit behind one adapter interface in the proxy; which model handles which task (chat, journal review, sentence generation) is env config. Keep costs near zero: cache aggressively and pre-generate content offline where possible.
+- **LLM provider: Google Gemini (free tier) only** (Phase 25, owner's decision: no paid provider is ever called). The proxy's fallback is a second Gemini model (`GEMINI_MODEL_FALLBACK`) and independent checks are a fresh call on `GEMINI_MODEL_CHECK`; which model handles which task (chat, journal review, sentence generation) is env config. Keep costs near zero: cache aggressively and pre-generate content offline where possible.
 - **Scheduler:** FSRS via `ts-fsrs`, target retention 0.85–0.90 (default 0.9, user-configurable).
 - **Taiwan authority:** readings and zhuyin come from Ministry of Education (MOE) dictionary data. CC-CEDICT is only a gloss fallback, never the authority for readings.
 - **Items are word + sense**, not bare headwords. Grammar patterns (了, 過, 把, 比, 會/能/可以 …) are items too.
@@ -33,7 +33,7 @@ The game is **purely text-based: no audio, TTS, listening or speech features.** 
                          readings, build versioned lexicon, sentence bank.
 /apps/web                React PWA (Vite). Dexie persistence, UI, service worker.
 /apps/proxy              Small server (Hono, deployable as a serverless function)
-                         in front of Gemini / OpenAI.
+                         in front of Gemini.
 /data/raw                Downloaded source files (gitignored if licence requires).
 /data/build              Generated lexicon + sentence bank (versioned).
 ```

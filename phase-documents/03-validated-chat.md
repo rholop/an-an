@@ -11,7 +11,7 @@ Goal-driven conversations with an NPC whose replies stay at the learner's level,
 1. **LLM proxy** (`apps/proxy`):
    - Small Node server (Hono or Fastify). Endpoints: `POST /v1/turn`, `POST /v1/health`. Later phases add `/v1/journal-review` and `/v1/sentences`.
    - Holds the API keys from env. Model names per task come from env config, not code.
-   - **Two provider adapters behind one interface: Gemini (default, free tier) and OpenAI (fallback).** Use each provider's structured-output / JSON-schema mode so replies come back as JSON. On a rate-limit (429), quota error or invalid JSON from Gemini, retry once on OpenAI. Log which provider served each request.
+   - **One provider adapter: Gemini (free tier).** (Phase 25 replaced the original second, paid provider: a failure now retries on a second Gemini model; see CHANGELOG.md.) Use the structured-output / JSON-schema mode so replies come back as JSON. Log which model served each request.
    - Gemini's free tier has low per-minute limits: queue requests and show a friendly "busy, retrying" state rather than an error.
    - Don't send anything personal beyond the conversation itself (free-tier prompts may be used by the provider for training).
    - Per-client rate limit and a daily token budget (config). Log token usage per request.
@@ -82,7 +82,7 @@ Goal-driven conversations with an NPC whose replies stay at the learner's level,
 - Every tap/hover/no-lookup produces the right evidence in the log, and the review queue reflects it.
 - Both scenarios can be completed, have a clear end, and produce a summary.
 - Proxy rate limit and daily budget enforced (tests).
-- Both adapters pass the same contract tests; forcing a Gemini 429 in a test makes the turn succeed via OpenAI.
+- The adapter passes the contract tests; forcing a 429 on the primary Gemini model in a test makes the turn succeed on the fallback Gemini model (Phase 25).
 
 ## Dependencies
 

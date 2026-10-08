@@ -1,7 +1,7 @@
 import { gradeClozeAnswer, type ClozeInputMode, type GradeOptions } from '../cloze/grading.js';
 import type { Lexicon } from '../lexicon.js';
 import { normaliseAnswer } from './normalize.js';
-import type { ErrorExercise, ErrorItem, ProviderName } from './types.js';
+import type { ErrorExercise, ErrorItem } from './types.js';
 import { checkCorrectedRules, verifySentenceText, type JournalLLM } from './verifyCorrected.js';
 
 /** What the learner did on a journal review card. */
@@ -105,7 +105,6 @@ export interface ReconsiderDeps {
   lexicon: Lexicon;
   llm: Pick<JournalLLM, 'verifyJournalSentence'>;
   protectedTerms: readonly string[];
-  avoidProvider?: ProviderName;
 }
 
 export type Reconsidered =
@@ -157,7 +156,6 @@ export async function reconsiderAnswer(
   if (rules.length > 0) return { accepted: false, reason: rules.join('; ') };
   const res = await verifySentenceText(deps, sentence, {
     en: item.en,
-    avoidProvider: deps.avoidProvider,
   });
   if (!res.ok) return { accepted: false, reason: res.problem };
   return { accepted: true, item: withAcceptedAnswer(item, answer) };

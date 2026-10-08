@@ -47,30 +47,44 @@ export function buildGeminiChat(history: TurnHistoryEntry[]) {
   };
 }
 
-function isRetryable(err: unknown): 'rate_limit' | 'quota' | undefined {
+/** Seconds from a 429: the RetryInfo detail ("30s") or "Please retry in 30.5s" in the message. */
+function retryAfterMs(err: unknown): number | undefined {
+  const details = (err as { errorDetails?: Array<{ retryDelay?: string }> })?.errorDetails;
+  const delay = details?.find((d) => typeof d?.retryDelay === 'string')?.retryDelay;
+  const m = (delay ?? (err instanceof Error ? err.message : String(err))).match(/(\d+(?:\.\d+)?)\s*s\b/);
+  return m ? Math.ceil(Number(m[1]) * 1000) : undefined;
+}
+
+/** Phase 25: every Gemini failure gets a reason. `auth` is never retried; the rest may be. */
+export function toProviderError(err: unknown): ProviderRetryableError {
   const message = err instanceof Error ? err.message : String(err);
   const status = (err as { status?: number })?.status;
-  if (status === 429 || /429|rate.?limit/i.test(message)) return 'rate_limit';
-  if (/RESOURCE_EXHAUSTED|quota/i.test(message)) return 'quota';
-  return undefined;
+  const short = message.slice(0, 300);
+  if (status === 401 || status === 403 || /API key not valid|API_KEY_INVALID|PERMISSION_DENIED|UNAUTHENTICATED/i.test(message))
+    return new ProviderRetryableError(`Gemini auth: ${short}`, 'auth');
+  if (/quota/i.test(message) && /per day|daily|PerDay/i.test(message))
+    return new ProviderRetryableError(`Gemini quota: ${short}`, 'quota', retryAfterMs(err));
+  if (status === 429 || /\b429\b|rate.?limit|RESOURCE_EXHAUSTED|quota/i.test(message))
+    return new ProviderRetryableError(`Gemini rate limited: ${short}`, 'rate_limited', retryAfterMs(err));
+  if ((err as { name?: string })?.name === 'AbortError' || /timed? ?out|deadline|ETIMEDOUT/i.test(message))
+    return new ProviderRetryableError(`Gemini timeout: ${short}`, 'timeout');
+  if ((status !== undefined && status >= 500) || /\b50[0-9]\b|INTERNAL|UNAVAILABLE|overloaded/i.test(message))
+    return new ProviderRetryableError(`Gemini server error: ${short}`, 'server_error');
+  if ((status !== undefined && status >= 400) || /\b400\b|INVALID_ARGUMENT/i.test(message))
+    return new ProviderRetryableError(`Gemini bad request: ${short}`, 'bad_request');
+  return new ProviderRetryableError(`Gemini request error: ${short}`, 'request_error');
 }
 
-/** Any Gemini request failure is fallback-worthy; rate limit / quota keep
- * their specific reason, everything else is a 'request_error'. */
-function toProviderError(err: unknown): ProviderRetryableError {
-  const retryable = isRetryable(err);
-  if (retryable) return new ProviderRetryableError(`Gemini ${retryable}`, retryable);
-  const message = err instanceof Error ? err.message : String(err);
-  return new ProviderRetryableError(`Gemini request error: ${message}`, 'request_error');
-}
+/** One model call never hangs a request: past this it counts as a timeout. */
+export const GEMINI_TIMEOUT_MS = 25_000;
 
 export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonTaskAdapter {
-  readonly name = 'gemini' as const;
   private readonly client: GoogleGenerativeAI;
 
   constructor(
     apiKey: string,
-    private readonly model: string,
+    readonly model: string,
+    private readonly timeoutMs: number = GEMINI_TIMEOUT_MS,
   ) {
     this.client = new GoogleGenerativeAI(apiKey);
   }
@@ -84,7 +98,7 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         responseSchema: TURN_SCHEMA as any,
       },
-    });
+    }, { timeout: this.timeoutMs });
 
     const { chatHistory, message: messageToSend } = buildGeminiChat(history);
 
@@ -110,7 +124,6 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
     const usage = result.response.usageMetadata;
     return {
       response: parsed,
-      provider: 'gemini',
       model: this.model,
       usage: {
         inputTokens: usage?.promptTokenCount ?? 0,
@@ -128,7 +141,7 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         responseSchema: SENTENCE_SCHEMA as any,
       },
-    });
+    }, { timeout: this.timeoutMs });
 
     let result;
     try {
@@ -151,7 +164,6 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
     const usage = result.response.usageMetadata;
     return {
       response: parsed,
-      provider: 'gemini',
       model: this.model,
       usage: {
         inputTokens: usage?.promptTokenCount ?? 0,
@@ -169,7 +181,7 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         responseSchema: req.jsonSchema as any,
       },
-    });
+    }, { timeout: this.timeoutMs });
 
     let result;
     try {
@@ -191,7 +203,6 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
     const usage = result.response.usageMetadata;
     return {
       response: parsed,
-      provider: 'gemini',
       model: this.model,
       usage: {
         inputTokens: usage?.promptTokenCount ?? 0,

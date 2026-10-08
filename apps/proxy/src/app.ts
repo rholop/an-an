@@ -88,17 +88,19 @@ import {
   type JournalPrompts,
 } from './prompt.js';
 import type { RateLimiter } from './rate-limit.js';
-import { ProvidersFailedError } from './providers/types.js';
+import { ModelsFailedError } from './providers/types.js';
 import { applyZodLimits, trimToLimits } from './zod-limits.js';
 
-/** Phase 25: '/v1/story-check' → {"error":"story_check_failed","providers":[{"name":"openai","reason":"bad_request"}, …]}.
- * Names which provider failed and why; never a key or a prompt. */
+/** Phase 25: '/v1/story-check' → {"error":"story_check_failed","attempts":[{"model":"gemini-…","reason":"rate_limited"}, …]}.
+ * Names which model failed and why; never a key or a prompt. Sent with MODEL_FAILURE_STATUS (503):
+ * Cloudflare replaces an origin's 502 with its own HTML page, which hid this body in production. */
+export const MODEL_FAILURE_STATUS = 503;
 export function failureBody(
   route: string,
   err: unknown,
-): { error: string; providers?: ProvidersFailedError['providers'] } {
-  const error = `${route.replace(/^\/v1\//, '').replace(/[^a-zA-Z0-9]+/g, '_')}_failed`;
-  return err instanceof ProvidersFailedError ? { error, providers: err.providers } : { error };
+): { error: string; attempts?: ModelsFailedError['attempts'] } {
+  const error = `${route.replace(/^\/v1\//, '').replace(/[^a-z0-9]+/gi, '_')}_failed`;
+  return err instanceof ModelsFailedError ? { error, attempts: err.attempts } : { error };
 }
 import type { ScenarioStore } from './scenarios.js';
 
@@ -310,17 +312,17 @@ export function createApp(deps: AppDeps): Hono {
           openPrompt,
           openRequest.history,
           {
-            alternate: openRequest.alternateProvider === true,
+            alternate: openRequest.alternateModel === true,
           },
         );
         const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
         deps.rateLimiter.recordUsage(installId, totalTokens);
         log({ route: '/v1/turn', mode: 'open', installId, totalTokens, ...runLog });
-        c.header('x-served-by', runLog.provider);
+        c.header('x-served-by', runLog.model);
         return c.json(result.response);
       } catch (err) {
         log({ route: '/v1/turn', mode: 'open', installId, error: String(err) });
-        return c.json({ ...failureBody('/v1/turn', err), message: 'turn generation failed' }, 502);
+        return c.json({ ...failureBody('/v1/turn', err), message: 'turn generation failed' }, MODEL_FAILURE_STATUS);
       }
     }
 
@@ -345,7 +347,7 @@ export function createApp(deps: AppDeps): Hono {
       const { result, log: runLog } = await deps.orchestrator.run(
         effectiveSystemPrompt,
         turnRequest.history,
-        { alternate: turnRequest.alternateProvider === true },
+        { alternate: turnRequest.alternateModel === true },
       );
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
@@ -359,7 +361,7 @@ export function createApp(deps: AppDeps): Hono {
       return c.json(result.response);
     } catch (err) {
       log({ route: '/v1/turn', installId, scenarioId: turnRequest.scenarioId, error: String(err) });
-      return c.json({ ...failureBody('/v1/turn', err), message: 'turn generation failed' }, 502);
+      return c.json({ ...failureBody('/v1/turn', err), message: 'turn generation failed' }, MODEL_FAILURE_STATUS);
     }
   });
 
@@ -414,7 +416,7 @@ export function createApp(deps: AppDeps): Hono {
       });
       return c.json(
         { ...failureBody('/v1/sentences', err), message: 'sentence generation failed' },
-        502,
+        MODEL_FAILURE_STATUS,
       );
     }
   });
@@ -429,7 +431,8 @@ export function createApp(deps: AppDeps): Hono {
     jsonSchema: object,
     build: (req: Req) => { systemPrompt: string; userMessage: string },
     orchestrator: JsonOrchestrator = deps.journal.orchestrator,
-    avoid?: (req: Req) => 'gemini' | 'openai' | undefined,
+    /** Phase 25: the independent check runs on the checker model. */
+    checker = false,
   ) {
     const installId = c.req.header('x-install-id');
     if (!installId) return c.json({ error: 'missing X-Install-Id header' }, 400);
@@ -468,17 +471,17 @@ export function createApp(deps: AppDeps): Hono {
           parse: (raw) => responseSchema.parse(trimToLimits(raw, limited)),
           ...build(parsed.data),
         },
-        { avoidProvider: avoid?.(parsed.data) },
+        { checker },
       );
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
       log({ route, installId, totalTokens, ...runLog });
       c.header('x-total-tokens', String(totalTokens));
-      c.header('x-served-by', runLog.provider);
+      c.header('x-served-by', runLog.model);
       return c.json(result.response);
     } catch (err) {
       log({ route, installId, error: String(err) });
-      return c.json(failureBody(route, err), 502);
+      return c.json(failureBody(route, err), MODEL_FAILURE_STATUS);
     }
   }
 
@@ -525,7 +528,7 @@ export function createApp(deps: AppDeps): Hono {
   );
 
   // Phase 17: the retry of one corrected sentence, the independent checker
-  // (never given the original; prefers the provider that did NOT correct), and
+  // (never given the original; a fresh call on the checker model), and
   // the cloze solver test.
   app.post('/v1/journal-sentence-fix', (c) =>
     journalRoute(
@@ -553,7 +556,7 @@ export function createApp(deps: AppDeps): Hono {
         userMessage: verifyUserMessage(req),
       }),
       undefined,
-      (req) => req.avoidProvider,
+      true,
     ),
   );
 
@@ -603,7 +606,7 @@ export function createApp(deps: AppDeps): Hono {
     );
   });
 
-  // Phase 24: a graded story, then the independent reader (the other provider, never shown the
+  // Phase 24: a graded story, then the independent reader (the checker model, never shown the
   // prompt or the word lists). Both behind the household code, cached like every JSON task.
   app.post('/v1/story', (c) => {
     const st = deps.story;
@@ -633,7 +636,7 @@ export function createApp(deps: AppDeps): Hono {
       STORY_CHECK_JSON_SCHEMA,
       (req) => ({ systemPrompt: st.prompts.check, userMessage: storyCheckUserMessage(req) }),
       st.orchestrator,
-      (req) => req.avoidProvider,
+      true,
     );
   });
 

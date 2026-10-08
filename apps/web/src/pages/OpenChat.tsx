@@ -1,6 +1,7 @@
 // Phase 18: Open chat. A friend (安安) to talk to about anything; the words she uses are
 // weighted towards what you know and what your class covers next (see core's openChat.ts).
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useChatPausesStories } from '../lib/stories.js';
 import {
   openChatChips,
   OPEN_CHAT_NPC,
@@ -74,6 +75,7 @@ export function OpenChatView({
   refreshCards,
   onExit,
 }: Props) {
+  useChatPausesStories();
   // The service reads the books through a ref, so a freshly imported textbook applies at once.
   const booksRef = useRef(books);
   booksRef.current = books;
@@ -241,7 +243,7 @@ export function OpenChatView({
         <div className="chat-scroll">
           {privacyLoaded && !privacySeen && (
             <p className="open-chat-privacy" role="note" data-testid="open-chat-privacy">
-              Open chat is sent to Google or OpenAI. Don't share anything private.{' '}
+              Open chat is sent to Google (Gemini). Don't share anything private.{' '}
               <button className="chat-chip" onClick={() => void setPrivacySeen(true)}>
                 Got it
               </button>

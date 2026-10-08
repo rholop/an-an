@@ -180,6 +180,8 @@ export const NEXT_STORY = 'Next story';
 /** Phase 25: the only thing a failed story write ever shows (never a raw error), with RETRY. */
 export const STORY_UNAVAILABLE = "Couldn't write a story right now. Try again.";
 export const RETRY = 'Retry';
+/** Phase 25: when the free Gemini quota is used up. */
+export const AI_QUOTA_USED = 'The free AI quota is used up for now. Try again in a few minutes.';
 export const STORY_WRITING = 'Writing a story…';
 export const READ_AGAIN = 'Read again';
 export const EASIER_NOW = "You'll find this one easier now";

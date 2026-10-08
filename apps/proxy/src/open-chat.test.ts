@@ -37,15 +37,17 @@ const openRequest: OpenTurnRequest = {
   englishFallback: false,
 };
 
-function buildApp(opts: { gemini?: FakeProviderAdapter; openai?: FakeProviderAdapter; topicWords?: FakeJsonAdapter } = {}) {
+const instant = { backoffMs: 0, maxWaitMs: 0, sleep: async () => undefined };
+
+function buildApp(opts: { gemini?: FakeProviderAdapter; fallback?: FakeProviderAdapter; topicWords?: FakeJsonAdapter } = {}) {
   const gemini = opts.gemini ?? new FakeProviderAdapter('gemini', { kind: 'success', response: fakeTurnResponse() });
-  const openai = opts.openai ?? new FakeProviderAdapter('openai', { kind: 'success', response: fakeTurnResponse({ reply_zh: '你喜歡吃什麼？' }) });
+  const fallback = opts.fallback ?? new FakeProviderAdapter('gemini-fallback', { kind: 'success', response: fakeTurnResponse({ reply_zh: '你喜歡吃什麼？' }) });
   const topicGemini =
     opts.topicWords ??
     new FakeJsonAdapter('gemini', { kind: 'success', respond: () => ({ words: ['吃', '飯', '夜市'] }) });
-  const topicOpenai = new FakeJsonAdapter('openai', { kind: 'success', respond: () => ({ words: ['吃'] }) });
+  const topicFallback = new FakeJsonAdapter('gemini-fallback', { kind: 'success', respond: () => ({ words: ['吃'] }) });
   const jsonOrch = () =>
-    createJsonOrchestrator(topicGemini, topicOpenai, new PromptCache<JsonTaskResult<unknown>>());
+    createJsonOrchestrator(topicGemini, topicFallback, new PromptCache<JsonTaskResult<unknown>>(), () => {}, { policy: instant });
   const never = {
     run: async () => {
       throw new Error('unused');
@@ -55,7 +57,7 @@ function buildApp(opts: { gemini?: FakeProviderAdapter; openai?: FakeProviderAda
     env: { CORS_ORIGIN: 'https://example.com' },
     scenarioStore: { get: () => undefined, all: () => [] },
     promptTemplate: loadPromptTemplate('v1'),
-    orchestrator: createOrchestrator(gemini, openai, new PromptCache(), () => {}),
+    orchestrator: createOrchestrator(gemini, fallback, new PromptCache(), () => {}, instant),
     sentencePromptTemplate: loadSentenceGenPromptTemplate('v1'),
     sentenceOrchestrator: { run: async () => { throw new Error(`unused ${JSON.stringify(fakeSentenceGenResponse())}`); } },
     journal: { prompts: loadJournalPromptTemplates('v1'), orchestrator: never as never },
@@ -72,7 +74,7 @@ function buildApp(opts: { gemini?: FakeProviderAdapter; openai?: FakeProviderAda
     rateLimiter: new RateLimiter({ requestsPerMinute: 100, dailyTokenBudget: 1_000_000 }),
     log: () => {},
   });
-  return { app, gemini, openai, topicGemini };
+  return { app, gemini, fallback, topicGemini };
 }
 
 const post = (app: ReturnType<typeof buildApp>['app'], path: string, body: unknown, code = 'tofu') =>
@@ -128,16 +130,16 @@ describe('POST /v1/turn (mode: open)', () => {
     expect(res.status).toBe(400);
   });
 
-  it('forcing a Gemini 429 makes the turn succeed via OpenAI (same contract as Phase 3)', async () => {
-    const { app, gemini, openai } = buildApp({
-      gemini: new FakeProviderAdapter('gemini', { kind: 'error', reason: 'rate_limit' }),
+  it('a Gemini 429 that persists: the turn succeeds on the fallback Gemini model', async () => {
+    const { app, gemini, fallback } = buildApp({
+      gemini: new FakeProviderAdapter('gemini', { kind: 'error', reason: 'rate_limited' }),
     });
     const res = await post(app, '/v1/turn', openRequest);
     expect(res.status).toBe(200);
-    expect(res.headers.get('x-served-by')).toBe('openai');
+    expect(res.headers.get('x-served-by')).toBe('gemini-fallback');
     expect(((await res.json()) as { reply_zh: string }).reply_zh).toBe('你喜歡吃什麼？');
-    expect(gemini.calls).toBe(1);
-    expect(openai.calls).toBe(1);
+    expect(gemini.calls).toBe(2);
+    expect(fallback.calls).toBe(1);
   });
 
   it('scenario turns still need a scenario id', async () => {
@@ -190,10 +192,10 @@ describe('POST /v1/topic-words', () => {
     expect(normalizeTopic('  Food  You LIKE ')).toBe('food you like');
   });
 
-  it('falls back to OpenAI when Gemini is rate limited', async () => {
-    const { app } = buildApp({ topicWords: new FakeJsonAdapter('gemini', { kind: 'error', reason: 'rate_limit' }) });
+  it('falls back to the other Gemini model when the task model is rate limited', async () => {
+    const { app } = buildApp({ topicWords: new FakeJsonAdapter('gemini', { kind: 'error', reason: 'rate_limited' }) });
     const res = await post(app, '/v1/topic-words', { topic: 'weekend', level: 'N2' });
     expect(res.status).toBe(200);
-    expect(res.headers.get('x-served-by')).toBe('openai');
+    expect(res.headers.get('x-served-by')).toBe('gemini-fallback');
   });
 });

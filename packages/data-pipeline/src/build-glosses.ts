@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
 /**
  * Phase 7 §B2: offline gloss adjudication. For each word with several
- * candidate senses, asks the proxy's POST /v1/gloss (Gemini first, OpenAI
- * fallback, cached) to CHOOSE and CONDENSE from the candidates. Results are
+ * candidate senses, asks the proxy's POST /v1/gloss (Gemini, with a fallback
+ * Gemini model, cached) to CHOOSE and CONDENSE from the candidates. Results are
  * appended to data/build/gloss-adjudication.jsonl; `pnpm build:lexicon`
  * validates and applies them (invalid ones are rejected and flagged).
  *

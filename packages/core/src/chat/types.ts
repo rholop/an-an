@@ -43,8 +43,8 @@ export const TurnRequestSchema = z.object({
    * normally fills in. */
   feedback: z.string().optional(),
   /** Phase 21: a reply that kept failing the Taiwan / traditional check is retried once on the
-   * other provider (OpenAI first instead of Gemini). */
-  alternateProvider: z.boolean().optional(),
+   * fallback Gemini model (GEMINI_MODEL_FALLBACK) first. */
+  alternateModel: z.boolean().optional(),
   learnerLevel: LevelSchema,
   vocab: z.object({
     knownSample: z.array(z.string()),

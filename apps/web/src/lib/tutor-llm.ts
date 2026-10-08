@@ -50,10 +50,19 @@ export class ProxyTurnError extends Error {
   constructor(
     message: string,
     public readonly status: number,
+    /** Phase 25: the free Gemini quota (or the proxy's own budget) is used up for now. */
+    public readonly quota = false,
   ) {
     super(message);
     this.name = 'ProxyTurnError';
   }
+}
+
+const QUOTA_REASONS = new Set(['rate_limited', 'quota']);
+
+/** Phase 25: is this failure the free AI quota running out (show "Try again in a few minutes")? */
+export function isQuotaError(err: unknown): boolean {
+  return err instanceof ProxyTurnError && err.quota;
 }
 
 /** apps/web's implementation of core's TutorLLM — fetch to apps/proxy. Never
@@ -65,7 +74,7 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM {
     return (await this.postWithMeta(route, body)).json;
   }
 
-  /** Also returns which provider answered (the proxy's `x-served-by`). A
+  /** Also returns which Gemini model answered (the proxy's `x-served-by`). A
    * short rate-limit wait is retried: the journal pipeline makes several calls. */
   private async postWithMeta(
     route: string,
@@ -83,13 +92,19 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM {
         const errBody = (await res.json().catch(() => ({}))) as {
           error?: string;
           retryAfterMs?: number;
+          attempts?: Array<{ model?: string; reason?: string }>;
         };
         const wait = errBody.retryAfterMs;
         if (res.status === 429 && wait !== undefined && wait <= 30_000 && attempt < 3) {
           await new Promise((r) => setTimeout(r, wait + 50));
           continue;
         }
-        throw new ProxyTurnError(errBody.error ?? `HTTP ${res.status}`, res.status);
+        const quota =
+          res.status === 429 ||
+          (Array.isArray(errBody.attempts) &&
+            errBody.attempts.length > 0 &&
+            errBody.attempts.every((a) => QUOTA_REASONS.has(a.reason ?? '')));
+        throw new ProxyTurnError(errBody.error ?? `HTTP ${res.status}`, res.status, quota);
       }
       const served = ProviderNameSchema.safeParse(res.headers.get('x-served-by'));
       return { json: await res.json(), servedBy: served.success ? served.data : undefined };
@@ -155,13 +170,13 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM {
     return JournalExplainResponseSchema.parse(await this.post('/v1/journal-explain', req));
   }
 
-  /** Phase 24: a graded story (Gemini first, OpenAI fallback) and which provider wrote it. */
+  /** Phase 24: a graded story (Phase 25: Gemini only, a fallback Gemini model) and which model wrote it. */
   async writeStory(req: StoryRequest): Promise<{ story: StoryResponse; servedBy?: ProviderName }> {
     const { json, servedBy } = await this.postWithMeta('/v1/story', req);
     return { story: StoryResponseSchema.parse(json), servedBy };
   }
 
-  /** Phase 24: the independent read, by the other provider (`avoidProvider`). */
+  /** Phase 24: the independent read (Phase 25: a fresh call on the proxy's checker model). */
   async checkStory(req: StoryCheckRequest): Promise<StoryCheckResponse> {
     return StoryCheckResponseSchema.parse(await this.post('/v1/story-check', req));
   }

@@ -4,7 +4,7 @@
  * LIVE proxy (real models) and writes docs/journal-cloze-eval.md, with a blank verdict
  * per item for a human to fill in. Re-run before every prompt change and diff the result.
  *
- *   pnpm --filter @anan/proxy dev   # one terminal (needs GEMINI_API_KEY and/or OPENAI_API_KEY)
+ *   pnpm --filter @anan/proxy dev   # one terminal (needs GEMINI_API_KEY)
  *   pnpm eval:journal               # another
  *
  * Env: PROXY_URL (default http://localhost:3002), SITE_CODE (the household code).
@@ -45,7 +45,7 @@ const lexFile = JSON.parse(readFileSync(path.join(root, 'data/build/lexicon.v2.j
 };
 const lexicon = new Lexicon(lexFile.words, lexFile.grammar);
 
-async function post(route: string, body: unknown): Promise<{ json: unknown; servedBy?: 'gemini' | 'openai' }> {
+async function post(route: string, body: unknown): Promise<{ json: unknown; servedBy?: string }> {
   const res = await fetch(`${proxyUrl}${route}`, {
     method: 'POST',
     headers: {

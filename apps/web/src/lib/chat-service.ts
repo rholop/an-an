@@ -347,7 +347,7 @@ export class ChatService {
     // more try on the other provider, then an error ("Couldn't get a reliable reply, try again").
     if (report && !report.taiwanness.isClean) {
       attempts++;
-      response = await this.tutorLLM.generateTurn({ ...req, feedback: buildFeedback(report), alternateProvider: true });
+      response = await this.tutorLLM.generateTurn({ ...req, feedback: buildFeedback(report), alternateModel: true });
       report = analyzeText(response.reply_zh, analyzeCtx, [], {
         coverageThreshold: 0.95,
         maxUnknownTokens: 4,

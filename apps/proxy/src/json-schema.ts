@@ -1,15 +1,13 @@
 /**
- * Hand-written JSON-schema-shaped object describing TurnResponse, for both
- * providers' structured-output modes (CLAUDE.md §1: "Use each provider's
- * structured-output / JSON-schema mode"). Kept as one shared object rather
+ * Hand-written JSON-schema-shaped object describing TurnResponse, for Gemini's
+ * structured-output mode (responseSchema). Kept as one shared object rather
  * than deriving from the zod schema (no extra zod-to-json-schema dependency)
  * — if TurnResponseSchema in @anan/core changes, update this by hand and
  * let json-schema-shape.test.ts catch drift.
  *
- * This is deliberately close to both providers' accepted subsets (no $ref,
- * no oneOf/anyOf) — Gemini's responseSchema is a restricted OpenAPI-3 subset,
- * OpenAI's json_schema mode wants plain JSON Schema with
- * additionalProperties:false — this object satisfies both.
+ * Gemini's responseSchema is a restricted OpenAPI-3 subset: no $ref, no
+ * oneOf/anyOf, no additionalProperties. Phase 25 writes the zod limits in at
+ * request time (zod-limits.ts).
  */
 export const TURN_RESPONSE_JSON_SCHEMA = {
   type: 'object',

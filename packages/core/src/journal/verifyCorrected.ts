@@ -108,7 +108,7 @@ export interface VerifyDeps {
 }
 
 /** Part B steps 1-3 on a piece of Chinese: rules, then the independent
- * checker (other provider when `avoidProvider` is given), which also confirms
+ * checker (a fresh call on the proxy's checker model), which also confirms
  * the meaning when `en` is given. Network errors propagate. */
 export async function verifySentenceText(
   deps: {
@@ -117,7 +117,7 @@ export async function verifySentenceText(
     protectedTerms: readonly string[];
   },
   zh: string,
-  opts: { en?: string; original?: string; avoidProvider?: ProviderName } = {},
+  opts: { en?: string; original?: string } = {},
 ): Promise<{ ok: boolean; problem: string }> {
   const rules = checkCorrectedRules(zh, {
     lexicon: deps.lexicon,
@@ -128,7 +128,6 @@ export async function verifySentenceText(
   const res = await deps.llm.verifyJournalSentence({
     zh,
     ...(opts.en ? { en: opts.en } : {}),
-    ...(opts.avoidProvider ? { avoidProvider: opts.avoidProvider } : {}),
   });
   if (!res.ok) return { ok: false, problem: res.problem || 'the checker objected' };
   if (opts.en && !res.meaningMatches)
@@ -203,7 +202,6 @@ export async function verifyCorrected(
     const check = await verifySentenceText(deps, corrected, {
       en: review.en,
       original,
-      avoidProvider: servedBy,
     });
     if (!check.ok) {
       lastProblem = check.problem;
