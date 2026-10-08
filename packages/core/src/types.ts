@@ -61,6 +61,8 @@ export interface GrammarItem {
   tags?: string[];
   /** Phase 12: the function word(s) that signal the pattern in a sentence; blanked by the grammar cloze. */
   focus?: string[];
+  /** Phase 25: regex source matching sentences that use the pattern (the fill blank comes from its span). */
+  matcher?: string;
 }
 
 export type ItemRef = { kind: 'word' | 'grammar'; id: string };

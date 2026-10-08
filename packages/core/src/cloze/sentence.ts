@@ -35,6 +35,10 @@ export const SentenceBankEntrySchema = z.object({
   /** Phase 13: the book `lesson` counts in (absent = 'laixue-1', the Phase 12 files). */
   textbookId: z.string().optional(),
   grammarIds: z.array(z.string()).optional(),
+  /** Phase 25: other word orders that are just as right (time / place words), for reorder grading. */
+  altOrders: z.array(z.string()).optional(),
+  /** Phase 25: the same sentence with a typical error for its grammar point ("Which sentence is right?"). */
+  wrong: z.string().optional(),
 });
 export type SentenceBankEntry = z.infer<typeof SentenceBankEntrySchema>;
 
