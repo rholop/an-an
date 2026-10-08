@@ -82,8 +82,14 @@ body {
 }
 .reader-controls {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
   margin: 0.75rem 0;
+}
+/* the note under the two selects takes its own line (it would run off a phone screen) */
+.reader-controls > .reader-meta {
+  flex-basis: 100%;
+  margin: 0;
 }
 
 .taiwanness-warnings,
@@ -202,6 +208,9 @@ body {
 /* Phase 12: 來學華語 badge, shown wherever a textbook item appears. */
 .textbook-badge {
   display: inline-block;
+  max-width: calc(100% - 0.4rem);
+  box-sizing: border-box;
+  white-space: normal;
   margin-left: 0.4rem;
   padding: 0 0.45rem;
   border: 1px solid var(--c-info);
