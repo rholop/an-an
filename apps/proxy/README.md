@@ -109,7 +109,8 @@ most:
 | Var | Required | Notes |
 |---|---|---|
 | `GEMINI_API_KEY` | one of these two | Free tier. Get one at [aistudio.google.com](https://aistudio.google.com/apikey). |
-| `OPENAI_API_KEY` | one of these two | Fallback provider. |
+| `OPENAI_API_KEY` | no | Fallback provider, used only with `OPENAI_ENABLED=1` (off by default: OpenAI is not free, so the proxy is Gemini-only). |
+| `OPENAI_ENABLED` | no | `1` to allow OpenAI calls. Default `0`. |
 | `SITE_CODE` | **yes** (server won't start without it) | The household code; see below. |
 | `SYNC_DIR` | no | Where per-profile saved copies go (default `apps/proxy/sync-data`). |
 

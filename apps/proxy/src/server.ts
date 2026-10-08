@@ -38,6 +38,10 @@ const envFile = fileURLToPath(new URL('../.env', import.meta.url));
 if (existsSync(envFile)) process.loadEnvFile(envFile);
 
 const env = loadEnv();
+/** OpenAI only when explicitly enabled (it is not free): otherwise Gemini-only. */
+const openAiKey = env.OPENAI_ENABLED ? env.OPENAI_API_KEY : undefined;
+if (env.OPENAI_API_KEY && !env.OPENAI_ENABLED)
+  console.warn('[an-an-proxy] OPENAI_API_KEY is set but OPENAI_ENABLED is not: OpenAI is never called.');
 
 if (!env.SITE_CODE) {
   console.error(
@@ -47,7 +51,7 @@ if (!env.SITE_CODE) {
   process.exit(1);
 }
 
-if (!env.GEMINI_API_KEY && !env.OPENAI_API_KEY) {
+if (!env.GEMINI_API_KEY && !openAiKey) {
   console.warn(
     '[an-an-proxy] WARNING: neither GEMINI_API_KEY nor OPENAI_API_KEY is set. ' +
       '/v1/turn, /v1/sentences and /v1/journal-* will fail on every request until at least one is configured (see apps/proxy/README.md).',
@@ -56,7 +60,7 @@ if (!env.GEMINI_API_KEY && !env.OPENAI_API_KEY) {
   console.warn(
     '[an-an-proxy] GEMINI_API_KEY not set — running OpenAI-only (no fallback provider).',
   );
-} else if (!env.OPENAI_API_KEY) {
+} else if (!openAiKey) {
   console.warn(
     '[an-an-proxy] OPENAI_API_KEY not set — running Gemini-only (no fallback provider).',
   );
@@ -81,16 +85,16 @@ type AnyAdapter = ProviderAdapter & SentenceGenAdapter & JsonTaskAdapter;
 const gemini: AnyAdapter = env.GEMINI_API_KEY
   ? new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_TURN)
   : new DisabledAdapter('gemini');
-const openai: AnyAdapter = env.OPENAI_API_KEY
-  ? new OpenAiAdapter(env.OPENAI_API_KEY, env.OPENAI_MODEL_TURN)
+const openai: AnyAdapter = openAiKey
+  ? new OpenAiAdapter(openAiKey, env.OPENAI_MODEL_TURN)
   : new DisabledAdapter('openai');
 
 // Journal tasks get their own models (env-configured), same keys.
 const geminiJournal: JsonTaskAdapter = env.GEMINI_API_KEY
   ? new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_JOURNAL)
   : new DisabledAdapter('gemini');
-const openaiJournal: JsonTaskAdapter = env.OPENAI_API_KEY
-  ? new OpenAiAdapter(env.OPENAI_API_KEY, env.OPENAI_MODEL_JOURNAL)
+const openaiJournal: JsonTaskAdapter = openAiKey
+  ? new OpenAiAdapter(openAiKey, env.OPENAI_MODEL_JOURNAL)
   : new DisabledAdapter('openai');
 
 const app = createApp({

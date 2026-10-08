@@ -25,7 +25,7 @@ if (env.GEMINI_API_KEY)
     name: 'gemini',
     adapter: new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_JOURNAL),
   });
-if (env.OPENAI_API_KEY)
+if (env.OPENAI_API_KEY && env.OPENAI_ENABLED)
   adapters.push({
     name: 'openai',
     adapter: new OpenAiAdapter(env.OPENAI_API_KEY, env.OPENAI_MODEL_JOURNAL),

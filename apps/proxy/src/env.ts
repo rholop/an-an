@@ -24,6 +24,12 @@ const EnvSchema = z.object({
   /** Phase 12: folder holding data/curriculum/<book>/private/*.json (default: the repo's data/curriculum). */
   TEXTBOOK_DIR: z.string().optional(),
   PROMPT_VERSION: z.string().default('v1'),
+  /** Phase 25: OpenAI costs money, so it is never called unless this is set to 1 (Ezra, 2026-10-08).
+   * Without it the proxy is Gemini-only, even when OPENAI_API_KEY is present. */
+  OPENAI_ENABLED: z
+    .enum(['0', '1', 'true', 'false'])
+    .default('0')
+    .transform((v) => v === '1' || v === 'true'),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
