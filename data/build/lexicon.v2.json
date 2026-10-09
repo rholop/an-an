@@ -236184,8 +236184,10 @@
     },
     {
       "id": "moec-b8a867198f",
-      "headword": "姐姐",
-      "variants": [],
+      "headword": "姊姊",
+      "variants": [
+        "姐姐"
+      ],
       "pos": [],
       "level": "N1",
       "source": "supplement",
@@ -236194,13 +236196,14 @@
       "zhuyin": "ㄐㄧㄝˇ ˙ㄐㄧㄝ",
       "glossEn": "older sister",
       "chars": [
-        "姐",
-        "姐"
+        "姊",
+        "姊"
       ],
       "tags": [
         "compound:moe",
         "textbook:laixue-1",
-        "textbook:laixue-1:L02"
+        "textbook:laixue-1:L02",
+        "reading:override"
       ],
       "senses": [
         {
@@ -332723,14 +332726,14 @@
     },
     {
       "id": "tb-7758f85bbd",
-      "headword": "臺北101 大樓",
+      "headword": "臺北101大樓",
       "variants": [],
       "pos": [],
       "level": "L3",
       "source": "textbook",
-      "pinyin": "Táiběi 101 dàlóu",
-      "pinyinNumeric": "taibei3 1015 dalou2",
-      "zhuyin": "",
+      "pinyin": "Tái běi yī líng yī dà lóu",
+      "pinyinNumeric": "tai2 bei3 yi1 ling2 yi1 da4 lou2",
+      "zhuyin": "ㄊㄞˊ ㄅㄟˇ ㄧ ㄌㄧㄥˊ ㄧ ㄉㄚˋ ㄌㄡˊ",
       "glossEn": "Taipei 101 Building",
       "chars": [
         "臺",
@@ -332738,16 +332741,15 @@
         "1",
         "0",
         "1",
-        " ",
         "大",
         "樓"
       ],
       "tags": [
         "name",
-        "reading:unverified",
         "gloss:authored",
         "textbook:laixue-4",
-        "textbook:laixue-4:L06"
+        "textbook:laixue-4:L06",
+        "reading:override"
       ],
       "senses": [
         {
@@ -334634,9 +334636,9 @@
       ],
       "level": "N1",
       "source": "textbook",
-      "pinyin": "yǔ",
-      "pinyinNumeric": "yu3",
-      "zhuyin": "ㄩˇ",
+      "pinyin": "òu",
+      "pinyinNumeric": "ou4",
+      "zhuyin": "ㄡˋ",
       "glossEn": "Oh",
       "chars": [
         "噢"
@@ -334644,7 +334646,8 @@
       "tags": [
         "gloss:heuristic",
         "textbook:laixue-1",
-        "textbook:laixue-1:L08"
+        "textbook:laixue-1:L08",
+        "reading:override"
       ],
       "senses": [
         {
@@ -335525,32 +335528,38 @@
     },
     {
       "id": "tb-e154c43375",
-      "headword": "臺灣原住民",
+      "headword": "臺灣原住民族文化園區",
       "variants": [],
       "pos": [],
       "level": "L3",
       "source": "textbook",
-      "pinyin": "tái wān yuán zhù mín",
-      "pinyinNumeric": "tai2 wan1 yuan2 zhu4 min2",
-      "zhuyin": "ㄊㄞˊ ㄨㄢ ㄩㄢˊ ㄓㄨˋ ㄇㄧㄣˊ",
-      "glossEn": "Táiwān",
+      "pinyin": "Tái wān yuán zhù mín zú wén huà yuán qū",
+      "pinyinNumeric": "tai2 wan1 yuan2 zhu4 min2 zu2 wen2 hua4 yuan2 qu1",
+      "zhuyin": "ㄊㄞˊ ㄨㄢ ㄩㄢˊ ㄓㄨˋ ㄇㄧㄣˊ ㄗㄨˊ ㄨㄣˊ ㄏㄨㄚˋ ㄩㄢˊ ㄑㄩ",
+      "glossEn": "Taiwan Indigenous Peoples Cultural Park",
       "chars": [
         "臺",
         "灣",
         "原",
         "住",
-        "民"
+        "民",
+        "族",
+        "文",
+        "化",
+        "園",
+        "區"
       ],
       "tags": [
-        "reading:composed",
         "gloss:authored",
         "textbook:laixue-4",
-        "textbook:laixue-4:L09"
+        "textbook:laixue-4:L09",
+        "name",
+        "reading:override"
       ],
       "senses": [
         {
           "id": "tb-e154c43375#tb",
-          "glossEn": "Táiwān",
+          "glossEn": "Taiwan Indigenous Peoples Cultural Park",
           "basedOn": [
             "textbook"
           ]
@@ -682108,15 +682117,16 @@
       ],
       "level": "L3",
       "source": "tocfl",
-      "pinyin": "yǔ",
-      "pinyinNumeric": "yu3",
-      "zhuyin": "ㄩˇ",
+      "pinyin": "òu",
+      "pinyinNumeric": "ou4",
+      "zhuyin": "ㄡˋ",
       "glossEn": "oh; ah; also pr. [ou4]",
       "chars": [
         "噢"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "reading:override"
       ],
       "senses": [
         {
@@ -690000,16 +690010,17 @@
       ],
       "level": "N1",
       "source": "tocfl",
-      "pinyin": "zǐ zi",
-      "pinyinNumeric": "zi3 zi5",
-      "zhuyin": "ㄗˇ ˙ㄗ",
+      "pinyin": "jiě jie",
+      "pinyinNumeric": "jie3 jie5",
+      "zhuyin": "ㄐㄧㄝˇ ˙ㄐㄧㄝ",
       "glossEn": "older sister",
       "chars": [
         "姊",
         "姊"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "reading:override"
       ],
       "senses": [
         {
@@ -779362,6 +779373,7 @@
       "moec-f89ee2dd13",
       "moec-fd8d71975e",
       "moec-fd99d7933c",
+      "tb-e154c43375",
       "tocfl-1397320a20",
       "tocfl-18d063f035",
       "tocfl-1fbd61698c",
@@ -800518,6 +800530,7 @@
       "tb-ca5aef669e",
       "tb-d62f9a73c5",
       "tb-e0843c79c8",
+      "tb-e154c43375",
       "tocfl-15321a49dd",
       "tocfl-1c495f0ad8",
       "tocfl-1c553ef3af",
@@ -801523,6 +801536,7 @@
       "tb-0edfbf162a",
       "tb-48d72fbb7d",
       "tb-d40b2d23af",
+      "tb-e154c43375",
       "tocfl-816ac7291c",
       "tocfl-a06656451e",
       "tocfl-f63e857984"
@@ -807158,6 +807172,7 @@
       "moec-ef05ce02c4",
       "moec-ff61656c10",
       "tb-39568ff4a5",
+      "tb-e154c43375",
       "tocfl-066ac4afb7",
       "tocfl-0c9339fe48",
       "tocfl-30dc3786b7",
@@ -817473,6 +817488,7 @@
       "moec-ea44fd8ee7",
       "tb-778c8fa37b",
       "tb-9d7f2ffa5d",
+      "tb-e154c43375",
       "tocfl-72811d68a0",
       "tocfl-c151e53d21",
       "tocfl-c21146c5ae",
@@ -820252,8 +820268,6 @@
       "moec-8af37d248b",
       "moec-9394149462",
       "moec-b0d775d833",
-      "moec-b8a867198f",
-      "moec-b8a867198f",
       "moec-c0debac77c",
       "moec-f4ad43cf54",
       "tocfl-9b66c24d69"
@@ -825887,6 +825901,8 @@
       "moec-5dd69f279a",
       "moec-7968977706",
       "moec-7a258f93e2",
+      "moec-b8a867198f",
+      "moec-b8a867198f",
       "tb-801ccf4079",
       "tocfl-27ed7ab017",
       "tocfl-d0ac821545",
@@ -826465,9 +826481,6 @@
     "您": [
       "tb-64c10f2e29",
       "tocfl-a5d7ec02ce"
-    ],
-    " ": [
-      "tb-7758f85bbd"
     ],
     "莉": [
       "tb-7e3658e3b9",

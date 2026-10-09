@@ -1,7 +1,9 @@
 /**
  * Phase 25 C: re-derive the readings of every MOE-composed lexicon entry with the fixed
- * `resolveMoeReading` (positional heteronym pick), without a full lexicon rebuild.
- * Usage: tsx src/patch-composed-readings.ts [--write]
+ * `resolveMoeReading` (positional heteronym pick) and apply data/supplement/lexicon-overrides.yaml,
+ * without a full lexicon rebuild (a rebuild without the git-ignored Wiktionary dump changes
+ * thousands of glosses). The next full `build:lexicon` does the same by itself.
+ * Usage: tsx src/patch-lexicon-readings.ts [--write]
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
@@ -10,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { toPinyinNumeric, type Word } from '@anan/core';
 import { MoeDictionary, resolveMoeReading } from './lib/moe.js';
 import { loadSupplementYaml } from './lib/supplement.js';
+import { applyLexiconOverrides, loadLexiconOverrides } from './lib/lexicon-overrides.js';
 import { normalizeRow } from './lib/normalize.js';
 import { readTocflWorkbook } from './lib/tocfl-source.js';
 
@@ -30,7 +33,7 @@ for (const b of ['laixue-1', 'laixue-2', 'laixue-3', 'laixue-4'])
   for (const e of loadSupplementYaml(path.join(ROOT, `data/supplement/textbook-${b}.yaml`))) add('textbook', e.headword, e.pinyin);
 
 const toneless = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zü]/gi, '').toLowerCase();
-const lex = JSON.parse(readFileSync(LEX, 'utf8')) as { words: Word[] };
+const lex = JSON.parse(readFileSync(LEX, 'utf8')) as { words: Word[]; charIndex: Record<string, string[]> };
 const changes: string[] = [];
 let ambiguous = 0;
 for (const w of lex.words) {
@@ -49,9 +52,20 @@ for (const w of lex.words) {
     if (pick.r.zhuyin) w.zhuyin = pick.r.zhuyin;
   }
 }
+for (const w of lex.words) w.pinyinNumeric = toPinyinNumeric(w.pinyin || '?');
+const overridden = applyLexiconOverrides(lex.words, loadLexiconOverrides(path.join(ROOT, 'data/supplement/lexicon-overrides.yaml')));
+for (const id of overridden) {
+  const w = lex.words.find((x) => x.id === id)!;
+  w.pinyinNumeric = toPinyinNumeric(w.pinyin || '?');
+  changes.push(`${id}\t${w.headword}\toverride → ${w.pinyin}`);
+}
 console.log(changes.join('\n'));
 console.log(`${changes.length} changed, ${ambiguous} ambiguous`);
 if (process.argv.includes('--write')) {
+  // the character index follows the (possibly changed) headwords, as build-lexicon writes it
+  const charIndex: Record<string, string[]> = {};
+  for (const w of lex.words) for (const ch of w.chars) (charIndex[ch] ??= []).push(w.id);
+  lex.charIndex = charIndex;
   const out = JSON.stringify(lex, null, 2);
   writeFileSync(LEX, out);
   writeFileSync(`${LEX}.gz`, gzipSync(out, { level: 9 }));

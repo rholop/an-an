@@ -1,8 +1,8 @@
 {
   "meta": {
     "version": "v1",
-    "buildDate": "2026-10-04",
-    "contentHash": "a8aeecac715fc47e9ce5d2da70c91b2a7eb79df880fc4275db65d70906164c83"
+    "buildDate": "2026-10-09",
+    "contentHash": "d1a61f83ad58b5caa596233ff438f23740840d3b25d0cb27f14a915905d20ace"
   },
   "scenarios": [
     {
@@ -382,7 +382,7 @@
         "你",
         "嗎",
         "一",
-        "姐姐",
+        "姊姊",
         "也",
         "哥哥",
         "沒",
@@ -395,7 +395,7 @@
         "en": "Hello, I'm Wang Jiawen. Do you have any brothers or sisters?"
       },
       "successLine": {
-        "zh": "我有一個姐姐，兩個弟弟。",
+        "zh": "我有一個姊姊，兩個弟弟。",
         "en": "I have one older sister and two younger brothers."
       },
       "textbook": {
@@ -477,11 +477,11 @@
         "和"
       ],
       "opener": {
-        "zh": "你好，我是Lisa。你姐姐是學生嗎？",
+        "zh": "你好，我是Lisa。你姊姊是學生嗎？",
         "en": "Hello, I'm Lisa. Is your older sister a student?"
       },
       "successLine": {
-        "zh": "你姐姐結婚了，他們有兩個孩子。他們都不是學生。",
+        "zh": "你姊姊結婚了，他們有兩個孩子。他們都不是學生。",
         "en": "Your sister is married and they have two children. They are not students."
       },
       "textbook": {
@@ -4427,7 +4427,7 @@
         "花蓮",
         "臺東",
         "屏東",
-        "臺灣原住民",
+        "臺灣原住民族文化園區",
         "阿里山",
         "日月潭",
         "墾丁",

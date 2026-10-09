@@ -846,7 +846,7 @@
     },
     {
       "id": "tb-L02-003",
-      "zh": "我有姐姐。",
+      "zh": "我有姊姊。",
       "en": "I have an older sister.",
       "targetWordId": "tocfl-0ba7ac5779",
       "level": "N1",
@@ -858,7 +858,7 @@
           "text": "有"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         }
       ],
       "source": "generated",
@@ -908,7 +908,7 @@
     },
     {
       "id": "tb-L02-005",
-      "zh": "我有一個姐姐。",
+      "zh": "我有一個姊姊。",
       "en": "I have one older sister.",
       "targetWordId": "tocfl-0ba7ac5779",
       "level": "N1",
@@ -923,7 +923,7 @@
           "text": "一個"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         }
       ],
       "source": "generated",
@@ -1012,7 +1012,7 @@
     },
     {
       "id": "tb-L02-008",
-      "zh": "我有兩個姐姐，沒有弟弟。",
+      "zh": "我有兩個姊姊，沒有弟弟。",
       "en": "I have two older sisters and no younger brother.",
       "targetWordId": "tocfl-0ba7ac5779",
       "level": "N1",
@@ -1030,7 +1030,7 @@
           "text": "個"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         },
         {
           "text": "沒有"
@@ -1053,7 +1053,7 @@
     },
     {
       "id": "tb-L02-009",
-      "zh": "我沒有姐姐。",
+      "zh": "我沒有姊姊。",
       "en": "I don't have an older sister.",
       "targetWordId": "moec-b8a867198f",
       "level": "N1",
@@ -1065,7 +1065,7 @@
           "text": "沒有"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         }
       ],
       "source": "generated",
@@ -1137,7 +1137,7 @@
     },
     {
       "id": "tb-L02-012",
-      "zh": "他有兩個姐姐。",
+      "zh": "他有兩個姊姊。",
       "en": "He has two older sisters.",
       "targetWordId": "tocfl-0ba7ac5779",
       "level": "N1",
@@ -1155,7 +1155,7 @@
           "text": "個"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         }
       ],
       "source": "generated",
@@ -1200,7 +1200,7 @@
     },
     {
       "id": "tb-L02-014",
-      "zh": "你有姐姐嗎？",
+      "zh": "你有姊姊嗎？",
       "en": "Do you have an older sister?",
       "targetWordId": "tocfl-c041cb3654",
       "level": "N1",
@@ -1212,7 +1212,7 @@
           "text": "有"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         },
         {
           "text": "嗎"
@@ -1328,7 +1328,7 @@
     },
     {
       "id": "tb-L02-018",
-      "zh": "他有姐姐嗎？",
+      "zh": "他有姊姊嗎？",
       "en": "Does he have an older sister?",
       "targetWordId": "tocfl-0ba7ac5779",
       "level": "N1",
@@ -1340,7 +1340,7 @@
           "text": "有"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         },
         {
           "text": "嗎"
@@ -1395,7 +1395,7 @@
     },
     {
       "id": "tb-L02-020",
-      "zh": "我只有一個姐姐。",
+      "zh": "我只有一個姊姊。",
       "en": "I only have one older sister.",
       "targetWordId": "moec-b8a867198f",
       "level": "N1",
@@ -1410,7 +1410,7 @@
           "text": "一個"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         }
       ],
       "source": "generated",
@@ -1459,7 +1459,7 @@
     },
     {
       "id": "tb-L02-022",
-      "zh": "我也有一個姐姐。",
+      "zh": "我也有一個姊姊。",
       "en": "I also have an older sister.",
       "targetWordId": "tocfl-f6db107280",
       "level": "N1",
@@ -1477,7 +1477,7 @@
           "text": "一個"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         }
       ],
       "source": "generated",
@@ -2167,7 +2167,7 @@
     },
     {
       "id": "tb-L03-015",
-      "zh": "我姐姐在銀行工作。",
+      "zh": "我姊姊在銀行工作。",
       "en": "My older sister works at a bank.",
       "targetWordId": "tocfl-1fb98be339",
       "level": "N1",
@@ -2176,7 +2176,7 @@
           "text": "我"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         },
         {
           "text": "在"
@@ -2501,7 +2501,7 @@
     },
     {
       "id": "tb-L03-025",
-      "zh": "我姐姐和我哥哥都在銀行工作。",
+      "zh": "我姊姊和我哥哥都在銀行工作。",
       "en": "My older sister and my older brother both work at a bank.",
       "targetWordId": "tocfl-4254b875e7",
       "level": "N1",
@@ -2510,7 +2510,7 @@
           "text": "我"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         },
         {
           "text": "和"
@@ -3790,7 +3790,7 @@
     },
     {
       "id": "tb-L05-004",
-      "zh": "這是我姐姐，她在銀行工作。",
+      "zh": "這是我姊姊，她在銀行工作。",
       "en": "This is my older sister; she works at a bank.",
       "targetWordId": "tocfl-89e707550c",
       "level": "N1",
@@ -3805,7 +3805,7 @@
           "text": "我"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         },
         {
           "text": "她"
@@ -4843,7 +4843,7 @@
     },
     {
       "id": "tb-L06-006",
-      "zh": "我有一個姐姐，還有一個哥哥。",
+      "zh": "我有一個姊姊，還有一個哥哥。",
       "en": "I have an older sister, and also an older brother.",
       "targetWordId": "tocfl-df8a004869",
       "level": "N1",
@@ -4858,7 +4858,7 @@
           "text": "一個"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         },
         {
           "text": "還有"
@@ -5753,7 +5753,7 @@
       "id": "tb-L07-005",
       "zh": "林小姐的電話是幾號？",
       "en": "What is Miss Lin's telephone number?",
-      "targetWordId": "tb-afdc0a7ceb",
+      "targetWordId": "tocfl-9b66c24d69",
       "level": "N1",
       "tokens": [
         {
@@ -5788,7 +5788,7 @@
     },
     {
       "id": "tb-L07-006",
-      "zh": "我有兩個姐姐。",
+      "zh": "我有兩個姊姊。",
       "en": "I have two older sisters.",
       "targetWordId": "tocfl-df8a004869",
       "level": "N1",
@@ -5806,7 +5806,7 @@
           "text": "個"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         }
       ],
       "source": "generated",
@@ -6301,7 +6301,7 @@
       "id": "tb-L07-021",
       "zh": "林小姐回來以後，給我打電話。",
       "en": "After Miss Lin gets back, she'll call me.",
-      "targetWordId": "tb-afdc0a7ceb",
+      "targetWordId": "tocfl-9b66c24d69",
       "level": "N1",
       "tokens": [
         {
@@ -8689,7 +8689,7 @@
       "id": "tb-L09-030",
       "zh": "美味餐廳的牛肉麵最好吃。",
       "en": "The beef noodle soup at Tasty Café is the most delicious.",
-      "targetWordId": "tb-2e9db6e051",
+      "targetWordId": "tb-7b0b0ae000",
       "level": "N1",
       "tokens": [
         {
@@ -9026,7 +9026,7 @@
     },
     {
       "id": "tb-L10-009",
-      "zh": "我姐姐做飯，做得很好。",
+      "zh": "我姊姊做飯，做得很好。",
       "en": "My older sister cooks very well.",
       "targetWordId": "tocfl-2dfdcd2bc8",
       "level": "N1",
@@ -9035,7 +9035,7 @@
           "text": "我"
         },
         {
-          "text": "姐姐"
+          "text": "姊姊"
         },
         {
           "text": "做飯"

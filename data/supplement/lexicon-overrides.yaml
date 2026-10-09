@@ -1,0 +1,38 @@
+# Phase 25: hand fixes to lexicon entries that no source gets right. Applied at the end of
+# build-lexicon (packages/data-pipeline/src/lib/lexicon-overrides.ts), after readings and glosses,
+# so a rebuild keeps them. `pinyin` here is the authority for that entry (the curriculum audit
+# accepts it instead of the MOE reading); every fix says why.
+
+- headword: 噢
+  set: { pinyin: òu }
+  reason: >
+    The interjection "oh!" (book 1 L8: 噢，好). MOE's dictionary has only the literary reading
+    yǔ (ㄩˇ), which no Taiwan speaker uses for this word; the book, CC-CEDICT and the MOE
+    Concised dictionary all give òu.
+
+- headword: 姊姊
+  set: { pinyin: jiě jie }
+  reason: >
+    MOE's revised dictionary lists ㄗˇ ˙ㄗ for the compound but ㄐㄧㄝˇ as the first reading of 姊;
+    the book, TOCFL and everyday Taiwan speech say jiě jie.
+
+- id: moec-b8a867198f
+  set: { headword: 姊姊, variants: [姐姐] }
+  reason: >
+    Book 1 L2 teaches 姊姊 (Taiwan's usual spelling), but its vocab links to this MOE 姐姐 entry, so
+    lesson sentences said 姐姐. The entry keeps its id (learners' cards stay) and shows the book's
+    form; 姐姐 stays readable as a variant.
+
+- id: tb-7758f85bbd
+  set: { headword: 臺北101大樓, pinyin: Tái běi yī líng yī dà lóu }
+  reason: The textbook import kept a space inside the name ("臺北101 大樓"); 101 is read yī líng yī.
+
+- id: tb-e154c43375
+  set:
+    headword: 臺灣原住民族文化園區
+    pinyin: Tái wān yuán zhù mín zú wén huà yuán qū
+    glossEn: Taiwan Indigenous Peoples Cultural Park
+    addTags: [name]
+  reason: >
+    The textbook import split this name across the headword and pinyin columns
+    (headword 臺灣原住民, pinyin "族文化園區", gloss "Táiwān").

@@ -8,7 +8,7 @@ sentences:
   - { zh: 你說中文，說得怎麼樣？, en: "How well do you speak Mandarin?", grammar: [gram-de-complement] }
   - { zh: 你學中文，學得怎麼樣？, en: "How are you doing at learning Mandarin?", grammar: [gram-de-complement] }
   - { zh: 我哥哥跑步，跑得很快。, en: "My older brother runs very fast.", grammar: [gram-de-complement] }
-  - { zh: 我姐姐做飯，做得很好。, en: "My older sister cooks very well.", grammar: [gram-de-complement] }
+  - { zh: 我姊姊做飯，做得很好。, en: "My older sister cooks very well.", grammar: [gram-de-complement] }
   - { zh: 他打網球，打得不錯。, en: "He plays tennis quite well.", grammar: [gram-de-complement] }
   - { zh: 我說得不好，可是我常常練習。, en: "I don't speak well, but I practise often.", grammar: [gram-de-complement] }
   - { zh: 我說中文有一點難。, en: "Speaking Mandarin is a little difficult for me.", grammar: [gram-youyidian] }

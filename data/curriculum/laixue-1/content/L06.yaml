@@ -5,7 +5,7 @@ sentences:
   - { zh: 我週末喜歡打網球，還喜歡跑步。, en: "At weekends I like to play tennis, and I also like to run.", grammar: [gram-hai-also] }
   - { zh: 他喜歡運動，還喜歡唱歌。, en: "He likes sports, and he also likes singing.", grammar: [gram-hai-also] }
   - { zh: 我想去臺灣，還想去美國。, en: "I want to go to Taiwan, and I also want to go to the United States.", grammar: [gram-hai-also] }
-  - { zh: 我有一個姐姐，還有一個哥哥。, en: "I have an older sister, and also an older brother.", grammar: [gram-hai-also] }
+  - { zh: 我有一個姊姊，還有一個哥哥。, en: "I have an older sister, and also an older brother.", grammar: [gram-hai-also] }
   - { zh: 我平常喜歡聽音樂，週末還喜歡打網球。, en: "I usually like listening to music, and at weekends I also like playing tennis.", grammar: [gram-hai-also] }
   - { zh: 我晚上在家看電視。, en: "I watch TV at home in the evening.", grammar: [gram-time-place-order] }
   - { zh: 我週末在家看電視。, en: "I watch TV at home at the weekend.", grammar: [gram-time-place-order] }

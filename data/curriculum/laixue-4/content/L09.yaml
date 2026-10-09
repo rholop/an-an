@@ -48,7 +48,7 @@ scenarios:
       - { id: each, description: "Say you will each do your own thing (各V各的).", keywordHints: ["各", "各的"] }
       - { id: must, description: "Say what you must see (非……不可).", keywordHints: ["非", "不可"] }
       - { id: choose, description: "Choose a way to travel around the island (環島, 選擇).", keywordHints: ["環島", "選擇", "趟"] }
-    vocabExtras: [原住民族, 中秋節, 放假, 美麗, 海岸, 族群, 差別, 語言, 風俗, 選擇, 展覽, 手工藝, 收穫, 趟, 環島, 像, 等, 景點, 部落, 祭典, 島, 影片, 東邊, 海洋, 舞蹈, 太平洋, 阿美族, 花蓮, 臺東, 屏東, 臺灣原住民, 阿里山, 日月潭, 墾丁, 蘭嶼]
+    vocabExtras: [原住民族, 中秋節, 放假, 美麗, 海岸, 族群, 差別, 語言, 風俗, 選擇, 展覽, 手工藝, 收穫, 趟, 環島, 像, 等, 景點, 部落, 祭典, 島, 影片, 東邊, 海洋, 舞蹈, 太平洋, 阿美族, 花蓮, 臺東, 屏東, 臺灣原住民族文化園區, 阿里山, 日月潭, 墾丁, 蘭嶼]
     opener: { zh: 你好！這個假期你想去哪裡玩？去環島怎麼樣？, en: "Hello! Where do you want to go this holiday? How about a trip around the island?" }
     successLine: { zh: 好，我們非去看看阿美族的祭典不可！, en: "Great, we absolutely must see the Amis festival!" }
 journalPrompts:

@@ -34,6 +34,7 @@ import { resolveId, type IdMap } from './lib/ids.js';
 import { MoeDictionary, resolveMoeReading } from './lib/moe.js';
 import { ReviewReport } from './lib/review-report.js';
 import { loadSupplementYaml } from './lib/supplement.js';
+import { applyLexiconOverrides, loadLexiconOverrides } from './lib/lexicon-overrides.js';
 import { MISSING_LEVELS, readTocflWorkbook } from './lib/tocfl-source.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -467,6 +468,10 @@ async function main(): Promise<void> {
       'utf8',
     );
   }
+
+  // Phase 25: hand fixes no source gets right (readings, a broken import, the book's spelling).
+  const overridden = applyLexiconOverrides(words, loadLexiconOverrides(path.join(SUPPLEMENT_DIR, 'lexicon-overrides.yaml')));
+  console.log(`Lexicon overrides: ${overridden.length} entries`);
 
   // Fill pinyinNumeric now that every Word's final pinyin is settled.
   for (const w of words) w.pinyinNumeric = toPinyinNumeric(w.pinyin || '?');

@@ -5,7 +5,7 @@ sentences:
   - { zh: 他的手機號碼是零九二三四五六七。, en: "His cell phone number is 09234567.", grammar: [gram-numbers-0-100] }
   - { zh: 你的手機號碼是幾號？, en: "What is your cell phone number?", grammar: [gram-numbers-0-100] }
   - { zh: 林小姐的電話是幾號？, en: "What is Miss Lin's telephone number?", grammar: [gram-numbers-0-100] }
-  - { zh: 我有兩個姐姐。, en: "I have two older sisters.", grammar: [gram-numbers-0-100] }
+  - { zh: 我有兩個姊姊。, en: "I have two older sisters.", grammar: [gram-numbers-0-100] }
   - { zh: 他有十個學生。, en: "He has ten students.", grammar: [gram-numbers-0-100] }
   - { zh: 我有二十個學生。, en: "I have twenty students.", grammar: [gram-numbers-0-100] }
   - { zh: 這個公司有一百個人。, en: "This company has one hundred people.", grammar: [gram-numbers-0-100] }

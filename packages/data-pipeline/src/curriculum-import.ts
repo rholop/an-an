@@ -336,7 +336,9 @@ export function importBook(bookId: string): void {
           }
         }
       }
-      const into = w.section === 'supplementary' ? suppIds : vocabIds;
+      // Phase 25: names and places are proper nouns only, never study vocabulary (book 2 already did this).
+      const isProper = w.section === 'proper' || isNameGloss || !!link.word?.tags.includes('name');
+      const into = isProper ? properIds : w.section === 'supplementary' ? suppIds : vocabIds;
       into.push(id);
       if (link.word) {
         for (const extra of linkVariantForms(w, lexicon, link.word)) {
@@ -344,7 +346,6 @@ export function importBook(bookId: string): void {
           extraForms.push({ word: w, extra });
         }
       }
-      if (w.section === 'proper' || isNameGloss) properIds.push(id);
     }
 
     for (const nm of cfg.extraNames.filter((e) => e.lesson === n)) {

@@ -23,7 +23,6 @@
           "tocfl-5751a000f5",
           "tocfl-df8a004869",
           "tocfl-594c346871",
-          "tb-f31eb37a1d",
           "tocfl-843c0fdc73",
           "tocfl-f1954edb18",
           "tocfl-8728ee4984",
@@ -34,14 +33,10 @@
           "tb-77d30ea05d",
           "tb-cff8c55db7",
           "tb-64c10f2e29",
-          "tb-0f7c542524",
-          "tb-e0843c79c8",
-          "tb-341493acd2",
-          "tb-1ced8f822f"
+          "tb-0f7c542524"
         ],
         "supplementary": [
-          "tocfl-c8b02f2841",
-          "tb-5865be1e21"
+          "tocfl-c8b02f2841"
         ],
         "grammarWords": [],
         "properNouns": [
@@ -154,7 +149,7 @@
             "id": "laixue-1-L02-jp1",
             "lessonId": "laixue-1-L02",
             "promptEn": "Describe your family: how many older and younger siblings you have.",
-            "promptZh": "我有一個姐姐。",
+            "promptZh": "我有一個姊姊。",
             "useWords": [
               "tocfl-0ba7ac5779",
               "tocfl-7f277f646c",
@@ -323,7 +318,6 @@
           "tocfl-2ad20543bc"
         ],
         "supplementary": [
-          "tb-6317d59e8c",
           "tocfl-74c7794307"
         ],
         "grammarWords": [
@@ -417,8 +411,7 @@
           "tocfl-b2d9f51336",
           "tocfl-9ca5afb931",
           "tocfl-ffb21a1371",
-          "tb-c82bfa3296",
-          "tb-9d7f2ffa5d"
+          "tb-c82bfa3296"
         ],
         "supplementary": [
           "tb-ef10f7d379",
@@ -596,7 +589,6 @@
           "tocfl-61304d4bb5",
           "tocfl-2404b4fee3",
           "tocfl-fd688b69c2",
-          "tb-afdc0a7ceb",
           "tocfl-9b66c24d69",
           "tocfl-5dea7d1c8b",
           "moec-5f085f36aa",
@@ -622,10 +614,7 @@
           "tocfl-d068a0edb6",
           "tb-959e1ef3eb",
           "tb-15ef5e4b10",
-          "tocfl-d1c0cd08ba",
-          "tb-afcab8df87",
-          "tb-a0f45b43eb",
-          "tb-292b51f677"
+          "tocfl-d1c0cd08ba"
         ],
         "supplementary": [
           "tocfl-81bf8200e7",
@@ -828,8 +817,7 @@
           "moec-14c587ddf8",
           "moec-4e2a8be792",
           "tocfl-c6709cbdc2",
-          "tb-ff6830c502",
-          "tb-2e9db6e051"
+          "tb-ff6830c502"
         ],
         "supplementary": [
           "tocfl-1d0ecc194a",

@@ -47,7 +47,7 @@ vocabExtras:
   - 你
   - 嗎
   - 一
-  - 姐姐
+  - 姊姊
   - 也
   - 哥哥
   - 沒
@@ -58,7 +58,7 @@ opener:
   zh: 您好，我是王家文。您有兄弟姊妹嗎？
   en: Hello, I'm Wang Jiawen. Do you have any brothers or sisters?
 successLine:
-  zh: 我有一個姐姐，兩個弟弟。
+  zh: 我有一個姊姊，兩個弟弟。
   en: I have one older sister and two younger brothers.
 textbook:
   textbookId: laixue-1

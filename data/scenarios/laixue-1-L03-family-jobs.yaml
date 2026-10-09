@@ -61,10 +61,10 @@ vocabExtras:
   - 法國
   - 和
 opener:
-  zh: 你好，我是Lisa。你姐姐是學生嗎？
+  zh: 你好，我是Lisa。你姊姊是學生嗎？
   en: Hello, I'm Lisa. Is your older sister a student?
 successLine:
-  zh: 你姐姐結婚了，他們有兩個孩子。他們都不是學生。
+  zh: 你姊姊結婚了，他們有兩個孩子。他們都不是學生。
   en: Your sister is married and they have two children. They are not students.
 textbook:
   textbookId: laixue-1

@@ -3,7 +3,7 @@ sentences:
   - { zh: 這是我弟弟。, en: "This is my younger brother.", grammar: [gram-zhe-shi-intro] }
   - { zh: 這是我朋友。, en: "This is my friend.", grammar: [gram-zhe-shi-intro] }
   - { zh: 這是我弟弟，王家文。, en: "This is my younger brother, Wang Jiawen.", grammar: [gram-zhe-shi-intro] }
-  - { zh: 這是我姐姐，她在銀行工作。, en: "This is my older sister; she works at a bank.", grammar: [gram-zhe-shi-intro] }
+  - { zh: 這是我姊姊，她在銀行工作。, en: "This is my older sister; she works at a bank.", grammar: [gram-zhe-shi-intro] }
   - { zh: 這是我朋友，他是美國人。, en: "This is my friend; he is American.", grammar: [gram-zhe-shi-intro] }
   - { zh: 這是我哥哥，他在大學念書。, en: "This is my older brother; he studies at a university.", grammar: [gram-zhe-shi-intro] }
   - { zh: 這是誰？, en: "Who is this?", grammar: [gram-question-words] }
