@@ -2,6 +2,7 @@
 // the web app's StoryService and the offline eval (apps/proxy/scripts/stories-eval.ts).
 import type { Lexicon } from '../lexicon.js';
 import { checkTaiwanness } from '../taiwanness.js';
+import { glossFor } from '../gloss/context.js';
 import type { VocabLadder } from '../progress/vocabLadder.js';
 import {
   analyzeStory,
@@ -29,7 +30,16 @@ export interface StoryAttempt {
 }
 
 export type StoryPipelineResult =
-  | { ok: true; story: StoryResponse; report: StoryReport; questions: StoryQuestion[]; attempts: StoryAttempt[]; check: StoryCheckResponse }
+  | {
+      ok: true;
+      story: StoryResponse;
+      report: StoryReport;
+      questions: StoryQuestion[];
+      attempts: StoryAttempt[];
+      check: StoryCheckResponse;
+      /** Phase 25: shown although it missed the word budgets, every unknown word explained. */
+      miniLesson?: boolean;
+    }
   | { ok: false; reasons: string[]; attempts: StoryAttempt[]; check?: StoryCheckResponse };
 
 /** Code checks on one written story: rung shares, Taiwan / traditional, length, title and questions. */
@@ -81,13 +91,48 @@ export async function runStoryPipeline(input: {
       .slice(0, 1500);
   }
   const best = pickBestStoryAttempt(attempts);
-  if (!best.report.pass) return { ok: false, reasons: best.report.failed, attempts };
+  const lesson = best.report.pass ? undefined : miniLessonGlosses(best, input.lexicon);
+  if (!best.report.pass && !lesson) return { ok: false, reasons: best.report.failed, attempts };
 
   // The independent reader: a fresh call on the checker model, shown only the story, its summary and questions.
-  const checked = { ...best.res, questions: best.questions };
+  const checked = { ...best.res, questions: best.questions, ...(lesson ? { glosses: lesson } : {}) };
   const check = await input.llm.checkStory(storyCheckRequest(checked));
   if (!storyCheckPasses(check)) return { ok: false, reasons: ['independent check', ...check.problems], attempts, check };
   const agreed = checkStoryQuestions(best.questions, check).questions;
   if (agreed.length < STORY_CONFIG.questions.min) return { ok: false, reasons: ['questions'], attempts, check };
-  return { ok: true, story: checked, report: best.report, questions: agreed, attempts, check };
+  return { ok: true, story: checked, report: best.report, questions: agreed, attempts, check, ...(lesson ? { miniLesson: true } : {}) };
+}
+
+const VOCAB_FAILURES = new Set(['rung1', 'rung3', 'rung4', 'rung5', 'rung6']);
+
+/**
+ * Phase 25: a story that failed only on the word budgets (Taiwan usage, length and questions all
+ * fine) becomes a mini lesson: still mostly known words, a handful of new ones, each explained.
+ * Returns the story's glosses plus one for every new word, or undefined when it can't be shown.
+ */
+export function miniLessonGlosses(
+  a: Pick<StoryAttempt, 'res' | 'report'>,
+  lexicon: Pick<Lexicon, 'byId'>,
+): StoryResponse['glosses'] | undefined {
+  const cfg = STORY_CONFIG.miniLesson;
+  if (!a.report.failed.every((f) => VOCAB_FAILURES.has(f))) return undefined;
+  if (a.report.rung1Share < cfg.minRung1Share) return undefined;
+  const glosses = [...a.res.glosses];
+  const have = new Set(glosses.map((g) => g.zh));
+  let fresh = 0;
+  const seen = new Set<string>();
+  for (const t of a.report.paragraphs.flat()) {
+    // rung 2 is the lesson being studied: practice, not new
+    if (t.rung === 'allowed' || t.rung === 1 || t.rung === 2 || seen.has(t.text)) continue;
+    seen.add(t.text);
+    fresh++;
+    if (have.has(t.text)) continue;
+    const word = t.wordId ? lexicon.byId(t.wordId) : undefined;
+    const en = word ? glossFor(word, { textbook: false }) : '';
+    if (!en) return undefined; // a word nobody can explain: not shown
+    glosses.push({ zh: t.text, en: en.slice(0, 80) });
+    have.add(t.text);
+  }
+  if (fresh > cfg.maxNewWords) return undefined;
+  return glosses;
 }
