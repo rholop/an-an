@@ -11,6 +11,9 @@ import {
   JournalReviewSchema,
   SentenceGenResponseSchema,
   StoryCheckResponseSchema,
+  StoryRepairResponseSchema,
+  type StoryRepairRequest,
+  type StoryRepairResponse,
   StoryResponseSchema,
   TopicWordsResponseSchema,
   TurnResponseSchema,
@@ -179,5 +182,10 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM {
   /** Phase 24: the independent read (Phase 25: a fresh call on the proxy's checker model). */
   async checkStory(req: StoryCheckRequest): Promise<StoryCheckResponse> {
     return StoryCheckResponseSchema.parse(await this.post('/v1/story-check', req));
+  }
+
+  /** Phase 26: rewrite only the sentences with a problem word (never cached by the proxy). */
+  async repairStory(req: StoryRepairRequest): Promise<StoryRepairResponse> {
+    return StoryRepairResponseSchema.parse(await this.post('/v1/story-repair', req));
   }
 }

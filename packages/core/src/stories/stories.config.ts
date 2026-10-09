@@ -27,8 +27,9 @@ export const STORY_BUDGETS: Record<StoryDifficulty, RungBudget> = {
 export const STORY_CONFIG = {
   /** Target length in characters, by level (Novice = N1/N2). */
   length: {
-    N1: { min: 80, max: 150 },
-    N2: { min: 80, max: 150 },
+    // Phase 26: Novice stories are shorter (4–8 sentences, at most 3 paragraphs): easier to keep inside the lists.
+    N1: { min: 60, max: 120 },
+    N2: { min: 60, max: 120 },
     L1: { min: 150, max: 300 },
     L2: { min: 250, max: 450 },
     L3: { min: 400, max: 700 },
@@ -39,14 +40,24 @@ export const STORY_CONFIG = {
   lengthSlack: 0.25,
   /** Phase 25: shorter than the slack allows is still shown (after one regeneration) down to this share of the minimum. */
   minLengthShare: 0.4,
-  /** What the prompt receives: all rung 2–4 words, at most this many rung 1 words (due and recent first). */
-  promptRung1Max: 300,
-  promptRung5Max: 40,
-  /** Each rung 2 word, ideally this many times. */
-  rung2Repeats: { min: 2, max: 3 },
-  /** Regenerations after the first attempt when the shares fail. */
-  maxRegenerations: 1,
+  /** Phase 26: what the prompt receives: all rung 2–4 words, at most this many rung 1 words (topic
+   * matches first, then due), grouped with glosses; rung 5 only when it matches the topic. */
+  promptRung1Max: 250,
+  promptRung5Max: 20,
+  /** Phase 26: at most this many rung 2 words, each used up to `max` times. */
+  rung2Words: 3,
+  rung2Repeats: { min: 1, max: 2 },
+  /** Phase 26: Novice paragraphs / sentences. */
+  novice: { paragraphsMax: 3, sentences: { min: 4, max: 8 } },
+  /** Phase 26: model calls per story (first write + repairs or one rewrite), then 1 independent check. */
+  maxWriteCalls: 3,
+  /** Sentence-level repair rounds after the first write (within `maxWriteCalls`). */
+  maxRepairRounds: 2,
+  /** Background "ready ahead" pauses after this many failures in a row, for `pauseMs`. */
+  readyAheadPause: { failures: 2, pauseMs: 60 * 60_000 },
   questions: { min: 2, max: 4, optionsMin: 3, optionsMax: 4 },
+  /** Phase 26: lesson stories (`pnpm stories:build`): per lesson, and the attempts allowed per story. */
+  lessonStories: { perLesson: 3, maxAttemptsPerStory: 6 },
   /** Phase 25/26: a story that misses only the word targets is still shown as a mini lesson (every
    * new word explained) when its known-or-this-lesson share is at least the floor and it has at most
    * this many new words. Only the floors refuse; the targets above drive the prompt. */

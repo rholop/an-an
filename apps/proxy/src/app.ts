@@ -29,6 +29,8 @@ import {
   StoryCheckRequestSchema,
   StoryCheckResponseSchema,
   StoryRequestSchema,
+  StoryRepairRequestSchema,
+  StoryRepairResponseSchema,
   StoryResponseSchema,
   TopicWordsRequestSchema,
   TopicWordsResponseSchema,
@@ -51,6 +53,7 @@ import {
   JOURNAL_SOLVE_JSON_SCHEMA,
   JOURNAL_VERIFY_JSON_SCHEMA,
   STORY_CHECK_JSON_SCHEMA,
+  STORY_REPAIR_JSON_SCHEMA,
   STORY_JSON_SCHEMA,
   TOPIC_WORDS_JSON_SCHEMA,
 } from './json-schema.js';
@@ -80,6 +83,7 @@ import {
   buildStoryPrompt,
   storyCheckUserMessage,
   storyUserMessage,
+  storyRepairUserMessage,
   buildSystemPrompt,
   topicWordsUserMessage,
   journalCheckUserMessage,
@@ -131,7 +135,7 @@ export interface AppDeps {
     topicWordsOrchestrator: JsonOrchestrator;
   };
   /** Phase 24: graded stories (writer + independent checker prompts). */
-  story?: { prompts: { write: string; check: string }; orchestrator?: JsonOrchestrator };
+  story?: { prompts: { write: string; check: string; repair: string }; orchestrator?: JsonOrchestrator };
   rateLimiter: RateLimiter;
   log?: (entry: Record<string, unknown>) => void;
 }
@@ -263,7 +267,7 @@ export function createApp(deps: AppDeps): Hono {
   // (The /v1/* guard above already enforces the code; there is no public route.)
   app.get('/v1/textbook/:bookId/:kind', async (c) => {
     const kind = c.req.param('kind');
-    if (kind !== 'dialogues' && kind !== 'examples')
+    if (kind !== 'dialogues' && kind !== 'examples' && kind !== 'stories')
       return c.json({ error: 'unknown resource' }, 404);
     const data = await deps.textbook?.get(c.req.param('bookId'), kind as TextbookPrivateKind);
     if (data === undefined) return c.json({ error: 'textbook text not installed' }, 404);
@@ -433,6 +437,8 @@ export function createApp(deps: AppDeps): Hono {
     orchestrator: JsonOrchestrator = deps.journal.orchestrator,
     /** Phase 25: the independent check runs on the checker model. */
     checker = false,
+    /** Phase 26: requests that must not be answered from the cache (regenerations, repairs). */
+    noCache: (req: Req) => boolean = () => false,
   ) {
     const installId = c.req.header('x-install-id');
     if (!installId) return c.json({ error: 'missing X-Install-Id header' }, 400);
@@ -471,7 +477,7 @@ export function createApp(deps: AppDeps): Hono {
           parse: (raw) => responseSchema.parse(trimToLimits(raw, limited)),
           ...build(parsed.data),
         },
-        { checker },
+        { checker, noCache: noCache(parsed.data) },
       );
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
@@ -622,6 +628,26 @@ export function createApp(deps: AppDeps): Hono {
         userMessage: storyUserMessage(req),
       }),
       st.orchestrator,
+      false,
+      (req) => req.fresh === true,
+    );
+  });
+
+  // Phase 26 Part B: only the sentences with a problem word go back to the writer. Never cached:
+  // a repair is always a fresh call.
+  app.post('/v1/story-repair', (c) => {
+    const st = deps.story;
+    if (!st) return c.json({ error: 'stories are not configured' }, 501);
+    return journalRoute(
+      c,
+      '/v1/story-repair',
+      StoryRepairRequestSchema,
+      StoryRepairResponseSchema,
+      STORY_REPAIR_JSON_SCHEMA,
+      (req) => ({ systemPrompt: st.prompts.repair, userMessage: storyRepairUserMessage(req) }),
+      st.orchestrator,
+      false,
+      () => true,
     );
   });
 

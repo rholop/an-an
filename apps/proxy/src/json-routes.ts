@@ -11,6 +11,7 @@ import {
   SentenceGenResponseSchema,
   StoryCheckResponseSchema,
   StoryResponseSchema,
+  StoryRepairResponseSchema,
   TopicWordsResponseSchema,
   TurnResponseSchema,
 } from '@anan/core';
@@ -27,6 +28,7 @@ import {
   JOURNAL_VERIFY_JSON_SCHEMA,
   SENTENCE_GEN_RESPONSE_JSON_SCHEMA,
   STORY_CHECK_JSON_SCHEMA,
+  STORY_REPAIR_JSON_SCHEMA,
   STORY_JSON_SCHEMA,
   TOPIC_WORDS_JSON_SCHEMA,
   TURN_RESPONSE_JSON_SCHEMA,
@@ -63,6 +65,7 @@ export const JSON_ROUTES: ReadonlyArray<{ route: string; zod: z.ZodTypeAny; json
   { route: '/v1/topic-words', zod: TopicWordsResponseSchema, json: TOPIC_WORDS_JSON_SCHEMA },
   { route: '/v1/story', zod: StoryResponseSchema, json: STORY_JSON_SCHEMA },
   { route: '/v1/story-check', zod: StoryCheckResponseSchema, json: STORY_CHECK_JSON_SCHEMA },
+  { route: '/v1/story-repair', zod: StoryRepairResponseSchema, json: STORY_REPAIR_JSON_SCHEMA },
   { route: '/v1/gloss', zod: GlossAdjudicationResponseSchema, json: GLOSS_JSON_SCHEMA },
   { route: '/v1/define', zod: DefineResponseSchema, json: DEFINE_JSON_SCHEMA },
 ];

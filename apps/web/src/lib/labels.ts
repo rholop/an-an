@@ -183,6 +183,21 @@ export const RETRY = 'Retry';
 /** Phase 25: when the free Gemini quota is used up. */
 export const AI_QUOTA_USED = 'The free AI quota is used up for now. Try again in a few minutes.';
 export const STORY_WRITING = 'Writing a story…';
+/** Phase 26 Part F: what the button says while a story is written, checked and repaired. */
+export const STORY_STAGE = {
+  writing: 'Writing a story… (checking the words)',
+  repairing: 'Fixing a few words…',
+  checking: 'Reading it through…',
+} as const;
+export const TRY_ANOTHER_TOPIC = 'Try another topic';
+export const READ_LESSON_STORY = 'Read a lesson story';
+export const NO_LESSON_STORY = 'No lesson stories are ready for this lesson yet.';
+/** Phase 26 Part C: the mini lesson before a story. */
+export const WORDS_IN_STORY = 'Words in this story';
+export const START_READING = 'Start reading';
+export const NO_QUESTIONS = 'No questions for this one.';
+export const storyRungLabel = (rung: number): string =>
+  rung === 2 ? 'This lesson' : rung === 3 ? 'Next lesson' : rung === 4 ? 'Coming lesson' : 'New word';
 export const READ_AGAIN = 'Read again';
 export const EASIER_NOW = "You'll find this one easier now";
 export const STORY_DIFFICULTY = { easier: 'Easier', middle: 'Just right', harder: 'Harder' } as const;
@@ -234,6 +249,8 @@ const STORY_REASON: Record<string, string> = {
   length: 'it came out much too short or too long',
   questions: "its questions didn't check out",
   'independent check': 'a second read-through found a problem',
+  'new words': 'it had more new words than one short lesson can teach',
+  unexplained: "it used a word we couldn't explain",
 };
 export const storyReasonsLine = (reasons: readonly string[]): string => {
   const parts = [...new Set(reasons.flatMap((r) => STORY_REASON[r] ?? []))];

@@ -36,6 +36,13 @@ test.describe('Graded stories (phase 24)', () => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(String(err)));
     await seedKnownWords(page);
+    // Phase 26: with a class lesson, stories carry this lesson's words (no random level words any more)
+    await page.addInitScript(() => localStorage.removeItem('anan.study.disabled'));
+    await page.goto('/?page=textbook');
+    await expect(page.getByRole('heading', { name: /來學華語/ }).first()).toBeVisible({ timeout: 20_000 });
+    await page.getByTestId('my-class-toggle').check();
+    await page.getByTestId('my-class-lesson').selectOption('4');
+    await expect(page.getByTestId('class-status')).toHaveText('Your class: 來學華語 1 · Lesson 4');
 
     await page.goto('/?page=reader');
     const section = page.getByTestId('stories-section');
@@ -65,6 +72,11 @@ test.describe('Graded stories (phase 24)', () => {
     const view = page.getByTestId('story-view');
     await expect(view).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId('story-title')).not.toBeEmpty();
+
+    // Phase 26: the words outside the known list are taught first, then Start reading
+    await expect(page.getByTestId('story-words')).toBeVisible();
+    await expect(page.getByTestId('story-words-item').first()).toBeVisible();
+    await page.getByTestId('story-start-reading').click();
 
     // the level word is underlined lightly, with no hover gloss
     const fresh = view.locator('.an-token--new').first();

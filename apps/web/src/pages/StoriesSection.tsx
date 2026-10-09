@@ -1,8 +1,21 @@
 // Phase 24 Part C: the Stories section at the top of the Reader: Next story, Easier / Harder,
 // the topic picker and the library (newest first, lesson badge, read / unread).
 import { useEffect, useState } from 'react';
-import { storyMinutes, type Level, type Lexicon, type StoryDifficulty, type StoryRecord } from '@anan/core';
-import { lessonLabel, EASIER_NOW, NEXT_STORY, STORIES, STORY_DIFFICULTY, RETRY, STORY_WRITING, storyPitch } from '../lib/labels.js';
+import { storyMinutes, type Level, type Lexicon, type StoryDifficulty, type StoryRecord, type StoryStage } from '@anan/core';
+import {
+  lessonLabel,
+  EASIER_NOW,
+  NEXT_STORY,
+  NO_LESSON_STORY,
+  READ_LESSON_STORY,
+  STORIES,
+  STORY_DIFFICULTY,
+  STORY_STAGE,
+  RETRY,
+  STORY_WRITING,
+  TRY_ANOTHER_TOPIC,
+  storyPitch,
+} from '../lib/labels.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
 import { FAKE_STORY_KEY, canWriteStories, prepareStories, storyFakeOn, storyLesson, useStoryDifficulty } from '../lib/stories.js';
 import { STORY_TOPIC_CHIPS, type StoryAsk, type StoryService } from '../lib/story-service.js';
@@ -29,6 +42,9 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
   const [pick, setPick] = useState<TopicPick>({ kind: 'lesson' });
   const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
+  /** Phase 26 Part F: what the writer is doing now. */
+  const [stage, setStage] = useState<StoryStage | null>(null);
+  const [noLessonStory, setNoLessonStory] = useState(false);
   /** The ask that failed (Retry repeats it), or null. */
   const [failed, setFailed] = useState<Omit<StoryAsk, 'level' | 'difficulty'> | 'next' | null>(null);
   const [errorText, setErrorText] = useState('');
@@ -64,8 +80,13 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
     if (busy) return;
     setBusy(true);
     setFailed(null);
+    setNoLessonStory(false);
+    setStage('writing');
     try {
-      const story = ask === 'next' ? await service.next(level, difficulty) : await service.write({ ...ask, level, difficulty });
+      const story =
+        ask === 'next'
+          ? await service.next(level, difficulty, new Date(), setStage)
+          : await service.write({ ...ask, level, difficulty }, new Date(), setStage);
       setTick((t) => t + 1);
       onOpen(story);
     } catch (err) {
@@ -73,7 +94,24 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
       setFailed(ask);
     } finally {
       setBusy(false);
+      setStage(null);
     }
+  }
+
+  /** Phase 26 Part F: never a dead end after a refusal. */
+  function tryAnotherTopic() {
+    const chips = STORY_TOPIC_CHIPS.filter((c) => !(failed && failed !== 'next' && failed.text === c.topic));
+    const chip = chips[Math.floor(Math.random() * chips.length)]!;
+    setPick({ kind: 'chip', text: chip.topic });
+    void run({ kind: 'chip', text: chip.topic });
+  }
+
+  async function readLessonStory() {
+    const story = await service.nextLessonStory(level).catch(() => undefined);
+    if (!story) return setNoLessonStory(true);
+    setFailed(null);
+    setTick((t) => t + 1);
+    onOpen(story);
   }
 
   function writeChosen() {
@@ -95,7 +133,7 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
       </p>
       <div className="stories-row">
         <button type="button" className="btn-primary" data-testid="next-story" disabled={busy || (!next && !canWrite)} aria-busy={busy} onClick={() => void run('next')}>
-          {busy ? STORY_WRITING : `${NEXT_STORY} →`}
+          {busy ? (stage ? STORY_STAGE[stage] : STORY_WRITING) : `${NEXT_STORY} →`}
         </button>
         <div className="stories-row" role="radiogroup" aria-label="Story difficulty">
           {(Object.keys(STORY_DIFFICULTY) as StoryDifficulty[]).map((d) => (
@@ -108,9 +146,18 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
       {failed && (
         <p className="stories-error" role="status" data-testid="story-error">
           {errorText}{' '}
-          <button type="button" data-testid="story-retry" disabled={busy} onClick={() => void run(failed)}>
-            {RETRY}
-          </button>
+          <span className="stories-actions">
+            <button type="button" data-testid="story-retry" disabled={busy} onClick={() => void run(failed)}>
+              {RETRY}
+            </button>
+            <button type="button" data-testid="story-other-topic" disabled={busy} onClick={tryAnotherTopic}>
+              {TRY_ANOTHER_TOPIC}
+            </button>
+            <button type="button" data-testid="story-lesson-story" disabled={busy || noLessonStory} onClick={() => void readLessonStory()}>
+              {READ_LESSON_STORY}
+            </button>
+          </span>
+          {noLessonStory && <span className="stories-unread"> {NO_LESSON_STORY}</span>}
         </p>
       )}
 

@@ -116,6 +116,7 @@ most:
 | `GEMINI_MODEL_TURN` / `GEMINI_MODEL_JOURNAL` | no | The model per task. |
 | `GEMINI_MODEL_FALLBACK` | no | A different free-tier Gemini model, tried once after the task model fails twice. |
 | `GEMINI_MODEL_CHECK` | no | The independent checker (journal verify, story check). |
+| `GEMINI_MODEL_STORY` | no | Phase 26: writes and repairs stories (default `gemini-2.5-flash`, the stronger free model). |
 | `SITE_CODE` | **yes** (server won't start without it) | The household code; see below. |
 | `SYNC_DIR` | no | Where per-profile saved copies go (default `apps/proxy/sync-data`). |
 

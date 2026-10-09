@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   Lexicon,
   type Lesson,
+  type LessonStory,
+  type StoryLLM,
   type StoryRequest,
   type StoryResponse,
   type StudyFocus,
@@ -13,6 +15,21 @@ import { AnanDB } from '../db/schema.js';
 import { exportBackup } from '../db/backup.js';
 import { mergeBackups } from '../db/merge.js';
 import { FakeStoryLLM } from './fake-story-llm.js';
+
+// The proxy's real cache and user message (Phase 26 acceptance: retries are never cache hits).
+// Loaded at run time: the proxy is another package, outside this one's type-checked sources.
+interface ProxyCache<T> {
+  get(key: string): T | undefined;
+  set(key: string, value: T): void;
+}
+const PROXY_SRC = '../../../proxy/src/';
+const proxyCache = (await import(/* @vite-ignore */ `${PROXY_SRC}cache.ts`)) as {
+  PromptCache: { new <T>(): ProxyCache<T>; keyFor(system: string, user: string): string };
+};
+const PromptCache = proxyCache.PromptCache;
+const { storyUserMessage } = (await import(/* @vite-ignore */ `${PROXY_SRC}prompt.ts`)) as {
+  storyUserMessage(req: StoryRequest): string;
+};
 import { LearnerService } from './learner-service.js';
 import { StoryService, StoryUnavailableError, type StoryEnvironment } from './story-service.js';
 
@@ -133,7 +150,9 @@ describe('StoryService (Phase 24)', () => {
     expect(req.rungs.r4).toEqual(['捷運']);
     expect(req.rungs.r1).toContain('朋友');
     expect(req.topic).toContain('Theme 1');
-    expect(req.length).toEqual({ min: 80, max: 150 });
+    expect(req.length).toEqual({ min: 60, max: 120 });
+    // Phase 26: rungs 1–2 also go grouped with glosses, this lesson first
+    expect(req.groups?.[0]).toMatchObject({ label: 'this lesson', words: [{ zh: '咖啡', en: 'coffee' }] });
     // independent: the checker only sees the story, its summary and questions
     expect(Object.keys(llm.checkCalls[0]!).sort()).toEqual(['paragraphs', 'questions', 'summaryEn']);
     expect(story.lessonId).toBe('laixue-1-L01');
@@ -168,12 +187,12 @@ describe('StoryService (Phase 24)', () => {
     expect(llm.writeCalls).toHaveLength(2);
   });
 
-  it('over-budget words: regenerates once with feedback, then shows nothing', async () => {
+  it('mostly unknown words: rewritten with feedback (3 calls at most), then shows nothing', async () => {
     await seedKnown();
     const llm = new FakeStoryLLM(scripted(HARD));
     const s = service(llm);
     await expect(s.write({ level: 'N1', difficulty: 'middle', kind: 'lesson' }, NOW)).rejects.toBeInstanceOf(StoryUnavailableError);
-    expect(llm.writeCalls).toHaveLength(2);
+    expect(llm.writeCalls.length + llm.repairCalls.length).toBe(3);
     expect(llm.writeCalls[1]!.feedback).toMatch(/經濟/);
     expect(llm.checkCalls).toHaveLength(0);
     expect(await s.library()).toHaveLength(0);
@@ -192,8 +211,19 @@ describe('StoryService (Phase 24)', () => {
     const withMrt = `${GOOD}他去捷運。`;
     const mid = await service(new FakeStoryLLM(scripted(withMrt))).write({ level: 'N1', difficulty: 'middle', kind: 'lesson' }, NOW);
     expect(mid).toBeTruthy();
-    const easy = await service(new FakeStoryLLM(scripted(withMrt))).write({ level: 'N1', difficulty: 'easier', kind: 'typed', text: 'tea' }, NOW);
-    expect(easy.glosses.map((g) => g.zh)).toContain('捷運');
+    // a writer whose repair changes nothing: shown as a mini lesson, 捷運 explained
+    const stuck = new FakeStoryLLM(scripted(withMrt), undefined, 'gemini', () => ({ sentences: [], paragraphsEn: [], newWords: [] }));
+    const easy = await service(stuck).write({ level: 'N1', difficulty: 'easier', kind: 'typed', text: 'tea' }, NOW);
+    expect(easy.glosses).toContainEqual({ zh: '捷運', en: 'MRT' });
+    // Phase 26: the default repair swaps the word out: only that sentence changes
+    const fixer = new FakeStoryLLM(scripted(withMrt));
+    const fixed = await service(fixer).write({ level: 'N1', difficulty: 'easier', kind: 'typed', text: 'coffee' }, NOW);
+    expect(fixer.repairCalls).toHaveLength(1);
+    const asked = fixer.repairCalls[0]!.sentences.map((x) => x.zh);
+    expect(asked).toContain('他去捷運。');
+    expect(asked).not.toContain('我今天去看朋友。');
+    expect(fixed.paragraphs[0]!.zh.startsWith('我今天去看朋友。朋友喜歡喝咖啡，我喜歡喝茶。')).toBe(true);
+    expect(fixed.paragraphs[0]!.zh).not.toContain('捷運');
   });
 
   it('the independent reader can veto: unnatural, a wrong summary, or answers it disagrees with', async () => {
@@ -201,9 +231,11 @@ describe('StoryService (Phase 24)', () => {
     const ok = FakeStoryLLM.defaultCheck;
     const veto = new FakeStoryLLM(scripted(GOOD), (r) => ({ ...ok(r), summaryMatches: false, problems: ['summary is about something else'] }));
     await expect(service(veto).write({ level: 'N1', difficulty: 'middle', kind: 'lesson' }, NOW)).rejects.toBeInstanceOf(StoryUnavailableError);
-    const twoRight = new FakeStoryLLM(scripted(GOOD), (r) => ({ ...ok(r), correctOptions: r.questions.map(() => [0, 1]) }));
-    await expect(service(twoRight).write({ level: 'N1', difficulty: 'middle', kind: 'lesson' }, NOW)).rejects.toBeInstanceOf(StoryUnavailableError);
     expect(await db.stories.count()).toBe(0);
+    // Phase 26 Part D: questions the reader disagrees with are dropped; the story still shows
+    const twoRight = new FakeStoryLLM(scripted(GOOD), (r) => ({ ...ok(r), correctOptions: r.questions.map(() => [0, 1]) }));
+    const noQ = await service(twoRight).write({ level: 'N1', difficulty: 'middle', kind: 'lesson' }, NOW);
+    expect(noQ.questions).toEqual([]);
   });
 
   it('finishing: due/learning words read without a lookup give story_read_no_lookup; answers give no word evidence', async () => {
@@ -270,5 +302,93 @@ describe('StoryService (Phase 24)', () => {
     const merged = mergeBackups(local, remote);
     expect(merged.stories.map((x) => x.id).sort()).toEqual([story.id, 'story-other'].sort());
     expect(merged.stories.find((x) => x.id === story.id)?.readCount).toBe(1);
+  });
+});
+
+describe('StoryService (Phase 26)', () => {
+  /** A fake writer behind the proxy's real PromptCache, keyed like the proxy (task + user message). */
+  function cachedLLM(make: (req: StoryRequest) => StoryResponse) {
+    const cache = new PromptCache<{ story: StoryResponse }>();
+    const log: Array<{ user: string; served: 'cache' | 'model' }> = [];
+    const llm: StoryLLM = {
+      async writeStory(req) {
+        const user = storyUserMessage(req);
+        const key = PromptCache.keyFor('/v1/story', user);
+        const hit = req.fresh ? undefined : cache.get(key);
+        log.push({ user, served: hit ? 'cache' : 'model' });
+        if (hit) return hit;
+        const res = { story: make(req) };
+        cache.set(key, res);
+        return res;
+      },
+      checkStory: async (r) => FakeStoryLLM.defaultCheck(r),
+      repairStory: async () => ({ sentences: [], paragraphsEn: [], newWords: [] }),
+    };
+    return { llm, log };
+  }
+
+  it('retries differ: after a refusal, the next "Next story" sends a different request, not served from the cache', async () => {
+    await seedKnown();
+    const { llm, log } = cachedLLM((req) => scripted(HARD)(req, 0));
+    const s = new StoryService(db, lexicon, learnerService, llm, env, () => 0.5);
+    await expect(s.next('N1', 'middle', NOW)).rejects.toBeInstanceOf(StoryUnavailableError);
+    const firstTry = log.length;
+    await expect(s.next('N1', 'middle', NOW)).rejects.toBeInstanceOf(StoryUnavailableError);
+    const second = log[firstTry]!;
+    expect(second.user).not.toBe(log[0]!.user);
+    expect(second.served).toBe('model');
+    expect(log.every((x) => x.served === 'model')).toBe(true);
+  });
+
+  it('a retry rotates the topic among the lesson theme and lesson-related topics', async () => {
+    await seedKnown();
+    const withGoals: Textbook[] = [{ ...books[0]!, lessons: books[0]!.lessons.map((l) => ({ ...l, objectives: ['Order a drink', 'Pay at the counter'] })) }];
+    const llm = new FakeStoryLLM(scripted(HARD));
+    const s = new StoryService(db, lexicon, learnerService, llm, { ...env, books: () => withGoals }, () => 0.5);
+    await expect(s.next('N1', 'middle', NOW)).rejects.toBeInstanceOf(StoryUnavailableError);
+    const before = llm.writeCalls.length;
+    await expect(s.next('N1', 'middle', NOW)).rejects.toBeInstanceOf(StoryUnavailableError);
+    expect(llm.writeCalls[0]!.topic).toContain('Theme 1');
+    expect(llm.writeCalls[before]!.topic).toContain('Order a drink');
+    expect(llm.writeCalls[before]!.variant).toBe(1);
+    expect(llm.writeCalls[before]!.fresh).toBe(true);
+  });
+
+  it('Next story opens a lesson story written ahead, with no model call', async () => {
+    await seedKnown();
+    const llm = new FakeStoryLLM(scripted(GOOD));
+    const ready: LessonStory = {
+      id: 'laixue-1-L01-s1',
+      bookId: 'laixue-1',
+      lessonId: 'laixue-1-L01',
+      level: 'N1',
+      topic: 'Theme 1',
+      story: {
+        ...FakeStoryLLM.defaultStory({ rungs: { r1: ['我'], r2: [], r3: [], r4: [], r5: [] }, budget: { rung1Share: 0.95, rung3: 0, rung4: 0, rung5: 0 }, length: { min: 10, max: 20 }, topic: 't' } as unknown as StoryRequest),
+        paragraphs: [{ zh: GOOD, en: 'x' }],
+      },
+    };
+    const s = new StoryService(db, lexicon, learnerService, llm, { ...env, lessonStories: async () => [ready] }, () => 0.5);
+    const story = await s.next('N1', 'middle', NOW);
+    expect(story.id).toBe('lesson-laixue-1-L01-s1');
+    expect(story.newWords.map((x) => x.text)).toContain('咖啡');
+    expect(llm.writeCalls).toHaveLength(0);
+    // read it: the next one is written live
+    await s.finish(story, { lookedUp: new Set(), right: 0, of: 0 }, NOW);
+    await s.next('N1', 'middle', NOW);
+    expect(llm.writeCalls).toHaveLength(1);
+  });
+
+  it('background "ready ahead" pauses for an hour after 2 failures in a row', async () => {
+    await seedKnown();
+    const llm = new FakeStoryLLM(scripted(HARD));
+    const s = service(llm);
+    await s.ensureReady('N1', 'middle', NOW);
+    await s.ensureReady('N1', 'middle', NOW);
+    const calls = llm.writeCalls.length;
+    await s.ensureReady('N1', 'middle', new Date(NOW.getTime() + 30 * 60_000));
+    expect(llm.writeCalls).toHaveLength(calls);
+    await s.ensureReady('N1', 'middle', new Date(NOW.getTime() + 61 * 60_000));
+    expect(llm.writeCalls.length).toBeGreaterThan(calls);
   });
 });

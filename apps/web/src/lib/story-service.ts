@@ -3,12 +3,16 @@
 // other provider read it independently, and keeps it in the profile's synced library. A story that
 // fails is never shown: STORY_UNAVAILABLE ("Couldn't write a story right now. Try again.").
 import {
+  analyzeStory,
   runStoryPipeline,
+  storyAllowedNames,
+  storyPromptLists,
+  type LessonStory,
+  type StoryStage,
   storyBudget,
   promptBudget,
   rereadSuggestions,
   storyLength,
-  storyPromptRungs,
   storyReadingStats,
   storyRecord,
   storyRequestKey,
@@ -42,6 +46,10 @@ export class StoryUnavailableError extends Error {
 export interface StoryEnvironment {
   books(): Textbook[];
   studyFocus?(): Promise<StudyFocus | undefined>;
+  /** Phase 26: the topic's words (Phase 18's cached list), so the prompt lists them first. */
+  topicWords?(topic: string, level: Level): Promise<readonly string[]>;
+  /** Phase 26 Part E: the stories written ahead for a book's lessons (private lesson data). */
+  lessonStories?(bookId: string): Promise<readonly LessonStory[]>;
 }
 
 export type StoryTopicKind = 'lesson' | 'journal' | 'typed' | 'chip' | 'continue';
@@ -81,6 +89,8 @@ interface Built {
   lessonId?: string;
   seriesId?: string;
   episode?: number;
+  /** Phase 26: the ask's retry key (failures are counted per key). */
+  askKey: string;
 }
 
 const startOfWeek = (now: Date): Date => {
@@ -97,6 +107,11 @@ export async function storyWeekStats(db: AnanDB, now: Date = new Date()): Promis
 
 export class StoryService {
   private readonly inflight = new Map<string, Promise<StoryRecord>>();
+  /** Phase 26 B3: failed attempts per ask, so the next try is a new variant (and a new topic). */
+  private readonly failures = new Map<string, number>();
+  /** Phase 26 Part E: background "ready ahead" pauses after failures in a row. */
+  private readyFailures = 0;
+  private readyPausedUntil = 0;
 
   constructor(
     private readonly db: AnanDB,
@@ -130,7 +145,23 @@ export class StoryService {
     return a ? `${a.titleEn}: ${a.topic}` : 'everyday life in Taipei';
   }
 
-  private async topicFor(ask: StoryAsk, ladder: VocabLadder): Promise<string> {
+  /** Phase 26 B3: the lesson theme, then two more lesson-related topics, rotating on each failure. */
+  lessonTopics(ladder: VocabLadder): string[] {
+    const a = ladder.lessons.active;
+    if (!a) return [this.lessonTopic(ladder)];
+    const lesson = this.env
+      .books()
+      .flatMap((b) => b.lessons)
+      .find((l) => l.id === a.lessonId);
+    const more = (lesson?.objectives ?? []).filter(Boolean).slice(0, 2).map((o) => `${a.topic}: ${o}`);
+    return [this.lessonTopic(ladder), ...more];
+  }
+
+  private askKey(ask: StoryAsk, lessonId?: string): string {
+    return [ask.level, ask.difficulty, ask.kind, ask.text?.trim() ?? '', ask.continueFrom?.id ?? '', lessonId ?? ''].join('|');
+  }
+
+  private async topicFor(ask: StoryAsk, ladder: VocabLadder, failed = 0): Promise<string> {
     if (ask.kind === 'continue' && ask.continueFrom) return ask.continueFrom.topic;
     if ((ask.kind === 'typed' || ask.kind === 'chip') && ask.text?.trim()) return ask.text.trim().slice(0, 200);
     if (ask.kind === 'journal') {
@@ -138,14 +169,28 @@ export class StoryService {
       const first = last?.text.split(/[。！？\n]/)[0]?.trim();
       if (first) return `what I wrote in my journal: ${first}`.slice(0, 200);
     }
-    return this.lessonTopic(ladder);
+    const topics = this.lessonTopics(ladder);
+    return topics[failed % topics.length]!;
   }
 
   async build(ask: StoryAsk, now: Date): Promise<Built> {
     const { ladder, sets } = await this.ladderFor(ask.level, now);
     const budget = storyBudget(ask.difficulty);
     const recent = [...sets.learningIds];
-    const rungs = storyPromptRungs({ ladder, lexicon: this.lexicon, dueIds: sets.dueIds, recentIds: recent, rng: this.rng });
+    const lessonId = ladder.lessons.active?.lessonId;
+    const askKey = this.askKey(ask, lessonId);
+    const failed = this.failures.get(askKey) ?? 0;
+    const topic = await this.topicFor(ask, ladder, failed);
+    const topicWords = (await this.env.topicWords?.(topic, ask.level).catch(() => [] as string[])) ?? [];
+    const { rungs, groups } = storyPromptLists({
+      ladder,
+      lexicon: this.lexicon,
+      dueIds: sets.dueIds,
+      recentIds: recent,
+      rng: this.rng,
+      topic,
+      topicWords,
+    });
     const pattern = (id: string) => this.lexicon.grammarItemById(id)?.pattern;
     const prev = ask.kind === 'continue' ? ask.continueFrom : undefined;
     const names = [
@@ -154,30 +199,34 @@ export class StoryService {
         ...(prev?.characters ?? []),
       ]),
     ].slice(0, 40);
-    const topic = await this.topicFor(ask, ladder);
     const req: StoryRequest = {
       topic,
       learnerLevel: ask.level,
       length: storyLength(ask.level),
       rungs,
+      groups,
       budget: promptBudget(budget),
       grammar: ladder.grammar.allowed.flatMap((id) => pattern(id) ?? []).slice(0, 80),
       grammarNext: ladder.grammar.next.flatMap((id) => pattern(id) ?? []).slice(0, 20),
       names,
       ...(prev ? { previous: { title: prev.titleZh, summaryEn: prev.summaryEn } } : {}),
     };
-    const lessonId = ladder.lessons.active?.lessonId;
     const seriesId = prev ? (prev.seriesId ?? prev.id) : undefined;
     const episode = prev ? (prev.episode ?? 1) + 1 : undefined;
-    // Another story on the same topic for the same lesson is a new variant; the same ask again is not.
+    // Another story on the same topic for the same lesson is a new variant, and so is every try
+    // after a failure (Phase 26 B3: a failed request is remembered; a retry never repeats it).
     const library = await this.db.stories.toArray();
-    const variant = library.filter(
+    const saved = library.filter(
       (s) => s.topic === topic && s.lessonId === lessonId && s.difficulty === ask.difficulty && s.seriesId === seriesId,
     ).length;
+    const variant = saved + failed;
+    if (variant > 0) req.variant = variant;
+    if (failed > 0) req.fresh = true;
     const key = storyRequestKey({ ...req, difficulty: ask.difficulty, ...(seriesId ? { seriesId } : {}), variant });
     return {
       req,
       key,
+      askKey,
       ladder,
       ...(lessonId ? { lessonId } : {}),
       ...(seriesId ? { seriesId } : {}),
@@ -188,20 +237,36 @@ export class StoryService {
   // ---- writing --------------------------------------------------------------------
 
   /** Writes (or returns, when the same request was already written) a story and saves it. */
-  async write(ask: StoryAsk, now: Date = new Date()): Promise<StoryRecord> {
+  async write(ask: StoryAsk, now: Date = new Date(), onProgress?: (stage: StoryStage) => void): Promise<StoryRecord> {
     const built = await this.build(ask, now);
     const existing = await this.db.stories.get(built.key);
     if (existing) return existing; // never paid for twice
     const pending = this.inflight.get(built.key);
     if (pending) return pending;
-    const run = this.generate(built, ask, now).finally(() => this.inflight.delete(built.key));
+    const run = this.generate(built, ask, now, onProgress).finally(() => this.inflight.delete(built.key));
     this.inflight.set(built.key, run);
     return run;
   }
 
-  private async generate(built: Built, ask: StoryAsk, now: Date): Promise<StoryRecord> {
-    const out = await runStoryPipeline({ llm: this.llm, req: built.req, ladder: built.ladder, lexicon: this.lexicon, difficulty: ask.difficulty });
-    if (!out.ok) throw new StoryUnavailableError(out.reasons);
+  private async generate(built: Built, ask: StoryAsk, now: Date, onProgress?: (stage: StoryStage) => void): Promise<StoryRecord> {
+    let out: Awaited<ReturnType<typeof runStoryPipeline>>;
+    try {
+      out = await runStoryPipeline({
+        llm: this.llm,
+        req: built.req,
+        ladder: built.ladder,
+        lexicon: this.lexicon,
+        difficulty: ask.difficulty,
+        ...(onProgress ? { onProgress } : {}),
+      });
+    } catch (err) {
+      this.failures.set(built.askKey, (this.failures.get(built.askKey) ?? 0) + 1);
+      throw err;
+    }
+    if (!out.ok) {
+      this.failures.set(built.askKey, (this.failures.get(built.askKey) ?? 0) + 1);
+      throw new StoryUnavailableError(out.reasons);
+    }
     const record = storyRecord(
       out.story,
       out.report,
@@ -243,10 +308,45 @@ export class StoryService {
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   }
 
-  /** "Next story": a ready one when there is one, otherwise a new one on the lesson theme. */
-  async next(level: Level, difficulty: StoryDifficulty, now: Date = new Date()): Promise<StoryRecord> {
+  /**
+   * "Next story": a ready one when there is one, then an unread lesson story written ahead for the
+   * current lesson (Phase 26 Part E, no model call), otherwise a new one on the lesson theme.
+   */
+  async next(level: Level, difficulty: StoryDifficulty, now: Date = new Date(), onProgress?: (stage: StoryStage) => void): Promise<StoryRecord> {
     const ready = (await this.readyFor(level, now)).find((s) => s.difficulty === difficulty);
-    return ready ?? this.write({ level, difficulty, kind: 'lesson' }, now);
+    if (ready) return ready;
+    const lesson = await this.nextLessonStory(level, now);
+    if (lesson) return lesson;
+    return this.write({ level, difficulty, kind: 'lesson' }, now, onProgress);
+  }
+
+  /** Phase 26 Part E: the next unread lesson story for the current lesson, put in the library. */
+  async nextLessonStory(level: Level, now: Date = new Date()): Promise<StoryRecord | undefined> {
+    if (!this.env.lessonStories) return undefined;
+    const { ladder } = await this.ladderFor(level, now);
+    const active = ladder.lessons.active;
+    if (!active) return undefined;
+    const pool = await this.env.lessonStories(active.bookId).catch(() => [] as LessonStory[]);
+    const library = new Map((await this.db.stories.toArray()).map((s) => [s.id, s]));
+    for (const ls of pool.filter((x) => x.lessonId === active.lessonId)) {
+      const id = `lesson-${ls.id}`;
+      const have = library.get(id);
+      if (have) {
+        if (!have.readAt && !have.report) return have;
+        continue;
+      }
+      const res = ls.story;
+      const names = ladder.properNounIds.flatMap((x) => this.lexicon.byId(x)?.headword ?? []);
+      const report = analyzeStory(
+        res.paragraphs.map((p) => p.zh),
+        { ladder, lexicon: this.lexicon, allowedTexts: storyAllowedNames(names, res.characters, this.lexicon), glossed: new Set(res.glosses.map((g) => g.zh)) },
+        storyBudget('middle'),
+      );
+      const record = storyRecord(res, report, res.questions, { id, level, difficulty: 'middle', topic: ls.topic, lessonId: ls.lessonId }, now);
+      await this.db.stories.put(record);
+      return record;
+    }
+    return undefined;
   }
 
   /** Keeps `readyAhead` unread stories for the current lesson, in the background. Failures are quiet. */
@@ -258,10 +358,14 @@ export class StoryService {
     keepGoing: () => boolean = () => true,
   ): Promise<number> {
     let ready = (await this.readyFor(level, now)).filter((s) => s.difficulty === difficulty).length;
-    while (ready < STORY_CONFIG.readyAhead && keepGoing()) {
+    const pause = STORY_CONFIG.readyAheadPause;
+    while (ready < STORY_CONFIG.readyAhead && keepGoing() && now.getTime() >= this.readyPausedUntil) {
       try {
         await this.write({ level, difficulty, kind: 'lesson' }, now);
+        this.readyFailures = 0;
       } catch {
+        // Phase 26: after 2 failures in a row, no background story for an hour (free quota).
+        if (++this.readyFailures >= pause.failures) this.readyPausedUntil = now.getTime() + pause.pauseMs;
         break;
       }
       ready++;

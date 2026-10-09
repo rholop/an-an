@@ -204,6 +204,8 @@ export interface JsonRunOptions {
   /** Phase 25: the independent check (Phases 17 and 24). A fresh call on the checker model, which
    * never sees the writer's prompt, history or reasoning (the route builds its own prompt). */
   checker?: boolean;
+  /** Phase 26: a regeneration or repair: never answered from the cache (the answer is still stored). */
+  noCache?: boolean;
 }
 
 export interface JsonOrchestrator {
@@ -233,7 +235,7 @@ export function createJsonOrchestrator(
         `${req.task}\n${first === primary ? '' : `checker:${first.model}\n`}${req.systemPrompt}`,
         req.userMessage,
       );
-      const cached = cache.get(cacheKey);
+      const cached = runOpts.noCache ? undefined : cache.get(cacheKey);
       if (cached) return { result: cached as JsonTaskResult<T>, log: cachedLog(cached) };
 
       const second = first === primary ? fallback : fallback && fallback.model !== first.model ? fallback : primary;

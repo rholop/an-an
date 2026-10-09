@@ -5,6 +5,8 @@ import { hanCount } from './index.js';
 import type {
   StoryCheckRequest,
   StoryCheckResponse,
+  StoryRepairRequest,
+  StoryRepairResponse,
   StoryRequest,
   StoryResponse,
 } from './types.js';
@@ -18,6 +20,19 @@ export function dryStoryCheck(req: StoryCheckRequest): StoryCheckResponse {
     summaryMatches: true,
     problems: [],
     correctOptions: req.questions.map(() => [0]),
+    glossesOk: true,
+  };
+}
+
+/** Phase 26: the stand-in repair swaps each problem word for its first suggestion (or drops it). */
+export function dryStoryRepair(req: StoryRepairRequest): StoryRepairResponse {
+  return {
+    sentences: req.sentences.map((s) => ({
+      i: s.i,
+      zh: s.problems.reduce((zh, p) => zh.split(p.zh).join(p.swaps[0] ?? ''), s.zh) || s.zh,
+    })),
+    paragraphsEn: [],
+    newWords: [],
   };
 }
 
@@ -56,6 +71,7 @@ export function dryStory(req: StoryRequest): StoryResponse {
     paragraphs: paragraphs.map((zh, n) => ({ zh, en: `Paragraph ${n + 1} in English.` })),
     summary_en: `A short practice story about ${req.topic}.`,
     glosses: [],
+    newWords: req.rungs.r3.filter((w) => words.includes(w)).map((zh) => ({ zh, en: zh })),
     characters: [],
     questions: [
       {

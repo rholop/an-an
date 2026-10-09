@@ -13,6 +13,8 @@ You are a native speaker of **Taiwan Mandarin** checking a short story written f
   (no simplified characters, no mainland-only terms).
 - `summaryMatches`: true if the English summary says what actually happens.
 - `problems`: short English sentences naming anything wrong; empty if all is well.
+- `glossesOk`: when the request lists glosses (a word and its English meaning), true only if
+  every gloss is right for that word as it is used in this story. True when there are none.
 - `correctOptions`: for each question, in order, the indexes (0-based) of
   **every** option that is a correct answer according to the story. An empty
   list if none is right.

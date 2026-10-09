@@ -1,6 +1,6 @@
 // Phase 24 Part C: reading one graded story, then its questions and the summary.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { storyMinutes, storySentences, type Level, type Lexicon, type SkillCard, type StoryRecord } from '@anan/core';
+import { glossFor, storyMinutes, storySentences, STORY_CONFIG, type Level, type Lexicon, type SkillCard, type StoryRecord } from '@anan/core';
 import { AnnotatedText, type AnnotatedToken } from '../components/AnnotatedText.js';
 import { ReportButton } from '../components/ReportSheet.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
@@ -8,7 +8,12 @@ import { learnerService } from '../db/instance.js';
 import { annotate, withReadingDisplay } from '../lib/annotate.js';
 import {
   FEEDBACK_CORRECT,
+  NO_QUESTIONS,
   READ_AGAIN,
+  SKIP,
+  START_READING,
+  storyRungLabel,
+  WORDS_IN_STORY,
   REPORT_THANKS,
   storyPitch,
   storyReadLine,
@@ -32,12 +37,14 @@ interface Props {
   onContinue?: (story: StoryRecord) => void;
 }
 
-type Phase = 'reading' | 'questions' | 'done';
+type Phase = 'words' | 'reading' | 'questions' | 'done';
 
 export function StoryView({ story: initial, service, lexicon, level, onExit, exitLabel = '← Stories', onContinue }: Props) {
   const [story, setStory] = useState(initial);
-  const [phase, setPhase] = useState<Phase>('reading');
   const { mode, script } = useReadingSettings();
+  // Phase 26 Part C: the words outside rung 1, taught before the text (this lesson first).
+  const lessonWords = useMemo(() => miniLessonWords(initial, lexicon, mode !== 'off'), [initial, lexicon, mode]);
+  const [phase, setPhase] = useState<Phase>(() => (lessonWords.length > 0 && !initial.readAt ? 'words' : 'reading'));
   const [cards, setCards] = useState<Map<string, SkillCard>>(new Map());
   const lookedUp = useRef(new Set<string>());
   const [english, setEnglish] = useState<Set<number>>(new Set());
@@ -62,6 +69,19 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
     () => story.paragraphs.map((p) => withReadingDisplay(annotate(p.zh, lexicon), cards)),
     [story, lexicon, cards],
   );
+  // Phase 26 C2: a word outside every list shows a small gloss on its first use in the story.
+  const inlineGlosses = useMemo(() => {
+    const out = story.paragraphs.map(() => new Map<string, string>());
+    const seen = new Set<string>();
+    for (const w of story.newWords.filter((x) => x.rung === 6)) {
+      const en = lessonWords.find((x) => x.text === w.text)?.en;
+      const p = story.paragraphs.findIndex((x) => x.zh.includes(w.text));
+      if (!en || p < 0 || seen.has(w.text)) continue;
+      seen.add(w.text);
+      out[p]!.set(w.text, en.split(/[;,]/)[0]!.trim());
+    }
+    return out;
+  }, [story, lessonWords]);
   const lesson = storyLesson(story);
 
   function onLookup(at: AnnotatedToken, kind: 'gloss' | 'reading') {
@@ -107,6 +127,32 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
         </p>
       </header>
 
+      {phase === 'words' && (
+        <section className="story-words" data-testid="story-words">
+          <h2>{WORDS_IN_STORY}</h2>
+          <ul>
+            {lessonWords.map((w) => (
+              <li key={w.text} data-testid="story-words-item">
+                <span lang="zh-Hant" className="story-words-zh">
+                  {w.text}
+                </span>
+                {w.pinyin && <span className="story-gloss">{w.pinyin}</span>}
+                <span>{w.en}</span>
+                <span className="story-words-rung">{storyRungLabel(w.rung)}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="story-words-actions">
+            <button type="button" className="btn-primary story-primary" data-testid="story-start-reading" onClick={() => setPhase('reading')}>
+              {START_READING}
+            </button>
+            <button type="button" className="story-skip" data-testid="story-words-skip" onClick={() => setPhase('reading')}>
+              {SKIP}
+            </button>
+          </div>
+        </section>
+      )}
+
       {phase === 'reading' && (
         <>
           {paragraphs.map((tokens, i) => (
@@ -119,6 +165,7 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
                 onLookup={onLookup}
                 lookupSource="story"
                 newWords={newWords}
+                inlineGlosses={inlineGlosses[i]}
                 contextText={story.paragraphs[i]!.zh}
               />
               <div className="story-paragraph-tools">
@@ -158,16 +205,18 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
               ))}
             </p>
           )}
+          {story.questions.length === 0 && <p className="story-gloss" data-testid="story-no-questions">{NO_QUESTIONS}</p>}
           <button
             type="button"
             className="btn-primary story-primary"
             data-testid="story-done-reading"
             onClick={() => {
+              if (story.questions.length === 0) return void finish();
               setPhase('questions');
               window.scrollTo(0, 0);
             }}
           >
-            Questions →
+            {story.questions.length === 0 ? 'Finish' : 'Questions →'}
           </button>
         </>
       )}
@@ -302,4 +351,25 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
       )}
     </div>
   );
+}
+
+/**
+ * Phase 26 Part C: the mini lesson's words: this lesson's words, then the others (next lesson,
+ * coming lesson, new word), each with its meaning from the lexicon (the textbook sense for lesson
+ * words) or the story's checked gloss. Rungs 3–6 are capped per difficulty (config).
+ */
+export function miniLessonWords(
+  story: Pick<StoryRecord, 'newWords' | 'glosses' | 'difficulty'>,
+  lexicon: Lexicon,
+  withPinyin = true,
+): Array<{ text: string; pinyin: string; en: string; rung: number }> {
+  const max = STORY_CONFIG.miniLesson.maxWords[story.difficulty] ?? 6;
+  const rows = story.newWords.map((w) => {
+    const word = w.wordId ? lexicon.byId(w.wordId) : undefined;
+    const en = word ? glossFor(word, { textbook: w.rung <= 4 }) : (story.glosses.find((g) => g.zh === w.text)?.en ?? '');
+    return { text: w.text, pinyin: withPinyin ? (word?.pinyin ?? '') : '', en, rung: w.rung };
+  });
+  const lesson = rows.filter((r) => r.rung === 2);
+  const others = rows.filter((r) => r.rung >= 3).slice(0, max);
+  return [...lesson, ...others].filter((r) => r.en);
 }

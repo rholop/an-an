@@ -163,6 +163,7 @@ Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
 | 23 | Morning and evening review sessions (profile time zone, cap per session), Review faces (Meaning, Pick, Recall, Say it) with look-alike options, "Pinyin & tones" tab (7 tap exercises on the `reading` skill, tone confusion table on Progress) | `23-review-sessions-and-pinyin-practice.md` |
 | 24 | Graded stories from known words (vocabulary ladder, Stories in the Reader, Home "Today's story", optional lesson story step) | `24-graded-stories.md`, eval in `docs/stories-eval.md` |
 | 25 | Gemini only; lesson grammar step (3 exercises per point, ≥2 types, tiles from `core/textbook/grammar-step.ts` + `lesson-grammar-step.ts`); lesson senses (`glossFor(w, {lesson})`); names out of vocab; curriculum data fixes via `data/supplement/lexicon-overrides.yaml`; `pnpm audit:curriculum` in CI (config `data/curriculum/audit-config.yaml`, report `docs/curriculum-audit.md`); naturalness pass `pnpm --filter @anan/proxy naturalness` | `25-lessons-grammar-and-story-fix.md` |
+| 26 | Stories you can read: grouped glossed word lists (`storyPromptLists`), `GEMINI_MODEL_STORY` writer, sentence repair (`/v1/story-repair`, max 3 calls + 1 check), mini lesson ("Words in this story") above the floors, real retries (variant + topic rotation, no cache), lesson stories made ahead (`pnpm stories:build`) | `26-stories-that-pass.md`, eval in `docs/stories-eval.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

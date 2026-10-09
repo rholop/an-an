@@ -1,16 +1,20 @@
 /**
- * Phase 24 acceptance: 20 graded stories per level (Novice = N1, L1) on 5 topics, written and
- * checked through the REAL pipeline (`runStoryPipeline`: write → code checks → regenerate once →
- * independent check by the other provider) against a LIVE proxy, for two seeded learners. Writes
- * docs/stories-eval.md with every story that would be shown, its shares and a blank verdict line.
+ * Phase 24/26 acceptance: 20 graded stories per level (N1, N2, L1) written, repaired and checked
+ * through the REAL pipeline (`runStoryPipeline`: write → code checks → sentence repair → independent
+ * check on the checker model) against a LIVE proxy. Writes docs/stories-eval.md with, per attempt,
+ * the known-or-this-lesson share before and after repair, the mini-lesson words and the reason when
+ * a story is refused.
  *
  *   pnpm --filter @anan/proxy dev   # one terminal (needs GEMINI_API_KEY)
- *   pnpm eval:stories               # another
+ *   pnpm eval:stories [--profile anan-ron-2026-10-09.json]   # another
  *
- * Env: PROXY_URL (default http://localhost:3002), SITE_CODE (the household code).
- * `--dry` runs the same harness with the offline stand-in writer (no keys needed) and writes
- * docs/stories-eval.md marked as a DRY RUN: it proves the harness, it is not model output.
- * Exits 1 if any story that would be shown breaks a share or a check (a hard-rule violation).
+ * `--profile` uses a real profile export (Settings → Export): its cards decide known / due words.
+ * Env: PROXY_URL (default http://localhost:3002), SITE_CODE (the household code), CLASS (e.g.
+ * "laixue-1:4", the My class book and lesson; default book 1 lesson 4 for N1/N2, book 2 lesson 3 for L1).
+ * `--dry` runs the same harness with the offline stand-in writer (no keys needed) and marks the doc
+ * as a DRY RUN: it proves the harness, it is not model output.
+ * Exits 1 if a shown story breaks a hard rule (below the floor, an unexplained word, Taiwan usage),
+ * or (live runs) fewer than 18 of 20 per level are shown.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -19,6 +23,10 @@ import {
   DEFAULT_STUDY_SETTINGS,
   dryStory,
   dryStoryCheck,
+  dryStoryRepair,
+  miniLessonWordCount,
+  storyPromptLists,
+  StoryRepairResponseSchema,
   getStudyFocus,
   Lexicon,
   promptBudget,
@@ -26,7 +34,6 @@ import {
   STORY_CONFIG,
   storyBudget,
   storyLength,
-  storyPromptRungs,
   StoryCheckResponseSchema,
   StoryResponseSchema,
   runStoryPipeline,
@@ -46,6 +53,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.
 const proxyUrl = process.env.PROXY_URL ?? 'http://localhost:3002';
 const dry = process.argv.includes('--dry');
 const PER_LEVEL = 20;
+const profileArg = process.argv.indexOf('--profile');
+const profileFile = profileArg > 0 ? process.argv[profileArg + 1] : undefined;
+const LEVELS: Level[] = ['N1', 'N2', 'L1'];
 const DIFFICULTY: StoryDifficulty = 'middle';
 
 const lexFile = JSON.parse(readFileSync(path.join(root, 'data/build/lexicon.v2.json'), 'utf8')) as {
@@ -90,10 +100,20 @@ const card = (id: string, skill: 'recognition' | 'production'): SkillCard => ({
   updatedAt: NOW,
 });
 
+/** Cards from a real profile export (Settings → Export), when `--profile` is given. */
+function exportedCards(): SkillCard[] | undefined {
+  if (!profileFile) return undefined;
+  const raw = JSON.parse(readFileSync(profileFile, 'utf8')) as { items?: Array<SkillCard & { card: { due: string | Date; last_review?: string | Date } }> };
+  return (raw.items ?? []).map((c) => ({
+    ...c,
+    card: { ...c.card, due: new Date(c.card.due), ...(c.card.last_review ? { last_review: new Date(c.card.last_review) } : {}) },
+  })) as SkillCard[];
+}
+
 /**
- * The two seeded learners. Novice: class = 來學華語 1 Lesson 3 (Lessons 1–2 still catch-up), the 150
- * most frequent N1 words Learned. L1: N1 and N2 Mastered (so book 2 is not gated), book 1 Learned,
- * class = 來學華語 2 Lesson 3.
+ * The learner: a real export when given, else a seeded one. Seeded Novice (N1/N2): class = 來學華語 1
+ * Lesson 4, lessons 1–3 and the 150 most frequent N1 words learned, 220 of them due (the owner's case).
+ * Seeded L1: N1 and N2 Mastered, book 1 learned, class = 來學華語 2 Lesson 3.
  */
 function profile(level: Level) {
   const byFreq = (lv: Level) =>
@@ -101,15 +121,25 @@ function profile(level: Level) {
       .allWords()
       .filter((w) => w.level === lv && w.source === 'tocfl')
       .sort((a, b) => (a.freqRank ?? 1e9) - (b.freqRank ?? 1e9));
-  const known =
-    level === 'N1'
-      ? byFreq('N1').slice(0, 150).map((w) => w.id)
-      : [
-          ...byFreq('N1').map((w) => w.id),
-          ...byFreq('N2').map((w) => w.id),
-          ...books[0]!.lessons.flatMap((l) => l.vocab),
-        ];
-  const cards = [...new Set(known)].flatMap((id) => [card(id, 'recognition'), card(id, 'production')]);
+  const novice = level === 'N1' || level === 'N2';
+  const [classBook, classLesson] = (process.env.CLASS ?? (novice ? 'laixue-1:4' : 'laixue-2:3')).split(':');
+  const real = exportedCards();
+  let cards: SkillCard[];
+  let known: string[];
+  let due: string[] = [];
+  if (real) {
+    cards = real;
+    const rec = real.filter((c) => c.item.kind === 'word' && c.skill === 'recognition' && c.state !== 'unseen' && c.state !== 'introduced');
+    known = rec.map((c) => c.item.id);
+    due = rec.filter((c) => c.card.due.getTime() <= NOW.getTime()).map((c) => c.item.id);
+  } else {
+    known = novice
+      ? [...byFreq('N1').slice(0, 150).map((w) => w.id), ...books[0]!.lessons.slice(0, 3).flatMap((l) => l.vocab)]
+      : [...byFreq('N1').map((w) => w.id), ...byFreq('N2').map((w) => w.id), ...books[0]!.lessons.flatMap((l) => l.vocab)];
+    known = [...new Set(known)];
+    if (novice) due = known.slice(0, 220);
+    cards = known.flatMap((id) => [card(id, 'recognition'), card(id, 'production')]);
+  }
   const focus = getStudyFocus(
     {
       lexicon,
@@ -117,7 +147,7 @@ function profile(level: Level) {
       cards,
       grammarUses: new Map(),
       settings: { ...DEFAULT_STUDY_SETTINGS },
-      myClass: { enabled: true, textbookId: level === 'N1' ? 'laixue-1' : 'laixue-2', currentLesson: 3 },
+      myClass: { enabled: true, textbookId: classBook!, currentLesson: Number(classLesson) },
     },
     NOW,
   );
@@ -125,12 +155,13 @@ function profile(level: Level) {
     lexicon,
     level,
     knownIds: new Set(known),
-    dueIds: new Set(),
+    dueIds: new Set(due),
     learningIds: new Set(),
     books,
     studyFocus: focus,
   });
-  return { ladder, lessonTopic: ladder.lessons.active ? `${ladder.lessons.active.titleEn}: ${ladder.lessons.active.topic}` : 'everyday life' };
+  const active = ladder.lessons.active;
+  return { ladder, due: new Set(due), lessonTopic: active ? `${active.titleEn}: ${active.topic}` : 'everyday life' };
 }
 
 const TOPICS = (lessonTopic: string) => [
@@ -160,6 +191,7 @@ const llm: StoryLLM = dry
   ? {
       writeStory: async (req) => ({ story: dryStory(req), servedBy: 'gemini' }),
       checkStory: async (req) => dryStoryCheck(req),
+      repairStory: async (req) => dryStoryRepair(req),
     }
   : {
       writeStory: async (req) => {
@@ -167,6 +199,7 @@ const llm: StoryLLM = dry
         return { story: StoryResponseSchema.parse(json), ...(servedBy ? { servedBy } : {}) };
       },
       checkStory: async (req) => StoryCheckResponseSchema.parse((await post('/v1/story-check', req)).json),
+      repairStory: async (req) => StoryRepairResponseSchema.parse((await post('/v1/story-repair', req)).json),
     };
 
 interface Row {
@@ -179,18 +212,21 @@ interface Row {
 const rows: Row[] = [];
 const violations: string[] = [];
 const budget = storyBudget(DIFFICULTY);
-for (const level of ['N1', 'L1'] as Level[]) {
-  const { ladder, lessonTopic } = profile(level);
+for (const level of LEVELS) {
+  const { ladder, lessonTopic, due } = profile(level);
   const topics = TOPICS(lessonTopic);
   for (let i = 0; i < PER_LEVEL; i++) {
     const topic = topics[i % topics.length]!;
     const n = Math.floor(i / topics.length) + 1;
+    const lists = storyPromptLists({ ladder, lexicon, dueIds: due, rng: mulberry(i + 1), topic });
     const req: StoryRequest = {
-      // a numbered take, so the proxy's cache does not hand back the same story
-      topic: n > 1 ? `${topic} (take ${n})` : topic,
+      topic,
       learnerLevel: level,
       length: storyLength(level),
-      rungs: storyPromptRungs({ ladder, lexicon, rng: mulberry(i + 1) }),
+      rungs: lists.rungs,
+      groups: lists.groups,
+      // Phase 26: every attempt is its own variant, so the proxy's cache never hands back a story
+      variant: n,
       budget: promptBudget(budget),
       grammar: ladder.grammar.allowed.flatMap((id) => lexicon.grammarItemById(id)?.pattern ?? []).slice(0, 80),
       grammarNext: ladder.grammar.next.flatMap((id) => lexicon.grammarItemById(id)?.pattern ?? []).slice(0, 20),
@@ -204,14 +240,15 @@ for (const level of ['N1', 'L1'] as Level[]) {
     }
     rows.push({ level, topic, n, result });
     if (result.ok) {
+      // Phase 26 Part D: the floors and "never unexplained" are the hard rules for a shown story.
       const r = result.report;
       const id = `${level} · ${topic} #${n}`;
-      if (r.rung1Share < budget.minRung1Share) violations.push(`${id}: rung 1 ${pct(r.rung1Share)}`);
-      if (r.distinct[3].length > budget.maxRung3Words) violations.push(`${id}: rung 3 × ${r.distinct[3].length}`);
-      if (r.distinct[4].length > budget.maxRung4Words) violations.push(`${id}: rung 4 × ${r.distinct[4].length}`);
-      if (r.distinct[5].length > budget.maxRung5Words) violations.push(`${id}: rung 5 × ${r.distinct[5].length}`);
+      const glossed = new Set(result.story.glosses.map((g) => g.zh));
+      if (r.knownShare < STORY_CONFIG.miniLesson.floor[DIFFICULTY]) violations.push(`${id}: known ${pct(r.knownShare)}`);
+      if (miniLessonWordCount(r) > STORY_CONFIG.miniLesson.maxWords[DIFFICULTY]) violations.push(`${id}: ${miniLessonWordCount(r)} new words`);
+      const unexplained = r.paragraphs.flat().filter((t) => t.rung !== 'allowed' && t.rung >= 3 && !glossed.has(t.text));
+      if (unexplained.length) violations.push(`${id}: unexplained ${unexplained.map((t) => t.text).join('、')}`);
       if (r.taiwanness.length > 0) violations.push(`${id}: Taiwan / traditional`);
-      if (result.questions.length < STORY_CONFIG.questions.min) violations.push(`${id}: questions`);
     }
     process.stdout.write(result.ok ? '.' : 'x');
   }
@@ -234,49 +271,59 @@ function pct(x: number): string {
 
 // ---- the report --------------------------------------------------------------------------------
 const lines: string[] = [];
-lines.push('# Graded stories eval (Phase 24)', '');
+lines.push('# Graded stories eval (Phase 24, Phase 26)', '');
 if (dry)
   lines.push(
     '> **DRY RUN: not model output.** Written by `pnpm eval:stories --dry` with the offline stand-in',
     '> writer (one known word per comma). It proves the harness and the checks; the real eval needs',
-    '> `pnpm eval:stories` against a live proxy with both API keys, then a read-through by Ezra.',
+    '> `pnpm eval:stories --profile <export>` against a live proxy with the Gemini key.',
     '',
   );
 lines.push(
-  `Generated ${NOW.toISOString()} from ${dry ? 'the offline stand-in' : proxyUrl} · difficulty ${DIFFICULTY} · ${PER_LEVEL} stories per level on 5 topics.`,
+  `Generated ${NOW.toISOString()} from ${dry ? 'the offline stand-in' : proxyUrl} · ${profileFile ? `profile ${path.basename(profileFile)}` : 'seeded learners'} · difficulty ${DIFFICULTY} · ${PER_LEVEL} stories per level on 5 topics.`,
   '',
-  '| Level | Asked | Shown | Not shown | Regenerated | Rung 1 (mean) | Avg characters |',
-  '|---|---|---|---|---|---|---|',
+  '| Level | Asked | Shown | Mini lessons | Not shown | Repaired | Known share (mean) | Avg characters |',
+  '|---|---|---|---|---|---|---|---|',
 );
-for (const level of ['N1', 'L1'] as Level[]) {
+const short: string[] = [];
+for (const level of LEVELS) {
   const rs = rows.filter((r) => r.level === level);
   const shown = rs.flatMap((r) => (r.result.ok ? [r.result] : []));
-  const regen = rs.filter((r) => r.result.attempts.length > 1).length;
-  const mean = shown.length ? shown.reduce((s, x) => s + x.report.rung1Share, 0) / shown.length : 0;
+  const mini = shown.filter((x) => x.miniLesson).length;
+  const repaired = rs.filter((r) => r.result.attempts.some((a) => a.via === 'repair')).length;
+  const mean = shown.length ? shown.reduce((s, x) => s + x.report.knownShare, 0) / shown.length : 0;
   const chars = shown.length ? Math.round(shown.reduce((s, x) => s + x.report.chars, 0) / shown.length) : 0;
-  lines.push(`| ${level} | ${rs.length} | ${shown.length} | ${rs.length - shown.length} | ${regen} | ${pct(mean)} | ${chars} |`);
+  lines.push(`| ${level} | ${rs.length} | ${shown.length} | ${mini} | ${rs.length - shown.length} | ${repaired} | ${pct(mean)} | ${chars} |`);
+  if (shown.length < Math.ceil(PER_LEVEL * 0.9)) short.push(`${level}: ${shown.length}/${rs.length} shown`);
 }
 lines.push('', `Hard-rule violations among shown stories: **${violations.length}**${violations.length ? ` (${violations.join('; ')})` : ''}.`, '');
+const word = (x: string) => lexicon.byId(x)?.headword ?? x;
 for (const r of rows) {
   lines.push(`## ${r.level} · ${r.topic} #${r.n}`, '');
+  lines.push(
+    ...r.result.attempts.map(
+      (a, k) =>
+        `- Attempt ${k + 1} (${a.via ?? 'write'}): known or this lesson ${pct(a.report.knownShare)}, rung 1 ${pct(a.report.rung1Share)}, ${a.report.chars} characters${a.report.failed.length ? `, missed: ${a.report.failed.join(', ')}` : ', met every target'}`,
+    ),
+    '',
+  );
   if (!r.result.ok) {
-    lines.push(`Not shown: ${r.result.reasons.join(', ')}${'error' in r.result ? ` (${r.result.error})` : ''}. Attempts: ${r.result.attempts.length}.`, '');
+    lines.push(`**Not shown:** ${r.result.reasons.join(', ')}${'error' in r.result ? ` (${r.result.error})` : ''}.`, '');
     continue;
   }
-  const { story, report, questions, attempts } = r.result;
+  const { story, report, questions } = r.result;
   const d = report.distinct;
-  const word = (x: string) => lexicon.byId(x)?.headword ?? x;
   lines.push(
-    `**${story.title_zh}** (${story.title_en}) · ${report.chars} characters · rung 1 ${pct(report.rung1Share)} · attempts ${attempts.length}`,
+    `**${story.title_zh}** (${story.title_en}) · ${report.chars} characters · known or this lesson ${pct(report.knownShare)}${r.result.miniLesson ? ' · **mini lesson**' : ''}`,
     '',
-    `Rung 2: ${d[2].map(word).join('、') || 'none'} · rung 3: ${d[3].map(word).join('、') || 'none'} · rung 4: ${d[4].map(word).join('、') || 'none'} · rung 5: ${d[5].map(word).join('、') || 'none'} · rung 6 (glossed): ${d[6].map(word).join('、') || 'none'}`,
+    `This lesson: ${d[2].map(word).join('、') || 'none'} · words taught first: ${story.glosses.map((g) => `${g.zh} (${g.en})`).join('、') || 'none'}`,
     '',
     ...story.paragraphs.flatMap((p) => [`> ${p.zh}`, '>', `> _${p.en}_`, '']),
     `Summary: ${story.summary_en}`,
     '',
-    ...questions.map((q, i) => `${i + 1}. ${q.q_zh} (${q.q_en}): ${q.options.map((o, k) => (k === q.answer ? `**${o.zh}**` : o.zh)).join(' / ')}`),
-    '',
-    'Verdict (Ezra): ',
+    ...(questions.length
+      ? questions.map((q, i) => `${i + 1}. ${q.q_zh} (${q.q_en}): ${q.options.map((o, k) => (k === q.answer ? `**${o.zh}**` : o.zh)).join(' / ')}`)
+      : ['No questions for this one.']),
     '',
   );
 }
@@ -284,5 +331,9 @@ writeFileSync(path.join(root, 'docs/stories-eval.md'), `${lines.join('\n')}\n`);
 console.log(`wrote docs/stories-eval.md (${rows.filter((r) => r.result.ok).length}/${rows.length} shown${dry ? ', DRY RUN' : ''})`);
 if (violations.length > 0) {
   console.error(`HARD-RULE VIOLATIONS:\n${violations.join('\n')}`);
+  process.exit(1);
+}
+if (!dry && short.length > 0) {
+  console.error(`Fewer than 18 of 20 shown: ${short.join('; ')}`);
   process.exit(1);
 }

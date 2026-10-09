@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import type {
   StoryCheckRequest,
   StoryRequest,
+  StoryRepairRequest,
   DefineRequest,
   GlossAdjudicationRequest,
   ClozeCheckRequest,
@@ -20,7 +21,7 @@ import type {
   TopicWordsRequest,
   TurnRequest,
 } from '@anan/core';
-import { OPEN_CHAT_CONFIG } from '@anan/core';
+import { OPEN_CHAT_CONFIG, STORY_CONFIG } from '@anan/core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
@@ -291,8 +292,12 @@ export function topicWordsUserMessage(req: TopicWordsRequest): string {
 
 // ---- Phase 24: graded stories -------------------------------------------------------------
 
-export function loadStoryPromptTemplates(version: string): { write: string; check: string } {
-  return { write: loadPromptFile(`story.${version}.md`), check: loadPromptFile(`story-check.${version}.md`) };
+export function loadStoryPromptTemplates(version: string): { write: string; check: string; repair: string } {
+  return {
+    write: loadPromptFile(`story.${version}.md`),
+    check: loadPromptFile(`story-check.${version}.md`),
+    repair: loadPromptFile(`story-repair.${version}.md`),
+  };
 }
 
 const NOVICE = new Set(['N1', 'N2']);
@@ -309,24 +314,56 @@ export function buildStoryPrompt(template: string, req: StoryRequest): string {
     length_min: String(req.length.min),
     length_max: String(req.length.max),
     sentence_style: NOVICE.has(req.learnerLevel)
-      ? 'Very short, simple sentences (5–12 characters each).'
+      ? `${STORY_CONFIG.novice.sentences.min}–${STORY_CONFIG.novice.sentences.max} very short, simple sentences (5–12 characters each).`
       : 'Short, clear sentences.',
+    paragraphs: NOVICE.has(req.learnerLevel) ? `1–${STORY_CONFIG.novice.paragraphsMax}` : '2–6',
+    rung2_words: String(STORY_CONFIG.rung2Words),
+    rung2_max: String(STORY_CONFIG.rung2Repeats.max),
   });
 }
 
 export function storyUserMessage(req: StoryRequest): string {
+  // Phase 26: rungs 1–2 grouped with glosses ("公園 park") when the app sends groups.
+  const grouped = req.groups?.length
+    ? [
+        'Rungs 1–2, the words to build the story from (word + meaning), by kind:',
+        ...req.groups.map(
+          (g) =>
+            `- ${g.label === 'this lesson' ? 'Rung 2, this lesson' : g.label}: ${g.words.map((w) => (w.en ? `${w.zh} ${w.en}` : w.zh)).join('、')}`,
+        ),
+      ]
+    : [`Rung 1 (known): ${req.rungs.r1.join('、') || '(none)'}`, `Rung 2 (this lesson): ${req.rungs.r2.join('、') || '(none)'}`];
   const lines = [
     `Topic: ${req.topic}`,
     `Names: ${req.names.join('、') || '(none: use 小明 or 小美)'}`,
-    `Rung 1 (known): ${req.rungs.r1.join('、') || '(none)'}`,
-    `Rung 2 (this lesson): ${req.rungs.r2.join('、') || '(none)'}`,
+    ...grouped,
     `Rung 3 (next lesson): ${req.rungs.r3.join('、') || '(none)'}`,
     `Rung 4 (the lesson after): ${req.rungs.r4.join('、') || '(none)'}`,
     `Rung 5 (current level): ${req.rungs.r5.join('、') || '(none)'}`,
   ];
   if (req.previous)
     lines.push(`Continue this story with the same characters. Previous episode "${req.previous.title}": ${req.previous.summaryEn}`);
-  if (req.feedback) lines.push(`Your last version was rejected: ${req.feedback}`);
+  if (req.variant) lines.push(`Variant ${req.variant}: write a different story from any earlier one on this topic.`);
+  if (req.feedback) lines.push(`Your last version missed the word lists: ${req.feedback}`);
+  return lines.join('\n');
+}
+
+/** Phase 26: the repair call. Only the listed sentences, each with its problem words and swaps. */
+export function storyRepairUserMessage(req: StoryRepairRequest): string {
+  const lines = [
+    `Learner level: ${req.learnerLevel}`,
+    `Names: ${req.names.join('、') || '(none)'}`,
+    `Words to use: ${req.words.join('、')}`,
+    `The whole story (for context, do not rewrite it):\n<<<ZH\n${req.story.join('\n')}\nZH>>>`,
+    'Sentences to rewrite:',
+    ...req.sentences.map(
+      (s) =>
+        `${s.i}. ${s.zh}\n   Problem words: ${s.problems
+          .map((p) => `${p.zh}${p.en ? ` (${p.en})` : ''}: ${p.why}${p.swaps.length ? `; try ${p.swaps.join(' / ')}` : ''}`)
+          .join('; ')}`,
+    ),
+  ];
+  if (req.variant) lines.push(`Variant ${req.variant}.`);
   return lines.join('\n');
 }
 

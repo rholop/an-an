@@ -3,6 +3,7 @@
 // the library helpers. Pure: no fetch, no storage; time is injected.
 
 import type { Lexicon } from '../lexicon.js';
+import type { Word } from '../types.js';
 import type { Level } from '../levels.config.js';
 import { segment } from '../segment.js';
 import { checkTaiwanness, type TaiwannessResult } from '../taiwanness.js';
@@ -11,7 +12,15 @@ import { hashText } from '../hash.js';
 import { isOpenChatAllowedWord } from '../chat/openChat.js';
 import { bestRung, type VocabLadder, type VocabRung } from '../progress/vocabLadder.js';
 import { STORY_BUDGETS, STORY_CONFIG, type RungBudget, type StoryDifficulty } from './stories.config.js';
-import type { StoryCheckRequest, StoryCheckResponse, StoryQuestion, StoryRequest, StoryResponse } from './types.js';
+import type {
+  StoryCheckRequest,
+  StoryCheckResponse,
+  StoryQuestion,
+  StoryRepairRequest,
+  StoryRepairResponse,
+  StoryRequest,
+  StoryResponse,
+} from './types.js';
 import type { ProviderName } from '../journal/types.js';
 
 export * from './stories.config.js';
@@ -34,40 +43,120 @@ export function storySentences(paragraph: string): string[] {
 export interface StoryPromptInput {
   ladder: VocabLadder;
   lexicon: Pick<Lexicon, 'byId'>;
-  /** Due now: they lead rung 1 (reading them is review). */
+  /** Due now: they lead rung 1 after the topic words (reading them is review). */
   dueIds?: ReadonlySet<string>;
   /** Recently learned word ids, newest first. */
   recentIds?: readonly string[];
-  /** For the rung 1 / rung 5 sample. */
+  /** For the rest of rung 1. */
   rng?: () => number;
+  /** Phase 26: the story's topic and the topic's words (Phase 18's cached list): matching words go first. */
+  topic?: string;
+  topicWords?: readonly string[];
 }
 
-/** Headwords per rung for the prompt: all of rungs 2–4, up to 300 of rung 1 (due and recent first). */
-export function storyPromptRungs(input: StoryPromptInput): StoryRequest['rungs'] {
-  const hw = (ids: Iterable<string>) => {
-    const out: string[] = [];
+/** Phase 26: the groups the prompt shows (rung 2 first, then rung 1 by kind). */
+export const STORY_WORD_GROUPS = ['people', 'places', 'food', 'time', 'verbs', 'adjectives', 'measure words', 'things', 'other'] as const;
+export type StoryWordGroup = (typeof STORY_WORD_GROUPS)[number];
+
+const GROUP_GLOSS: Array<[StoryWordGroup, RegExp]> = [
+  ['people', /\b(person|people|friends?|teachers?|students?|mother|father|mom|dad|brothers?|sisters?|child|children|son|daughter|husband|wife|man|woman|boy|girl|classmates?|doctor|boss|colleague|grand\w*|uncle|aunt|baby|family|guests?|customers?|waiter|clerk|driver|everyone|somebody|someone)\b/i],
+  ['food', /\b(food|tea|coffee|rice|noodles?|meat|beef|pork|chicken|fish|fruits?|vegetables?|soup|dumplings?|bread|cake|milk|juice|water|beer|wine|breakfast|lunch|dinner|meal|snacks?|eggs?|tofu|apples?|bananas?|sugar|dessert|menu|dish)\b/i],
+  ['time', /\b(day|days|week|month|year|time|morning|afternoon|evening|night|noon|o'clock|today|tomorrow|yesterday|hours?|minutes?|now|weekend|monday|tuesday|wednesday|thursday|friday|saturday|sunday|spring|summer|autumn|winter|birthday|holiday)\b/i],
+  ['places', /\b(place|stores?|shops?|station|park|school|restaurant|room|home|house|city|country|market|street|road|office|hospital|library|bank|hotel|airport|bathroom|toilet|kitchen|classroom|building|mountain|beach|sea|river|temple|museum|company|supermarket|cafe|outside|inside|here|there|nearby|side)\b/i],
+];
+
+/** Phase 26: the group a word is listed under in the prompt (and its swaps come from). */
+export function storyWordGroup(w: Pick<Word, 'pos' | 'glossEn'>): StoryWordGroup {
+  const pos = w.pos ?? [];
+  if (pos.includes('M')) return 'measure words';
+  const noun = pos.length === 0 || pos.some((p) => p === 'N' || p === 'Nb');
+  if (noun) for (const [g, re] of GROUP_GLOSS) if (re.test(w.glossEn)) return g;
+  if (pos.some((p) => p === 'N' || p === 'Nb')) return 'things';
+  if (pos.some((p) => p === 'Vs' || p === 'Vs-attr' || p === 'Vs-pred' || p === 'Vs-sep')) return 'adjectives';
+  if (pos.some((p) => p.startsWith('V'))) return 'verbs';
+  return 'other';
+}
+
+const TOPIC_STOP = new Set(['the', 'and', 'for', 'with', 'about', 'what', 'from', 'lesson', 'your', 'you', 'are', 'how', 'this', 'that', 'some', 'day']);
+/** Topic words for gloss matching, with a plain stem too ("eating" → "eat", "markets" → "market"). */
+const topicTerms = (topic: string): Set<string> => {
+  const out = new Set<string>();
+  for (const x of topic.toLowerCase().split(/[^a-z]+/)) {
+    if (x.length <= 2 || TOPIC_STOP.has(x)) continue;
+    out.add(x);
+    const stem = x.replace(/(ing|es|s)$/, '');
+    if (stem.length > 2) out.add(stem);
+  }
+  return out;
+};
+
+/** A short English gloss for a word list (first sense, no brackets). */
+export const shortGloss = (w: Parameters<typeof glossFor>[0]): string =>
+  (glossFor(w, { textbook: true }).split(/[;,(]/)[0] ?? '').trim().slice(0, 40);
+
+/**
+ * Phase 26 Part A3: the prompt's word lists. Rung 1 is topic words first, then due and recent words,
+ * then the rest, at most `promptRung1Max`; rung 5 only when it matches the topic; rungs 1–2 also come
+ * grouped with glosses (this lesson first, then people, places, food, time, verbs…).
+ */
+export function storyPromptLists(input: StoryPromptInput): { rungs: StoryRequest['rungs']; groups: NonNullable<StoryRequest['groups']> } {
+  const lex = input.lexicon;
+  const terms = topicTerms(input.topic ?? '');
+  const topicWords = new Set(input.topicWords ?? []);
+  const onTopic = (id: string): boolean => {
+    const w = lex.byId(id);
+    if (!w) return false;
+    if (topicWords.has(w.headword)) return true;
+    if (terms.size === 0) return false;
+    return glossFor(w, { textbook: true })
+      .toLowerCase()
+      .split(/[^a-z]+/)
+      .some((x) => terms.has(x));
+  };
+  const uniqueHeadwords = (ids: Iterable<string>) => {
+    const out: Word[] = [];
     const seen = new Set<string>();
     for (const id of ids) {
-      const h = input.lexicon.byId(id)?.headword;
-      if (h && !seen.has(h)) {
-        seen.add(h);
-        out.push(h);
+      const w = lex.byId(id);
+      if (w && !seen.has(w.headword)) {
+        seen.add(w.headword);
+        out.push(w);
       }
     }
     return out;
   };
   const r1 = input.ladder.ids[1];
   const rng = input.rng ?? Math.random;
+  const topical = [...r1].filter(onTopic);
   const lead = [...(input.dueIds ?? [])].filter((id) => r1.has(id));
   const recent = (input.recentIds ?? []).filter((id) => r1.has(id));
-  const rest = shuffle([...r1].filter((id) => !lead.includes(id) && !recent.includes(id)), rng);
+  const first = new Set([...topical, ...lead, ...recent]);
+  const rest = shuffle([...r1].filter((id) => !first.has(id)), rng);
+  const r1Words = uniqueHeadwords([...topical, ...lead, ...recent, ...rest]).slice(0, STORY_CONFIG.promptRung1Max);
+  const r2Words = uniqueHeadwords(input.ladder.ids[2]);
+  const r5Words = uniqueHeadwords([...input.ladder.ids[5]].filter(onTopic)).slice(0, STORY_CONFIG.promptRung5Max);
+  const item = (w: Word) => ({ zh: w.headword, en: shortGloss(w) });
+  const groups: NonNullable<StoryRequest['groups']> = [];
+  if (r2Words.length) groups.push({ label: 'this lesson', words: r2Words.map(item) });
+  for (const g of STORY_WORD_GROUPS) {
+    const words = r1Words.filter((w) => storyWordGroup(w) === g).map(item);
+    if (words.length) groups.push({ label: g, words });
+  }
   return {
-    r1: hw([...lead, ...recent, ...rest]).slice(0, STORY_CONFIG.promptRung1Max),
-    r2: hw(input.ladder.ids[2]),
-    r3: hw(input.ladder.ids[3]),
-    r4: hw(input.ladder.ids[4]),
-    r5: shuffle(hw(input.ladder.ids[5]), rng).slice(0, STORY_CONFIG.promptRung5Max),
+    rungs: {
+      r1: r1Words.map((w) => w.headword),
+      r2: r2Words.map((w) => w.headword),
+      r3: uniqueHeadwords(input.ladder.ids[3]).map((w) => w.headword),
+      r4: uniqueHeadwords(input.ladder.ids[4]).map((w) => w.headword),
+      r5: r5Words.map((w) => w.headword),
+    },
+    groups,
   };
+}
+
+/** Headwords per rung for the prompt (see `storyPromptLists`). */
+export function storyPromptRungs(input: StoryPromptInput): StoryRequest['rungs'] {
+  return storyPromptLists(input).rungs;
 }
 
 function shuffle<T>(a: T[], rng: () => number): T[] {
@@ -93,6 +182,7 @@ export function storyRequestKey(req: Omit<StoryRequest, 'feedback'> & { difficul
   const norm = JSON.stringify({
     ...rest,
     feedback: undefined,
+    fresh: undefined,
     rungs: { r1: [...rungs.r1].sort(), r2: [...rungs.r2].sort(), r3: [...rungs.r3].sort(), r4: [...rungs.r4].sort(), r5: [...rungs.r5].sort() },
   });
   return `story-${hashText(norm)}`;
@@ -387,34 +477,97 @@ export function simplerSwaps(
   return out;
 }
 
-/** Regeneration feedback (the Phase 3 / 18 pattern): the over-budget words and simpler swaps. */
+/**
+ * Phase 26: rung 1 words to suggest for an over-budget word: ones sharing a gloss word
+ * (`simplerSwaps`), then ones from the same group (a place for a place: 公園 → 外面 / 那裡).
+ */
+export function storySwaps(
+  word: { wordId?: string; text: string },
+  ladder: Pick<VocabLadder, 'ids'>,
+  lexicon: Pick<Lexicon, 'byId'>,
+  max = 3,
+): string[] {
+  const out = word.wordId ? simplerSwaps(word.wordId, ladder, lexicon, max) : [];
+  const w = word.wordId ? lexicon.byId(word.wordId) : undefined;
+  const g = w ? storyWordGroup(w) : undefined;
+  if (g && ['people', 'places', 'food', 'time'].includes(g))
+    for (const id of ladder.ids[1]) {
+      if (out.length >= max) break;
+      const o = lexicon.byId(id);
+      if (o && o.headword !== word.text && !out.includes(o.headword) && storyWordGroup(o) === g) out.push(o.headword);
+    }
+  return out.slice(0, max);
+}
+
+/** Phase 26 Part B: a word that cost the known share or broke a limit. */
+export interface StoryProblemWord {
+  text: string;
+  wordId?: string;
+  rung: VocabRung;
+  why: string;
+}
+
+const RUNG_NAME: Record<number, string> = { 2: 'this lesson', 3: 'next lesson', 4: 'the lesson after', 5: 'your level', 6: 'in none of your lists' };
+
+/**
+ * Every word to change, in reading order: when the known share is too low, every word from rungs 3–6;
+ * otherwise the words over each rung's limit (the first ones up to the limit stay) and rung 6 words.
+ */
+export function storyProblemWords(report: StoryReport, budget: RungBudget): StoryProblemWord[] {
+  const seen = new Map<string, StoryProblemWord>();
+  const lowShare = report.failed.includes('rung1');
+  const limit: Record<number, number> = { 3: budget.maxRung3Words, 4: budget.maxRung4Words, 5: budget.maxRung5Words };
+  const kept: Record<number, Set<string>> = { 3: new Set(), 4: new Set(), 5: new Set() };
+  for (const t of report.paragraphs.flat()) {
+    if (t.rung === 'allowed' || t.rung === 1 || t.rung === 2 || seen.has(t.text)) continue;
+    const key = t.wordId ?? t.text;
+    let why: string | undefined;
+    if (t.rung === 6) {
+      if (report.failed.includes('rung6') || lowShare) why = 'in none of your lists';
+    } else if (lowShare) why = `${RUNG_NAME[t.rung]} word: too many words outside the known list`;
+    else if (kept[t.rung]!.has(key)) continue;
+    else if (kept[t.rung]!.size < limit[t.rung]!) {
+      kept[t.rung]!.add(key);
+      continue;
+    } else why = `${RUNG_NAME[t.rung]} word over the limit of ${limit[t.rung]}`;
+    if (!why) continue;
+    seen.set(t.text, { text: t.text, ...(t.wordId ? { wordId: t.wordId } : {}), rung: t.rung, why });
+  }
+  return [...seen.values()];
+}
+
+/** Phase 26 A4: words from rungs 3–6 the writer used but did not list in `newWords` (or `glosses`). */
+export function storyUndeclaredWords(report: StoryReport, res: Pick<StoryResponse, 'newWords' | 'glosses'>): string[] {
+  const listed = new Set([...(res.newWords ?? []), ...res.glosses].map((w) => w.zh));
+  const out = new Set<string>();
+  for (const t of report.paragraphs.flat())
+    if (t.rung !== 'allowed' && t.rung >= 3 && !listed.has(t.text)) out.add(t.text);
+  return [...out];
+}
+
+/** Regeneration feedback: names every word that cost share or broke a limit, its rung and swaps. */
 export function storyFeedback(
   report: StoryReport,
   budget: RungBudget,
-  ctx: { ladder: Pick<VocabLadder, 'ids'>; lexicon: Pick<Lexicon, 'byId'> },
+  ctx: { ladder: Pick<VocabLadder, 'ids'>; lexicon: Pick<Lexicon, 'byId'>; undeclared?: readonly string[] },
 ): string {
   const parts: string[] = [];
-  const name = (idOrText: string) => ctx.lexicon.byId(idOrText)?.headword ?? idOrText;
-  const withSwaps = (ids: string[]) =>
-    ids
-      .slice(0, 10)
-      .map((id) => {
-        const s = simplerSwaps(id, ctx.ladder, ctx.lexicon);
-        return s.length > 0 ? `${name(id)} (try ${s.join(' / ')})` : name(id);
-      })
-      .join('、');
+  const problems = storyProblemWords(report, budget);
   if (report.failed.includes('rung1'))
     parts.push(
-      `Only ${(report.rung1Share * 100).toFixed(0)}% of the words are from the known list (rung 1); it must be at least ${(budget.minRung1Share * 100).toFixed(0)}%. Replace words outside the lists: ${withSwaps([...report.distinct[5], ...report.distinct[6], ...report.distinct[4]])}.`,
+      `Only ${(report.knownShare * 100).toFixed(0)}% of the words are known or this lesson's; it must be at least ${(budget.minRung1Share * 100).toFixed(0)}%.`,
     );
-  if (report.failed.includes('rung3'))
-    parts.push(`Too many next-lesson words (at most ${budget.maxRung3Words}): ${withSwaps(report.distinct[3])}.`);
-  if (report.failed.includes('rung4'))
-    parts.push(`At most ${budget.maxRung4Words} word from the lesson after: ${withSwaps(report.distinct[4])}.`);
-  if (report.failed.includes('rung5'))
-    parts.push(`At most ${budget.maxRung5Words} level word outside the lessons: ${withSwaps(report.distinct[5])}.`);
-  if (report.failed.includes('rung6'))
-    parts.push(`These words are in none of the lists; leave them out (or gloss a necessary name in "glosses"): ${withSwaps(report.distinct[6])}.`);
+  if (problems.length > 0)
+    parts.push(
+      `Change these words: ${problems
+        .slice(0, 12)
+        .map((p) => {
+          const swaps = storySwaps(p, ctx.ladder, ctx.lexicon);
+          return `${p.text} (${p.why}${swaps.length ? `; try ${swaps.join(' / ')}` : ''})`;
+        })
+        .join('、')}.`,
+    );
+  if (ctx.undeclared?.length) parts.push(`You used ${ctx.undeclared.slice(0, 8).join('、')} but didn't list them in "newWords".`);
   if (report.failed.includes('taiwanness'))
     parts.push(
       `Use Taiwan Mandarin in traditional characters only: ${report.taiwanness
@@ -424,8 +577,104 @@ export function storyFeedback(
     );
   if (report.short) parts.push(`The story has only ${report.chars} characters; write a little more, up to the target length.`);
   if (report.failed.includes('length')) parts.push(`The story has ${report.chars} characters; keep to the target length.`);
-  parts.push('Write the story again with simpler words from rung 1. Keep the same characters and topic.');
+  if (parts.length > 0) parts.push('Keep the same characters and topic, and change only what is needed.');
   return parts.join(' ');
+}
+
+// ---------------------------------------------------------------------------------------------
+// Phase 26 Part B: sentence-level repair
+
+export interface StorySentenceRef {
+  /** Index in the whole story, in reading order. */
+  i: number;
+  /** Paragraph index. */
+  p: number;
+  start: number;
+  end: number;
+  zh: string;
+}
+
+/** Every sentence of the story with its place in its paragraph (end punctuation kept). */
+export function storySentenceRefs(paragraphs: readonly string[]): StorySentenceRef[] {
+  const out: StorySentenceRef[] = [];
+  paragraphs.forEach((para, p) => {
+    for (const m of para.matchAll(/[^。！？!?]+[。！？!?」』”]*/g)) {
+      const raw = m[0];
+      const lead = raw.length - raw.trimStart().length;
+      const zh = raw.trim();
+      if (!zh) continue;
+      const start = m.index! + lead;
+      out.push({ i: out.length, p, start, end: start + zh.length, zh });
+    }
+  });
+  return out;
+}
+
+/**
+ * The repair call: only the sentences holding a problem word (or a simplified character / mainland
+ * term), each with its problems and swaps. Undefined when no sentence needs changing.
+ */
+export function storyRepairRequest(
+  res: Pick<StoryResponse, 'paragraphs'>,
+  report: StoryReport,
+  budget: RungBudget,
+  ctx: { req: StoryRequest; ladder: Pick<VocabLadder, 'ids'>; lexicon: Pick<Lexicon, 'byId'> },
+): StoryRepairRequest | undefined {
+  const problems = storyProblemWords(report, budget);
+  const gloss = (p: StoryProblemWord) => {
+    const w = p.wordId ? ctx.lexicon.byId(p.wordId) : undefined;
+    return w ? shortGloss(w) : '';
+  };
+  const sentences: StoryRepairRequest['sentences'] = [];
+  for (const ref of storySentenceRefs(res.paragraphs.map((x) => x.zh))) {
+    const list: StoryRepairRequest['sentences'][number]['problems'] = problems
+      .filter((p) => ref.zh.includes(p.text))
+      .map((p) => ({ zh: p.text, en: gloss(p), why: p.why.slice(0, 120), swaps: storySwaps(p, ctx.ladder, ctx.lexicon) }));
+    const tw = checkTaiwanness(ref.zh);
+    if (!tw.isClean) {
+      for (const c of tw.simplifiedChars) list.push({ zh: c.char, en: '', why: 'simplified character: use the traditional one', swaps: [] });
+      for (const m of tw.mainlandTerms) list.push({ zh: m.matched.slice(0, 20), en: '', why: 'mainland term', swaps: [m.taiwan.slice(0, 20)] });
+    }
+    if (list.length > 0 && sentences.length < 20) sentences.push({ i: ref.i, zh: ref.zh.slice(0, 300), problems: list.slice(0, 10) });
+  }
+  if (sentences.length === 0) return undefined;
+  return {
+    learnerLevel: ctx.req.learnerLevel,
+    story: res.paragraphs.map((x) => x.zh),
+    sentences,
+    words: [...new Set([...ctx.req.rungs.r2, ...ctx.req.rungs.r1])].slice(0, 400),
+    names: ctx.req.names,
+    ...(ctx.req.variant !== undefined ? { variant: ctx.req.variant } : {}),
+  };
+}
+
+/**
+ * Puts the rewritten sentences back. Only the sentences that were asked about change; every other
+ * byte of the story stays as written. English is replaced for the paragraphs that changed.
+ */
+export function applyStoryRepair(res: StoryResponse, repair: StoryRepairResponse, asked: ReadonlySet<number>): StoryResponse {
+  const refs = storySentenceRefs(res.paragraphs.map((p) => p.zh));
+  const byI = new Map(repair.sentences.filter((s) => asked.has(s.i)).map((s) => [s.i, s.zh.trim()]));
+  const paragraphs = res.paragraphs.map((para, p) => {
+    let zh = para.zh;
+    let changed = false;
+    for (const ref of refs.filter((r) => r.p === p).reverse()) {
+      const next = byI.get(ref.i);
+      if (!next || next === ref.zh || !/\p{Script=Han}/u.test(next)) continue;
+      const out = zh.slice(0, ref.start) + next + zh.slice(ref.end);
+      if (out.length > 600) continue;
+      zh = out;
+      changed = true;
+    }
+    if (!changed) return para;
+    const en = repair.paragraphsEn.find((x) => x.p === p)?.en ?? para.en;
+    return { zh, en };
+  });
+  const text = paragraphs.map((p) => p.zh).join('');
+  const newWords = [...(res.newWords ?? []), ...repair.newWords].filter(
+    (w, k, all) => text.includes(w.zh) && all.findIndex((x) => x.zh === w.zh) === k,
+  );
+  return { ...res, paragraphs, newWords };
 }
 
 /** Of several attempts, the one that breaks the fewest limits (then the highest rung 1 share). */
@@ -435,6 +684,7 @@ export function pickBestStoryAttempt<T extends { report: StoryReport }>(attempts
       Number(y.report.pass) - Number(x.report.pass) ||
       x.report.failed.length - y.report.failed.length ||
       Number(!!x.report.short) - Number(!!y.report.short) ||
+      y.report.knownShare - x.report.knownShare ||
       y.report.rung1Share - x.report.rung1Share,
   )[0]!;
 }
@@ -479,8 +729,12 @@ export function checkStoryQuestions(questions: readonly StoryQuestion[], check?:
 export const storyCheckPasses = (c: StoryCheckResponse): boolean => c.natural && c.coherent && c.taiwan && c.summaryMatches;
 
 /** What the independent reader is given: the story and its questions, never the prompt or lists. */
-export function storyCheckRequest(s: Pick<StoryResponse, 'paragraphs' | 'summary_en' | 'questions'>) {
+export function storyCheckRequest(
+  s: Pick<StoryResponse, 'paragraphs' | 'summary_en' | 'questions'>,
+  glosses: ReadonlyArray<{ zh: string; en: string }> = [],
+): StoryCheckRequest {
   return {
+    ...(glosses.length ? { glosses: glosses.slice(0, 10).map((g) => ({ zh: g.zh, en: g.en.slice(0, 80) })) } : {}),
     paragraphs: s.paragraphs.map((p) => p.zh),
     summaryEn: s.summary_en,
     questions: s.questions.map((q) => ({ q: q.q_zh, options: q.options.map((o) => o.zh) })),
@@ -495,6 +749,8 @@ export function storyCheckRequest(s: Pick<StoryResponse, 'paragraphs' | 'summary
 export interface StoryLLM {
   writeStory(req: StoryRequest): Promise<{ story: StoryResponse; servedBy?: ProviderName }>;
   checkStory(req: StoryCheckRequest): Promise<StoryCheckResponse>;
+  /** Phase 26: rewrite only the given sentences (POST /v1/story-repair). */
+  repairStory(req: StoryRepairRequest): Promise<StoryRepairResponse>;
 }
 
 export interface StoryRecord {

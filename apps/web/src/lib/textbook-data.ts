@@ -130,7 +130,7 @@ export type PrivateResult<T> =
  * and only with the household code; there is no static copy.
  */
 export async function fetchPrivateTextbook<T>(
-  kind: 'dialogues' | 'examples',
+  kind: 'dialogues' | 'examples' | 'stories',
   bookId: string = TEXTBOOK_ID,
 ): Promise<PrivateResult<T>> {
   try {

@@ -79,6 +79,13 @@ export interface TopicWordsCacheEntry {
 const topicKey = (topic: string, level: Level) =>
   `${level}|${topic.trim().replace(/\s+/g, ' ').toLowerCase()}`;
 
+/** Phase 26: a topic's words when open chat already fetched them (no model call). */
+export async function cachedTopicWords(db: AnanDB, topic: string, level: Level): Promise<string[]> {
+  const row = await db.meta.get(TOPIC_CACHE_KEY);
+  const v = row?.value as Record<string, TopicWordsCacheEntry> | undefined;
+  return v?.[topicKey(topic, level)]?.words ?? [];
+}
+
 export class OpenChatService {
   constructor(
     private readonly db: AnanDB,

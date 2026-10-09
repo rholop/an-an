@@ -13,6 +13,7 @@ import {
   storyCheckPasses,
   storyFeedback,
   storyNewWords,
+  storyPromptLists,
   storyPromptRungs,
   storyRecord,
   storyRequestKey,
@@ -106,7 +107,8 @@ describe('graded story validation (Phase 24)', () => {
     const r = analyzeStory(['我去便利商店。便利商店很好。你去便利商店。'], ctx);
     expect(r.failed).toContain('rung1');
     const fb = storyFeedback(r, storyBudget('middle'), { ladder, lexicon });
-    expect(fb).toMatch(/rung 1/);
+    expect(fb).toMatch(/便利商店 \(.*next lesson|便利商店 \(/);
+    expect(fb).not.toMatch(/^Write the story again/);
   });
 
   it('Easier / Harder change the shares (the budget function)', () => {
@@ -213,6 +215,14 @@ describe('library helpers', () => {
     expect(lists.r2).toEqual(['咖啡']);
     expect(lists.r3).toEqual(['便利商店']);
     expect(lists.r4).toEqual(['捷運']);
+  });
+
+  it('Phase 26 prompt lists: topic words before due words, glossed groups with this lesson first', () => {
+    const lists = storyPromptLists({ ladder, lexicon, dueIds: new Set([id('店')]), rng: () => 0.5, topic: 'tea time', topicWords: ['茶'] });
+    expect(lists.rungs.r1[0]).toBe('茶');
+    expect(lists.rungs.r1[1]).toBe('店');
+    expect(lists.groups[0]).toMatchObject({ label: 'this lesson', words: [{ zh: '咖啡' }] });
+    expect(lists.groups.flatMap((g) => g.words).every((x) => x.en.length > 0)).toBe(true);
   });
 
   it('a record keeps the rung 2–6 words to underline, and re-reading is suggested once they are known', () => {

@@ -1040,6 +1040,62 @@ describe('Phase 24 graded stories', () => {
     expect(seen[0]).not.toContain('Rung');
   });
 
+  it('Phase 26: grouped glossed lists and a variant line; a fresh request skips the cache', async () => {
+    const seen: string[] = [];
+    const respond = (r: { userMessage: string }) => {
+      seen.push(r.userMessage);
+      return story;
+    };
+    const app = buildApp({
+      storyOrchestrator: createJsonOrchestrator(
+        new FakeJsonAdapter('gemini', { kind: 'success', respond }),
+        undefined,
+        new PromptCache<JsonTaskResult<unknown>>(),
+      ),
+    });
+    const grouped = { ...req, variant: 2, groups: [{ label: 'this lesson', words: [{ zh: '咖啡', en: 'coffee' }] }, { label: 'places', words: [{ zh: '家', en: 'home' }] }] };
+    await post(app, '/v1/story', grouped);
+    expect(seen[0]).toContain('Rung 2, this lesson: 咖啡 coffee');
+    expect(seen[0]).toContain('- places: 家 home');
+    expect(seen[0]).toContain('Variant 2');
+    await post(app, '/v1/story', grouped);
+    expect(seen).toHaveLength(1); // cached
+    await post(app, '/v1/story', { ...grouped, fresh: true });
+    expect(seen).toHaveLength(2); // a regeneration is never served from the cache
+  });
+
+  it('Phase 26: POST /v1/story-repair sends only the problem sentences and is never cached', async () => {
+    const seen: string[] = [];
+    const repaired = { sentences: [{ i: 1, zh: '我們去朋友家。' }], paragraphsEn: [{ p: 0, en: 'We go to a friend.' }], newWords: [] };
+    const app = buildApp({
+      storyOrchestrator: createJsonOrchestrator(
+        new FakeJsonAdapter('gemini', {
+          kind: 'success',
+          respond: (r: { userMessage: string }) => {
+            seen.push(r.userMessage);
+            return repaired;
+          },
+        }),
+        undefined,
+        new PromptCache<JsonTaskResult<unknown>>(),
+      ),
+    });
+    const body = {
+      learnerLevel: 'N1',
+      story: ['我今天想喝茶。我們去公園。'],
+      sentences: [{ i: 1, zh: '我們去公園。', problems: [{ zh: '公園', en: 'park', why: 'in none of your lists', swaps: ['外面'] }] }],
+      words: ['我', '我們', '去', '外面'],
+      names: [],
+    };
+    const res = await post(app, '/v1/story-repair', body);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject(repaired);
+    expect(seen[0]).toContain('1. 我們去公園。');
+    expect(seen[0]).toContain('公園 (park): in none of your lists; try 外面');
+    await post(app, '/v1/story-repair', body);
+    expect(seen).toHaveLength(2);
+  });
+
   it('needs the household code', async () => {
     const app = buildApp({ autoCode: false });
     const res = await app.request('/v1/story', {

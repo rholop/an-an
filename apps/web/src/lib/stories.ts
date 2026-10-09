@@ -1,11 +1,13 @@
 // Phase 24: one StoryService per lexicon, the per-profile difficulty, and the background
 // "keep 2 ready" step shared by Home and the Reader.
 import { useEffect, useMemo } from 'react';
-import type { Lexicon, Level, StoryDifficulty, StoryLLM, StoryRecord, Textbook } from '@anan/core';
+import { LessonStoriesFileSchema, type LessonStory, type Lexicon, type Level, type StoryDifficulty, type StoryLLM, type StoryRecord, type Textbook } from '@anan/core';
 import { db, learnerService } from '../db/instance.js';
 import { getSiteCode } from './api.js';
 import { FakeStoryLLM } from './fake-story-llm.js';
+import { cachedTopicWords } from './open-chat-service.js';
 import { getStudyBooks, getStudyFocusNow } from './study.js';
+import { fetchPrivateTextbook } from './textbook-data.js';
 import { StoryService } from './story-service.js';
 import { FetchTutorLLM } from './tutor-llm.js';
 import { useSetting } from './useSetting.js';
@@ -38,10 +40,30 @@ export function useOptionalStoryService(lexicon: Lexicon | null, fake = storyFak
         ? new StoryService(db, lexicon, learnerService, storyLLM(fake), {
             books: () => getStudyBooks(),
             studyFocus: () => getStudyFocusNow(),
+            topicWords: (topic, level) => cachedTopicWords(db, topic, level),
+            lessonStories,
           })
         : null,
     [lexicon, fake],
   );
+}
+
+/** Phase 26 Part E: the stories written ahead for a book's lessons (private lesson data, once per visit). */
+const lessonStoryFiles = new Map<string, Promise<readonly LessonStory[]>>();
+function lessonStories(bookId: string): Promise<readonly LessonStory[]> {
+  let p = lessonStoryFiles.get(bookId);
+  if (!p) {
+    p = fetchPrivateTextbook<unknown>('stories', bookId).then((r) => {
+      if (r.status !== 'ok') {
+        lessonStoryFiles.delete(bookId);
+        return [];
+      }
+      const parsed = LessonStoriesFileSchema.safeParse(r.data);
+      return parsed.success ? parsed.data.stories : [];
+    });
+    lessonStoryFiles.set(bookId, p);
+  }
+  return p;
 }
 
 /** Easier / Just right / Harder, remembered per profile. */

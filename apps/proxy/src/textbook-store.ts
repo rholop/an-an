@@ -4,7 +4,8 @@ import path from 'node:path';
 /** Phase 12: the book's own text (dialogues, worked examples) is OCAC's — for
  * the household's personal study only. It lives in a private directory that is
  * NOT in git and is served only through the proxy, behind the household code. */
-export type TextbookPrivateKind = 'dialogues' | 'examples';
+/** Phase 26: `stories` = the lesson stories `pnpm stories:build` writes (model-written, kept with the lesson data). */
+export type TextbookPrivateKind = 'dialogues' | 'examples' | 'stories';
 
 export interface TextbookStore {
   /** Parsed JSON of one private file, or undefined if the book/file isn't installed. */

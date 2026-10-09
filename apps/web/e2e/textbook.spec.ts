@@ -96,7 +96,7 @@ test.describe('Textbook / My class (phase 12)', () => {
 
     // Scenario: the lesson's own chat scenario opens with the authored opener.
     await expect(page.getByTestId('study-session')).toContainText('Step 3 of 5');
-    await expect(page.locator('.chat-bubble--npc').first()).toContainText('Lisa');
+    await expect(page.locator('.chat-bubble--npc').first()).toContainText('麗莎');
     await page.getByTestId('study-skip').click();
 
     // Journal: one of the lesson's prompts, with its pattern.

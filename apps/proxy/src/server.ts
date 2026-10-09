@@ -55,6 +55,8 @@ const gemini = new GeminiAdapter(key, env.GEMINI_MODEL_TURN);
 const geminiJournal = new GeminiAdapter(key, env.GEMINI_MODEL_JOURNAL);
 const geminiFallback = new GeminiAdapter(key, env.GEMINI_MODEL_FALLBACK);
 const geminiCheck = new GeminiAdapter(key, env.GEMINI_MODEL_CHECK);
+/** Phase 26: stories are written (and repaired) by the stronger free model. */
+const geminiStory = new GeminiAdapter(key, env.GEMINI_MODEL_STORY);
 const jsonOrchestrator = (ttlMs?: number) =>
   createJsonOrchestrator(
     geminiJournal,
@@ -95,7 +97,14 @@ const app = createApp({
   })(),
   story: {
     prompts: loadStoryPromptTemplates(env.PROMPT_VERSION),
-    orchestrator: jsonOrchestrator(),
+    // The checker stays a separate fresh call that never sees the prompt or the lists.
+    orchestrator: createJsonOrchestrator(
+      geminiStory,
+      geminiFallback.model === geminiStory.model ? geminiJournal : geminiFallback,
+      new PromptCache<JsonTaskResult<unknown>>(),
+      undefined,
+      { checker: geminiCheck },
+    ),
   },
   siteCode: env.SITE_CODE,
   sync: new FileSyncStore(env.SYNC_DIR ?? fileURLToPath(new URL('../sync-data', import.meta.url))),

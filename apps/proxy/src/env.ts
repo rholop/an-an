@@ -9,6 +9,9 @@ const EnvSchema = z.object({
   GEMINI_MODEL_JOURNAL: z.string().default('gemini-3.5-flash-lite'),
   /** A DIFFERENT free-tier Gemini model, tried once after the task model fails twice. */
   GEMINI_MODEL_FALLBACK: z.string().default('gemini-2.5-flash'),
+  /** Phase 26: the story writer. Following a 250-word list is the hardest instruction-following job
+   * in the app, so it defaults to the stronger free-tier model. */
+  GEMINI_MODEL_STORY: z.string().default('gemini-2.5-flash'),
   /** The independent checker (journal verify, story check): a fresh call, the stronger free model. */
   GEMINI_MODEL_CHECK: z.string().default('gemini-2.5-flash'),
   CORS_ORIGIN: z.string().default('http://localhost:5183'),

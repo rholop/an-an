@@ -312,6 +312,14 @@ export const STORY_JSON_SCHEMA = {
       },
     },
     characters: { type: 'array', items: { type: 'string' } },
+    newWords: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { zh: { type: 'string' }, en: { type: 'string' } },
+        required: ['zh', 'en'],
+      },
+    },
     questions: {
       type: 'array',
       items: {
@@ -333,7 +341,39 @@ export const STORY_JSON_SCHEMA = {
       },
     },
   },
-  required: ['title_zh', 'title_en', 'paragraphs', 'summary_en', 'glosses', 'characters', 'questions'],
+  required: ['title_zh', 'title_en', 'paragraphs', 'summary_en', 'glosses', 'characters', 'questions', 'newWords'],
+} as const;
+
+/** Phase 26: StoryRepairResponse (POST /v1/story-repair). */
+export const STORY_REPAIR_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    sentences: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { i: { type: 'integer' }, zh: { type: 'string' } },
+        required: ['i', 'zh'],
+      },
+    },
+    paragraphsEn: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { p: { type: 'integer' }, en: { type: 'string' } },
+        required: ['p', 'en'],
+      },
+    },
+    newWords: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { zh: { type: 'string' }, en: { type: 'string' } },
+        required: ['zh', 'en'],
+      },
+    },
+  },
+  required: ['sentences', 'paragraphsEn', 'newWords'],
 } as const;
 
 /** Phase 24: StoryCheckResponse (POST /v1/story-check). */
@@ -346,6 +386,7 @@ export const STORY_CHECK_JSON_SCHEMA = {
     summaryMatches: { type: 'boolean' },
     problems: { type: 'array', items: { type: 'string' } },
     correctOptions: { type: 'array', items: { type: 'array', items: { type: 'integer' } } },
+    glossesOk: { type: 'boolean' },
   },
-  required: ['natural', 'coherent', 'taiwan', 'summaryMatches', 'problems', 'correctOptions'],
+  required: ['natural', 'coherent', 'taiwan', 'summaryMatches', 'problems', 'correctOptions', 'glossesOk'],
 } as const;

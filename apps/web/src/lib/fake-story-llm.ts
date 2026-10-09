@@ -1,7 +1,10 @@
 import {
   dryStory,
   dryStoryCheck,
+  dryStoryRepair,
   type ProviderName,
+  type StoryRepairRequest,
+  type StoryRepairResponse,
   type StoryCheckRequest,
   type StoryCheckResponse,
   type StoryLLM,
@@ -19,12 +22,19 @@ export type FakeStoryScript = (req: StoryRequest, callIndex: number) => StoryRes
 export class FakeStoryLLM implements StoryLLM {
   readonly writeCalls: StoryRequest[] = [];
   readonly checkCalls: StoryCheckRequest[] = [];
+  readonly repairCalls: StoryRepairRequest[] = [];
 
   constructor(
     private readonly script: FakeStoryScript = FakeStoryLLM.defaultStory,
     private readonly check: (req: StoryCheckRequest) => StoryCheckResponse = FakeStoryLLM.defaultCheck,
     private readonly servedBy: ProviderName = 'gemini',
+    private readonly repair: (req: StoryRepairRequest) => StoryRepairResponse = dryStoryRepair,
   ) {}
+
+  async repairStory(req: StoryRepairRequest): Promise<StoryRepairResponse> {
+    this.repairCalls.push(req);
+    return this.repair(req);
+  }
 
   async writeStory(req: StoryRequest): Promise<{ story: StoryResponse; servedBy?: ProviderName }> {
     this.writeCalls.push(req);

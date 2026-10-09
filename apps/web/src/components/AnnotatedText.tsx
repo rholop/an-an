@@ -66,6 +66,9 @@ export interface AnnotatedTextProps {
   /** Phase 24: words to underline lightly (a story's rung 2–5 words), by word id or text. They
    * show no hover gloss: the meaning appears only when tapped. */
   newWords?: ReadonlySet<string>;
+  /** Phase 26: a small gloss shown after the first use of these words (text → meaning), so a word
+   * outside the learner's lists is never unexplained. */
+  inlineGlosses?: ReadonlyMap<string, string>;
 }
 
 const tokenId = (t: Token) => `${t.start}-${t.end}`;
@@ -298,7 +301,9 @@ export function AnnotatedText({
   contextText,
   lookupSource,
   newWords,
+  inlineGlosses,
 }: AnnotatedTextProps) {
+  const glossShown = new Set<string>();
   // Phase 21: every popover records lookups and can report a definition, page handler or not;
   // repeated opens of the same word in one text count as one lookup.
   const lookedUp = useRef(new Set<string>());
@@ -422,6 +427,16 @@ export function AnnotatedText({
             }}
           >
             {inner}
+            {(() => {
+              const g = inlineGlosses?.get(at.token.text);
+              if (!g || glossShown.has(at.token.text)) return null;
+              glossShown.add(at.token.text);
+              return (
+                <small className="an-inline-gloss" data-testid="inline-gloss">
+                  {' '}({g})
+                </small>
+              );
+            })()}
             {isOpen && (
               <Popover
                 at={at}
