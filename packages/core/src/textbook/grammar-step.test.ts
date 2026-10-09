@@ -10,6 +10,7 @@ import {
   gradeTiles,
   patternBlank,
   reorderTiles,
+  sentenceTiles,
   type GrammarSentence,
   type GrammarStepInputs,
 } from './grammar-step.js';
@@ -52,6 +53,11 @@ describe('reorderTiles (Phase 25: number + measure word, scope-aware)', () => {
   it('a sentence-final particle is its own tile', () => {
     const lex = new Lexicon(['我', '叫', '家文', '您', '您呢'].map(w), []);
     expect(reorderTiles('我叫家文，您呢？', lex)).toEqual(['我', '叫', '家文', '，', '您', '呢', '？']);
+  });
+
+  it('a content override wins when it spells the sentence', () => {
+    expect(sentenceTiles({ zh: '我每天才睡覺。', tiles: ['我', '每天', '才', '睡覺', '。'] }, lexicon)).toEqual(['我', '每天', '才', '睡覺', '。']);
+    expect(sentenceTiles({ zh: '我每天才睡覺。', tiles: ['我', '睡覺'] }, lexicon)).toEqual(reorderTiles('我每天才睡覺。', lexicon));
   });
 
   it('a tie on tile count goes to backward matching (請/進來)', () => {

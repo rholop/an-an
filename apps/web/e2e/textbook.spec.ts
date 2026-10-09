@@ -84,10 +84,10 @@ test.describe('Textbook / My class (phase 12)', () => {
       const opt = ex.locator('.textbook-options button:not([disabled])').first();
       await opt.click();
       if (await ex.getByRole('button', { name: 'Check' }).count()) {
-        // reorder: tap every remaining word in order, then Check
-        const n = await ex.locator('.textbook-options button').count();
-        for (let k = 1; k < n; k++) await ex.locator('.textbook-options button:not([disabled])').first().click();
-        await ex.getByRole('button', { name: 'Check' }).click();
+        // reorder / build: tap words until every slot is filled, then Check
+        const check = ex.getByRole('button', { name: 'Check' });
+        while (await check.isDisabled()) await ex.locator('.textbook-options button:not([disabled])').first().click();
+        await check.click();
       }
       await page.getByTestId('grammar-next').click();
     }

@@ -1,0 +1,15 @@
+/* Phase 25: ●●○ grammar progress dots */
+.grammar-dots {
+  color: var(--c-good);
+  letter-spacing: 0.1em;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+.grammar-dots-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}

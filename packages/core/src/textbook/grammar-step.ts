@@ -64,7 +64,14 @@ export type GrammarStepExercise = FillExercise | TileExercise | PickExercise;
 export type GrammarSentence = Pick<SentenceBankEntry, 'id' | 'zh' | 'en' | 'grammarIds'> & {
   altOrders?: string[];
   wrong?: string;
+  tiles?: string[];
 };
+
+/** A sentence's tiles: its content override when it has one (and it spells the sentence), else the split. */
+export function sentenceTiles(s: Pick<GrammarSentence, 'zh' | 'tiles'>, lexicon: Lexicon, allowed?: (h: string) => boolean): string[] {
+  if (s.tiles && s.tiles.join('') === s.zh) return [...s.tiles];
+  return reorderTiles(s.zh, lexicon, allowed);
+}
 
 type Rng = () => number;
 
@@ -349,7 +356,7 @@ function makerFor(inputs: GrammarStepInputs, g: Pick<GrammarItem, 'id' | 'focus'
       case 'pick':
         return buildPickExercise(s, g.id, rng);
       default:
-        return buildTileExercise(type, s, g.id, reorderTiles(s.zh, lexicon, allowed), rng, pool);
+        return buildTileExercise(type, s, g.id, sentenceTiles(s, lexicon, allowed), rng, pool);
     }
   };
 }

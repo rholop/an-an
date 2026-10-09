@@ -39,6 +39,8 @@ export const SentenceBankEntrySchema = z.object({
   altOrders: z.array(z.string()).optional(),
   /** Phase 25: the same sentence with a typical error for its grammar point ("Which sentence is right?"). */
   wrong: z.string().optional(),
+  /** Phase 25: the reorder tiles, when the automatic split would be wrong (joined, they are `zh`). */
+  tiles: z.array(z.string()).optional(),
 });
 export type SentenceBankEntry = z.infer<typeof SentenceBankEntrySchema>;
 

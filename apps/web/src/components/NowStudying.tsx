@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { LearnedMastered } from './LearnedMastered.js';
+import { GrammarDotsList } from './GrammarDots.js';
+import { useTextbook } from '../lib/textbook-data.js';
 import { lessonLabel, lessonOnly, STUDY_THIS_LESSON, stepName } from '../lib/labels.js';
 import { updateStudySettings, useStudyFocus, useStudySettings } from '../lib/study.js';
 import { StudyLessonView } from '../pages/TextbookPage.js';
@@ -63,6 +65,7 @@ export function NowStudying() {
               ` and ${m.remainingGrammar} grammar point${m.remainingGrammar === 1 ? '' : 's'}`}{' '}
             to master
           </p>
+          {focus.activeStep.kind === 'lesson' && <ActiveLessonGrammar bookId={focus.activeStep.bookId} lessonId={focus.activeStep.lessonId} />}
           {focus.reviewLessons.length > 0 && (
             <p className="now-studying-catchup" data-testid="now-studying-catchup">
               Catching up:{' '}
@@ -126,6 +129,17 @@ export function NowStudying() {
       </details>
     </section>
   );
+}
+
+/** Phase 25: the active lesson's grammar points with their progress dots. */
+function ActiveLessonGrammar({ bookId, lessonId }: { bookId: string; lessonId: string }) {
+  const textbook = useTextbook();
+  if (textbook.status !== 'ready') return null;
+  const data = textbook.data.find((d) => d.textbook.id === bookId);
+  const lesson = data?.textbook.lessons.find((l) => l.id === lessonId);
+  if (!data || !lesson) return null;
+  const items = lesson.grammar.flatMap((id) => data.grammarItems.find((g) => g.id === id) ?? []);
+  return <GrammarDotsList items={items} />;
 }
 
 function lessonName(id: string): string {

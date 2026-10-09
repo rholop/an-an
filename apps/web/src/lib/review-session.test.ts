@@ -12,7 +12,7 @@ import {
 } from '@anan/core';
 import { buildQuickCheck } from '../components/QuickKnownCheck.js';
 import { buildReviewSession, lessonSessionCards, pickReviewCards } from './review-session.js';
-import { buildGrammarExercises } from './textbook-session.js';
+import { buildLessonGrammarStep } from './textbook-session.js';
 
 const NOW = new Date('2026-10-07T12:00:00Z');
 
@@ -148,8 +148,10 @@ describe('every session builder uses orderSession (Phase 19)', () => {
     });
     expect(isOrderedSession(plan)).toBe(true);
   });
-  it('lesson grammar step', () => {
-    expect(isOrderedSession(buildGrammarExercises({ n: 1, grammar: [] }, [], [], { seed: 'x' }))).toBe(true);
+  it('lesson grammar step: its own rule (Phase 25), round-robin and never deferred, not the flashcard order', () => {
+    const { plan } = buildLessonGrammarStep({ n: 1, grammar: [] }, [], [], { lexicon: lex, seed: 'x' });
+    expect(isOrderedSession(plan.exercises)).toBe(false);
+    expect(plan.exercises).toEqual([]);
   });
   it('lesson quick check', () => {
     expect(isOrderedSession(buildQuickCheck(lesson, lex, [], [], 'x'))).toBe(true);

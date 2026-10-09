@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  buildReorderExercise,
   classLevelHint,
   courseBook,
   courseLessonLevel,
@@ -11,7 +10,6 @@ import {
   LAIXUE_COURSE,
   lessonDone,
   lessonProgress,
-  requeueAgain,
   type GrammarItem,
   type Lesson,
   type LessonProgress,
@@ -20,8 +18,6 @@ import {
   type SentenceBankEntry,
   type SkillCard,
   type Textbook,
-  newSessionSeed,
-  sessionMeta,
 } from '@anan/core';
 import { AnnotatedInline, AnnotatedWord, useReadingScript } from '../components/AnnotatedInline.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
@@ -29,16 +25,14 @@ import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { db, learnerService } from '../db/instance.js';
 import { loadReviewStatus } from '../lib/review-status.js';
 import { setMyClass, useMyClass } from '../lib/my-class.js';
-import { buildGrammarExercises, describeGrammarExercise, type GrammarExercise } from '../lib/textbook-session.js';
-import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
+import { GrammarStep } from './GrammarStep.js';
+import { GrammarDots } from '../components/GrammarDots.js';
 import { lessonSessionCards, newSessionCard } from '../lib/review-session.js';
-import { excludedZh } from '../lib/cloze-reports.js';
 import {
   bookSubtitle,
   bookTitle,
   CURRENT_LESSON,
-  FEEDBACK_CORRECT,
-  feedbackWrong,
+  grammarCounter,
   lessonLabel,
   lessonOnly,
   lessonsMasteredLine,
@@ -50,7 +44,6 @@ import {
   RETRY,
   STORY_WRITING,
   TERM,
-  UNDO,
   yourClassLabel,
 } from '../lib/labels.js';
 import { LearnedMastered } from '../components/LearnedMastered.js';
@@ -69,7 +62,6 @@ import {
   useTextbookSentences,
   type BookData,
   type PrivateDialogue,
-  type PrivateExample,
   type PrivateResult,
 } from '../lib/textbook-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -165,7 +157,7 @@ export function TextbookPage() {
         bookId={view.bookId}
         data={allData.find((d) => d.textbook.id === view.bookId)!}
         lexicon={lexicon}
-        sentences={sentences.filter((s) => (s.textbookId ?? 'laixue-1') === view.bookId)}
+        sentences={sentencesState.status === 'ready' ? sentences.filter((s) => (s.textbookId ?? 'laixue-1') === view.bookId) : null}
         onExit={() => {
           setTick((t) => t + 1);
           setView({ kind: 'lesson', bookId: view.bookId, n: view.n });
@@ -299,7 +291,7 @@ function ProgressRow({ p }: { p: LessonProgress }) {
     <div className="textbook-progress" aria-label="Lesson progress" data-testid="lesson-progress">
       <LearnedMastered p={p} compact />
       <span>
-        Grammar {p.grammarMastered}/{p.grammarTotal} {TERM.mastered.toLowerCase()} · Scenarios {p.scenariosDone}/
+        <span data-testid="lesson-grammar-counter">{grammarCounter(p.grammarPractised, p.grammarMastered)}</span> · Scenarios {p.scenariosDone}/
         {p.scenariosTotal} · Journal {p.promptsDone}/{p.promptsTotal}
       </span>
     </div>
@@ -407,6 +399,7 @@ function LessonDetail({
   onBack: () => void;
   onStudy: () => void;
 }) {
+  const progressData = useProgressData();
   const [checking, setChecking] = useState(false);
   // Phase 15: listening stats show separately (they never count toward mastery).
   // Phase 21: practised = answered at least once (auto-created cards don't count); strong from the shared config.
@@ -503,7 +496,9 @@ function LessonDetail({
       <h2>Grammar ({grammar.length})</h2>
       {grammar.map((g) => (
         <article key={g.id} className="textbook-grammar">
-          <h3 lang="zh-Hant">{g.pattern}</h3>
+          <h3>
+            <span lang="zh-Hant">{g.pattern}</span> <GrammarDots use={progressData?.grammarUses.get(g.id)} />
+          </h3>
           <p>{g.explanationEn}</p>
           {exampleFor(g).map((s) => (
             <p key={s.id} className="textbook-example">
@@ -601,7 +596,7 @@ function StudySession({
   bookId: string;
   data: BookData;
   lexicon: Lexicon;
-  sentences: SentenceBankEntry[];
+  sentences: SentenceBankEntry[] | null;
   onExit: () => void;
 }) {
   const clips = useListeningClips();
@@ -787,294 +782,6 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
   );
 }
 
-function GrammarStep({
-  lesson,
-  bookId,
-  data,
-  lexicon,
-  sentences,
-  onDone,
-}: {
-  lesson: Lesson;
-  bookId: string;
-  data: BookData;
-  lexicon: Lexicon;
-  sentences: SentenceBankEntry[];
-  onDone: () => void;
-}) {
-  const script = useReadingScript();
-  // Phase 19: the gap runs on from the vocabulary step (rule 7) via the recently shown cards.
-  // Phase 21: reported sentences never come back here either; a miss comes back once at the end.
-  const [exercises, setExercises] = useState<GrammarExercise[] | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    void excludedZh(db).then((excluded) => {
-      if (cancelled) return;
-      const seed = newSessionSeed('grammar');
-      const ex = buildGrammarExercises(lesson, data.grammarItems, sentences, {
-        bookId,
-        seed,
-        recent: recentShown(),
-        excluded,
-      });
-      logSessionOrder('lesson-grammar', seed, ex.length, sessionMeta(ex)?.deferred.length ?? 0);
-      setExercises(ex);
-    });
-    return () => {
-      cancelled = true;
-    };
-    // built once per lesson
-  }, [lesson.id, bookId]);
-  const [privateEx, setPrivateEx] = useState<PrivateExample[]>([]);
-  // Exercises already sent round again (a miss comes back once, not forever).
-  const requeued = useRef(new Set<GrammarExercise>());
-  const [idx, setIdx] = useState(0);
-  const [attempt, setAttempt] = useState(0);
-  const [tally, setTally] = useState({ right: 0, wrong: 0 });
-  const [history, setHistory] = useState<
-    Array<{ idx: number; exercises: GrammarExercise[]; tally: { right: number; wrong: number }; undo: () => Promise<void> }>
-  >([]);
-
-  // The book's own worked examples (private) add extra "put the words in order" items when available.
-  useEffect(() => {
-    fetchPrivateTextbook<Record<string, PrivateExample[]>>('examples', bookId).then((r) => {
-      if (r.status === 'ok')
-        setPrivateEx((r.data[lesson.id] ?? []).filter((e) => !/[A-Za-z]/.test(e.zh)).slice(0, 3));
-    });
-  }, [lesson.id, bookId]);
-
-  if (exercises === null) return <p>Loading…</p>;
-  const total = exercises.length;
-  const current = exercises[idx];
-  const grammarName = (id: string) => data.grammarItems.find((g) => g.id === id)?.pattern ?? id;
-
-  async function record(grammarId: string, correct: boolean) {
-    if (!exercises) return;
-    const now = new Date();
-    if (current) noteShown(describeGrammarExercise(current).keys, now);
-    const { undo } = await learnerService.recordUndoable(
-      {
-        item: { kind: 'grammar', id: grammarId },
-        skill: 'recognition',
-        kind: correct ? 'cloze_correct_nohint' : 'cloze_wrong',
-        at: now,
-        context: { source: 'textbook', refId: lesson.id },
-      },
-      now,
-    );
-    setHistory((h) => [...h, { idx, exercises, tally, undo }]);
-    // Again: a miss comes back once at the end of the step.
-    // The shared Again rule (Phase 19 gap kept); at the very end it simply goes last.
-    if (!correct && current && !requeued.current.has(current)) {
-      requeued.current.add(current);
-      const q = requeueAgain(exercises, idx, describeGrammarExercise);
-      setExercises(q.length > exercises.length ? q : [...exercises, current]);
-    }
-    setTally((t) => ({ right: t.right + (correct ? 1 : 0), wrong: t.wrong + (correct ? 0 : 1) }));
-  }
-
-  async function undoLast() {
-    const last = history[history.length - 1];
-    if (!last) return;
-    setHistory((h) => h.slice(0, -1));
-    await last.undo();
-    setExercises(last.exercises);
-    setTally(last.tally);
-    setIdx(last.idx);
-    setAttempt((a) => a + 1);
-  }
-
-  if (total === 0)
-    return (
-      <p>
-        No practice sentences for this lesson yet. <button onClick={onDone}>{NEXT}</button>
-      </p>
-    );
-  if (!current)
-    return (
-      <div className="textbook-grammar-done" role="status">
-        <p>
-          Grammar practice done: {tally.right} right, {tally.wrong} to revisit.
-        </p>
-        {privateEx.length > 0 && (
-          <details>
-            <summary>The book&apos;s own examples for this lesson</summary>
-            {privateEx.map((e) => (
-              <p key={e.zh} lang="zh-Hant">
-                <AnnotatedInline text={e.zh} lexicon={lexicon} script={script} textbook />
-              </p>
-            ))}
-          </details>
-        )}
-        <button onClick={onDone} data-testid="grammar-done">
-          {NEXT}
-        </button>
-      </div>
-    );
-
-  return (
-    <div className="textbook-exercise" data-testid="grammar-exercise">
-      <p className="textbook-muted">
-        {idx + 1} of {total} · <span lang="zh-Hant">{grammarName(current.grammarId)}</span>{' '}
-        {history.length > 0 && (
-          <button type="button" className="link-button" data-testid="grammar-undo" onClick={() => void undoLast()}>
-            {UNDO}
-          </button>
-        )}
-      </p>
-      {current.type === 'cloze' ? (
-        <ClozeView
-          key={`${idx}:${attempt}`}
-          lexicon={lexicon}
-          script={script}
-          ex={current}
-          onAnswer={(ok) => void record(current.grammarId, ok)}
-          onNext={() => setIdx(idx + 1)}
-        />
-      ) : (
-        <ReorderView
-          key={`${idx}:${attempt}`}
-          zh={current.zh}
-          en={current.en}
-          lexicon={lexicon}
-          script={script}
-          onAnswer={(ok) => void record(current.grammarId, ok)}
-          onNext={() => setIdx(idx + 1)}
-        />
-      )}
-    </div>
-  );
-}
-
-function ClozeView({
-  ex,
-  onAnswer,
-  onNext,
-  lexicon,
-  script,
-}: {
-  ex: Extract<GrammarExercise, { type: 'cloze' }>;
-  onAnswer: (ok: boolean) => void;
-  onNext: () => void;
-  lexicon: Lexicon;
-  script: AnnotationScript;
-}) {
-  const [picked, setPicked] = useState<string | null>(null);
-  return (
-    <>
-      <p className="textbook-cloze" lang="zh-Hant">
-        {ex.before}
-        <span className="textbook-blank">{picked ?? '＿＿'}</span>
-        {ex.after}
-      </p>
-      {ex.en && <p className="textbook-muted">{ex.en}</p>}
-      <div className="textbook-options">
-        {ex.options.map((o) => (
-          <button
-            key={o}
-            lang="zh-Hant"
-            disabled={picked !== null}
-            className={
-              picked !== null ? (o === ex.answer ? 'is-right' : o === picked ? 'is-wrong' : '') : ''
-            }
-            onClick={() => {
-              setPicked(o);
-              onAnswer(o === ex.answer);
-            }}
-          >
-            {o}
-          </button>
-        ))}
-      </div>
-      {picked !== null && (
-        <p lang="zh-Hant" className="textbook-cloze-answered">
-          <AnnotatedInline text={`${ex.before}${ex.answer}${ex.after}`} lexicon={lexicon} script={script} textbook />
-        </p>
-      )}
-      {picked !== null && (
-        <p role="status">
-          {picked === ex.answer ? FEEDBACK_CORRECT : feedbackWrong(ex.answer)}{' '}
-          <button onClick={onNext} data-testid="grammar-next">
-            {NEXT}
-          </button>
-        </p>
-      )}
-    </>
-  );
-}
-
-/** The book's "put the words in the correct order" exercise. */
-function ReorderView({
-  zh,
-  en,
-  lexicon,
-  script,
-  onAnswer,
-  onNext,
-}: {
-  zh: string;
-  en?: string;
-  lexicon: Lexicon;
-  script: AnnotationScript;
-  onAnswer: (ok: boolean) => void;
-  onNext: () => void;
-}) {
-  const [exercise] = useState(() => buildReorderExercise(zh, lexicon));
-  const [picked, setPicked] = useState<number[]>([]);
-  const [result, setResult] = useState<boolean | null>(null);
-  const order = exercise.shuffled;
-  const built = picked.map((i) => order[i]).join('');
-  const target = exercise.correctOrder.join('');
-
-  function check() {
-    const ok = built === target;
-    setResult(ok);
-    onAnswer(ok);
-  }
-
-  return (
-    <>
-      <p className="textbook-muted">Put the words in the correct order.</p>
-      {en && <p>{en}</p>}
-      <p className="textbook-cloze" lang="zh-Hant">
-        {built || ' '}
-      </p>
-      <div className="textbook-options">
-        {order.map((tok, i) => (
-          <button
-            key={i}
-            lang="zh-Hant"
-            disabled={picked.includes(i) || result !== null}
-            onClick={() => setPicked([...picked, i])}
-          >
-            {tok}
-          </button>
-        ))}
-      </div>
-      {result === null ? (
-        <p>
-          <button onClick={() => setPicked(picked.slice(0, -1))} disabled={picked.length === 0}>
-            Undo
-          </button>{' '}
-          <button onClick={check} disabled={picked.length !== order.length}>
-            Check
-          </button>
-        </p>
-      ) : (
-        <p role="status">
-          {result ? FEEDBACK_CORRECT : feedbackWrong(target)}{' '}
-          <span lang="zh-Hant" className="textbook-cloze-answered">
-            <AnnotatedInline text={target} lexicon={lexicon} script={script} textbook />
-          </span>{' '}
-          <button onClick={onNext} data-testid="grammar-next">
-            {NEXT}
-          </button>
-        </p>
-      )}
-    </>
-  );
-}
-
 /** "Study this" from the home card: the same vocab → grammar → scenario → journal session, for any lesson. */
 export function StudyLessonView({ bookId, n, onExit }: { bookId: string; n: number; onExit: () => void }) {
   const lexiconState = useLexicon();
@@ -1085,10 +792,11 @@ export function StudyLessonView({ bookId, n, onExit }: { bookId: string; n: numb
   const data = textbook.data.find((d) => d.textbook.id === bookId);
   const lesson = book?.lessons.find((l) => l.n === n);
   if (!book || !data || !lesson) return <p>That lesson isn&apos;t installed.</p>;
+  // Phase 25: null while loading, so the grammar step is never built from an empty list.
   const sentences =
     sentencesState.status === 'ready'
       ? sentencesState.sentences.filter((s) => (s.textbookId ?? 'laixue-1') === bookId)
-      : [];
+      : null;
   return (
     <StudySession
       lesson={lesson}

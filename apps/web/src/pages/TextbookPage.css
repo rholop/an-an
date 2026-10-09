@@ -206,3 +206,28 @@
   margin-top: 1.5rem;
   scroll-margin-top: 4rem;
 }
+
+/* Phase 25: the grammar step */
+.textbook-options-stacked {
+  flex-direction: column;
+  align-items: stretch;
+}
+.textbook-slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+.textbook-slot {
+  min-width: 1.6rem;
+  text-align: center;
+  border-bottom: 2px solid var(--c-info);
+}
+.textbook-build-en {
+  font-weight: 600;
+}
+.grammar-outcomes {
+  list-style: none;
+  padding: 0;
+}

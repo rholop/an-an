@@ -1,99 +1,93 @@
 import {
-  buildGrammarCloze,
+  buildGrammarStep,
   courseOrdinal,
   homeLessonOfTags,
   isUsableSentence,
+  lessonScopedWordIds,
   seededRng,
   LAIXUE_COURSE,
   newSessionSeed,
-  orderSession,
-  type OrderedSession,
-  type SessionCard,
-  type GrammarClozeExercise,
   type GrammarItem,
+  type GrammarSentence,
+  type GrammarStepExercise,
+  type GrammarStepInputs,
+  type GrammarStepPlan,
   type Lesson,
+  type Lexicon,
   type SentenceBankEntry,
+  type Textbook,
 } from '@anan/core';
 
-export type GrammarExercise =
-  | ({ type: 'cloze' } & GrammarClozeExercise)
-  | { type: 'reorder'; grammarId: string; sentenceId: string; zh: string; en?: string };
+export type GrammarExercise = GrammarStepExercise;
 
-function shuffle<T>(arr: readonly T[], rng: () => number): T[] {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [copy[i], copy[j]] = [copy[j]!, copy[i]!];
-  }
-  return copy;
+export interface LessonGrammarStep {
+  plan: GrammarStepPlan;
+  /** Kept for `extraExercise` (a miss comes back with another sentence). */
+  inputs: GrammarStepInputs;
+  seed: string;
 }
 
 /**
- * The grammar step of "Study this lesson": for each grammar point of the
- * lesson, a cloze on its signal word (or, for patterns without one, the book's
- * "put the words in order" exercise), drawn from this lesson's sentences. Every
- * point gets `perPoint` exercises; one in three of the rest becomes a reorder.
+ * Phase 25: the grammar step of "Study this lesson". Every grammar point of the lesson gets
+ * `perPoint` exercises (3), each on a different sentence of this lesson, round-robin (A B C A B C …),
+ * with at least two exercise types per point. Nothing is deferred or dropped; reported sentences
+ * never come back. Reorder tiles only use words of this lesson and the ones before it.
  */
-export function buildGrammarExercises(
+export function buildLessonGrammarStep(
   lesson: Pick<Lesson, 'n' | 'grammar'>,
   grammarItems: readonly GrammarItem[],
   sentences: readonly SentenceBankEntry[],
   opts: {
-    perPoint?: number;
-    max?: number;
-    rng?: () => number;
+    lexicon: Lexicon;
     bookId?: string;
-    /** Phase 19: session id for the order; `recent` = keys shown at the end of the vocab step. */
+    /** Every imported book (course order), for the words a tile may be. */
+    books?: readonly Textbook[];
     seed?: string;
-    recent?: readonly (readonly string[])[];
-    /** Phase 21: reported sentences (never offered again, in any sentence source). */
     excluded?: ReadonlySet<string>;
-  } = {},
-): OrderedSession<GrammarExercise> {
-  // Phase 21: every random choice comes from the session seed, so a logged seed rebuilds it exactly.
+    perPoint?: number;
+  },
+): LessonGrammarStep {
   const seed = opts.seed ?? newSessionSeed('grammar');
-  const rng = opts.rng ?? seededRng(`${seed}:grammar`);
-  const perPoint = opts.perPoint ?? 2;
-  const max = opts.max ?? 8;
-  const byId = new Map(grammarItems.map((g) => [g.id, g]));
-  const lessonSentences = sentences.filter((s) => s.lesson === lesson.n && isUsableSentence(s.zh, opts.excluded));
+  const bookId = opts.bookId ?? 'laixue-1';
   // Distractors: the signal words of every point up to this lesson.
-  const here = courseOrdinal(LAIXUE_COURSE, opts.bookId ?? 'laixue-1', lesson.n) ?? lesson.n;
-  const pool = grammarItems
-    .filter((g) => {
-      const home = homeLessonOfTags(g.tags ?? []);
-      return home !== undefined && home.ordinal <= here;
-    })
-    .flatMap((g) => g.focus ?? []);
-  const out: GrammarExercise[] = [];
-  for (const gid of lesson.grammar) {
-    const g = byId.get(gid);
-    if (!g) continue;
-    const candidates = shuffle(
-      lessonSentences.filter((s) => s.grammarIds?.includes(gid)),
-      rng,
+  const here = courseOrdinal(LAIXUE_COURSE, bookId, lesson.n) ?? lesson.n;
+  const pool = [
+    ...new Set(
+      grammarItems
+        .filter((g) => {
+          const home = homeLessonOfTags(g.tags ?? []);
+          return home !== undefined && home.ordinal <= here;
+        })
+        .flatMap((g) => g.focus ?? []),
+    ),
+  ];
+  let allowed: ((h: string) => boolean) | undefined;
+  if (opts.books && opts.books.length > 0) {
+    const heads = new Set(
+      [...lessonScopedWordIds(opts.books, lesson.n, { bookId })].flatMap((id) => opts.lexicon.byId(id)?.headword ?? []),
     );
-    let made = 0;
-    for (const s of candidates) {
-      if (made >= perPoint) break;
-      const cloze = buildGrammarCloze(s, g, pool, rng);
-      if (cloze && (made === 0 || rng() > 0.34)) {
-        out.push({ type: 'cloze', ...cloze });
-        made++;
-      } else if (!cloze || made > 0) {
-        out.push({ type: 'reorder', grammarId: gid, sentenceId: s.id, zh: s.zh, en: s.en });
-        made++;
-      }
-    }
+    allowed = (h) => heads.has(h);
   }
-  // Phase 19: two exercises on one grammar point are siblings, so the shared order keeps them
-  // apart (or leaves the second for next time); the gap also runs on from the vocab step.
-  return orderSession(shuffle(out, rng).slice(0, max), describeGrammarExercise, {
-    seed,
-    recent: opts.recent,
-  });
-}
-
-export function describeGrammarExercise(e: GrammarExercise): SessionCard {
-  return { keys: [`grammar:${e.grammarId}`, ...(e.type === 'cloze' ? [`zh:${e.answer}`] : [])] };
+  const lessonSentences: GrammarSentence[] = sentences
+    .filter((s) => s.lesson === lesson.n && isUsableSentence(s.zh, opts.excluded))
+    .map((s) => ({
+      id: s.id,
+      zh: s.zh,
+      en: s.en,
+      grammarIds: s.grammarIds,
+      ...(s.altOrders ? { altOrders: s.altOrders } : {}),
+      ...(s.wrong ? { wrong: s.wrong } : {}),
+      ...(s.tiles ? { tiles: s.tiles } : {}),
+    }));
+  const inputs: GrammarStepInputs = {
+    grammarIds: lesson.grammar,
+    grammarItems,
+    sentences: lessonSentences,
+    lexicon: opts.lexicon,
+    pool,
+    ...(allowed ? { allowed } : {}),
+    rng: seededRng(`${seed}:grammar`),
+    ...(opts.perPoint ? { perPoint: opts.perPoint } : {}),
+  };
+  return { plan: buildGrammarStep(inputs), inputs, seed };
 }
