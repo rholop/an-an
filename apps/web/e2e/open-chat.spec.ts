@@ -36,7 +36,8 @@ test.describe('Open chat (phase 18)', () => {
     await expect(page.getByText('What do you want to talk about?')).toBeVisible();
     await expect(page.getByTestId('open-chat-privacy')).toContainText("Don't share anything private");
     const chips = page.getByTestId('open-chat-chips').locator('.chat-chip:not(.open-just-chat)');
-    expect(await chips.count()).toBeGreaterThan(0);
+    // Chips appear once the lexicon has loaded; wait instead of counting too early.
+    await expect(chips.first()).toBeVisible();
     expect(await chips.count()).toBeLessThanOrEqual(8);
     await expect(page.getByRole('button', { name: 'Just chat' })).toBeVisible();
 
