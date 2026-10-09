@@ -100,8 +100,8 @@ pnpm --filter @anan/proxy sync:inspect         # every profile
 pnpm --filter @anan/proxy sync:inspect ron     # one
 ```
 
-**Versions:** every revision is kept; the server never deletes a saved copy (a retention policy
-comes later as its own step). To list them or roll a profile back on the server (the old version becomes
+**Versions:** the server keeps the last 10 revisions per profile (Phase 31; `KEEP_VERSIONS` in
+`src/sync-store.ts`). Each successful save prunes the older copies. To list them or roll a profile back on the server (the old version becomes
 the newest revision; devices merge it in like any update). In the app, Settings → Your progress
 → Saved versions does the same per profile (Restore merges; Replace overwrites, after a confirm):
 

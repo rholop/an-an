@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 /** One saved copy of a profile's data: the per-profile export JSON, gzipped. */
@@ -25,10 +25,8 @@ export interface SyncVersion {
  * process on a small server), `MemorySyncStore` is for tests.
  *
  * Contract: `put` only succeeds when `baseRev` equals the stored rev (0 when
- * nothing is stored yet), and each success creates rev + 1. Every revision is
- * kept, none is ever deleted (hotfix after Phase 28: a push from a restored old
- * browser must not rotate good copies out). A retention policy built on
- * `revisionsToKeep` comes back later as a separate, owner-run step.
+ * nothing is stored yet), and each success creates rev + 1. Phase 31 Part G: only the newest
+ * `KEEP_VERSIONS` revisions are kept; each save prunes the older ones (`revisionsToKeep`).
  */
 export interface SyncStore {
   get(profileId: string): Promise<SyncRecord | null>;
@@ -38,14 +36,14 @@ export interface SyncStore {
 }
 
 export const KEEP_VERSIONS = 10;
-/** Phase 28: besides the last `KEEP_VERSIONS`, the newest copy of each of the last `KEEP_DAILY_DAYS`
- * days is kept, so a burst of saves can't push every good copy out. */
-export const KEEP_DAILY_DAYS = 30;
+/** Phase 31 Part G: the "newest copy of each day" history of Phase 28 is off (0 days), so the
+ * server keeps exactly the last `KEEP_VERSIONS`. Raise it to bring the daily copies back. */
+export const KEEP_DAILY_DAYS = 0;
 
 /**
- * Which revisions a future retention policy would keep (Phase 28 Part C.3). Not used by `put`:
- * for now no version is ever deleted.  the last `keep` revisions, plus the newest revision of each
- * (UTC) day within the last `dailyDays` days. `entries` in any order; `at` is epoch ms.
+ * Which revisions `put` keeps: the last `keep` revisions, plus the newest revision of each (UTC)
+ * day within the last `dailyDays` days (0 by default, Phase 31). `entries` in any order; `at` is
+ * epoch ms.
  */
 export function revisionsToKeep(
   entries: readonly { rev: number; at: number }[],
@@ -56,6 +54,7 @@ export function revisionsToKeep(
   const days = opts.dailyDays ?? KEEP_DAILY_DAYS;
   const sorted = [...entries].sort((a, b) => a.rev - b.rev);
   const out = new Set(sorted.slice(-keep).map((e) => e.rev));
+  if (days <= 0) return out;
   const since = now.getTime() - days * 86_400_000;
   const newestOfDay = new Map<string, { rev: number; at: number }>();
   for (const e of sorted) {
@@ -100,7 +99,14 @@ export class MemorySyncStore implements SyncStore {
       if ((current?.rev ?? 0) !== baseRev) return { ok: false as const, current: current! };
       const rec: SyncRecord = { rev: baseRev + 1, updatedAt: this.now().toISOString(), blob };
       list.push(rec);
-      this.data.set(profileId, list); // every version is kept
+      const keep = revisionsToKeep(
+        list.map((r) => ({ rev: r.rev, at: Date.parse(r.updatedAt) })),
+        this.now(),
+      );
+      this.data.set(
+        profileId,
+        list.filter((r) => keep.has(r.rev)),
+      );
       return { ok: true as const, rev: rec.rev, updatedAt: rec.updatedAt };
     });
   }
@@ -178,7 +184,10 @@ export class FileSyncStore implements SyncStore {
       const tmp = `${final}.tmp`;
       await writeFile(tmp, blob);
       await rename(tmp, final);
-      // Never deletes an older version: every saved copy stays on disk.
+      // Phase 31 Part G: the save that succeeded prunes the copies past the newest KEEP_VERSIONS.
+      const keep = revisionsToKeep([...entries, { rev, at, file: '' }], this.now());
+      for (const e of entries)
+        if (!keep.has(e.rev)) await unlink(path.join(dir, e.file)).catch(() => undefined);
       return { ok: true as const, rev, updatedAt: new Date(at).toISOString() };
     });
   }

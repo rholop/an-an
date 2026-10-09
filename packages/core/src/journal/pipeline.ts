@@ -3,6 +3,7 @@ import { segment } from '../segment.js';
 import type { Level } from '../types.js';
 import { buildSentenceItems, type BuildItemsDeps, type DroppedItem } from './buildItems.js';
 import { splitReviewSentences } from './sentences.js';
+import { extractBrackets } from './bracket.js';
 import type { ErrorItem, ModelSentenceReview, ProviderName } from './types.js';
 import {
   sentenceKey,
@@ -14,7 +15,6 @@ import {
 
 const MAX_SENTENCE_CHARS = 300;
 export const MAX_REVIEW_SENTENCES = 40;
-const BRACKETS = /[[［\]］]/;
 
 export interface PreparedSentence {
   /** Position in the entry's sentence list (stable: item ids use it). */
@@ -35,7 +35,7 @@ export function prepareSentences(text: string): PreparedSentence[] {
   splitReviewSentences(text).forEach(([start, end], index) => {
     const original = text.slice(start, end);
     if (!/[一-鿿]/.test(original)) return;
-    if (BRACKETS.test(original) || original.length > MAX_SENTENCE_CHARS) return;
+    if (extractBrackets(original).length > 0 || original.length > MAX_SENTENCE_CHARS) return;
     out.push({ index, start, end, original });
   });
   return out.slice(0, MAX_REVIEW_SENTENCES);

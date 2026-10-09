@@ -177,6 +177,8 @@ export const UNDO = 'Undo';
 export const NEXT = 'Next';
 export const MINE_IS_RIGHT = 'I think mine is right too';
 export const HOME = 'Home';
+/** Phase 31 Part G: Settings → Your progress → Saved versions. */
+export const SAVED_VERSIONS_KEPT = 'The server keeps your last 10 saved versions.';
 
 // --- answer feedback ------------------------------------------------------------------------
 export const FEEDBACK_CORRECT = '✓ Correct';

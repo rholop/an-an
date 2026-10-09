@@ -7,6 +7,7 @@ import {
   copyCounts,
   lastSavedLine,
   SAVE_NOW,
+  SAVED_VERSIONS_KEPT,
   savedWhen,
   TERM,
   thisBrowserLine,
@@ -91,6 +92,7 @@ export function YourProgress() {
       {versions && (
         <ul className="saved-versions" data-testid="saved-versions">
           {versions.length === 0 && <li>No saved versions on the server yet.</li>}
+          {versions.length > 0 && <li className="review-settings-muted">{SAVED_VERSIONS_KEPT}</li>}
           {versions.map((v) => (
             <li key={v.rev} data-testid="saved-version">
               <span>
