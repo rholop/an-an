@@ -21,7 +21,7 @@ body {
     box-sizing: border-box;
   }
   :root .app-nav,
-  :root .header-theme {
+  :root .header-actions {
     display: none; /* replaced by the bottom tab bar / the More sheet */
   }
   :root .app-header {
