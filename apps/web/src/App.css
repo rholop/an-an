@@ -127,6 +127,29 @@
   gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.header-shortcuts-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 0.35rem 0.55rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+}
+.header-shortcuts-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
 
 /* Phase 9: reader sentence drill */
 .reader-focus {

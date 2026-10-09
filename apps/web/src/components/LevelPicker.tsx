@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { LEVELS, levelLabel, type Level } from '@anan/core';
 
 /** The compact level dropdown: "L2 基礎級 · A2". Options come straight from
@@ -15,10 +16,36 @@ export function LevelPicker({
   /** Phase 22: the header shows just "Level". */
   shownLabel?: string;
 }) {
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  useEffect(() => {
+    const handleToggle = () => {
+      const el = selectRef.current;
+      if (!el) return;
+      el.focus();
+      if ('showPicker' in el && typeof (el as unknown as { showPicker?: () => void }).showPicker === 'function') {
+        try {
+          (el as unknown as { showPicker: () => void }).showPicker();
+        } catch {
+          // ignore error if showPicker is not supported in this frame
+        }
+      }
+    };
+    window.addEventListener('anan:toggle-level', handleToggle);
+    return () => window.removeEventListener('anan:toggle-level', handleToggle);
+  }, []);
+
   return (
-    <label className="level-picker">
+    <label className="level-picker" title={`${label} (Shortcut: L)`}>
       <span className="level-picker-label">{shownLabel}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value as Level)} aria-label={label}>
+      <select
+        ref={selectRef}
+        id="level-picker-select"
+        value={value}
+        onChange={(e) => onChange(e.target.value as Level)}
+        aria-label={label}
+        data-testid="level-picker-select"
+      >
         {LEVELS.map((l) => (
           <option key={l.id} value={l.id}>
             {levelLabel(l.id)}

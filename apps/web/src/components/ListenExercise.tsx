@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useKeyboardShortcut } from '../lib/keyboard-shortcuts.js';
 import {
   gradeSentenceDictation,
   gradeWordDictation,
@@ -99,6 +100,9 @@ export function ListenExercise({
     done.current = true;
     onDone({ evidence: answered.evidence, correct: answered.outcome === 'correct' });
   };
+
+  useKeyboardShortcut('play-audio', () => void play(), true);
+  useKeyboardShortcut('next', next, Boolean(answered));
 
   const word = (id: string): Word | undefined => lexicon.byId(id);
   const targets = wordIdOf(exercise);
@@ -282,6 +286,12 @@ function Options({
   lang?: string;
 }) {
   const [picked, setPicked] = useState<string | null>(null);
+
+  useKeyboardShortcut('choice-1', () => { if (!disabled && options[0]) { setPicked(options[0]); onPick(options[0]); } }, !disabled && Boolean(options[0]));
+  useKeyboardShortcut('choice-2', () => { if (!disabled && options[1]) { setPicked(options[1]); onPick(options[1]); } }, !disabled && Boolean(options[1]));
+  useKeyboardShortcut('choice-3', () => { if (!disabled && options[2]) { setPicked(options[2]); onPick(options[2]); } }, !disabled && Boolean(options[2]));
+  useKeyboardShortcut('choice-4', () => { if (!disabled && options[3]) { setPicked(options[3]); onPick(options[3]); } }, !disabled && Boolean(options[3]));
+
   return (
     <>
       <p>{prompt}</p>
@@ -322,6 +332,10 @@ function TonePairView({
   onPick: (side: 'a' | 'b') => void;
 }) {
   const [picked, setPicked] = useState<'a' | 'b' | null>(null);
+
+  useKeyboardShortcut('choice-1', () => { if (!disabled) { setPicked('a'); onPick('a'); } }, !disabled);
+  useKeyboardShortcut('choice-2', () => { if (!disabled) { setPicked('b'); onPick('b'); } }, !disabled);
+
   const label = (w: Word | undefined) => (w ? `${w.headword} · ${readingText(w, script)}` : '?');
   return (
     <>
