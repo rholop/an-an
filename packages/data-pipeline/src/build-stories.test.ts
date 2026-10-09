@@ -6,7 +6,7 @@ import type { Textbook } from '@anan/core';
 import { lessonStoryLadder } from './build-stories.js';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const book1 = (JSON.parse(readFileSync(path.join(REPO, 'apps/web/public/textbook/laixue-1/book.json'), 'utf8')) as { textbook: Textbook }).textbook;
+const book1 = (JSON.parse(readFileSync(path.join(REPO, 'data/curriculum/laixue-1/book.json'), 'utf8')) as { textbook: Textbook }).textbook;
 
 describe('Phase 26 Part E: lesson stories use only this lesson, the lessons before and the gate', () => {
   it('book 1 lesson 4: lesson 3 words are known, lesson 4 words are rung 2, lesson 5 words are outside', () => {

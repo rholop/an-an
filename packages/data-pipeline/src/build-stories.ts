@@ -69,7 +69,7 @@ const BOOK_LEVEL: Record<number, { level: Level; gate: Level[] }> = {
 const lexFile = JSON.parse(readFileSync(path.join(REPO, 'data/build/lexicon.v2.json'), 'utf8')) as { words: Word[]; grammar: GrammarItem[] };
 const bookFiles = [1, 2, 3, 4].map(
   (n) =>
-    JSON.parse(readFileSync(path.join(REPO, `apps/web/public/textbook/laixue-${n}/book.json`), 'utf8')) as {
+    JSON.parse(readFileSync(path.join(REPO, `data/curriculum/laixue-${n}/book.json`), 'utf8')) as {
       textbook: Textbook;
       grammarItems: GrammarItem[];
     },
