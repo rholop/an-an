@@ -16,6 +16,7 @@ import { NopeButton } from '../components/Nope.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { FACE_LABEL, FEEDBACK_CORRECT, feedbackWrong, lessonLabel, NEXT } from '../lib/labels.js';
 import { readingText } from '../lib/reading.js';
+import { GrammarExerciseCard, useSingleGrammarExercise } from './GrammarStep.js';
 import type { ConfusableContext } from '../lib/confusables.js';
 
 export type Grade = 'again' | 'hard' | 'good' | 'easy';
@@ -82,6 +83,8 @@ export function ReviewCard({
   }, [word, confusables, card]);
   let face = grammar ? 'grammar' : reviewFace(card);
   if (face === 'pick' && !options) face = 'recall';
+  // Phase 25 B7: a grammar card is one exercise from the lesson step's builders (else the flip card).
+  const grammarEx = useSingleGrammarExercise(grammar?.id, lexicon, `${card.item.id}|${card.card.reps}`);
 
   return (
     <div className={`review-card review-card--${face}`} data-testid="review-card" data-face={face}>
@@ -95,7 +98,19 @@ export function ReviewCard({
           </span>
         )}
       </div>
-      {face === 'pick' && word && options ? (
+      {grammar && grammarEx === undefined ? (
+        <p>Loading…</p>
+      ) : grammar && grammarEx ? (
+        <>
+          <div className="review-card-front review-card-front--small" lang="zh-Hant">
+            {grammar.pattern}
+          </div>
+          <GrammarExerciseCard ex={grammarEx} lexicon={lexicon} script={script} onDone={(ok) => onRate(ok ? 'good' : 'again', { face: 'grammar' })} />
+          <div className="review-actions">
+            <NopeButton onNope={onNope} />
+          </div>
+        </>
+      ) : face === 'pick' && word && options ? (
         <PickFace word={word} options={options} gloss={gloss} script={script} onRate={onRate} onNope={onNope} />
       ) : (
         <FlipFace

@@ -91,3 +91,26 @@ export function buildLessonGrammarStep(
   };
   return { plan: buildGrammarStep(inputs), inputs, seed };
 }
+
+/**
+ * Phase 25 B7: one exercise for one grammar point (Review and Cloze), from the same builder as the
+ * lesson step: a sentence of the point's home lesson, never a reported one. Undefined when the point
+ * has no textbook sentences.
+ */
+export function buildSingleGrammarExercise(
+  grammarId: string,
+  grammarItems: readonly GrammarItem[],
+  sentences: readonly SentenceBankEntry[],
+  opts: { lexicon: Lexicon; books?: readonly Textbook[]; seed: string; excluded?: ReadonlySet<string> },
+): GrammarStepExercise | undefined {
+  const g = grammarItems.find((x) => x.id === grammarId);
+  const home = g ? homeLessonOfTags(g.tags ?? []) : undefined;
+  if (!g || !home) return undefined;
+  const own = sentences.filter((s) => (s.textbookId ?? 'laixue-1') === home.bookId);
+  const { plan } = buildLessonGrammarStep({ n: home.n, grammar: [grammarId] }, grammarItems, own, {
+    ...opts,
+    bookId: home.bookId,
+    perPoint: 1,
+  });
+  return plan.exercises[0];
+}

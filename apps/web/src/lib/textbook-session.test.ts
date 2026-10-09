@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Lexicon, type GrammarItem, type SentenceBankEntry, type Word } from '@anan/core';
-import { buildLessonGrammarStep } from './textbook-session.js';
+import { buildLessonGrammarStep, buildSingleGrammarExercise } from './textbook-session.js';
 
 const g = (id: string, lesson: number, focus: string[], matcher?: string): GrammarItem => ({
   id,
@@ -84,5 +84,18 @@ describe('buildLessonGrammarStep (Phase 25)', () => {
     const a = buildLessonGrammarStep({ n: 3, grammar: ['gram-dou-all', 'gram-bu'] }, items, sentences, { lexicon, seed: 'x' });
     const b = buildLessonGrammarStep({ n: 3, grammar: ['gram-dou-all', 'gram-bu'] }, items, sentences, { lexicon, seed: 'x' });
     expect(a.plan.exercises).toEqual(b.plan.exercises);
+  });
+});
+
+describe('buildSingleGrammarExercise (Phase 25 B7: Review and Cloze)', () => {
+  it('one exercise from the point\'s home lesson, the same builders as the step', () => {
+    const ex = buildSingleGrammarExercise('gram-bu', items, sentences, { lexicon, seed: 'r1' });
+    expect(ex?.grammarId).toBe('gram-bu');
+    expect(['5', '6', '7']).toContain(ex?.sentenceId);
+  });
+  it('a different seed can give a different sentence; a point with no sentences gives none', () => {
+    const ids = new Set(['a', 'b', 'c', 'd', 'e', 'f'].map((seed) => buildSingleGrammarExercise('gram-bu', items, sentences, { lexicon, seed })?.sentenceId));
+    expect(ids.size).toBeGreaterThan(1);
+    expect(buildSingleGrammarExercise('gram-nope', items, sentences, { lexicon, seed: 'x' })).toBeUndefined();
   });
 });

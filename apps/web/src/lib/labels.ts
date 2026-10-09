@@ -239,3 +239,4 @@ export const storyReasonsLine = (reasons: readonly string[]): string => {
   const parts = [...new Set(reasons.flatMap((r) => STORY_REASON[r] ?? []))];
   return parts.length === 0 ? '' : `(Not shown because ${parts.join(', and ')}.)`;
 };
+export const SKIP = 'Skip';

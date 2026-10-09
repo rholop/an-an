@@ -30,13 +30,15 @@ import {
   grammarPointOutcome,
   grammarStepPosition,
   NEXT,
+  SKIP,
   UNDO,
 } from '../lib/labels.js';
 import { useReviewSettings } from '../lib/review-settings.js';
 import { logSessionOrder, noteShown } from '../lib/session-recent.js';
 import { useProgressData } from '../lib/study.js';
-import { fetchPrivateTextbook, useTextbook, type BookData, type PrivateExample } from '../lib/textbook-data.js';
-import { buildLessonGrammarStep, type LessonGrammarStep } from '../lib/textbook-session.js';
+import { fetchPrivateTextbook, loadTextbookSentences, useTextbook, type BookData, type PrivateExample } from '../lib/textbook-data.js';
+import './TextbookPage.css';
+import { buildLessonGrammarStep, buildSingleGrammarExercise, type LessonGrammarStep } from '../lib/textbook-session.js';
 
 const NEED = PROGRESS_CONFIG.mastered.grammarCorrectUses;
 
@@ -364,5 +366,102 @@ function TileView({ ex, lexicon, script, onAnswer, onNext }: ViewProps<TileExerc
         <Result ok={result} zh={result ? fillSlots(ex.slots, words) : ex.zh} lexicon={lexicon} script={script} onNext={onNext} />
       )}
     </>
+  );
+}
+
+/**
+ * Phase 25 B7: one exercise for a grammar point (Review and Cloze). undefined while loading, null when
+ * the point has no textbook sentences (the caller falls back to its own card).
+ */
+export function useSingleGrammarExercise(grammarId: string | undefined, lexicon: Lexicon, seed: string): GrammarStepExercise | null | undefined {
+  const textbook = useTextbook();
+  const want = `${grammarId ?? ''}|${seed}`;
+  // Keyed by what was asked, so a new point never shows the previous point's exercise.
+  const [got, setGot] = useState<{ key: string; ex: GrammarStepExercise | null } | null>(null);
+  useEffect(() => {
+    if (!grammarId || textbook.status === 'missing') return setGot({ key: want, ex: null });
+    if (textbook.status !== 'ready') return;
+    let cancelled = false;
+    void Promise.all([loadTextbookSentences(), excludedZh(db)]).then(([sentences, excluded]) => {
+      if (cancelled) return;
+      const items = textbook.data.flatMap((d) => d.grammarItems);
+      setGot({ key: want, ex: buildSingleGrammarExercise(grammarId, items, sentences, { lexicon, books: textbook.books, seed, excluded }) ?? null });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [want, textbook.status]);
+  if (!grammarId) return null;
+  return got?.key === want ? got.ex : undefined;
+}
+
+/** One grammar exercise outside the lesson step: answer, see the sentence, then Next reports it. */
+export function GrammarExerciseCard({
+  ex,
+  lexicon,
+  script,
+  onDone,
+}: {
+  ex: GrammarStepExercise;
+  lexicon: Lexicon;
+  script: AnnotationScript;
+  onDone: (ok: boolean) => void;
+}) {
+  const [ok, setOk] = useState<boolean | null>(null);
+  const props = { lexicon, script, onAnswer: (r: boolean) => setOk(r), onNext: () => ok !== null && onDone(ok) };
+  return (
+    <div className="textbook-exercise" data-testid="grammar-exercise" data-type={ex.type} data-grammar={ex.grammarId} data-sentence={ex.sentenceId}>
+      {ex.type === 'fill' ? <FillView ex={ex} {...props} /> : ex.type === 'pick' ? <PickView ex={ex} {...props} /> : <TileView ex={ex} {...props} />}
+    </div>
+  );
+}
+
+const ROUND_SIZE = 3;
+
+/**
+ * Phase 25 B7: in Cloze, Learned but not yet Mastered grammar points come back as one exercise each
+ * (at most 3 a visit), before the cloze session. Their right answers count toward the dots.
+ */
+export function GrammarRound({ lexicon }: { lexicon: Lexicon }) {
+  const progress = useProgressData();
+  const script = useReadingScript();
+  const [ids, setIds] = useState<string[] | null>(null);
+  const [i, setI] = useState(0);
+  const [skipped, setSkipped] = useState(false);
+  const [round, setRound] = useState(0);
+  useEffect(() => {
+    if (!progress || ids) return;
+    const g = (id: string) => ({ kind: 'grammar' as const, id });
+    const open = [...progress.grammarUses.keys()].filter((id) => progress.index.learned(g(id)) && !progress.index.mastered(g(id)) && !progress.index.removed(g(id)));
+    setIds(open.slice(0, ROUND_SIZE));
+  }, [progress, ids]);
+  const id = ids?.[i];
+  const ex = useSingleGrammarExercise(id, lexicon, `cloze|${id ?? ''}|${round}`);
+  // a point with no sentence: move on
+  useEffect(() => {
+    if (id && ex === null) setI((k) => k + 1);
+  }, [id, ex]);
+  if (!ids || ids.length === 0 || skipped || !id || !ex) return ex === undefined && id && !skipped ? <p>Loading…</p> : null;
+  const pattern = lexicon.grammarItemById(id)?.pattern ?? id;
+  async function done(ok: boolean) {
+    const now = new Date();
+    await learnerService.record(
+      { item: { kind: 'grammar', id: id! }, skill: 'recognition', kind: ok ? 'cloze_correct_nohint' : 'cloze_wrong', at: now, context: { source: 'cloze' } },
+      now,
+    );
+    setI((k) => k + 1);
+    setRound((r) => r + 1);
+  }
+  return (
+    <section className="grammar-round" data-testid="grammar-round" aria-label="Grammar practice">
+      <p className="textbook-muted">
+        Grammar practice · {i + 1} of {ids.length} · <span lang="zh-Hant">{pattern}</span>{' '}
+        <GrammarDots use={progress?.grammarUses.get(id)} />{' '}
+        <button type="button" className="link-button" data-testid="grammar-round-skip" onClick={() => setSkipped(true)}>
+          {SKIP}
+        </button>
+      </p>
+      <GrammarExerciseCard key={`${id}:${round}`} ex={ex} lexicon={lexicon} script={script} onDone={(ok) => void done(ok)} />
+    </section>
   );
 }

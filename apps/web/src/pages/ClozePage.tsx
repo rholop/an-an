@@ -103,6 +103,7 @@ import {
   feedbackWrong,
 } from '../lib/labels.js';
 import { glossFor } from '@anan/core';
+import { GrammarRound } from './GrammarStep.js';
 import './ClozePage.css';
 
 export type Outcome = 'correct' | 'correct_wrong_tone' | 'wrong';
@@ -616,6 +617,7 @@ export function ClozePage() {
     return (
       <div className="cloze-page">
         <h1>Cloze review</h1>
+        {lexiconState.status === 'ready' && <GrammarRound lexicon={lexiconState.lexicon} />}
         {!ready || !planned ? (
           <p>Loading your review queue…</p>
         ) : planned.built.length === 0 ? (
