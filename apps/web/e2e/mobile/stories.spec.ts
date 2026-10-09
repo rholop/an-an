@@ -26,6 +26,13 @@ for (const theme of ['light', 'dark'] as Theme[]) {
     await page.getByTestId('next-story').tap();
     const view = page.getByTestId('story-view');
     await expect(view).toBeVisible({ timeout: 20_000 });
+    // Phase 26: a story with words outside the known list teaches them first ("Words in this story")
+    const start = page.getByTestId('story-start-reading');
+    if (await start.isVisible()) {
+      await page.screenshot({ path: `screenshots/story-words-${theme}-phone.png`, fullPage: true });
+      expect((await collectFindings(page)).map((f) => `${f.kind}: ${f.where} (${f.detail})`)).toEqual([]);
+      await start.tap();
+    }
     await page.waitForTimeout(300);
     expect((await collectFindings(page)).map((f) => `${f.kind}: ${f.where} (${f.detail})`)).toEqual([]);
     await page.screenshot({ path: `screenshots/story-${theme}-phone.png`, fullPage: true });
