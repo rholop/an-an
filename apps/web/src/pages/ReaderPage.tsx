@@ -194,8 +194,8 @@ function ReaderView({
 
   useEffect(() => {
     void learnerService
-      .wordSets(new Date())
-      .then((s) => setKnownSet(new Set([...s.knownIds, ...s.dueIds, ...s.learningIds])));
+      .ledger(new Date())
+      .then((l) => setKnownSet(new Set(l.comprehensible().ids)));
   }, [setsTick]);
   useEffect(() => onStudyDirty(() => setSetsTick((t) => t + 1)), []);
 

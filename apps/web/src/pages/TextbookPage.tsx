@@ -5,14 +5,11 @@ import {
   courseLessonLevel,
   glossFor,
   courseOrdinal,
-  isPractisedListening,
-  isStrongListening,
   LAIXUE_COURSE,
-  lessonDone,
-  lessonProgress,
   type GrammarItem,
   type Lesson,
   type LessonProgress,
+  type LessonView,
   type Lexicon,
   type StoryRecord,
   type SentenceBankEntry,
@@ -23,7 +20,7 @@ import { AnnotatedInline, AnnotatedWord, useReadingScript } from '../components/
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { db, learnerService } from '../db/instance.js';
-import { loadReviewStatus } from '../lib/review-status.js';
+import { getLedgerNow, useLedger } from '../lib/ledger.js';
 import { saveProgressNow } from '../lib/save-progress.js';
 import { setMyClass, useMyClass } from '../lib/my-class.js';
 import { GrammarStep } from './GrammarStep.js';
@@ -37,6 +34,7 @@ import {
   lessonLabel,
   lessonOnly,
   lessonsMasteredLine,
+  lessonNothingThisSession,
   levelLabel,
   listeningLine,
   NEXT,
@@ -53,9 +51,7 @@ import {
   getStudyFocusNow,
   lessonIndexFor,
   useClassScope,
-  useProgressData,
   useStudyFocus,
-  useStudySettings,
 } from '../lib/study.js';
 import {
   fetchPrivateTextbook,
@@ -70,7 +66,6 @@ import { QuickKnownCheck } from '../components/QuickKnownCheck.js';
 import { ChatPage } from './ChatPage.js';
 import { ListenPage } from './ListenPage.js';
 import { useListeningClips, useListeningEnabled } from '../lib/listening.js';
-import { allListeningCards } from '../db/queries.js';
 import { JournalPage } from './JournalPage.js';
 import { ReviewPage } from './ReviewPage.js';
 import { StoryView } from './StoryView.js';
@@ -92,9 +87,8 @@ export function TextbookPage() {
   const script = useReadingScript();
   const [view, setView] = useState<View>({ kind: 'path' });
   const [tick, setTick] = useState(0);
-  // Phase 21: the same numbers as Home (one ProgressIndex, refreshed after every change).
-  const progressData = useProgressData();
-  const studySettings = useStudySettings();
+  // Phase 29: the same numbers as Home (the ledger, refreshed after every change).
+  const ledger = useLedger();
   const { focus } = useStudyFocus();
   const scope = useClassScope();
   const [extras, setExtras] = useState<{ scenarios: Set<string>; prompts: Set<string> } | null>(null);
@@ -114,23 +108,23 @@ export function TextbookPage() {
     return () => {
       cancelled = true;
     };
-  }, [tick, view.kind, progressData]);
+  }, [tick, view.kind, ledger]);
+  // Phase 29 Part B.7: every lesson number (chip, "X of N mastered", Vocab) is `ledger.lesson()`.
   const progress = useMemo(() => {
-    const out = new Map<string, LessonProgress>();
-    if (textbook.status !== 'ready' || !progressData) return out;
+    const out = new Map<string, LessonView>();
+    if (textbook.status !== 'ready' || !ledger) return out;
     for (const b of textbook.books)
       for (const l of b.lessons)
         out.set(
           l.id,
-          lessonProgress(l, {
-            index: progressData.index,
+          ledger.lesson(l, {
             completedScenarioIds: extras?.scenarios ?? new Set(),
             donePromptIds: extras?.prompts ?? new Set(),
           }),
         );
     return out;
-  }, [textbook, progressData, extras]);
-  const isDone = (p: LessonProgress | undefined) => !!p && lessonDone(p, studySettings.masteryShare);
+  }, [textbook, ledger, extras]);
+  const isDone = (p: LessonView | undefined) => !!p && p.done;
 
   if (lexiconState.status === 'loading' || textbook.status === 'loading') return <p>Loading…</p>;
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
@@ -400,23 +394,14 @@ function LessonDetail({
   onBack: () => void;
   onStudy: () => void;
 }) {
-  const progressData = useProgressData();
+  const ledger = useLedger();
   const [checking, setChecking] = useState(false);
   // Phase 15: listening stats show separately (they never count toward mastery).
   // Phase 21: practised = answered at least once (auto-created cards don't count); strong from the shared config.
   const [listenStats, setListenStats] = useState<{ practised: number; strong: number } | null>(null);
   useEffect(() => {
-    let cancelled = false;
-    allListeningCards(db).then((cards) => {
-      if (cancelled) return;
-      const mine = new Set(lesson.vocab.filter((id) => !lesson.properNouns.includes(id)));
-      const own = cards.filter((c) => mine.has(c.item.id));
-      setListenStats({ practised: own.filter((c) => isPractisedListening(c)).length, strong: own.filter((c) => isStrongListening(c)).length });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [lesson]);
+    if (ledger) setListenStats(ledger.listeningStats(lesson.vocab.filter((id) => !lesson.properNouns.includes(id))));
+  }, [lesson, ledger]);
   const grammar = lesson.grammar
     .map((id) => data.grammarItems.find((g) => g.id === id))
     .filter((g): g is GrammarItem => Boolean(g));
@@ -513,7 +498,7 @@ function LessonDetail({
       {grammar.map((g) => (
         <article key={g.id} className="textbook-grammar">
           <h3>
-            <span lang="zh-Hant">{g.pattern}</span> <GrammarDots use={progressData?.grammarUses.get(g.id)} />
+            <span lang="zh-Hant">{g.pattern}</span> <GrammarDots dots={ledger?.item({ kind: 'grammar', id: g.id }).dots ?? 0} />
           </h3>
           <p>{g.explanationEn}</p>
           {exampleFor(g).map((s) => (
@@ -742,53 +727,58 @@ function StoryStep({ lexicon, onDone }: { lexicon: Lexicon; onDone: () => void }
  * its New items under the Phase 20 allowance. Never "Nothing due" while the lesson has words to go.
  */
 function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string; onDone: () => void }) {
-  const [plan, setPlan] = useState<{ due: SkillCard[]; fresh: SkillCard[]; paused?: string; left: number } | null>(null);
-  const progressData = useProgressData();
+  const [plan, setPlan] = useState<{
+    due: SkillCard[];
+    fresh: SkillCard[];
+    paused?: string;
+    left: number;
+    next: { name: 'morning' | 'evening'; words: number };
+  } | null>(null);
   useEffect(() => {
-    if (!progressData) return;
     let cancelled = false;
     (async () => {
       const now = new Date();
-      const [due, newCards, { status }, focus] = await Promise.all([
-        learnerService.dueCards(now),
-        learnerService.newCards(),
-        loadReviewStatus(now),
-        getStudyFocusNow(now).catch(() => undefined),
-      ]);
+      // Phase 29: the lesson's cards in this review session (the same set as the garden plot), and
+      // "still to master" from `ledger.lesson()` (the same items and removed filter as the chip).
+      const [ledger, focus] = await Promise.all([getLedgerNow(now), getStudyFocusNow(now).catch(() => undefined)]);
+      const status = ledger.status;
+      const lessonWords = new Set(lesson.vocab);
       // Phase 22: the same new-word rule and message as Home and Review.
-      const allowance = { allowed: status.newAllowed, reason: status.newMessage };
+      const allowance = ledger.newAllowance('review');
       const picked = lessonSessionCards({
-        due,
-        newCards,
+        due: ledger.session().cards,
+        newCards: ledger.newCards(),
         lesson,
         ...(focus ? { focus } : {}),
         lessonIdx: lessonIndexFor(getStudyBooks()),
-        hasCard: (i) => progressData.index.hasCard(i),
+        hasCard: (i) => ledger.hasCard(i),
         allowedNew: allowance.allowed,
       });
-      const left = progressData.index.summarize(
-        lesson.vocab.filter((id) => !lesson.properNouns.includes(id)).map((id) => ({ kind: 'word' as const, id })),
-      );
+      const left = ledger.lesson(lesson).stillToMaster.length;
       if (cancelled) return;
       setPlan({
         due: picked.due,
         fresh: [...picked.fresh, ...picked.newItems.map((i) => newSessionCard(i, now))],
-        ...(allowance.reason ? { paused: allowance.reason } : {}),
-        left: left.total - left.mastered,
+        ...(allowance.message ? { paused: allowance.message } : {}),
+        left,
+        next: {
+          name: status.nextSession.name,
+          words: status.nextSessionWordIds.filter((id) => lessonWords.has(id)).length,
+        },
       });
     })();
     return () => {
       cancelled = true;
     };
     // built once per lesson (later changes must not rebuild the running session)
-  }, [lesson, !!progressData]);
+  }, [lesson]);
   if (!plan) return <p>Loading…</p>;
   if (plan.due.length + plan.fresh.length === 0)
     return (
       <p data-testid="lesson-vocab-empty">
         {plan.left > 0
-          ? `Nothing from this lesson to review right now: ${plan.left} word${plan.left === 1 ? '' : 's'} still to master come back as they fall due.${plan.paused ? ` ${plan.paused}` : ''}`
-          : 'Every word of this lesson is mastered.'}{' '}
+          ? `${lessonNothingThisSession(plan.next, plan.next.words)}${plan.paused ? ` ${plan.paused}` : ''}`
+          : 'This lesson is mastered.'}{' '}
         <button onClick={onDone}>{NEXT}</button>
       </p>
     );

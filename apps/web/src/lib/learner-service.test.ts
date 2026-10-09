@@ -64,10 +64,10 @@ describe('LearnerService.recordBulk', () => {
   });
 });
 
-describe('LearnerService.wordSets (Phase 21 shared terms)', () => {
+describe('LearnerService.ledger (Phase 21 shared terms, Phase 29 ledger)', () => {
   it('an Anki seed is comprehensible (learning) but not Learned until reviewed in the app', async () => {
     await service.record({ item, skill: 'recognition', kind: 'anki_import_seen', at: NOW }, NOW);
-    const sets = await service.wordSets(NOW);
+    const sets = (await service.ledger(NOW)).comprehensible();
     expect(sets.knownIds.has('w1')).toBe(false);
     expect(sets.learningIds.has('w1')).toBe(true);
   });

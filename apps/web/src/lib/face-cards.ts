@@ -1,4 +1,4 @@
-import { productionUnlockFor, readingUnlockFor, type Evidence, type SkillCard } from '@anan/core';
+import { productionUnlockFor, readingUnlockFor, type Evidence, type Ledger } from '@anan/core';
 import { learnerService } from '../db/instance.js';
 
 /**
@@ -10,20 +10,18 @@ import { learnerService } from '../db/instance.js';
  */
 export async function ensureFaceCards(
   now: Date = new Date(),
-  deps: { allCards: () => Promise<SkillCard[]>; recordBulk: (e: Evidence[], now: Date) => Promise<unknown> } = {
-    allCards: () => learnerService.allCards(),
+  deps: { ledger: (now: Date) => Promise<Ledger>; recordBulk: (e: Evidence[], now: Date) => Promise<unknown> } = {
+    ledger: (n) => learnerService.ledger(n),
     recordBulk: (e, n) => learnerService.recordBulk(e, n),
   },
 ): Promise<number> {
-  const cards = await deps.allCards();
-  const has = new Set(cards.filter((c) => c.state !== 'unseen').map((c) => `${c.item.kind}:${c.item.id}|${c.skill}`));
+  const ledger = await deps.ledger(now);
   const events: Evidence[] = [];
-  for (const c of cards) {
+  for (const c of ledger.cards) {
     if (c.skill !== 'recognition' || c.item.kind !== 'word') continue;
-    const key = `${c.item.kind}:${c.item.id}`;
-    const p = productionUnlockFor(c, has.has(`${key}|production`), now);
+    const p = productionUnlockFor(c, ledger.hasMetCard(c.item, 'production'), now);
     if (p) events.push(p);
-    const r = readingUnlockFor(c, has.has(`${key}|reading`), now);
+    const r = readingUnlockFor(c, ledger.hasMetCard(c.item, 'reading'), now);
     if (r) events.push(r);
   }
   if (events.length > 0) await deps.recordBulk(events, now);

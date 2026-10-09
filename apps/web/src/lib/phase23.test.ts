@@ -8,7 +8,7 @@ import { sanitizeReviewSettings } from './review-settings.js';
 
 let db: AnanDB;
 let service: LearnerService;
-const deps = () => ({ allCards: () => service.allCards(), recordBulk: (e: Evidence[], n: Date) => service.recordBulk(e, n) });
+const deps = () => ({ ledger: (n: Date) => service.ledger(n), recordBulk: (e: Evidence[], n: Date) => service.recordBulk(e, n) });
 
 beforeEach(() => {
   db = new AnanDB(`anan-test-${Math.random()}`);

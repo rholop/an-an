@@ -3,18 +3,38 @@
 // Every tab, count and validator imports from here (an architecture test enforces it).
 // Pure functions; time is always injected.
 
-import { isActiveCard } from '../learner/review-pile.js';
 import type { SkillCard } from '../learner/types.js';
 import type { Level } from '../levels.config.js';
 import type { Lesson } from '../textbook/types.js';
-import type { Evidence, ItemRef, Skill, Word } from '../types.js';
+import { State, type Card, type FSRS } from 'ts-fsrs';
+import type { Evidence, ItemRef, ItemState, Skill, Word } from '../types.js';
 import { PROGRESS_CONFIG, type ProgressConfig } from './progress.config.js';
 import { DEFAULT_SESSION_SETTINGS, zonedDay } from './review-sessions.js';
 
 export const itemKeyOf = (i: ItemRef): string => `${i.kind}:${i.id}`;
 
+/** Phase 29 Part B.9: an FSRS card's game state (introduced → learning → review → mature). The
+ * scheduler stores it on every answer; `mature` is decided here, from `PROGRESS_CONFIG`. There is
+ * no FSRS state for "unseen": that is the absence of a card. */
+export function itemStateOf(card: Pick<Card, 'state' | 'stability'>, cfg: Pick<ProgressConfig, 'matureStabilityDays'> = PROGRESS_CONFIG): ItemState {
+  switch (card.state) {
+    case State.Learning:
+    case State.Relearning:
+      return 'learning';
+    case State.Review:
+      return card.stability >= cfg.matureStabilityDays ? 'mature' : 'review';
+    default:
+      return 'introduced';
+  }
+}
+
 // ---------------------------------------------------------------------------------------------
 // Card-level terms
+
+/** Phase 20: a card still in review (not removed by Nope "Not now" / "Never show"). */
+export function isActiveCard(c: Pick<SkillCard, 'flags'>): boolean {
+  return !c.flags.excluded && !c.flags.snoozed;
+}
 
 /** Anki import / placement test seeds: the card starts in review without a real answer. */
 export function isSeeded(c: Pick<SkillCard, 'flags'>): boolean {
@@ -36,10 +56,7 @@ export function isInReview(c: Pick<SkillCard, 'state'>): boolean {
   return c.state === 'review' || c.state === 'mature';
 }
 
-/** FSRS is still drilling it (first steps or after a lapse). */
-export function isLearningState(c: Pick<SkillCard, 'state'>): boolean {
-  return c.state === 'learning';
-}
+
 
 /** **New**: a card that exists but was never answered (it waits to be met). */
 export function isNewCard(c: Pick<SkillCard, 'state' | 'card'>): boolean {
@@ -51,9 +68,28 @@ export function isDueCard(c: Pick<SkillCard, 'state' | 'card' | 'flags'>, now: D
   return c.state !== 'unseen' && c.card.reps > 0 && c.card.due.getTime() <= now.getTime() && isActiveCard(c);
 }
 
+/** Days an answered card was overdue at `at` (0 for a New or unseen card, or one not yet due). */
+export function overdueDaysAt(c: Pick<SkillCard, 'state' | 'card'> | undefined, at: Date): number {
+  if (!c || c.state === 'unseen' || c.state === 'introduced') return 0;
+  return Math.max(0, (at.getTime() - new Date(c.card.due).getTime()) / 86_400_000);
+}
+
 /** Answered at least once and not removed by Nope: the card takes part in review sessions. */
 export function isScheduledCard(c: Pick<SkillCard, 'state' | 'card' | 'flags'>): boolean {
   return c.state !== 'unseen' && c.card.reps > 0 && isActiveCard(c);
+}
+
+/** FSRS R(t) in [0,1], or null for a card never answered (a seed has no memory to decay yet, so it
+ * can't wilt). */
+export function retrievabilityOf(card: SkillCard, now: Date, fsrsInstance: FSRS): number | null {
+  if (card.card.state === State.New || card.card.reps === 0) return null;
+  return fsrsInstance.get_retrievability(card.card, now, false);
+}
+
+/** The scheduler's own clock: FSRS has this card due at `now` (only the scheduler reads it; every
+ * screen uses the review session instead). */
+export function fsrsDue(c: Pick<SkillCard, 'card'>, now: Date): boolean {
+  return new Date(c.card.due).getTime() <= now.getTime();
 }
 
 /** Phase 23 **Due** in a session: scheduled, and due before the session's cutoff (the morning session
@@ -88,6 +124,12 @@ export const isDueListening = (c: Pick<SkillCard, 'card'>, now: Date): boolean =
 /** Listening "strong". */
 export const isStrongListening = (c: Pick<SkillCard, 'card'>, cfg: ProgressConfig = PROGRESS_CONFIG): boolean =>
   c.card.reps > 0 && c.card.stability >= cfg.listeningStrongDays;
+
+/** Phase 23: a production card with no ladder state starts at Recall once it is in review and this
+ * stable (`PROGRESS_CONFIG.recallStabilityDays`); otherwise at Pick. */
+export function startsAtRecall(c: Pick<SkillCard, 'state' | 'card'>, cfg: Pick<ProgressConfig, 'recallStabilityDays'> = PROGRESS_CONFIG): boolean {
+  return isInReview(c) && c.card.stability >= cfg.recallStabilityDays;
+}
 
 /** Pinyin fading: strong enough, and the learner isn't leaning on the reading. */
 export function readingMayFade(
@@ -278,9 +320,19 @@ export class ProgressIndex {
     this.grammarUses = inputs.grammarUses ?? new Map();
   }
 
-  /** Phase 25: a grammar point's correct-use tally (the progress dots). */
+  /**
+   * Phase 25: a grammar point's correct-use tally (the progress dots). Phase 29 Part B.8: the quick
+   * check and the legacy "already known" list count as a full tally, so ●●● and Mastered always agree
+   * (a later wrong use still resets "last correct", as for any tally).
+   */
   grammarUse(id: string): GrammarUse | undefined {
-    return this.grammarUses.get(id);
+    const u = this.grammarUses.get(id);
+    const ref: ItemRef = { kind: 'grammar', id };
+    const vouched = this.legacyKnown(ref) || this.checkedKnown(this.card(ref, 'recognition'));
+    if (!vouched || (u && !u.lastCorrect)) return u;
+    const need = this.cfg.mastered.grammarCorrectUses;
+    if (u && grammarDots(u, this.cfg) >= need) return u;
+    return { correct: need, lastCorrect: true, firstCorrectDay: '0000-01-01', lastCorrectDay: '0000-01-02' };
   }
 
   card(i: ItemRef, skill: 'recognition' | 'production'): SkillCard | undefined {
@@ -331,7 +383,7 @@ export class ProgressIndex {
   learned(i: ItemRef): boolean {
     if (this.legacyKnown(i)) return true;
     if (i.kind === 'grammar') {
-      const u = this.grammarUses.get(i.id);
+      const u = this.grammarUse(i.id);
       if (u && u.correct > 0) return true;
       const r = this.card(i, 'recognition');
       return !!r && isLearnedCard(r);
@@ -341,13 +393,14 @@ export class ProgressIndex {
   }
 
   /** **Mastered**: recognition ≥ 21 d and production ≥ 7 d, not a leech; or passed the check and not
-   * contradicted since. Grammar: 3 correct uses, the last one correct and on a later day than the first (Phase 25). */
+   * contradicted since. Grammar: 3 correct uses (the dots), the last one correct and on a later day
+   * than the first (Phase 25), never a leech (Phase 29). */
   mastered(i: ItemRef): boolean {
     if (i.kind === 'grammar') {
-      const u = this.grammarUses.get(i.id);
-      if (u && u.lastCorrect && grammarDots(u, this.cfg) >= this.cfg.mastered.grammarCorrectUses) return true;
-      if (this.checkedKnown(this.card(i, 'recognition')) && !(u && !u.lastCorrect)) return true;
-      return this.legacyKnown(i);
+      // Phase 29 Part B.8: the dots ARE the rule (●●● ⇔ Mastered), and a leech is never Mastered.
+      if (this.leech(i)) return false;
+      const u = this.grammarUse(i.id);
+      return !!u && u.lastCorrect && grammarDots(u, this.cfg) >= this.cfg.mastered.grammarCorrectUses;
     }
     const r = this.card(i, 'recognition');
     const pr = this.card(i, 'production');
@@ -408,27 +461,6 @@ export class ProgressIndex {
   }
 }
 
-/** Words the learner has Learned (or mastered): the one "known" set every tab uses. */
-export function learnedWordIds(index: ProgressIndex, cards: readonly SkillCard[]): Set<string> {
-  const out = new Set<string>();
-  for (const c of cards) {
-    if (c.item.kind !== 'word' || isPracticeSkill(c.skill)) continue;
-    if (index.learned(c.item)) out.add(c.item.id);
-  }
-  return out;
-}
-
-/**
- * Phase 23 Part C: "Pinyin 80%": the share of Learned words whose reading card (Pinyin & tones) is
- * Learned too. Reading is practice: it never changes Learned or Mastered.
- */
-export function pinyinShare(index: ProgressIndex, cards: readonly SkillCard[]): { share: number; learned: number; withPinyin: number } {
-  const learned = learnedWordIds(index, cards);
-  let withPinyin = 0;
-  for (const c of cards) if (c.skill === 'reading' && c.item.kind === 'word' && learned.has(c.item.id) && isLearnedCard(c)) withPinyin++;
-  return { share: learned.size === 0 ? 0 : withPinyin / learned.size, learned: learned.size, withPinyin };
-}
-
 // ---------------------------------------------------------------------------------------------
 // Comprehensible
 
@@ -437,6 +469,9 @@ export const COMPREHENSIBLE_CLASSES: ReadonlySet<string> = new Set(['known', 'du
 
 /** Word tags that are always fine to show (names, NPC names, particles, fillers). */
 export const ALWAYS_ALLOWED_TAGS: ReadonlySet<string> = new Set(['name', 'npc', 'particle', 'filler']);
+
+/** A word that is always fine to show (one of `ALWAYS_ALLOWED_TAGS`): never counted against a tier. */
+export const isAlwaysAllowedWord = (tags: readonly string[]): boolean => tags.some((t) => ALWAYS_ALLOWED_TAGS.has(t));
 
 export interface WordSets {
   /** Learned (or mastered). */
@@ -449,26 +484,36 @@ export interface WordSets {
   newIds: Set<string>;
 }
 
-/**
- * The one way to turn cards into the known / due / learning sets the validators classify against.
- * Comprehensible = known ∪ due ∪ learning ∪ allowed (names, numbers, particles, punctuation, extras).
- */
-export function wordSets(cards: readonly SkillCard[], now: Date, inputs: Omit<ProgressIndexInputs, 'cards'> = {}): WordSets {
-  const index = new ProgressIndex({ ...inputs, cards });
-  const knownIds = learnedWordIds(index, cards);
-  const dueIds = new Set<string>();
-  const learningIds = new Set<string>();
-  const newIds = new Set<string>();
-  for (const c of cards) {
-    if (c.item.kind !== 'word' || isPracticeSkill(c.skill) || c.state === 'unseen') continue;
-    if (!isActiveCard(c) && !c.flags.markedKnown) continue;
-    const id = c.item.id;
-    if (isDueCard(c, now)) dueIds.add(id);
-    if (knownIds.has(id)) continue;
-    if (isNewCard(c)) newIds.add(id);
-    else learningIds.add(id);
-  }
-  for (const id of learningIds) newIds.delete(id);
-  for (const id of dueIds) newIds.delete(id);
-  return { knownIds, dueIds, learningIds, newIds };
+// ---------------------------------------------------------------------------------------------
+// Phase 29 Part C.2: the last readings of scheduling fields that lived outside core/progress.
+
+const DAY_MS = 86_400_000;
+
+/** Days since the last review relative to the card's stability: higher = more likely forgotten
+ * (the session cap keeps the most likely forgotten first). */
+export function forgetRiskOf(c: Pick<SkillCard, 'card'>, now: Date): number {
+  const last = c.card.last_review ? new Date(c.card.last_review).getTime() : new Date(c.card.due).getTime();
+  const elapsed = Math.max(0, (now.getTime() - last) / DAY_MS);
+  return elapsed / Math.max(c.card.stability, 0.1);
+}
+
+/** The profile-zone day a card is next due ("YYYY-MM-DD"), for the review pile report. */
+export function dueDayOf(c: Pick<SkillCard, 'card'>, timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone): string {
+  return zonedDay(new Date(c.card.due), timeZone);
+}
+
+/** How well a practice card (listening) is known, in stability days: picks its exercise types
+ * (a difficulty ladder, never a progress number). 0 without a card. */
+export function practiceStrengthOf(c: Pick<SkillCard, 'card'> | undefined): number {
+  return c?.card.stability ?? 0;
+}
+
+/** An error-bank item's own drill schedule (a sentence drill, not word progress): due by `now`. */
+export function isDrillDue(card: Pick<Card, 'due'>, now: Date): boolean {
+  return new Date(card.due).getTime() <= now.getTime();
+}
+
+/** Soonest-due first, for error-bank drills. */
+export function byDrillDue(a: Pick<Card, 'due'>, b: Pick<Card, 'due'>): number {
+  return new Date(a.due).getTime() - new Date(b.due).getTime();
 }

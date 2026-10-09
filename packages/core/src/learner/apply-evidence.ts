@@ -5,7 +5,7 @@ import { buildFsrs, computeItemState, emptyCard } from './fsrs-instance.js';
 import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 import { REVIEW_PILE_CONFIG } from './review-pile.config.js';
 import { cardSourceFor } from './review-pile.js';
-import { isInReview } from '../progress/terms.js';
+import { fsrsDue, isInReview, isScheduledCard } from '../progress/terms.js';
 import { nextProductionRung } from '../review/faces.js';
 import {
   DEFAULT_LEARNER_CONFIG,
@@ -40,7 +40,9 @@ function withCard(base: SkillCard, card: Card, now: Date, config: LearnerConfig)
     ...base,
     card,
     state: computeItemState(card, config),
+    // eslint-disable-next-line anan/progress-from-ledger -- scheduler: the item state mirrors the FSRS card it just wrote
     lapses: card.lapses,
+    // eslint-disable-next-line anan/progress-from-ledger -- scheduler: the item state mirrors the FSRS card it just wrote
     leech: card.lapses >= config.leechThreshold,
     updatedAt: now,
   };
@@ -123,8 +125,10 @@ function applyReadNoLookup(
   fsrsInstance: FSRS,
 ): ModelUpdate {
   if (!current) return { card: undefined, appliedEffect: 'ignored:unseen-weak-signal' };
+  // Phase 29 Part B.11: a New (never answered) or Nope'd card never gets read credit.
+  if (!isScheduledCard(current)) return { card: undefined, appliedEffect: 'ignored:not-scheduled' };
 
-  const isDue = current.card.due <= now;
+  const isDue = fsrsDue(current, now);
   const nextFamiliarity = current.familiarity + 1;
 
   if (isDue && nextFamiliarity >= config.readNoLookupGoodThreshold) {
@@ -192,6 +196,9 @@ function applyNope(current: SkillCard | undefined, evidence: Evidence, now: Date
   const card: Card = {
     ...current.card,
     state: State.Review,
+    // a New card has no difficulty yet (0 is an invalid FSRS memory state): start it mid-range
+    difficulty: current.card.difficulty || 5,
+    // eslint-disable-next-line anan/progress-from-ledger -- scheduler: "I already know it" writes a long stability
     stability: Math.max(current.card.stability, days),
     scheduled_days: days,
     due: new Date(now.getTime() + days * 86_400_000),
@@ -200,6 +207,7 @@ function applyNope(current: SkillCard | undefined, evidence: Evidence, now: Date
   return {
     card: {
       ...withCard(current, card, now, config),
+      // eslint-disable-next-line anan/progress-from-ledger -- scheduler: keeps the lapse count it stores
       lapses: current.lapses,
       leech: current.leech,
       flags: { ...flags, markedKnown: true, markedKnownAt: now },
@@ -309,9 +317,11 @@ function applyKnownCheck(current: SkillCard | undefined, evidence: Evidence, now
   const card: Card = {
     ...base.card,
     state: State.Review,
+    // eslint-disable-next-line anan/progress-from-ledger -- scheduler: the known check writes a long stability
     stability: Math.max(base.card.stability, days),
     difficulty: base.card.difficulty || 5,
     scheduled_days: days,
+    // eslint-disable-next-line anan/progress-from-ledger -- scheduler: the known check counts as one answer
     reps: Math.max(base.card.reps, 1),
     due: new Date(now.getTime() + days * 86_400_000),
     last_review: now,
@@ -319,8 +329,10 @@ function applyKnownCheck(current: SkillCard | undefined, evidence: Evidence, now
   return {
     card: {
       ...withCard(base, card, now, config),
+      // eslint-disable-next-line anan/progress-from-ledger -- scheduler: keeps the lapse count it stores
       lapses: base.lapses,
       leech: base.leech,
+      // eslint-disable-next-line anan/progress-from-ledger -- scheduler: keeps the lapse count it stores
       flags: { ...base.flags, knownChecked: true, knownCheckedAt: now, knownCheckLapses: base.lapses },
     },
     appliedEffect: 'known-check',
@@ -329,6 +341,7 @@ function applyKnownCheck(current: SkillCard | undefined, evidence: Evidence, now
 
 /** Phase 21 production_unlocked / listening_unlocked (Phase 23: reading_unlocked): create the card (New, due now) if missing. */
 function applyUnlock(current: SkillCard | undefined, evidence: Evidence, now: Date): ModelUpdate {
+  // eslint-disable-next-line anan/progress-from-ledger -- persistence: an unlock only creates a missing card
   if (current && current.state !== 'unseen') return { card: undefined, appliedEffect: 'ignored:already-carded' };
   const base = blankSkillCard(evidence, emptyCard(now), now);
   return { card: { ...base, state: 'introduced' }, appliedEffect: `introduce (${evidence.skill})` };
@@ -361,6 +374,7 @@ function applyUndo(current: SkillCard | undefined, evidence: Evidence, now: Date
     };
   }
   return {
+    // eslint-disable-next-line anan/progress-from-ledger -- persistence: undo restores the stored card (dates revived)
     card: { ...restore, card: { ...restore.card, due: new Date(restore.card.due), ...(restore.card.last_review ? { last_review: new Date(restore.card.last_review) } : {}) }, updatedAt: now },
     appliedEffect: 'undo:restored',
   };
@@ -393,6 +407,7 @@ function applyReviewAnswer(
   };
 }
 
+// eslint-disable-next-line anan/progress-from-ledger -- persistence: an unlock only creates a missing card
 const carded = (c: SkillCard | undefined): boolean => !!c && c.state !== 'unseen';
 const keep = (): ModelUpdate => ({ card: undefined, appliedEffect: 'ignored:already-carded' });
 

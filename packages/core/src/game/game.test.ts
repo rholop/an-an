@@ -7,16 +7,10 @@ import type { Scenario } from '../chat/scenario.js';
 import { buildFixtureLexicon } from '../test-fixtures/lexicon-fixture.js';
 import type { Evidence } from '../types.js';
 import { analyzeText } from '../validate/turn.js';
-import {
-  buildPlants,
-  groupPlots,
-  growthStage,
-  retrievabilityOf,
-  wiltFor,
-  wiltingCards,
-} from './garden.js';
+import { buildPlants, groupPlots, retrievabilityOf, wiltFor, wiltingCards } from './garden.js';
 import { actualRetention, scenarioMetrics } from './metrics.js';
-import { REWARD_TABLE, rewardsForEvidence, makeReward, totalPoints, dayKey } from './rewards.js';
+import { REWARD_TABLE, rewardsForEvidence, makeReward, totalPoints } from './rewards.js';
+import { dayKey as zoneDayKey } from '../progress/time.js';
 import {
   bestStars,
   buildScenarioMap,
@@ -28,10 +22,17 @@ import {
   type ConversationRecord,
 } from './scenario-progress.js';
 import { computeStreak, weeklySummary } from './streak.js';
+import { parkShortStep } from '../progress/sitting.js';
+import { buildLedger } from '../progress/ledger.js';
+import { DEFAULT_SESSION_SETTINGS } from '../progress/review-sessions.js';
 
 const lexicon = buildFixtureLexicon();
 const fsrs = buildFsrs(DEFAULT_LEARNER_CONFIG);
 const day = (n: number, h = 12) => new Date(2026, 2, n, h);
+/** Phase 29: plants are watered from the ledger (what needs water = this review session's cards). */
+const ledgerAt = (cards: SkillCard[], now: Date) =>
+  buildLedger({ cards, evidence: [], knownItems: [], session: DEFAULT_SESSION_SETTINGS, masteryShare: 0.9, now });
+const dayKey = (d: Date) => zoneDayKey(d, DEFAULT_SESSION_SETTINGS.timeZone);
 
 function reviewed(wordHeadword: string, reviewedAt: Date, grades = 1): SkillCard {
   const word = lexicon.lookup(wordHeadword)[0]!;
@@ -137,12 +138,6 @@ describe('reward table', () => {
 });
 
 describe('garden', () => {
-  it('maps item state to growth stage', () => {
-    expect(
-      ['unseen', 'introduced', 'learning', 'review', 'mature'].map((s) => growthStage(s as never)),
-    ).toEqual([null, 'seed', 'sprout', 'plant', 'bloom']);
-  });
-
   it('wiltFor: healthy at/above target, wilting below, withered far below (table)', () => {
     const cases: [number | null, string][] = [
       [null, 'healthy'], // never reviewed: a seed can't wilt
@@ -180,17 +175,11 @@ describe('garden', () => {
     const rec = reviewed('我', day(1), 3);
     const wordId = rec.item.id;
     const prod: SkillCard = { ...reviewed('我', day(1)), skill: 'production' };
-    const plants = buildPlants(
-      [rec, prod],
-      lexicon,
-      new Date(rec.card.due.getTime() + 30 * 86_400_000),
-      fsrs,
-    );
+    const at = new Date(rec.card.due.getTime() + 30 * 86_400_000);
+    const plants = buildPlants(ledgerAt([rec, prod], at), lexicon, fsrs);
     expect(plants).toHaveLength(1);
-    expect(plants[0]).toMatchObject({
-      wordId,
-      stage: growthStage(rec.state) === 'bloom' ? 'bloom' : growthStage(rec.state),
-    });
+    // the stage is the word's shared term: recognition Learned, production not strong yet → plant
+    expect(plants[0]).toMatchObject({ wordId, stage: 'plant' });
     expect(plants[0]!.wilt).not.toBe('healthy');
     expect(plants[0]!.retrievability).toBe(
       Math.min(
@@ -215,15 +204,19 @@ describe('garden', () => {
   it('groups plants into scenario plots plus level plots, and lists wilting cards for focus review', () => {
     const later = new Date(2026, 6, 1);
     const cards = ['咖啡', '我', '捷運'].map((hw) => reviewed(hw, day(1)));
-    const plants = buildPlants(cards, lexicon, later, fsrs);
+    const plants = buildPlants(ledgerAt(cards, later), lexicon, fsrs);
     const plots = groupPlots(plants, [scenario('cafe', ['咖啡', '捷運'])], lexicon);
     expect(plots.map((p) => p.id)).toEqual(['scenario:cafe', 'level:other']);
     expect(plots[0]!.plants.map((p) => p.headword).sort()).toEqual(['咖啡', '捷運']);
     expect(plots[0]!.wiltingCount).toBe(2);
     expect(wiltingCards(plots[0]!)).toHaveLength(2);
-    // Phase 21: "needs water" = a Due card; just after the review nothing is due yet.
-    const healthy = buildPlants(cards, lexicon, new Date(day(1, 12).getTime() + 5 * 60_000), fsrs);
+    // Phase 27: "needs water" = a card in this session; just after the review the short step waits
+    // for the next session, so nothing needs water yet.
+    const soon = new Date(day(1, 12).getTime() + 5 * 60_000);
+    const parked = cards.map((c) => parkShortStep(c, day(1, 12)));
+    const healthy = buildPlants(ledgerAt(parked, soon), lexicon, fsrs);
     expect(wiltingCards(groupPlots(healthy, [], lexicon)[0]!)).toEqual([]);
+    expect(healthy.every((p) => p.nextSession === 'evening')).toBe(true);
     // "Water N words" opens exactly the due cards
     expect(wiltingCards(plots[0]!).every((c) => c.card.due <= later)).toBe(true);
   });
@@ -354,7 +347,7 @@ describe('streaks', () => {
     expect(DEFAULT_STREAK_CONFIG.enabled).toBe(false);
   });
 
-  it('summarises the last 7 days only', () => {
+  it('summarises this week only: Monday to Sunday in the profile time zone (Phase 29)', () => {
     const e = (kind: string, points: number, d: number) => ({ kind, points, at: day(d) });
     const s = weeklySummary(
       [
@@ -366,16 +359,17 @@ describe('streaks', () => {
         e('self_correction', 4, 3),
         e('recall_correct', 2, 2),
       ],
-      day(10),
+      day(10), // Tuesday 10 March 2026: the week is Monday 9 – Sunday 15
     );
     expect(s).toMatchObject({
-      points: 24,
-      activeDays: 3,
+      points: 14,
+      activeDays: 2,
       wordsRecalled: 2,
       journalEntries: 1,
-      scenariosCompleted: 1,
+      scenariosCompleted: 0,
       mistakesFixed: 1,
     });
+    expect(dayKey(s.from)).toBe('2026-03-09');
   });
 });
 

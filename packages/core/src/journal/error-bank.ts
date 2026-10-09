@@ -8,6 +8,7 @@ import {
   type ClozeCheckOptions,
 } from '../cloze/check-journal-cloze.js';
 import { blockErrorItem, isShowableErrorItem } from '../cloze/report.js';
+import { byDrillDue, isDrillDue } from '../progress/terms.js';
 import type { ErrorItem, Span } from './types.js';
 
 /** Where the blank sits in `corrected`. Items built with other corrections in
@@ -130,7 +131,7 @@ export function selectDueErrorItems(
     return c >= RECURRING_PATTERN_MIN ? c : 0;
   };
   return items
-    .filter((i) => isShowableErrorItem(i) && i.card.due <= now)
-    .sort((a, b) => weight(b) - weight(a) || a.card.due.getTime() - b.card.due.getTime())
+    .filter((i) => isShowableErrorItem(i) && isDrillDue(i.card, now))
+    .sort((a, b) => weight(b) - weight(a) || byDrillDue(a.card, b.card))
     .slice(0, limit);
 }

@@ -77,19 +77,21 @@ export function ReviewCard({
   const meaningLesson = glossLesson ?? (lesson ? { bookId: lesson.bookId, n: lesson.n } : undefined);
   const gloss = word ? glossFor(word, meaningLesson ? { lesson: meaningLesson } : {}) : '';
   const reading = word ? readingText(word, script) : '';
+  // a seed that changes with every answer (the options reshuffle each time the card comes back)
+  const answeredAt = new Date(card.updatedAt).getTime();
   const options = useMemo(() => {
     if (!word || !confusables || card.skill !== 'production') return null;
     const picks = confusables.index.pick(word, {
-      seed: `${card.item.id}|${card.card.reps}`,
+      seed: `${card.item.id}|${answeredAt}`,
       preferred: confusables.preferred,
       ...(confusables.confusions.get(word.id) ? { confusedWith: confusables.confusions.get(word.id)! } : {}),
     });
-    return picks.length >= 3 ? shuffleIn(word, picks.slice(0, 3), `pick|${card.card.reps}`) : null;
+    return picks.length >= 3 ? shuffleIn(word, picks.slice(0, 3), `pick|${answeredAt}`) : null;
   }, [word, confusables, card]);
   let face = grammar ? 'grammar' : reviewFace(card);
   if (face === 'pick' && !options) face = 'recall';
   // Phase 25 B7: a grammar card is one exercise from the lesson step's builders (else the flip card).
-  const grammarEx = useSingleGrammarExercise(grammar?.id, lexicon, `${card.item.id}|${card.card.reps}`);
+  const grammarEx = useSingleGrammarExercise(grammar?.id, lexicon, `${card.item.id}|${answeredAt}`);
 
   return (
     <div className={`review-card review-card--${face}`} data-testid="review-card" data-face={face}>

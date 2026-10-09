@@ -4,8 +4,9 @@ import {
   buildPlants,
   buildScenarioMap,
   coverageContext,
-  currentFrontierLevel,
   DEFAULT_LEARNER_CONFIG,
+  DEFAULT_STUDY_SETTINGS,
+  isPracticeSkill,
   groupPlots,
   scenarioCorpus,
   scenarioCoverage,
@@ -17,11 +18,12 @@ import {
   type Scenario,
   type ScenarioCoverage,
   type ScenarioNode,
-  ProgressIndex,
+  type Ledger,
+  type ReviewStatus,
   type SkillCard,
-  wordSets,
 } from '@anan/core';
-import { allTouchedCards } from '../db/queries.js';
+import { db as appDb } from '../db/instance.js';
+import { getLedgerNow, ledgerFrom } from './ledger.js';
 import { peekStudySettings } from './study.js';
 import { readTargetRetention } from './retention.js';
 import type { AnanDB, RewardRow } from '../db/schema.js';
@@ -57,6 +59,8 @@ export interface GameSnapshot {
   coverage: Map<string, ScenarioCoverage>;
   plants: Plant[];
   plots: Plot[];
+  /** Phase 27: the review status the plants were watered from (header, plot buttons). */
+  status: ReviewStatus;
   conversations: StoredConversation[];
   rewards: RewardRow[];
 }
@@ -76,8 +80,16 @@ export async function loadGameSnapshot(
   /** Phase 7: the learner's chosen level; falls back to the derived frontier. */
   chosenLevel?: Level,
 ): Promise<GameSnapshot> {
-  const [cards, conversations, rewardRows, convRows, turns, retention] = await Promise.all([
-    allTouchedCards(db),
+  // Phase 29: one ledger (the app's own; a test database gets its own).
+  const ledgerP: Promise<Ledger> =
+    db === appDb
+      ? getLedgerNow(now)
+      : ledgerFrom(db, now, {
+          knownItems: peekStudySettings().knownItems,
+          study: { lexicon, books: [], settings: { ...DEFAULT_STUDY_SETTINGS, enabled: false } },
+        });
+  const [ledger, conversations, rewardRows, convRows, turns, retention] = await Promise.all([
+    ledgerP,
     conversationRecords(db),
     db.rewardEvents.orderBy('at').toArray(),
     db.conversations.toArray(),
@@ -86,10 +98,10 @@ export async function loadGameSnapshot(
   ]);
   const rewards = activeRewards(rewardRows) as RewardRow[];
 
-  const recognition = cards.filter((c) => c.skill === 'recognition');
-  const frontier = chosenLevel ?? currentFrontierLevel(lexicon.allWords(), recognition);
-  // One "comprehensible" definition (the chat validator's): Learned ∪ due ∪ learning ∪ allowed.
-  const sets = wordSets(cards, now, { knownItems: peekStudySettings().knownItems });
+  const cards = ledger.metCards().filter((c) => !isPracticeSkill(c.skill));
+  const frontier = chosenLevel ?? ledger.frontierLevel();
+  // One "comprehensible" definition (the chat validator's): Learned ∪ in session ∪ learning.
+  const sets = ledger.comprehensible();
   const ctx = coverageContext(lexicon, frontier, sets.knownIds, sets.learningIds, sets.dueIds);
 
   const scenarioByConv = new Map(convRows.map((c) => [c.id!, c.scenarioId]));
@@ -108,15 +120,9 @@ export async function loadGameSnapshot(
   }
 
   const fsrs = buildFsrs({ ...DEFAULT_LEARNER_CONFIG, requestRetention: retention });
-  const plants = buildPlants(
-    cards,
-    lexicon,
-    now,
-    fsrs,
-    { targetRetention: retention, witheredMargin: 0.2 },
-    // the same Learned / Mastered as every tab (plants are words, so grammar uses don't matter here)
-    new ProgressIndex({ cards, knownItems: peekStudySettings().knownItems }),
-  );
+  // Phase 29: one watering rule: a plant needs water when a card is in this review session.
+  const plants = buildPlants(ledger, lexicon, fsrs, { targetRetention: retention, witheredMargin: 0.2 });
+  const status = ledger.status;
   return {
     frontier,
     cards,
@@ -124,6 +130,7 @@ export async function loadGameSnapshot(
     coverage,
     plants,
     plots: groupPlots(plants, scenarios, lexicon),
+    status,
     conversations,
     rewards,
   };

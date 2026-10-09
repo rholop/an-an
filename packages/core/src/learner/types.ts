@@ -1,6 +1,5 @@
 import type { Card } from 'ts-fsrs';
 import type { Evidence, ItemRef, ItemState, Level, Skill } from '../types.js';
-import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 
 /** Phase 20: how a card came to exist (backfilled from the evidence log for older cards). */
 export type CardSource =
@@ -82,6 +81,9 @@ export interface SkillCard {
     /** Where the learner was when they snoozed it (it wakes when that changes to the word's own). */
     snoozedWhen?: { level?: Level; lessonId?: string };
   };
+  /** Phase 27: while the card is in a short FSRS step, the step's own due time; `card.due` is then the
+   * start of the next review session (see `progress/sitting.ts`). */
+  stepDue?: Date;
   /** Phase 20: how the card was created. Absent on cards from before Phase 20 until backfilled. */
   source?: CardSource;
   updatedAt: Date;
@@ -90,8 +92,6 @@ export interface SkillCard {
 export interface LearnerConfig {
   /** FSRS target retention, 0.85–0.90 per CLAUDE.md, user-configurable. */
   requestRetention: number;
-  /** Stability (days) at/above which a card is considered "mature". */
-  matureStabilityDays: number;
   /** Lapses at/above which a card is flagged a leech. */
   leechThreshold: number;
   /** chat_read_no_lookup requires this many occurrences (while due) before
@@ -110,7 +110,6 @@ export interface LearnerConfig {
 
 export const DEFAULT_LEARNER_CONFIG: LearnerConfig = {
   requestRetention: 0.9,
-  matureStabilityDays: PROGRESS_CONFIG.matureStabilityDays,
   leechThreshold: 4,
   readNoLookupGoodThreshold: 2,
   familiarityStep: 0.25,
@@ -133,7 +132,6 @@ export interface LearnerRepo {
   getCard(item: ItemRef, skill: Skill): Promise<SkillCard | undefined>;
   putCards(cards: SkillCard[]): Promise<void>;
   appendEvidence(e: Evidence[]): Promise<void>;
-  dueCards(now: Date, limit: number): Promise<SkillCard[]>;
-  /** Every card (Phase 21: "known" is decided by the shared terms in progress/, not by the repo). */
+  /** Every card (Phase 29: due, new and known are decided by the progress ledger, never by the repo). */
   allCards(): Promise<SkillCard[]>;
 }

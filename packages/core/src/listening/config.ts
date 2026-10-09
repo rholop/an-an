@@ -2,8 +2,6 @@
 export const LISTENING_CONFIG = {
   /** Exercises in a "Listen" session (10–15). */
   sessionSize: 12,
-  /** New listening cards a session may start (the rest are due cards). */
-  maxNewPerSession: 4,
   /** Share of normal review/cloze sessions replaced by a listening exercise once an item has a listening card. */
   mixShare: 0.2,
   /** Correct after this many replays (or at slow speed) counts as Hard. */

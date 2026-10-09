@@ -1,4 +1,4 @@
-import type { LoadedReviewStatus } from '../lib/review-status.js';
+import type { Ledger } from '@anan/core';
 import {
   ALL_WATERED,
   forecastDayLabel,
@@ -10,7 +10,6 @@ import {
   sessionLine,
   waterAllLabel,
 } from '../lib/labels.js';
-import { todayIn } from '@anan/core';
 import { DueIcon } from './PlantIcons.js';
 import './DueForecast.css';
 
@@ -21,18 +20,18 @@ import './DueForecast.css';
  * line saying when the next session opens, with "Review early" to start it now.
  */
 export function HomeReviewActions({
-  loaded,
+  ledger,
   onWaterAll,
   onReviewAll,
   onReviewEarly,
 }: {
-  loaded: LoadedReviewStatus | null;
+  ledger: Ledger | undefined;
   onWaterAll: () => void;
   onReviewAll: () => void;
   onReviewEarly: () => void;
 }) {
-  if (!loaded) return <div className="home-actions home-actions--loading" aria-busy="true" />;
-  const s = loaded.status;
+  if (!ledger) return <div className="home-actions home-actions--loading" aria-busy="true" />;
+  const s = ledger.status;
   if (s.sessionCards === 0) {
     const next = s.nextSession;
     return (
@@ -80,11 +79,12 @@ export function HomeReviewActions({
 
 /** Phase 20/22/23 (Home): this review session (or when the next opens), the new-word line, and a
  * 7-day forecast with two bars a day, morning and evening. */
-export function DueForecast({ loaded }: { loaded: LoadedReviewStatus | null }) {
-  if (!loaded) return null;
-  const { status: s, forecast: days, settings } = loaded;
+export function DueForecast({ ledger }: { ledger: Ledger | undefined }) {
+  if (!ledger) return null;
+  const s = ledger.status;
+  const days = ledger.forecast(7);
   const max = Math.max(1, ...days.flatMap((d) => [d.morning, d.evening]));
-  const today = todayIn(new Date(), settings);
+  const today = ledger.dayKey();
   const cap = s.cap;
   return (
     <section className="due-forecast" data-testid="due-forecast" aria-label="Reviews due">

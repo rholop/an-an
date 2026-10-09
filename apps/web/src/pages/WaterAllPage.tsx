@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { isDueListening } from '@anan/core';
 import {
   describePlanItem,
   describeSkillCard,
@@ -9,8 +8,8 @@ import {
   placeExtras,
   planListenSession,
   planWaterAll,
-  ProgressIndex,
-  requeueAgain,
+  requeueInSitting,
+  stepInSitting,
   selectClozeSource,
   waterAllCards,
   wateredWordCount,
@@ -33,7 +32,7 @@ import { useCurrentLevel } from '../lib/current-level.js';
 import { NOTHING_DUE, UNDO, wateredSummary } from '../lib/labels.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { useAnswerInputMode, useReadingSettings } from '../lib/reading.js';
-import { loadSessionCards } from '../lib/review-status.js';
+import { getLedgerNow } from '../lib/ledger.js';
 import { useSaveWhenDone } from '../lib/save-progress.js';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -82,22 +81,18 @@ export function WaterAllPage({ onExit }: { onExit: () => void }) {
     (async () => {
       const now = new Date();
       const lexicon = lexiconState.lexicon;
-      const [all, inSession, sets, chat, ex] = await Promise.all([
-        learnerService.allCards(),
-        loadSessionCards(now),
-        learnerService.wordSets(now),
+      const [ledger, chat, ex] = await Promise.all([
+        getLedgerNow(now),
         allChatLines(db, scenariosState.scenarios),
         excludedZh(db),
       ]);
       const journal = await allJournalSentences(db, ex);
-      const cards = waterAllCards(inSession.cards, (id) => Boolean(lexicon.byId(id)));
-      const index = new ProgressIndex({ cards: all });
-      const learnedBefore = new Set(
-        cards.filter((c) => index.learned(c.item)).map((c) => c.item.id),
-      );
+      // Phase 29: this review session's cards, and Learned from the ledger.
+      const cards = waterAllCards(ledger.session().cards, (id) => Boolean(lexicon.byId(id)));
+      const learnedBefore = new Set(cards.filter((c) => ledger.learned(c.item)).map((c) => c.item.id));
       if (cancelled) return;
       setDue(cards);
-      setSources({ knownIds: sets.knownIds, chat, journal, excluded: ex, learnedBefore });
+      setSources({ knownIds: ledger.comprehensible().ids, chat, journal, excluded: ex, learnedBefore });
     })();
     return () => {
       cancelled = true;
@@ -173,7 +168,6 @@ function WaterSession({
   const watered = useRef(new Set<string>());
   // the last answer being written (the summary waits for it)
   const pending = useRef<Promise<unknown>>(Promise.resolve());
-  const requeued = useRef(new Set<Entry>());
   const [last, setLast] = useState<{
     undo: () => Promise<void>;
     entries: Entry[];
@@ -201,7 +195,8 @@ function WaterSession({
     (async () => {
       const now = new Date();
       const listening = await ensureListeningCards(clips.hasClip, now);
-      const practised = listening.filter((c) => isDueListening(c, now) && words.has(c.item.id));
+      // Phase 29 Part B.2: listening extras come from listening's own queue (the ledger's).
+      const practised = (await getLedgerNow(now)).practice('listening').due.filter((c) => words.has(c.item.id));
       const n = Math.min(practised.length, Math.round(entries.length * LISTENING_CONFIG.mixShare));
       if (n <= 0) return;
       const plan = planListenSession({
@@ -211,6 +206,7 @@ function WaterSession({
         hasClip: clips.hasClip,
         sentences: [],
         size: n,
+        newAllowed: 0,
         seed,
       });
       const placed = placeExtras(entries, plan, describeEntry, describePlanItem);
@@ -233,12 +229,12 @@ function WaterSession({
     let cancelled = false;
     void pending.current
       .catch(() => undefined)
-      .then(() => learnerService.allCards())
-      .then((all) => {
+      .then(() => getLedgerNow())
+      .then((ledger) => {
         if (cancelled) return;
-        const index = new ProgressIndex({ cards: all });
+        // Phase 29 Part B.6: "perked up" = became Learned (the ledger's Learned).
         const perked = [...watered.current].filter(
-          (id) => !learnedBefore.has(id) && index.learned({ kind: 'word', id }),
+          (id) => !learnedBefore.has(id) && ledger.learned({ kind: 'word', id }),
         ).length;
         setSummary({ words: watered.current.size, perked });
       });
@@ -247,7 +243,7 @@ function WaterSession({
     };
   }, [entry, listenNow, summary, learnedBefore]);
 
-  async function answer(e: Entry, evidence: Evidence, ok: boolean, again: boolean) {
+  async function answer(e: Entry, evidence: Evidence, ok: boolean) {
     const before = { entries, index, correct };
     watered.current.add(e.card.item.id);
     const recorded = learnerService.recordUndoable(evidence, evidence.at);
@@ -262,12 +258,13 @@ function WaterSession({
       setPulse((p) => p + 1);
       setCorrect((c) => c + 1);
     }
-    // Again (Phase 19/21): a miss comes back once, away from its siblings.
-    if (again && !requeued.current.has(e)) {
-      requeued.current.add(e);
-      const q = requeueAgain(entries, index, (x: Entry) => describeSkillCard(x.card));
+    // Phase 27 (Phase 19/21): a card still in a short learning step (a miss, or a new word's first
+    // answers) comes back later in this sitting, away from its siblings, until it leaves the step.
+    if (stepInSitting(handle.card, evidence.at)) {
+      const next: Entry = { ...e, card: handle.card! };
+      const q = requeueInSitting(entries, index, (x: Entry) => describeSkillCard(x.card), { replace: next });
       if (q.length !== entries.length) {
-        const at = q.findIndex((c, i) => c !== entries[i]);
+        const at = q.lastIndexOf(next);
         const shift = (k: number) => (k >= at ? k + 1 : k);
         setSlots((m) => new Map([...m].map(([k, v]) => [shift(k), v])));
         setDoneSlots((d) => new Set([...d].map(shift)));
@@ -290,7 +287,6 @@ function WaterSession({
         context: { source: 'review', face: extra.face, ...(extra.pickedId ? { pickedId: extra.pickedId } : {}) },
       },
       grade === 'good' || grade === 'easy',
-      grade === 'again',
     );
     setRevealed(false);
     setIndex((i) => i + 1);
@@ -301,12 +297,10 @@ function WaterSession({
     if (!last) return;
     await last.undo();
     setEntries(last.entries);
-    requeued.current.delete(e);
     await answer(
       e,
       { item: e.card.item, skill: e.card.skill, kind: 'cloze_correct_hint', at: new Date() },
       true,
-      false,
     );
   }
 
@@ -402,7 +396,6 @@ function WaterSession({
                       at: new Date(),
                     },
                     o !== 'wrong',
-                    o === 'wrong',
                   )
                 }
                 onMineIsRight={() => void mineIsRight(entry)}

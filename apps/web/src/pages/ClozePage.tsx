@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { isDueListening } from '@anan/core';
 import {
   isUsableSentence,
   levelIndex,
@@ -55,10 +54,8 @@ import {
 import { ListenRunner } from './ListenPage.js';
 import { NopeButton, NopeToast } from '../components/Nope.js';
 import { nopeWord } from '../lib/nope.js';
-import { useReviewSettings } from '../lib/review-settings.js';
-import { useReviewStatus } from '../lib/review-status.js';
+import { getLedgerNow } from '../lib/ledger.js';
 import { useSaveWhenDone } from '../lib/save-progress.js';
-import { DEFAULT_SESSION_CONFIG, newWordState } from '@anan/core';
 import type { NopeHandle } from '../lib/learner-service.js';
 import type { NopeChoice } from '@anan/core';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
@@ -67,6 +64,8 @@ import {
   itemKey,
   newSessionSeed,
   requeueAgain,
+  requeueInSitting,
+  stepInSitting,
   placeExtras,
   sessionMeta,
   type SessionCard,
@@ -138,6 +137,8 @@ export function ClozePage() {
   const [dueCards, setDueCards] = useState<SkillCard[] | null>(null);
   // Phase 21: New cards (introduced, never answered) come from their own query, picked by the one "new" rule.
   const [newCards, setNewCards] = useState<SkillCard[] | null>(null);
+  // Phase 29 Part B.4: Cloze's share of the one new-word allowance (the ledger's).
+  const [newAllowed, setNewAllowed] = useState(0);
   const [knownIds, setKnownIds] = useState<Set<string> | null>(null);
   const [chatLines, setChatLines] = useState<Awaited<ReturnType<typeof allChatLines>> | null>(null);
   const [journalSentences, setJournalSentences] = useState<JournalSentenceSource[] | null>(null);
@@ -161,7 +162,15 @@ export function ClozePage() {
       }
     >(),
   );
-  // Phase 21: a missed item comes back once later in the session ("Again", as in Review).
+  // Phase 27 (Phase 21 "Again"): a card still in a short learning step (a miss, or a new word's first
+  // answers) comes back later in this sitting until it leaves the step.
+  function requeueStep(replace: SessionEntry): SessionEntry[] | undefined {
+    if (!session) return undefined;
+    const prev = session;
+    setSession(requeueInSitting(session, index, describeClozeEntry, { replace }));
+    return prev;
+  }
+  // Phase 21: a missed error-bank item comes back once later in the session ("Again", as in Review).
   const requeued = useRef(new Set<string>());
   function requeueMissed(entry: SessionEntry): SessionEntry[] | undefined {
     if (!session) return undefined;
@@ -184,10 +193,9 @@ export function ClozePage() {
     (async () => {
       const now = new Date();
       const ex = await excludedZh(db);
-      const [due, fresh, known, lines, journal, errors] = await Promise.all([
-        learnerService.dueCards(now),
-        learnerService.newCards(),
-        learnerService.wordSets(now).then((s) => s.knownIds),
+      // Phase 27: this review session's cards (the one set Home, Garden and the badge count).
+      const [ledger, lines, journal, errors] = await Promise.all([
+        getLedgerNow(now),
         allChatLines(db, scenariosState.scenarios),
         allJournalSentences(db, ex),
         db.errorItems.toArray(),
@@ -197,9 +205,11 @@ export function ClozePage() {
       setJournalSentences(journal);
       setErrorItems(errors);
       // Phase 23: reading cards (pinyin and tones) are practised in Review's Say it and their own tab.
-      setDueCards(due.filter((c) => c.skill !== 'reading'));
-      setNewCards(fresh);
-      setKnownIds(known);
+      setDueCards(ledger.session().cards.filter((c) => c.skill !== 'reading'));
+      setNewCards(ledger.newCards());
+      setNewAllowed(ledger.newAllowance('cloze').allowed);
+      // Phase 29 Part B.10: cloze coverage uses the one comprehensible set.
+      setKnownIds(ledger.comprehensible().ids);
       setChatLines(lines);
     })();
     return () => {
@@ -250,8 +260,6 @@ export function ClozePage() {
   const { script } = useReadingSettings();
 
   const [session, setSession] = useState<SessionEntry[] | null>(null);
-  const reviewSettings = useReviewSettings();
-  const capLeft = useReviewStatus()?.status.capLeft;
   // Phase 20: the last Nope in this session (Undo / Change).
   const [nope, setNope] = useState<{ handle: NopeHandle; item: SkillCard['item']; word: string; prev: SessionEntry[]; prevIndex: number } | null>(null);
   const [index, setIndex] = useState(0);
@@ -308,14 +316,9 @@ export function ClozePage() {
     if (!ready || lexiconState.status !== 'ready' || sentenceBankState.status !== 'ready') return null;
     const now = new Date();
     const seed = newSessionSeed('cloze');
-    // Phase 20/22: no new cards while reviews are backed up or today's cap is used, half while a backlog
-    // builds (the one rule, core `newWordState`, with today's distinct reviews from `reviewStatus`).
-    const allowed = newWordState({
-      dueNow: dueCards!.length,
-      capLeft: capLeft ?? reviewSettings.capPerSession,
-      cap: reviewSettings.capPerSession,
-      baseNew: DEFAULT_SESSION_CONFIG.maxNewItems,
-    }).newAllowed;
+    // Phase 29 Part B.4: no new cards while reviews are backed up or the session's cap is used, half
+    // while a backlog builds (the ledger's one allowance, Cloze's base).
+    const allowed = newAllowed;
     // Phase 21: the one "new" rule (study focus first, then catch-up lessons); cloze is words only.
     const picked = pickNewForSession({
       newCards: newCards!.filter((c) => c.item.kind === 'word' && c.skill !== 'reading'),
@@ -328,7 +331,6 @@ export function ClozePage() {
       .map((i): SkillCard => ({ ...newSessionCard(i, now), state: 'introduced' }));
     const fresh = [...picked.cards, ...freshItems];
     const built = buildMixedSession([...dueCards!, ...fresh], {
-      config: { maxNewItems: fresh.length },
       seed,
       recent: recentShown(),
       lexicon: lexiconState.lexicon,
@@ -349,14 +351,13 @@ export function ClozePage() {
       now,
     });
     return { built, seed };
-  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, reviewSettings.capPerSession, capLeft, learnerLevel]);
+  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, newAllowed, learnerLevel]);
 
   function startSession() {
     if (!planned || lexiconState.status !== 'ready') return;
     const { built, seed } = planned;
     logSessionOrder('cloze', seed, built.length, sessionMeta(built)?.deferred.length ?? 0);
     answered.current.clear();
-    requeued.current.clear();
     sessionRunning.current = true;
     setUndoable(null);
     setSession(built);
@@ -383,9 +384,10 @@ export function ClozePage() {
     // Phase 21: the listening extras follow the study order too.
     const rankOf = (c: (typeof cards)[number]) =>
       studyFocus?.enabled ? studyRank(studyFocus, (i) => lessonIdx.get(`${i.kind}:${i.id}`), c.item) : 0;
-    const practiced = cards
-      .filter((c) => isDueListening(c, now))
-      .map((c, i) => ({ c, i, r: rankOf(c) }))
+    // Phase 29 Part B.2: listening extras come from listening's own queue (the ledger's).
+    const practiced = (await getLedgerNow(now))
+      .practice('listening')
+      .due.map((c, i) => ({ c, i, r: rankOf(c) }))
       .sort((a, b) => a.r - b.r || a.i - b.i)
       .map((x) => x.c);
     const n = Math.min(practiced.length, Math.round(length * LISTENING_CONFIG.mixShare));
@@ -394,6 +396,7 @@ export function ClozePage() {
       lexicon,
       dueListening: practiced,
       newWordIds: [],
+      newAllowed: 0,
       hasClip: clips.hasClip,
       sentences: [],
       size: n,
@@ -414,7 +417,9 @@ export function ClozePage() {
       at: now,
     };
     const handle = await learnerService.recordUndoable(evidence, now);
-    const prevSession = outcome === 'wrong' ? requeueMissed({ kind: 'card', item }) : undefined;
+    const prevSession = stepInSitting(handle.card, now)
+      ? requeueStep({ kind: 'card', item: { ...item, card: handle.card! } })
+      : undefined;
     answered.current.set(index, {
       outcome,
       ...(prevSession ? { prevSession } : {}),

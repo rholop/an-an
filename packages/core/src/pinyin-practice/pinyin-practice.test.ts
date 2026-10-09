@@ -5,6 +5,8 @@ import { applyEvidence } from '../learner/apply-evidence.js';
 import type { SkillCard } from '../learner/types.js';
 import { pinyinToZhuyin, toPinyinNumeric } from '../pinyin.js';
 import type { Word } from '../types.js';
+import { buildLedger } from '../progress/ledger.js';
+import { DEFAULT_SESSION_SETTINGS } from '../progress/review-sessions.js';
 import {
   gradeMatch,
   gradePick,
@@ -199,12 +201,15 @@ describe('planPinyinSession', () => {
     updatedAt: NOW,
   });
   const index = new ConfusableIndex(ALL);
+  /** Phase 29: the reading queue comes from the ledger (session window + Pinyin allowance). */
+  const queueOf = (cards: SkillCard[]) =>
+    buildLedger({ cards, evidence: [], knownItems: [], session: DEFAULT_SESSION_SETTINGS, masteryShare: 0.9, now: NOW }).practice('reading');
   const kinds = (p: PinyinExercise[]) => new Set(p.map((e) => e.kind));
   const words = (p: PinyinExercise[]) => p.flatMap((e) => ('words' in e ? e.words : [e.word]));
 
   it('all seven exercises appear, every word once, up to the session size', () => {
     const cards = ALL.map((x) => reading(x, -1));
-    const plan = planPinyinSession({ readingCards: cards, wordById: (id) => byId.get(id), now: NOW, seed: 's1', confusables: index, preferred: new Set(ALL.map((x) => x.id)) });
+    const plan = planPinyinSession({ queue: queueOf(cards), wordById: (id) => byId.get(id), now: NOW, seed: 's1', confusables: index, preferred: new Set(ALL.map((x) => x.id)) });
     expect(kinds(plan)).toEqual(new Set(['tones', 'match', 'chars', 'type', 'which', 'sort', 'lookalike']));
     const ws = words(plan);
     expect(ws.length).toBe(30);
@@ -214,14 +219,14 @@ describe('planPinyinSession', () => {
   it('the tone-pattern sort leaves out 一, 不 and 3rd + 3rd words', () => {
     const cards = ALL.map((x) => reading(x, -1));
     for (const seed of ['a', 'b', 'c']) {
-      const sort = planPinyinSession({ readingCards: cards, wordById: (id) => byId.get(id), now: NOW, seed, only: ['sort', 'tones'] }).find((e) => e.kind === 'sort');
+      const sort = planPinyinSession({ queue: queueOf(cards), wordById: (id) => byId.get(id), now: NOW, seed, only: ['sort', 'tones'] }).find((e) => e.kind === 'sort');
       expect(sort).toBeDefined();
       const heads = (sort as Extract<PinyinExercise, { kind: 'sort' }>).words.map((x) => x.headword);
       for (const bad of ['不要', '一樣', '一起', '你好']) expect(heads).not.toContain(bad);
     }
   });
 
-  it('due cards first, then trouble words, then at most 10 New ones; nothing not due unless asked', () => {
+  it('cards in this session first, then trouble words, then New ones up to the Pinyin allowance (10); nothing else unless asked', () => {
     const cards = [
       reading(買, -2),
       reading(賣, 48), // not due, no trouble
@@ -229,7 +234,7 @@ describe('planPinyinSession', () => {
       ...[是, 事, 市, 十, 渴, 己, 已, 巳, 末, 未, 學生, 喜歡].map((x) => reading(x, 0, 0)), // 12 New
     ];
     const plan = planPinyinSession({
-      readingCards: cards,
+      queue: queueOf(cards),
       wordById: (id) => byId.get(id),
       now: NOW,
       seed: 'x',
@@ -241,13 +246,13 @@ describe('planPinyinSession', () => {
     expect(ids).toContain(喝.id);
     expect(ids).not.toContain(賣.id);
     expect(ids).toHaveLength(2 + 10);
-    const extra = planPinyinSession({ readingCards: cards, wordById: (id) => byId.get(id), now: NOW, seed: 'x', extra: true, only: ['tones'] });
+    const extra = planPinyinSession({ queue: queueOf(cards), wordById: (id) => byId.get(id), now: NOW, seed: 'x', extra: true, only: ['tones'] });
     expect(words(extra).map((x) => x.id)).toContain(賣.id);
   });
 
   it('Pick the characters offers homophones with one right answer; look-alikes never share the reading', () => {
     const cards = ALL.map((x) => reading(x, -1));
-    const plan = planPinyinSession({ readingCards: cards, wordById: (id) => byId.get(id), now: NOW, seed: 'q', confusables: index, only: ['chars', 'lookalike'] });
+    const plan = planPinyinSession({ queue: queueOf(cards), wordById: (id) => byId.get(id), now: NOW, seed: 'q', confusables: index, only: ['chars', 'lookalike'] });
     for (const e of plan) {
       if (e.kind !== 'chars' && e.kind !== 'lookalike') continue;
       expect(e.options).toHaveLength(4);

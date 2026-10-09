@@ -1,4 +1,3 @@
-import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 import { lessonCoreItems, type LearnedMastered, type ProgressIndex } from '../progress/terms.js';
 import type { ItemRef } from '../types.js';
 import type { Lesson } from './types.js';
@@ -44,7 +43,8 @@ export function lessonProgress(lesson: Lesson, inputs: LessonProgressInputs): Le
   };
 }
 
-/** "Lesson done" = Mastered at the lesson share (the same rule as Home's celebration). */
-export function lessonDone(p: Pick<LearnedMastered, 'masteredShare'>, share: number = PROGRESS_CONFIG.mastered.lessonShare): boolean {
+/** "Lesson done" = Mastered at the learner's lesson share (Settings; the same rule as Now studying
+ * and Home's celebration). Phase 29 Part B.7: no default, so no screen can use another share. */
+export function lessonDone(p: Pick<LearnedMastered, 'masteredShare'>, share: number): boolean {
   return p.masteredShare >= share;
 }

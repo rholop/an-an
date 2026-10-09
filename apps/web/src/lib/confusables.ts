@@ -31,12 +31,12 @@ onSessionChange(() => {
 
 async function loadLearnerSide(lexicon: Lexicon): Promise<Omit<ConfusableContext, 'index'>> {
   const now = new Date();
-  const [sets, picks] = await Promise.all([
-    learnerService.wordSets(now),
+  const [ledger, picks] = await Promise.all([
+    learnerService.ledger(now),
     db.evidence.filter((e) => typeof e.context?.pickedId === 'string').toArray(),
   ]);
   const li = levelIndex(peekCurrentLevel().level);
-  const preferred = new Set<string>([...sets.knownIds, ...sets.dueIds, ...sets.learningIds]);
+  const preferred = new Set<string>(ledger.comprehensible().ids);
   // the current level's words are plausible too (never above it)
   if (li >= 0)
     for (const w of lexicon.allWords() as Word[]) if (w.source === 'tocfl' && w.level && levelIndex(w.level) === li) preferred.add(w.id);

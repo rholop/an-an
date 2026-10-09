@@ -13,7 +13,6 @@ import {
   sessionAt,
   sessionForDue,
   sessionWindows,
-  zonedDay,
   type SessionName,
   type SessionSettings,
   type SessionWindow,
@@ -70,6 +69,12 @@ export interface ReviewStatus {
   /** "Water all (N)": distinct words with a card in this session. */
   thirstyWords: number;
   thirstyWordIds: string[];
+  /** Phase 27: the cards of this session (`sessionCardKey`): the one set that makes a plant thirsty,
+   * fills Water all, a plot's button, the lesson page and the badge. Empty between sessions. */
+  sessionCardKeys: string[];
+  /** Phase 27: the next session's cards and words (faint droplets, "N words in the evening session"). */
+  nextSessionCardKeys: string[];
+  nextSessionWordIds: string[];
   /** New words this session. */
   newState: NewState;
   newMessage?: string;
@@ -119,14 +124,9 @@ export function newWordState(input: {
   return { newState, newAllowed, ...(newMessage ? { newMessage } : {}) };
 }
 
-/** Local midnight after `now` (the end of "today", in the runtime's zone). */
-export function endOfDay(now: Date): Date {
-  const d = new Date(now);
-  d.setHours(24, 0, 0, 0);
-  return d;
-}
-
-const cardKey = (c: Pick<SkillCard, 'item' | 'skill'>) => `${c.item.kind}:${c.item.id}|${c.skill}`;
+/** One card's key in a session ("word:id|skill"). */
+export const sessionCardKey = (c: Pick<SkillCard, 'item' | 'skill'>): string => `${c.item.kind}:${c.item.id}|${c.skill}`;
+const cardKey = sessionCardKey;
 
 /** Distinct cards answered in Review between `since` and `now` (from already-active evidence). */
 export function distinctReviewedSince(evidence: readonly EvidenceLike[], since: Date, now: Date): number {
@@ -138,13 +138,6 @@ export function distinctReviewedSince(evidence: readonly EvidenceLike[], since: 
     seen.add(cardKey(e));
   }
   return seen.size;
-}
-
-/** Distinct cards answered in Review today (local midnight of the runtime's zone). */
-export function distinctReviewedToday(evidence: readonly EvidenceLike[], now: Date): number {
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  return distinctReviewedSince(evidence, start, now);
 }
 
 /** Cards finished since `since`: answered, and the last answer wasn't Again. Learning steps are
@@ -165,6 +158,11 @@ export function finishedSince(evidence: readonly EvidenceLike[], since: Date, no
 /** Cards that take part in sessions: every Review skill (listening is its own queue). */
 const inReviewQueue = (c: SkillCard) => c.skill !== 'listening';
 
+/** A card for a later session: not finished in this count window, or finished and moved to a time
+ * still ahead (an answer that left it in a learning step parks it at the next session's start). */
+const stillAhead = (c: SkillCard, finished: ReadonlySet<string>, now: Date) =>
+  !finished.has(cardKey(c)) || c.card.due.getTime() > now.getTime();
+
 interface SessionInput {
   cards: readonly SkillCard[];
   /** Evidence since `statusEvidenceSince(now)`, undone answers already removed (`activeEvidence`). */
@@ -183,9 +181,10 @@ export function sessionCards(input: SessionInput & { early?: boolean }): { cards
   const window = pos.current ?? (input.early ? pos.next : undefined);
   if (!window) return { cards: [] };
   const finished = finishedSince(input.evidence, countWindowStart(pos), input.now);
-  const cards = input.cards.filter(
-    (c) => inReviewQueue(c) && isDueBefore(c, window.cutoff) && !finished.has(cardKey(c)),
-  );
+  // Review early: a card answered since the last session ended and moved to the next session's start
+  // (a learning step, Phase 27) still belongs to it.
+  const keep = pos.current ? (c: SkillCard) => !finished.has(cardKey(c)) : (c: SkillCard) => stillAhead(c, finished, input.now);
+  const cards = input.cards.filter((c) => inReviewQueue(c) && isDueBefore(c, window.cutoff) && keep(c));
   return { cards, window };
 }
 
@@ -213,9 +212,14 @@ export function reviewStatus(
   const current = pos.current;
   const inCurrent = current ? live.filter((c) => isDueBefore(c, current.cutoff)) : [];
   const thirsty = new Set(inCurrent.filter((c) => c.item.kind === 'word').map((c) => c.item.id));
-  const nextCount = live.filter(
-    (c) => isDueBefore(c, pos.next.cutoff) && !(current && isDueBefore(c, current.cutoff)),
-  ).length;
+  const inNext = input.cards.filter(
+    (c) =>
+      inReviewQueue(c) &&
+      stillAhead(c, finished, now) &&
+      isDueBefore(c, pos.next.cutoff) &&
+      !(current && isDueBefore(c, current.cutoff)),
+  );
+  const nextCount = inNext.length;
   const left = live.filter((c) => isDueBefore(c, pos.previous.endsAt)).length;
 
   const doneThisSession = distinctReviewedSince(input.evidence, since, now);
@@ -240,6 +244,9 @@ export function reviewStatus(
     reviewAll: Math.min(inCurrent.length, capLeft),
     thirstyWords: thirsty.size,
     thirstyWordIds: [...thirsty],
+    sessionCardKeys: inCurrent.map(cardKey),
+    nextSessionCardKeys: inNext.map(cardKey),
+    nextSessionWordIds: [...new Set(inNext.filter((c) => c.item.kind === 'word').map((c) => c.item.id))],
     ...n,
     timeZone: s.timeZone,
   };
@@ -270,7 +277,7 @@ export function sessionForecast(input: SessionInput & { days?: number }): Foreca
   const at = new Map(dayNames.map((d, i) => [d, i]));
   const finished = finishedSince(input.evidence, countWindowStart(pos), now);
   for (const c of input.cards) {
-    if (!inReviewQueue(c) || finished.has(cardKey(c))) continue;
+    if (!inReviewQueue(c) || !stillAhead(c, finished, now)) continue;
     if (!isScheduledCard(c)) continue;
     const w = sessionForDue(c.card.due, now, windows);
     const i = w ? at.get(w.day) : undefined;
@@ -278,6 +285,3 @@ export function sessionForecast(input: SessionInput & { days?: number }): Foreca
   }
   return out;
 }
-
-/** "YYYY-MM-DD" of `now` in the settings' zone (labels compare forecast days to it). */
-export const todayIn = (now: Date, s: SessionSettings = DEFAULT_SESSION_SETTINGS): string => zonedDay(now, s.timeZone);

@@ -167,7 +167,8 @@ describe('scenario tracking in ChatService', () => {
 
 describe('loadGameSnapshot', () => {
   it('builds the garden, scenario map and coverage from local data', async () => {
-    await learner.record({ ...ev('review_good', 'a') }, new Date(2026, 0, 1));
+    const jan1 = new Date(2026, 0, 1);
+    await learner.record({ ...ev('review_good', 'a'), at: jan1 }, jan1);
     const snap = await loadGameSnapshot(db, lexicon, [scenario], now);
     expect(snap.nodes[0]).toMatchObject({ unlocked: true, attempts: 0 });
     expect(snap.plots.map((p) => p.id)).toEqual(['scenario:cafe']);

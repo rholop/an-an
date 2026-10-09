@@ -1,28 +1,20 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import {
-  activeEvidence,
   DEFAULT_STUDY_SETTINGS,
-  getStudyFocus,
-  grammarUsesFromEvidence,
   lessonIndex,
-  PROGRESS_CONFIG,
-  ProgressIndex,
   classScope,
   type ClassScope,
-  type GrammarUse,
   type Lexicon,
-  type SkillCard,
   type StudyFocus,
   type StudySettings,
   type Textbook,
 } from '@anan/core';
 import { currentSession, db, learnerService, onSessionChange } from '../db/instance.js';
-import { allTouchedCards } from '../db/queries.js';
+import { getLedgerNow, setLedgerStudySource } from './ledger.js';
 import { setKnownItemsSource } from './learner-service.js';
 import { catchUpClassCoverage, peekMyClass, useMyClass } from './my-class.js';
 import { registerAfterMerge } from './profile-controller.js';
-import { getReviewSettings } from './review-settings.js';
-import { markStudyDirty, onStudyDirty, studyVersion } from './study-dirty.js';
+import { markStudyDirty, onStudyDirty } from './study-dirty.js';
 import { useLexicon } from './useLexicon.js';
 import { useTextbook } from './textbook-data.js';
 
@@ -73,8 +65,6 @@ async function load(): Promise<void> {
 onSessionChange((session) => {
   settings = { ...DEFAULT_STUDY_SETTINGS };
   loaded = false;
-  cache = undefined;
-  dataCache = undefined;
   // Phase 21: nothing from the previous profile survives a switch.
   pendingCelebrations = [];
   notify();
@@ -84,8 +74,6 @@ onSessionChange((session) => {
 /** After a sync merge replaced the database contents (called by the profile controller). */
 export function reloadStudySettings(): void {
   loaded = false;
-  cache = undefined;
-  dataCache = undefined;
   void load().then(() => markStudyDirty());
 }
 
@@ -110,7 +98,6 @@ export function peekStudySettings(): StudySettings {
 export async function updateStudySettings(patch: Partial<StudySettings>): Promise<void> {
   settings = sanitize({ ...settings, ...patch });
   loaded = true;
-  cache = undefined;
   notify();
   // Phase 21: merge with what is stored (a sync may have landed since this copy was read).
   let stored: StudySettings | undefined;
@@ -138,7 +125,6 @@ export function useStudySettings(): StudySettings {
 let ctx: { lexicon: Lexicon; books: Textbook[] } | undefined;
 export function registerStudyContext(c: { lexicon: Lexicon; books: Textbook[] } | undefined): void {
   ctx = c;
-  cache = undefined;
   markStudyDirty();
 }
 
@@ -151,85 +137,28 @@ function testSwitchOff(): boolean {
   }
 }
 
-let cache: { version: number; focus: Promise<StudyFocus | undefined> } | undefined;
-
-/** Phase 21: the inputs every Learned / Mastered number is computed from, cached per change. */
-export interface ProgressData {
-  cards: SkillCard[];
-  grammarUses: Map<string, GrammarUse>;
-  index: ProgressIndex;
-}
-let dataCache: { version: number; data: Promise<ProgressData> } | undefined;
-
-/** The shared progress index (the same inputs as the study focus), for every tab's numbers. */
-export function getProgressNow(): Promise<ProgressData> {
-  if (dataCache && dataCache.version === studyVersion()) return dataCache.data;
-  const version = studyVersion();
-  const data = (async () => {
-    await load();
-    const [cards, evidence, review] = await Promise.all([
-      allTouchedCards(db),
-      db.evidence
-        .where('kind')
-        .anyOf([...PROGRESS_CONFIG.grammarCorrectKinds, ...PROGRESS_CONFIG.grammarWrongKinds, 'evidence_undone'])
-        .toArray()
-        .catch(() => db.evidence.toArray()),
-      getReviewSettings(),
-    ]);
-    // Phase 25: a grammar point's days are the profile's review time-zone days.
-    const grammarUses = grammarUsesFromEvidence(activeEvidence(evidence), undefined, review.timeZone);
-    return { cards, grammarUses, index: new ProgressIndex({ cards, grammarUses, knownItems: settings.knownItems }) };
-  })();
-  dataCache = { version, data };
-  return data;
+/** The registered study context (lexicon + books), for the ledger. */
+export function peekStudyContext(): { lexicon: Lexicon; books: Textbook[] } | undefined {
+  return ctx;
 }
 
-/** React: the shared progress data, refreshed after every change. */
-export function useProgressData(): ProgressData | undefined {
-  const [data, setData] = useState<ProgressData | undefined>(undefined);
-  const [tick, setTick] = useState(0);
-  const set = useStudySettings();
-  useEffect(() => onStudyDirty(() => setTick((t) => t + 1)), []);
-  useEffect(() => {
-    if (!currentSession()) return;
-    let cancelled = false;
-    void getProgressNow().then((d) => {
-      if (!cancelled) setData(d);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [tick, set]);
-  return data;
+/** Load the profile's study settings (once). */
+export function loadStudySettings(): Promise<void> {
+  return load();
 }
 
-/** The study focus for the CURRENT state; undefined when there is no textbook (study order has nothing to order). */
-export function getStudyFocusNow(now: Date = new Date()): Promise<StudyFocus | undefined> {
-  if (!ctx || ctx.books.length === 0 || !currentSession()) return Promise.resolve(undefined);
-  if (cache && cache.version === studyVersion()) return cache.focus;
-  const c = ctx;
-  const version = studyVersion();
-  const focus = (async () => {
-    await load();
-    // Off: nothing to compute (and no heavy work on every screen).
-    if (!settings.enabled || testSwitchOff()) return disabledFocus();
-    const { cards, grammarUses } = await getProgressNow();
-    const my = peekMyClass();
-    const effective = { ...settings, enabled: settings.enabled && !testSwitchOff() };
-    return getStudyFocus(
-      {
-        lexicon: c.lexicon,
-        books: c.books,
-        cards,
-        grammarUses,
-        settings: effective,
-        myClass: { enabled: my.enabled, textbookId: my.textbookId, currentLesson: my.currentLesson },
-      },
-      now,
-    );
-  })();
-  cache = { version, focus };
-  return focus;
+/** The study settings the ledger uses (the e2e switch turns the study order off). */
+export function effectiveStudySettings(): StudySettings {
+  return { ...settings, enabled: settings.enabled && !testSwitchOff() };
+}
+
+/** The study focus for the CURRENT state (the ledger's); undefined when there is no textbook. */
+export async function getStudyFocusNow(now: Date = new Date()): Promise<StudyFocus | undefined> {
+  if (!ctx || ctx.books.length === 0 || !currentSession()) return undefined;
+  await load();
+  // Off: nothing to order.
+  if (!settings.enabled || testSwitchOff()) return disabledFocus();
+  return (await getLedgerNow(now)).focus();
 }
 
 function disabledFocus(): StudyFocus {
@@ -316,6 +245,24 @@ export function useStudyFocus(): StudyState {
 export function currentClassScope(): ClassScope {
   return classScope(peekMyClass(), { aheadLessons: settings.classAheadLessons });
 }
+// Phase 29: the ledger reads the study context and settings from here.
+setLedgerStudySource({
+  load,
+  inputs: () => {
+    if (!ctx) return undefined;
+    const my = peekMyClass();
+    return {
+      lexicon: ctx.lexicon,
+      books: ctx.books,
+      settings: effectiveStudySettings(),
+      myClass: { enabled: my.enabled, textbookId: my.textbookId, currentLesson: my.currentLesson },
+      classScope: currentClassScope(),
+    };
+  },
+  knownItems: () => settings.knownItems,
+  masteryShare: () => settings.masteryShare,
+});
+
 export function useClassScope(): ClassScope {
   const my = useMyClass();
   const set = useStudySettings();

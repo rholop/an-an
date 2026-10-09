@@ -16,8 +16,9 @@ import {
   levelItems,
   productionUnlockFor,
   ProgressIndex,
-  wordSets,
 } from './terms.js';
+import { buildLedger } from './ledger.js';
+import { DEFAULT_SESSION_SETTINGS } from './review-sessions.js';
 import { PROGRESS_CONFIG } from './progress.config.js';
 
 const NOW = new Date('2026-10-07T12:00:00Z');
@@ -191,15 +192,19 @@ describe('Phase 21 shared terms: items, lessons, levels', () => {
 
   it('comprehensible sets: Learned → known; answered → learning; New is not comprehensible', () => {
     const later = new Date(NOW.getTime() + 40 * DAY);
-    const sets = wordSets(
-      [
+    const sets = buildLedger({
+      cards: [
         ...mastered('還'),
         card('長', { state: 'learning' }, { state: State.Learning, reps: 1, due: new Date(NOW.getTime() + 60 * DAY) }),
         card('了'),
         applyEvidence(undefined, ev('機車', 'anki_import_seen'), NOW).card!,
       ],
-      later,
-    );
+      evidence: [],
+      knownItems: [],
+      session: DEFAULT_SESSION_SETTINGS,
+      masteryShare: 0.8,
+      now: later,
+    }).comprehensible();
     expect([...sets.knownIds]).toEqual(['還']);
     expect(sets.learningIds.has('長')).toBe(true);
     expect(sets.learningIds.has('機車')).toBe(true); // imported: comprehensible, not Learned

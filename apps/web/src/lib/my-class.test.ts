@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   classScope,
   lessonTag,
-  nextNewItems,
+  levelNewCandidates,
   textbookTag,
   Lexicon,
   type Lesson,
@@ -82,15 +82,19 @@ describe('recordLessonCoverage (My class → learner model)', () => {
     }
     expect(await service.getCard({ kind: 'word', id: 'w5' }, 'recognition')).toBeUndefined();
     // Never "known": nothing is in review yet.
-    expect((await service.wordSets(NOW)).knownIds.size).toBe(0);
+    expect((await service.ledger(NOW)).learnedWordIds().size).toBe(0);
   });
 
   it('lesson 4 gets top priority in new items; lessons 6–10 stay out', async () => {
     await recordLessonCoverage(book, setting(3), service, NOW);
     const lexicon = new Lexicon(Array.from({ length: 10 }, (_, i) => word(i + 1)));
     const cards = await db.items.toArray();
-    const picked = nextNewItems(cards, lexicon, 10, {
-      currentLevel: 'N1',
+    const picked = levelNewCandidates({
+      lexicon,
+      level: 'N1',
+      nextLevelToo: false,
+      carded: new Set(cards.filter((c) => c.state !== 'unseen').map((c) => c.item.id)),
+      knownChars: new Set(),
       classScope: classScope(setting(4)),
     }).map((w) => w.id);
     expect(picked[0]).toBe('w4');
@@ -174,10 +178,8 @@ describe('My class across books', () => {
   it('a Phase 12 profile (book 1, lesson n) produces the same queue as before', () => {
     const lex = new Lexicon(Array.from({ length: 10 }, (_, i) => word(i + 1)));
     const picked = (s: ReturnType<typeof classScope>) =>
-      nextNewItems([], lex, 10, { currentLevel: 'N1', classScope: s }).map((w) => w.id);
+      levelNewCandidates({ lexicon: lex, level: 'N1', nextLevelToo: false, carded: new Set(), knownChars: new Set(), classScope: s }).map((w) => w.id);
+    // Phase 21: the class scope is visibility only; priority comes from the study focus (the ledger's pickNew).
     expect(picked(classScope(at('laixue-1', 4)))).toEqual(picked(classScope({ enabled: true, textbookId: 'laixue-1', currentLesson: 4 })));
-    // Phase 21: the class scope is visibility only; priority comes from the study focus (priorityIds).
-    const first = nextNewItems([], lex, 10, { currentLevel: 'N1', classScope: classScope(at('laixue-1', 4)), priorityIds: ['w4'] });
-    expect(first[0]?.id).toBe('w4');
   });
 });

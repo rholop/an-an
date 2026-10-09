@@ -22,12 +22,12 @@ import {
   type Lexicon,
   type PinyinExercise,
   type PinyinResult,
-  type SkillCard,
   type Word,
 } from '@anan/core';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { useReadingScript } from '../components/AnnotatedInline.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
+import { getLedgerNow } from '../lib/ledger.js';
 import { db, learnerService } from '../db/instance.js';
 import { useConfusables, noteConfusion, type ConfusableContext } from '../lib/confusables.js';
 import { ensureFaceCards } from '../lib/face-cards.js';
@@ -97,12 +97,12 @@ export function PinyinPage({ onOpenListen }: { onOpenListen?: () => void } = {})
     void (async () => {
       const now = new Date();
       await ensureFaceCards(now);
-      const rows = await db.items.filter((c) => c.skill === 'reading').toArray();
-      const cards = rows.map(({ pk: _pk, ...c }) => c as SkillCard);
+      // Phase 29 Part B.1/B.4: the reading queue is the ledger's (this session, the Pinyin allowance).
+      const queue = (await getLedgerNow(now)).practice('reading');
       const since = new Date(now.getTime() - 30 * 86_400_000);
       const ev = await db.evidence.where('at').between(since, now, true, true).toArray();
       const p = planPinyinSession({
-        readingCards: cards,
+        queue,
         wordById: (id) => lexicon.byId(id),
         now,
         seed: newSessionSeed('pinyin'),

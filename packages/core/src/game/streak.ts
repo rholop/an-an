@@ -1,5 +1,6 @@
 import { activeRewards } from './rewards.js';
-import { dayKey } from './rewards.js';
+import { DEFAULT_SESSION_SETTINGS } from '../progress/review-sessions.js';
+import { addDaysToKey, dayKey, daysBetweenKeys, weekRange } from '../progress/time.js';
 
 export interface StreakConfig {
   /** Off by default (phase doc §5). Nothing in the UI mentions streaks unless on. */
@@ -10,12 +11,6 @@ export interface StreakConfig {
 
 export const DEFAULT_STREAK_CONFIG: StreakConfig = { enabled: false, freezeDaysPerWeek: 2 };
 
-const DAY_MS = 86_400_000;
-const parseKey = (k: string) => {
-  const [y, m, d] = k.split('-').map(Number);
-  return new Date(y!, m! - 1, d!);
-};
-const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
 export interface StreakResult {
   /** Active days in the current run (freeze days don't count as active). */
@@ -34,21 +29,22 @@ export interface StreakResult {
  * or a penalty.
  */
 export function computeStreak(
+  /** Active days as profile-zone day keys (`dayKey`). */
   activeDays: Iterable<string>,
   today: Date,
   config: StreakConfig = DEFAULT_STREAK_CONFIG,
+  timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone,
 ): StreakResult {
   const active = new Set(activeDays);
   if (active.size === 0) return { current: 0, best: 0, freezesUsed: 0 };
   const first = [...active].sort()[0]!;
-  const start = parseKey(first);
-  const days = Math.round((parseKey(dayKey(today)).getTime() - start.getTime()) / DAY_MS);
+  const days = daysBetweenKeys(first, dayKey(today, timeZone));
 
   let run = 0;
   let best = 0;
   const recentSkips: number[] = []; // indices of skipped days still inside the 7-day window
   for (let i = 0; i <= days; i++) {
-    const key = dayKey(addDays(start, i));
+    const key = addDaysToKey(first, i);
     if (active.has(key)) {
       run++;
       best = Math.max(best, run);
@@ -78,14 +74,14 @@ export interface WeeklySummary {
   mistakesFixed: number;
 }
 
-/** Phase 6 §5: a weekly summary instead of a daily nag. Counts the 7 days
- * ending at `now`'s day. Purely descriptive — no goals, no shortfalls. */
+/** Phase 6 §5: a weekly summary instead of a daily nag. Phase 29: "this week" is Monday to Sunday
+ * in the profile's time zone, like every other week in the app. Purely descriptive. */
 export function weeklySummary(
   events: readonly { id?: string; kind: string; points: number; at: Date; refId?: string; revokes?: string }[],
   now: Date,
+  timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone,
 ): WeeklySummary {
-  const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  const from = addDays(to, -7);
+  const { from, to } = weekRange(now, timeZone);
   // Phase 21: undone answers (and their revoking events) don't count; points still net out.
   const all = events.filter((e) => e.at >= from && e.at < to);
   const inWeek = activeRewards(all.map((e, i) => ({ ...e, id: e.id ?? `#${i}` })));
@@ -94,7 +90,7 @@ export function weeklySummary(
     from,
     to,
     points: inWeek.reduce((s, e) => s + e.points, 0),
-    activeDays: new Set(inWeek.map((e) => dayKey(e.at))).size,
+    activeDays: new Set(inWeek.map((e) => dayKey(e.at, timeZone))).size,
     // Phase 21: distinct WORDS recalled (not word+skill pairs per day, and not grammar points).
     wordsRecalled: new Set(
       inWeek

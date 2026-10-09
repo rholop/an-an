@@ -27,7 +27,8 @@ import {
   miniLessonWordCount,
   storyPromptLists,
   StoryRepairResponseSchema,
-  getStudyFocus,
+  buildLedger,
+  DEFAULT_SESSION_SETTINGS,
   Lexicon,
   promptBudget,
   ProviderNameSchema,
@@ -37,7 +38,6 @@ import {
   StoryCheckResponseSchema,
   StoryResponseSchema,
   runStoryPipeline,
-  vocabLadder,
   type GrammarItem,
   type Level,
   type SkillCard,
@@ -73,11 +73,11 @@ const books = bookFiles.map((b) => b.textbook);
 const lexicon = new Lexicon(lexFile.words, [...lexFile.grammar, ...bookFiles.flatMap((b) => b.grammarItems)]);
 
 const NOW = new Date();
-const card = (id: string, skill: 'recognition' | 'production'): SkillCard => ({
+const card = (id: string, skill: 'recognition' | 'production', dueNow = false): SkillCard => ({
   item: { kind: 'word', id },
   skill,
   card: {
-    due: new Date(NOW.getTime() + 20 * 86_400_000),
+    due: new Date(NOW.getTime() + (dueNow ? -86_400_000 : 20 * 86_400_000)),
     stability: 30,
     difficulty: 5,
     elapsed_days: 10,
@@ -125,41 +125,33 @@ function profile(level: Level) {
   const [classBook, classLesson] = (process.env.CLASS ?? (novice ? 'laixue-1:4' : 'laixue-2:3')).split(':');
   const real = exportedCards();
   let cards: SkillCard[];
-  let known: string[];
-  let due: string[] = [];
   if (real) {
     cards = real;
-    const rec = real.filter((c) => c.item.kind === 'word' && c.skill === 'recognition' && c.state !== 'unseen' && c.state !== 'introduced');
-    known = rec.map((c) => c.item.id);
-    due = rec.filter((c) => c.card.due.getTime() <= NOW.getTime()).map((c) => c.item.id);
   } else {
-    known = novice
+    let known = novice
       ? [...byFreq('N1').slice(0, 150).map((w) => w.id), ...books[0]!.lessons.slice(0, 3).flatMap((l) => l.vocab)]
       : [...byFreq('N1').map((w) => w.id), ...byFreq('N2').map((w) => w.id), ...books[0]!.lessons.flatMap((l) => l.vocab)];
     known = [...new Set(known)];
-    if (novice) due = known.slice(0, 220);
-    cards = known.flatMap((id) => [card(id, 'recognition'), card(id, 'production')]);
+    const due = new Set(novice ? known.slice(0, 220) : []);
+    cards = known.flatMap((id) => [card(id, 'recognition', due.has(id)), card(id, 'production')]);
   }
-  const focus = getStudyFocus(
-    {
+  // Phase 29: the ladder and the due words come from the ledger, as in the app.
+  const ledger = buildLedger({
+    cards,
+    evidence: [],
+    knownItems: [],
+    session: DEFAULT_SESSION_SETTINGS,
+    masteryShare: DEFAULT_STUDY_SETTINGS.masteryShare,
+    now: NOW,
+    study: {
       lexicon,
       books,
-      cards,
-      grammarUses: new Map(),
       settings: { ...DEFAULT_STUDY_SETTINGS },
       myClass: { enabled: true, textbookId: classBook!, currentLesson: Number(classLesson) },
     },
-    NOW,
-  );
-  const ladder = vocabLadder({
-    lexicon,
-    level,
-    knownIds: new Set(known),
-    dueIds: new Set(due),
-    learningIds: new Set(),
-    books,
-    studyFocus: focus,
   });
+  const ladder = ledger.ladder(level);
+  const due = [...ledger.comprehensible().dueIds];
   const active = ladder.lessons.active;
   return { ladder, due: new Set(due), lessonTopic: active ? `${active.titleEn}: ${active.topic}` : 'everyday life' };
 }

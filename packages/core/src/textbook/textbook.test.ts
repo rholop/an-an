@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nextNewItems } from '../curriculum.js';
+import { levelNewCandidates } from '../curriculum.js';
 import { applyEvidence } from '../learner/apply-evidence.js';
 import { emptyCard } from '../learner/fsrs-instance.js';
 import type { SkillCard } from '../learner/types.js';
@@ -148,30 +148,37 @@ describe('lessonCoveredEvidence', () => {
   });
 });
 
-describe('nextNewItems with My class', () => {
-  const lexicon = new Lexicon(words);
-  const idsOf = (cards: SkillCard[], scope: ReturnType<typeof classScope>, n = 20, priorityIds: string[] = []) =>
-    nextNewItems(cards, lexicon, n, { currentLevel: 'N1', classScope: scope, priorityIds }).map((w) => w.id);
+/** Phase 29: the level candidates of the one new-word picker (`levelNewCandidates`), My class on. */
+const candidates = (lexicon: Lexicon, cards: SkillCard[], scope?: ReturnType<typeof classScope>) =>
+  levelNewCandidates({
+    lexicon,
+    level: 'N1',
+    nextLevelToo: false,
+    carded: new Set(cards.filter((c) => c.state !== 'unseen').map((c) => c.item.id)),
+    knownChars: new Set(),
+    ...(scope ? { classScope: scope } : {}),
+  }).map((i) => i.id);
 
-  it('study-focus words first (Phase 21), the next lesson is visible, lessons 6–10 stay out at lesson 4', () => {
+describe('new-word candidates with My class', () => {
+  const lexicon = new Lexicon(words);
+  const idsOf = (cards: SkillCard[], scope: ReturnType<typeof classScope>) => candidates(lexicon, cards, scope);
+
+  it('the next lesson is visible, lessons 6–10 stay out at lesson 4', () => {
     const scope = classScope({ enabled: true, textbookId: 'laixue-1', currentLesson: 4 });
     const cards = lessonCoveredEvidence(book, 3, NOW)
       .filter((e) => e.item.kind === 'word')
       .map((e) => applyEvidence(undefined, e, NOW).card!);
-    const picked = idsOf(cards, scope, 20, ['w4', 'w7']);
-    expect(picked[0]).toBe('w4');
+    const picked = idsOf(cards, scope);
+    expect(picked).toContain('w4');
     expect(picked).toContain('w5'); // i+1
     for (const out of ['w6', 'w7', 'w8', 'w9', 'w10']) expect(picked).not.toContain(out);
-    // The next lesson only arrives after the current one.
     expect(picked.indexOf('w4')).toBeLessThan(picked.indexOf('w5'));
   });
 
   it('off: identical to a call without the context', () => {
     const off = classScope({ enabled: false, textbookId: 'laixue-1', currentLesson: 4 });
-    const a = nextNewItems([], lexicon, 20, { currentLevel: 'N1' }).map((w) => w.id);
-    const b = nextNewItems([], lexicon, 20, { currentLevel: 'N1', classScope: off }).map(
-      (w) => w.id,
-    );
+    const a = candidates(lexicon, []);
+    const b = candidates(lexicon, [], off);
     expect(b).toEqual(a);
     expect(b).toContain('w9');
   });
@@ -220,7 +227,7 @@ describe('lessonProgress', () => {
     expect(p.mastered).toBe(1); // c
     expect(p.grammarMastered).toBe(0);
     expect(p.grammarPractised).toBe(1);
-    expect(lessonDone(p)).toBe(false);
+    expect(lessonDone(p, 0.9)).toBe(false);
   });
 });
 
@@ -362,7 +369,7 @@ describe('class scope across books', () => {
     expect(tagsInScope(tbBook('laixue-3', 9), s)).toBe(false);
   });
 
-  it('new-word queue: study-focus words first, later lessons stay out (Phase 21)', () => {
+  it('new-word candidates: later lessons stay out (Phase 21)', () => {
     const lex = new Lexicon([
       word('a1', '甲', tbBook('laixue-1', 1)),
       word('b3', '乙', tbBook('laixue-2', 3)),
@@ -370,8 +377,8 @@ describe('class scope across books', () => {
       word('b5', '丁', tbBook('laixue-2', 5)),
       word('c1', '戊', tbBook('laixue-3', 1)),
     ]);
-    const picked = nextNewItems([], lex, 10, { classScope: classScope(setting), priorityIds: ['b3', 'b5'] }).map((w) => w.id);
-    expect(picked.slice(0, 1)).toEqual(['b3']);
+    const picked = candidates(lex, [], classScope(setting));
+    expect(picked).toContain('b3');
     expect(picked).toContain('a1');
     expect(picked).toContain('b4');
     expect(picked).not.toContain('b5');
@@ -394,7 +401,7 @@ describe('Phase 12 "My class" setting migrates to (laixue-1, n)', () => {
       const legacy = { enabled: true, textbookId: 'laixue-1', currentLesson: n };
       const s = classScope(legacy);
       expect(s.currentLesson).toBe(n);
-      const picked = nextNewItems([], lex, 12, { classScope: s }).map((w) => w.id);
+      const picked = candidates(lex, [], s);
       const expected = words
         .filter((w) => {
           const l = firstLessonOfTags(w.tags);

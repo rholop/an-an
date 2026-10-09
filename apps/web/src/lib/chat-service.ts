@@ -2,11 +2,8 @@ import {
   CHAT_LEAK_REF,
   analyzeText,
   checkTaiwanness,
-  isDueCard,
-  isLearningState,
   derivedCompoundIds,
   lessonScopedWordIds,
-  nextNewItems,
   studyTargetWordIds,
   type StudyFocus,
   resolveScenarioVocabExtraIds,
@@ -17,7 +14,6 @@ import {
   type Evidence,
   type Lexicon,
   type Scenario,
-  type SkillCard,
   type TurnHistoryEntry,
   type Textbook,
   type TurnRequest,
@@ -28,6 +24,11 @@ import {
 } from '@anan/core';
 import type { AnanDB, ConversationRow, TurnRow } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
+
+/** The word ids a `ledger.pickNew` result introduces (New cards first, then items with no card). */
+export function newWordIds(picked: { cards: readonly { item: { kind: string; id: string } }[]; items: readonly { kind: string; id: string }[] }): string[] {
+  return [...new Set([...picked.cards.map((c) => c.item), ...picked.items].filter((i) => i.kind === 'word').map((i) => i.id))];
+}
 
 export interface ChatServiceConfig {
   coverageThreshold?: number;
@@ -149,6 +150,7 @@ export class ChatService {
     now: Date = new Date(),
   ): Promise<void> {
     const tokens = segment(npcText, this.lexicon);
+    const ledger = await this.learnerService.ledger(now);
     const events: Evidence[] = [];
     // Phase 21: a word read twice in one message is one reading, not two.
     const seen = new Set<string>();
@@ -161,8 +163,8 @@ export class ChatService {
           'recognition',
         );
         if (!card || seen.has(word.id)) continue;
-        const isDueOrLearning = isLearningState(card) || isDueCard(card, now);
-        if (isDueOrLearning && !lookedUpWordIds.has(word.id)) {
+        // Phase 29 Part B.11: one read-credit rule (`ledger.creditsRead`).
+        if (ledger.creditsRead(card) && !lookedUpWordIds.has(word.id)) {
           seen.add(word.id);
           events.push({
             item: { kind: 'word', id: word.id },
@@ -182,8 +184,8 @@ export class ChatService {
     targetIds: string[],
     allowedExtraIds: string[],
   ): Promise<AnalyzeContext> {
-    // Phase 21: the shared comprehensible sets (known / due / learning), the same everywhere.
-    const { knownIds, dueIds, learningIds } = await this.learnerService.wordSets(new Date());
+    // Phase 29: the one comprehensible set (known / in session / learning), the ledger's.
+    const { knownIds, dueIds, learningIds } = (await this.learnerService.ledger(new Date())).comprehensible();
     return {
       lexicon: this.lexicon,
       learnerLevel,
@@ -254,10 +256,9 @@ export class ChatService {
 
     const klass = this.classContext?.();
     const scope = klass?.scope.enabled ? klass.scope : undefined;
-    const [sets, { ids: scenarioExtraIds }] = await Promise.all([
-      this.learnerService.wordSets(now),
-      Promise.resolve(resolveScenarioVocabExtraIds(scenario, this.lexicon)),
-    ]);
+    const ledger = await this.learnerService.ledger(now);
+    const sets = ledger.comprehensible();
+    const { ids: scenarioExtraIds } = resolveScenarioVocabExtraIds(scenario, this.lexicon);
     const knownAll = sets.knownIds;
     // My class: textbook words from lessons beyond current+1 stay out of the known sample.
     const knownCards = scope
@@ -282,8 +283,6 @@ export class ChatService {
       ];
     }
     const dueWordIds = [...sets.dueIds];
-    // Phase 21: every card counts as "touched" (not only due ones), so new targets are really new.
-    const allCards: SkillCard[] = await this.learnerService.allCards();
     const want = this.config.newTargetsPerTurn;
     const focus = await this.studyFocus?.().catch(() => undefined);
     const studyIds = studyTargetWordIds(focus, want);
@@ -293,12 +292,10 @@ export class ChatService {
         ? studyWords.slice(0, want)
         : [
             ...studyWords,
-            ...nextNewItems(allCards, this.lexicon, want, {
-              scenarioTags: [scenario.id],
-              currentLevel: options.learnerLevel,
-              ...(scope ? { classScope: scope } : {}),
-              priorityIds: focus?.enabled ? focus.newItemsAllowed.filter((i) => i.kind === 'word').map((i) => i.id) : [],
-            }).filter((w) => !studyIds.includes(w.id)),
+            // Phase 29 Part B.4: the one new-word picker under the one allowance (a pause stops these too).
+            ...newWordIds(ledger.pickNew('review', { scenarioTags: [scenario.id], level: options.learnerLevel }))
+              .filter((id) => !studyIds.includes(id))
+              .flatMap((id) => this.lexicon.byId(id) ?? []),
           ].slice(0, want);
     const targetIds = targets.map((w) => w.id);
 
@@ -487,7 +484,7 @@ export class ChatService {
       .between(lower, upper, true, true)
       .toArray();
     // Phase 21: "New words you met" lists only words not already Learned.
-    const { knownIds } = await this.learnerService.wordSets(upper);
+    const knownIds = (await this.learnerService.ledger(upper)).learnedWordIds();
     const encounteredIds = new Set(
       evidenceInRange
         .filter((e) => e.kind === 'chat_lookup_gloss' || e.kind === 'chat_hover_reading')

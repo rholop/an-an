@@ -3,6 +3,16 @@
 Notable changes that affect how An'an is run. Phase-by-phase features are in the
 `CLAUDE.md` phase table.
 
+## Phase 29 (2026-10-09)
+
+- One progress rule: every count on every screen comes from the progress ledger, so Home,
+  Review, the badge, Garden, Water all, lessons, levels and Progress always agree. No server or
+  setup change.
+- Between sessions the garden says "All watered 🌱 · 10 words in the evening session (opens
+  4 pm)", and next-session plants get a faint droplet outline.
+- For contributors: `pnpm install` now sets `core.hooksPath` to `.githooks`, whose pre-commit
+  hook runs `pnpm lint` (including the typed `anan/progress-from-ledger` rule).
+
 ## Hotfix: keep every saved version (2026-10-09)
 
 - The sync store no longer deletes old versions. Every save stays in `SYNC_DIR` until a later

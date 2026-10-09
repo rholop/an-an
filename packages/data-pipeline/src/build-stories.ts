@@ -17,11 +17,16 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  buildLedger,
+  courseLessonLevel,
+  DEFAULT_SESSION_SETTINGS,
   DEFAULT_STUDY_SETTINGS,
+  LAIXUE_COURSE,
+  LEVEL_IDS,
+  lessonCoreWordIds,
   dryStory,
   dryStoryCheck,
   dryStoryRepair,
-  getStudyFocus,
   LessonStoriesFileSchema,
   lessonsInCourseOrder,
   Lexicon,
@@ -34,7 +39,6 @@ import {
   StoryRepairResponseSchema,
   StoryResponseSchema,
   STORY_CONFIG,
-  vocabLadder,
   type GrammarItem,
   type Level,
   type LessonStory,
@@ -58,13 +62,12 @@ const onlyLesson = arg('lesson') ? Number(arg('lesson')) : undefined;
 const delayMs = Number(arg('delay') ?? (dry ? 0 : 4000));
 const proxyUrl = process.env.PROXY_URL ?? 'http://localhost:3002';
 
-/** The book's story level and the TOCFL levels a learner has mastered before it (the gate). */
-const BOOK_LEVEL: Record<number, { level: Level; gate: Level[] }> = {
-  1: { level: 'N1', gate: [] },
-  2: { level: 'L1', gate: ['N1', 'N2'] },
-  3: { level: 'L2', gate: ['N1', 'N2', 'L1'] },
-  4: { level: 'L2', gate: ['N1', 'N2', 'L1', 'L2'] },
-};
+/** Phase 29 Part B.13: a lesson's story level is the course's (`course.ts`: book 4 is L2 up to
+ * lesson 5, L3 after), and its gate is every TOCFL level below it (the study focus's gate). */
+export function lessonLevelAndGate(bookId: string, n: number): { level: Level; gate: Level[] } {
+  const level = courseLessonLevel(LAIXUE_COURSE, bookId, n);
+  return { level, gate: LEVEL_IDS.slice(0, LEVEL_IDS.indexOf(level)) };
+}
 
 const lexFile = JSON.parse(readFileSync(path.join(REPO, 'data/build/lexicon.v2.json'), 'utf8')) as { words: Word[]; grammar: GrammarItem[] };
 const bookFiles = [1, 2, 3, 4].map(
@@ -107,9 +110,10 @@ const llm: StoryLLM = dry
       repairStory: async (r) => StoryRepairResponseSchema.parse(await post('/v1/story-repair', r)),
     };
 
-const mature = (id: string): SkillCard => ({
+/** The fixture profile's cards: every known word Learned long ago (recognition and production). */
+const mature = (id: string, skill: 'recognition' | 'production' = 'recognition'): SkillCard => ({
   item: { kind: 'word', id },
-  skill: 'recognition',
+  skill,
   card: {
     due: new Date(NOW.getTime() + 30 * 86_400_000),
     stability: 60,
@@ -135,33 +139,40 @@ const mature = (id: string): SkillCard => ({
 });
 
 /**
- * The ladder for one lesson: rung 1 = every earlier lesson's words and the gate levels, rung 2 = this
- * lesson's words, nothing on rungs 3–5 (every other word is outside the lists).
+ * The ladder for one lesson, built by the ledger from a fixture profile that knows every earlier
+ * lesson's core words and the gate levels (Phase 29 Part B.13): rung 1 = what that profile can read,
+ * rung 2 = this lesson's core words (grammar words in, names out), nothing on rungs 3–5 (every other
+ * word is outside the lists).
  */
-export function lessonStoryLadder(bookN: number, lessonId: string): { ladder: VocabLadder; level: Level } {
-  const { level, gate } = BOOK_LEVEL[bookN]!;
+export function lessonStoryLadder(bookId: string, lessonId: string): { ladder: VocabLadder; level: Level } {
   const ordered = lessonsInCourseOrder(books);
   const at = ordered.findIndex((o) => o.lesson.id === lessonId);
-  const before = ordered.slice(0, at).flatMap((o) => o.lesson.vocab);
+  const lesson = ordered[at]!.lesson;
+  const { level, gate } = lessonLevelAndGate(bookId, lesson.n);
+  const before = ordered.slice(0, at).flatMap((o) => lessonCoreWordIds(o.lesson));
   const gateWords = lexicon
     .allWords()
-    .filter((w) => w.source === 'tocfl' && w.level && gate.includes(w.level))
+    .filter((w) => w.source === 'tocfl' && w.level && gate.includes(w.level) && !w.tags.includes('name'))
     .map((w) => w.id);
-  const known = new Set([...before, ...gateWords]);
-  const lesson = ordered[at]!.lesson;
-  const focus = getStudyFocus(
-    {
+  const knownIds = [...new Set([...before, ...gateWords])];
+  const ledger = buildLedger({
+    cards: knownIds.flatMap((id) => [mature(id), mature(id, 'production')]),
+    evidence: [],
+    knownItems: [],
+    session: DEFAULT_SESSION_SETTINGS,
+    masteryShare: DEFAULT_STUDY_SETTINGS.masteryShare,
+    now: NOW,
+    study: {
       lexicon,
       books,
-      cards: [...known].map(mature),
-      grammarUses: new Map(),
       settings: { ...DEFAULT_STUDY_SETTINGS },
-      myClass: { enabled: true, textbookId: `laixue-${bookN}`, currentLesson: lesson.n },
+      myClass: { enabled: true, textbookId: bookId, currentLesson: lesson.n },
+      level,
     },
-    NOW,
-  );
-  const base = vocabLadder({ lexicon, level, knownIds: known, dueIds: new Set(), learningIds: new Set(), books, studyFocus: focus });
-  const r2 = new Set(lesson.vocab.filter((id) => !known.has(id)));
+  });
+  const base = ledger.ladder(level);
+  const known = new Set(base.ids[1]);
+  const r2 = new Set(lessonCoreWordIds(lesson).filter((id) => !known.has(id)));
   const empty = new Set<string>();
   const ladder: VocabLadder = {
     ...base,
@@ -180,7 +191,7 @@ async function main() {
   const per = STORY_CONFIG.lessonStories.perLesson;
   let written = 0;
   let failed = 0;
-  for (const [i, book] of books.entries()) {
+  for (const book of books) {
     if (onlyBook && book.id !== onlyBook) continue;
     const file = path.join(REPO, 'data/curriculum', book.id, 'private', 'stories.json');
     const stories = load(file);
@@ -188,7 +199,7 @@ async function main() {
       if (onlyLesson && lesson.n !== onlyLesson) continue;
       const have = stories.filter((s) => s.lessonId === lesson.id);
       if (have.length >= per) continue;
-      const { ladder, level } = lessonStoryLadder(i + 1, lesson.id);
+      const { ladder, level } = lessonStoryLadder(book.id, lesson.id);
       const topics = [`${lesson.titleEn}: ${lesson.topic}`, ...lesson.objectives.slice(0, 2).map((o) => `${lesson.topic}: ${o}`)];
       const names = ladder.properNounIds.flatMap((id) => lexicon.byId(id)?.headword ?? []).slice(0, 40);
       let k = have.length;

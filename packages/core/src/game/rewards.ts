@@ -1,5 +1,8 @@
 import type { SkillCard } from '../learner/types.js';
 import type { Evidence } from '../types.js';
+import { DEFAULT_SESSION_SETTINGS } from '../progress/review-sessions.js';
+import { dayKey } from '../progress/time.js';
+import { overdueDaysAt } from '../progress/terms.js';
 
 /**
  * Phase 6 §1: points are earned only by learning behaviours. Everything the
@@ -105,22 +108,18 @@ export function activeRewards<T extends { id: string; revokes?: string }>(events
   return events.filter((e) => !e.revokes && !revoked.has(e.id));
 }
 
-const DAY_MS = 86_400_000;
 
-/** Local calendar day, "YYYY-MM-DD". */
-export function dayKey(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
 
 export function makeReward(
   kind: RewardKind,
   at: Date,
   refId: string,
   config: RewardConfig = DEFAULT_REWARD_CONFIG,
+  /** The profile's time zone: one reward of a kind per item per profile-zone day. */
+  timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone,
 ): RewardEvent {
   return {
-    id: `${kind}:${refId}:${dayKey(at)}`,
+    id: `${kind}:${refId}:${dayKey(at, timeZone)}`,
     kind,
     points: config.table[kind].points,
     at,
@@ -138,15 +137,18 @@ export function rewardsForEvidence(
   evidence: Evidence,
   prior: SkillCard | undefined,
   config: RewardConfig = DEFAULT_REWARD_CONFIG,
+  timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone,
 ): RewardEvent[] {
   let kind: RewardKind | null = null;
   // Phase 21: listening and journal recalls earn the same points as review and cloze recalls.
+  // Phase 29 Part B.14: Pinyin & tones answers too (a tone slip earns like a hinted cloze).
   switch (evidence.kind) {
     case 'cloze_correct_nohint':
     case 'review_good':
     case 'review_easy':
     case 'listening_correct':
     case 'journal_correct_use':
+    case 'reading_correct':
       kind = 'recall_correct';
       break;
     case 'review_hard':
@@ -154,6 +156,7 @@ export function rewardsForEvidence(
       kind = 'recall_hinted';
       break;
     case 'cloze_correct_hint':
+    case 'reading_tone_wrong':
       kind = 'recall_wrong_tone';
       break;
     default:
@@ -161,13 +164,9 @@ export function rewardsForEvidence(
   }
   const refId = `${evidence.item.kind}:${evidence.item.id}:${evidence.skill}`;
   const out: RewardEvent[] = [];
-  const overdueDays =
-    prior && prior.state !== 'unseen' && prior.state !== 'introduced'
-      ? (evidence.at.getTime() - prior.card.due.getTime()) / DAY_MS
-      : 0;
-  if (overdueDays >= config.reviveOverdueDays)
-    out.push(makeReward('word_revived', evidence.at, refId, config));
-  out.push(makeReward(kind, evidence.at, refId, config));
+  if (overdueDaysAt(prior, evidence.at) >= config.reviveOverdueDays)
+    out.push(makeReward('word_revived', evidence.at, refId, config, timeZone));
+  out.push(makeReward(kind, evidence.at, refId, config, timeZone));
   return out;
 }
 

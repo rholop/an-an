@@ -16,7 +16,7 @@ import {
 import { learnerService } from '../db/instance.js';
 import { setCurrentLevel } from '../lib/current-level.js';
 import { useLexicon } from '../lib/useLexicon.js';
-import { useProgressData } from '../lib/study.js';
+import { useLedger } from '../lib/ledger.js';
 import { LearnedMastered } from '../components/LearnedMastered.js';
 import { levelShort, placedAtLine } from '../lib/labels.js';
 import './PlacementPage.css';
@@ -175,9 +175,9 @@ export function PlacementPage() {
   );
 }
 
-function PlacementSummary({ state, bulkCount, lexicon }: { state: PlacementState; bulkCount: number; lexicon: Lexicon }) {
+function PlacementSummary({ state, bulkCount }: { state: PlacementState; bulkCount: number; lexicon: Lexicon }) {
   const result = summarizePlacement(state);
-  const progress = useProgressData();
+  const ledger = useLedger();
   const below = result.boundaryLevel ? LEVEL_ORDER.slice(0, LEVEL_ORDER.indexOf(result.boundaryLevel)) : [...LEVEL_ORDER];
   return (
     <div className="placement-summary">
@@ -197,11 +197,11 @@ function PlacementSummary({ state, bulkCount, lexicon }: { state: PlacementState
             <li key={level}>
               {levelShort(level)}
               {tally ? `: ${tally.known}/${tally.total} known in the test` : ''}
-              {progress && (
+              {ledger && (
                 <LearnedMastered
                   compact
                   testId={`placement-progress-${level}`}
-                  p={progress.index.summarize(levelItems(level, lexicon.allWords()))}
+                  p={ledger.level(level)}
                 />
               )}
             </li>

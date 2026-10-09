@@ -1,4 +1,4 @@
-import { isActiveCard, isDueCard, isNewCard, isReviewSkill, type Evidence, type ItemRef, type LearnerRepo, type Skill, type SkillCard } from '@anan/core';
+import { type Evidence, type ItemRef, type LearnerRepo, type Skill, type SkillCard } from '@anan/core';
 import { type AnanDB, itemPk } from './schema.js';
 
 function stripPk(row: SkillCard & { pk: string }): SkillCard {
@@ -30,41 +30,6 @@ export class DexieLearnerRepo implements LearnerRepo {
     const ids = (await this.db.evidence.bulkAdd(events, { allKeys: true })) as number[];
     const rows = await this.db.evidence.bulkGet(ids);
     return rows.map((r) => r?.uid ?? '');
-  }
-
-  async dueCards(now: Date, limit: number): Promise<SkillCard[]> {
-    // Phase 15: listening cards are their own queue (`dueListeningCards`), never part of plain review.
-    // Phase 20: "Not now" and "Never show" cards are out of every queue. (The daily cap is applied
-    // by the review session, which knows the study order.)
-    const rows = await this.db.items
-      .where('card.due')
-      .belowOrEqual(now)
-      // Phase 21: Due = answered at least once (core `isDueCard`): an `unseen` row (placement
-      // "don't know", an undone first answer) or a never-answered `introduced` card (that is New) is never due.
-      .filter((r) => isReviewSkill(r.skill) && isDueCard(r, now))
-      .limit(Number.isFinite(limit) ? limit : Number.MAX_SAFE_INTEGER)
-      .toArray();
-    return rows.map(stripPk);
-  }
-
-  /** Phase 21: New cards (introduced, never answered), any Review skill (reading included; listening has its own tab), still in the queues. */
-  async newCards(): Promise<SkillCard[]> {
-    const rows = await this.db.items
-      .where('state')
-      .equals('introduced')
-      .filter((r) => isReviewSkill(r.skill) && isNewCard(r) && isActiveCard(r))
-      .toArray();
-    return rows.map(stripPk);
-  }
-
-  async dueListeningCards(now: Date, limit: number): Promise<SkillCard[]> {
-    const rows = await this.db.items
-      .where('card.due')
-      .belowOrEqual(now)
-      .filter((r) => r.skill === 'listening' && r.state !== 'unseen' && isActiveCard(r))
-      .limit(limit)
-      .toArray();
-    return rows.map(stripPk);
   }
 
   /** Phase 20: every card of one item (all skills). */

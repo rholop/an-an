@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_SESSION_SETTINGS, isValidTimeZone, sanitizeSessionSettings, type SessionSettings } from '@anan/core';
 import { currentSession, db, onSessionChange } from '../db/instance.js';
-import { setBulkCapSource } from './learner-service.js';
+import { setBulkCapSource, setSessionSettingsSource } from './learner-service.js';
 import { markStudyDirty } from './study-dirty.js';
 
 /** Phase 20: Settings → Review. Per profile (the `settings` table syncs with the profile).
@@ -52,6 +52,7 @@ onSessionChange((s) => {
 });
 
 setBulkCapSource(() => settings.capPerSession);
+setSessionSettingsSource(() => settings);
 
 /** After a sync merge replaced the database contents. */
 export function reloadReviewSettings(): void {

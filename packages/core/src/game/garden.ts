@@ -1,11 +1,15 @@
-import { State, type FSRS } from 'ts-fsrs';
+import type { FSRS } from 'ts-fsrs';
 import type { SkillCard } from '../learner/types.js';
 import type { Lexicon } from '../lexicon.js';
 import type { Scenario } from '../chat/scenario.js';
-import type { ItemState, Level, Word } from '../types.js';
+import type { Level, Word } from '../types.js';
 import { isLevel, levelIndex, levelLabel, LEVEL_IDS } from '../levels.config.js';
-import { isDueCard, ProgressIndex } from '../progress/terms.js';
+import { isPracticeSkill, isReviewSkill, retrievabilityOf } from '../progress/terms.js';
+import type { SessionName } from '../progress/review-sessions.js';
+import type { Ledger } from '../progress/ledger.js';
 
+/** Phase 21: the garden's stages ARE the shared terms: seed = New, sprout = learning, plant =
+ * Learned, bloom = Mastered (`stageOf`). */
 export type GrowthStage = 'seed' | 'sprout' | 'plant' | 'bloom';
 /** healthy: at/above target retention. wilting: below it. withered: far below. */
 export type Wilt = 'healthy' | 'wilting' | 'withered';
@@ -19,30 +23,7 @@ export interface GardenConfig {
 
 export const DEFAULT_GARDEN_CONFIG: GardenConfig = { targetRetention: 0.9, witheredMargin: 0.2 };
 
-/** Phase 21: the garden's stages ARE the shared terms: seed = New, sprout = learning,
- * plant = Learned, bloom = Mastered (see `stageOf`). This maps a bare card state for callers
- * without an index (introduced -> learning -> review -> mature). */
-export function growthStage(state: ItemState): GrowthStage | null {
-  switch (state) {
-    case 'unseen':
-      return null;
-    case 'introduced':
-      return 'seed';
-    case 'learning':
-      return 'sprout';
-    case 'review':
-      return 'plant';
-    case 'mature':
-      return 'bloom';
-  }
-}
-
-/** FSRS R(t) in [0,1], or null for a card that has never been reviewed (a
- * seed has no memory to decay yet, so it can't wilt). */
-export function retrievabilityOf(card: SkillCard, now: Date, fsrsInstance: FSRS): number | null {
-  if (card.card.state === State.New || card.card.reps === 0) return null;
-  return fsrsInstance.get_retrievability(card.card, now, false);
-}
+export { retrievabilityOf } from '../progress/terms.js';
 
 /** The unit-tested R -> wilt mapping (phase doc acceptance criterion). */
 export function wiltFor(
@@ -63,8 +44,10 @@ export interface Plant {
   stage: GrowthStage;
   /** Learned but keeps lapsing: never blooms; shown with a small leech mark. */
   leech: boolean;
-  /** Cards of this word that are Due now ("needs water"). */
+  /** Cards of this word in the current review session ("needs water", Phase 27). */
   dueCards: SkillCard[];
+  /** Phase 27: not thirsty now, but a card is in the next session (a faint droplet outline). */
+  nextSession?: SessionName;
   /** Lowest R across the word's skills (the weakest memory shows). */
   retrievability: number | null;
   wilt: Wilt;
@@ -73,47 +56,54 @@ export interface Plant {
 }
 
 /** The shared term for one word, as a garden stage. */
-export function stageOf(index: ProgressIndex, wordId: string): GrowthStage {
-  const s = index.status({ kind: 'word', id: wordId });
+export function stageOf(ledger: Pick<Ledger, 'item'>, wordId: string): GrowthStage {
+  const s = ledger.item({ kind: 'word', id: wordId }).status;
   return s === 'mastered' ? 'bloom' : s === 'learned' ? 'plant' : s === 'new' ? 'seed' : 'sprout';
 }
 
-/** One plant per word, merging its recognition + production cards. Its stage is the word's
- * shared term (Phase 21); it "needs water" when one of its cards is Due, and wilts further the
- * lower its weakest retrievability. */
+/**
+ * One plant per word, merging its cards. Its stage is the word's shared term (Phase 21); it "needs
+ * water" when one of its cards is in the current review session (Phase 29 Part B.1:
+ * `ledger.needsWater`, the same cards Home, Review, Water all and the badge count), and wilts
+ * further the lower its weakest retrievability. Listening cards never make a plant thirsty.
+ */
 export function buildPlants(
-  cards: readonly SkillCard[],
+  ledger: Pick<Ledger, 'metCards' | 'now' | 'item' | 'needsWater' | 'inNextSession' | 'status'>,
   lexicon: Lexicon,
-  now: Date,
   fsrsInstance: FSRS,
   config: GardenConfig = DEFAULT_GARDEN_CONFIG,
-  index: ProgressIndex = new ProgressIndex({ cards }),
 ): Plant[] {
+  const now = ledger.now;
   const byWord = new Map<string, SkillCard[]>();
-  for (const c of cards) {
-    if (c.item.kind !== 'word' || c.state === 'unseen') continue;
+  for (const c of ledger.metCards()) {
+    if (c.item.kind !== 'word' || c.skill === 'listening') continue;
     const list = byWord.get(c.item.id) ?? [];
     list.push(c);
     byWord.set(c.item.id, list);
   }
+  const nextName: SessionName = ledger.status.nextSession.name;
   const plants: Plant[] = [];
   for (const [wordId, wordCards] of byWord) {
     const word = lexicon.byId(wordId);
     if (!word) continue;
-    const stage = stageOf(index, wordId);
+    const view = ledger.item({ kind: 'word', id: wordId });
+    // The memory shown is the word's (practice skills such as Say it never wilt a plant).
     const rs = wordCards
+      .filter((c) => !isPracticeSkill(c.skill))
       .map((c) => retrievabilityOf(c, now, fsrsInstance))
       .filter((r): r is number => r !== null);
     const retrievability = rs.length > 0 ? Math.min(...rs) : null;
-    const due = wordCards.filter((c) => isDueCard(c, now));
-    // "Needs water" = has a Due card (the same Due every tab counts); withered = due and far below target.
+    const reviewCards = wordCards.filter((c) => isReviewSkill(c.skill));
+    const due = reviewCards.filter((c) => ledger.needsWater(c));
+    const later = due.length === 0 && reviewCards.some((c) => ledger.inNextSession(c));
     const wilt: Wilt = due.length === 0 ? 'healthy' : wiltFor(retrievability, config) === 'withered' ? 'withered' : 'wilting';
     plants.push({
       wordId,
       headword: word.headword,
-      stage,
-      leech: index.leech({ kind: 'word', id: wordId }),
+      stage: stageOf(ledger, wordId),
+      leech: view.leech,
       dueCards: due,
+      ...(later ? { nextSession: nextName } : {}),
       retrievability,
       wilt,
       cards: wordCards,
@@ -131,6 +121,8 @@ export interface Plot {
   kind: 'scenario' | 'level';
   plants: Plant[];
   wiltingCount: number;
+  /** Phase 27: plants whose cards are in the next session (no button: Review early waters them). */
+  nextCount: number;
 }
 
 /** Phase 6 §2: group plants into plots by scenario (a scenario's vocabExtras)
@@ -149,9 +141,10 @@ export function groupPlots(
   }
   const plots = new Map<string, Plot>();
   const add = (id: string, title: string, kind: Plot['kind'], plant: Plant) => {
-    const plot = plots.get(id) ?? { id, title, kind, plants: [], wiltingCount: 0 };
+    const plot = plots.get(id) ?? { id, title, kind, plants: [], wiltingCount: 0, nextCount: 0 };
     plot.plants.push(plant);
     if (plant.wilt !== 'healthy') plot.wiltingCount++;
+    else if (plant.nextSession) plot.nextCount++;
     plots.set(id, plot);
   };
   for (const p of plants) {
@@ -174,7 +167,7 @@ export function groupPlots(
   );
 }
 
-/** Cards to focus-review for a plot ("Water N words"): exactly the Due cards of its plants. */
+/** Cards to focus-review for a plot ("Water N words"): exactly its plants' cards in this session. */
 export function wiltingCards(plot: Plot): SkillCard[] {
   return plot.plants.flatMap((p) => p.dueCards);
 }

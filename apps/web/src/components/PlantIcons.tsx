@@ -73,6 +73,16 @@ export const DueIcon = (p: IconProps) => (
   </Svg>
 );
 
+/** Phase 27: the next session's droplet: a faint outline (it doesn't need water yet). */
+export const NextDropIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path
+      className="pi-drop-outline"
+      d="M8 1.5C8 1.5 3.2 7 3.2 10.1a4.8 4.8 0 0 0 9.6 0C12.8 7 8 1.5 8 1.5z"
+    />
+  </Svg>
+);
+
 /** The growth stage's icon (Garden tiles and legend). */
 export function StageIcon({ stage, label }: { stage: GrowthStage; label?: string }) {
   switch (stage) {

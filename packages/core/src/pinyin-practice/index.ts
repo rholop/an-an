@@ -10,15 +10,12 @@ import { hashText } from '../hash.js';
 import { glossFor } from '../gloss/context.js';
 import type { ConfusableIndex } from '../confusables/index.js';
 import type { SkillCard } from '../learner/types.js';
-import { isDueBefore, isNewCard } from '../progress/terms.js';
 import { orderSession, seededRng, seededShuffle } from '../session/orderSession.js';
 import type { Evidence, Word } from '../types.js';
 
 export const PINYIN_PRACTICE_CONFIG = {
   /** Items (words) per session. */
   sessionSize: 30,
-  /** New reading cards introduced in one session. */
-  newPerSession: 10,
   matchSize: 5,
   sortSize: 6,
   /** Tone-confusion stats look back this many days. */
@@ -356,8 +353,9 @@ export function toneTroubleByWord(evidence: readonly Pick<Evidence, 'item' | 'ki
 // The session
 
 export interface PinyinSessionInput {
-  /** Every reading card (any state). */
-  readingCards: readonly SkillCard[];
+  /** Phase 29: the reading queue from the ledger (`ledger.practice('reading')`): cards in this review
+   * session, New cards under the Pinyin allowance, and every answered card, weakest first. */
+  queue: { due: readonly SkillCard[]; fresh: readonly SkillCard[]; answered: readonly SkillCard[] };
   wordById: (id: string) => Word | undefined;
   now: Date;
   seed: string;
@@ -391,27 +389,18 @@ export function planPinyinSession(input: PinyinSessionInput): PinyinExercise[] {
     seen.add(c.item.id);
     words.push(w);
   };
-  const cards = input.readingCards.filter((c) => c.skill === 'reading' && c.item.kind === 'word');
+  const isReading = (c: SkillCard) => c.skill === 'reading' && c.item.kind === 'word';
   const rng = seededRng(input.seed);
-  const due = seededShuffle(cards.filter((c) => isDueBefore(c, new Date(input.now.getTime() + 1))), rng);
+  const due = seededShuffle(input.queue.due.filter(isReading), rng);
   due.sort((a, b) => (trouble.get(b.item.id) ?? 0) - (trouble.get(a.item.id) ?? 0));
   due.forEach(add);
-  [...cards]
-    .filter((c) => (trouble.get(c.item.id) ?? 0) > 0 && !isNewCard(c) && c.state !== 'unseen')
+  input.queue.answered
+    .filter((c) => isReading(c) && (trouble.get(c.item.id) ?? 0) > 0)
     .sort((a, b) => (trouble.get(b.item.id) ?? 0) - (trouble.get(a.item.id) ?? 0))
     .forEach(add);
-  let fresh = 0;
-  for (const c of seededShuffle(cards.filter((c) => isNewCard(c)), rng)) {
-    if (fresh >= PINYIN_PRACTICE_CONFIG.newPerSession) break;
-    const before = words.length;
-    add(c);
-    if (words.length > before) fresh++;
-  }
-  if (input.extra)
-    [...cards]
-      .filter((c) => c.state !== 'unseen' && !isNewCard(c))
-      .sort((a, b) => a.card.stability - b.card.stability)
-      .forEach(add);
+  // New reading cards: the ledger already capped them at the Pinyin allowance (Phase 29 Part B.4).
+  seededShuffle(input.queue.fresh.filter(isReading), rng).forEach(add);
+  if (input.extra) input.queue.answered.filter(isReading).forEach(add);
   return buildExercises(words, input);
 }
 

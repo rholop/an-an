@@ -5,6 +5,7 @@ import { LEVEL_IDS as LEVEL_ORDER, levelIndex, type Level } from '../levels.conf
 import type { Evidence, ItemRef, Word } from '../types.js';
 import { REVIEW_PILE_CONFIG, type ReviewPileConfig } from './review-pile.config.js';
 import type { CardSource, SkillCard } from './types.js';
+import { dueDayOf, forgetRiskOf, inAppAnswers, isActiveCard, isSeeded } from '../progress/terms.js';
 
 const DAY = 86_400_000;
 
@@ -79,16 +80,7 @@ export const SOURCE_LABELS: Record<CardSource, string> = {
 };
 
 /** In review at all: not "Never show", not "Not now". */
-export function isActiveCard(c: Pick<SkillCard, 'flags'>): boolean {
-  return !c.flags.excluded && !c.flags.snoozed;
-}
-
-/** Days overdue relative to the card's stability: higher = more likely forgotten. */
-function forgetRisk(c: SkillCard, now: Date): number {
-  const last = c.card.last_review ? new Date(c.card.last_review).getTime() : new Date(c.card.due).getTime();
-  const elapsed = Math.max(0, (now.getTime() - last) / DAY);
-  return elapsed / Math.max(c.card.stability, 0.1);
-}
+export { isActiveCard } from '../progress/terms.js';
 
 /**
  * Part C.1: at most `remaining` of the due cards, most important first: lower `rank` (study
@@ -102,24 +94,10 @@ export function capDueCards<T extends SkillCard>(
   if (due.length <= n) return [...due];
   const rank = opts.rank ?? (() => 0);
   return due
-    .map((c, i) => ({ c, i, r: rank(c), f: forgetRisk(c, opts.now) }))
+    .map((c, i) => ({ c, i, r: rank(c), f: forgetRiskOf(c, opts.now) }))
     .sort((a, b) => a.r - b.r || b.f - a.f || a.i - b.i)
     .slice(0, n)
     .map((x) => x.c);
-}
-
-/** Part C.2: new cards allowed today given how many are due. */
-export function newItemAllowance(
-  dueCount: number,
-  base: number,
-  cap: number = REVIEW_PILE_CONFIG.dailyCap,
-  cfg: Pick<ReviewPileConfig, 'newHalfShare'> = REVIEW_PILE_CONFIG,
-): { allowed: number; paused: boolean; reason?: string } {
-  if (dueCount > cap)
-    return { allowed: 0, paused: true, reason: 'New words paused until your reviews catch up.' };
-  if (dueCount > cap * cfg.newHalfShare)
-    return { allowed: Math.floor(base / 2), paused: false, reason: 'Fewer new words today while reviews catch up.' };
-  return { allowed: base, paused: false };
 }
 
 /**
@@ -152,9 +130,10 @@ export function spreadBulkDue(
   return out;
 }
 
-/** Cards a migration may re-spread: created in bulk and never reviewed in the app since. */
+/** Cards a migration may re-spread: created in bulk and never answered in the app since
+ * (Phase 29 Part B.9: the shared in-app answer count, not a raw `reps`). */
 export function isUnreviewedBulkCard(c: SkillCard): boolean {
-  return (c.flags.imported === true || c.flags.probablyKnown === true) && c.card.reps <= 1 && isActiveCard(c);
+  return isSeeded(c) && inAppAnswers(c) === 0 && isActiveCard(c);
 }
 
 /** A word is a name (never a review target on its own). */
@@ -204,20 +183,6 @@ export function shouldWake(
   return false;
 }
 
-/** Due count for each of the next `days` days (index 0 = today, including overdue). */
-export function dueForecastOf(cards: readonly SkillCard[], now: Date, days = 7): number[] {
-  const out = new Array<number>(days).fill(0);
-  const startOfToday = new Date(now);
-  startOfToday.setHours(0, 0, 0, 0);
-  for (const c of cards) {
-    if (!isActiveCard(c) || c.skill === 'listening') continue;
-    const d = Math.floor((new Date(c.card.due).getTime() - startOfToday.getTime()) / DAY);
-    const i = Math.max(0, d);
-    if (i < days) out[i]!++;
-  }
-  return out;
-}
-
 // ---------------------------------------------------------------------------
 // Part A / D: the pile report, and clean-up groups.
 
@@ -245,7 +210,6 @@ export interface PileReport {
   notInAnyList: number;
 }
 
-const dayKey = (d: Date) => new Date(d).toISOString().slice(0, 10);
 
 export function levelBucketOf(w: Pick<Word, 'tags' | 'source' | 'level'> | undefined): LevelBucket {
   if (!w) return 'none';
@@ -273,7 +237,7 @@ export function pileReport(
       level,
       aboveLevel:
         !!pickedLevel && LEVEL_ORDER.includes(level as Level) && levelIndex(level as Level) > levelIndex(pickedLevel),
-      dueDay: dayKey(c.card.due),
+      dueDay: dueDayOf(c),
       removed: c.flags.excluded ? 'never' : c.flags.snoozed ? 'not_now' : c.flags.markedKnown ? 'known' : undefined,
     });
   }

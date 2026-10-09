@@ -1,16 +1,14 @@
 import {
   capMixedCards,
   emptyCard,
-  REVIEW_FACE_CONFIG,
   lessonCoreItems,
   pickNewForSession,
   describeSkillCard,
-  newWordState,
-  PRIORITY_CONFIG,
   orderSession,
   studyRank,
   type ItemRef,
   type Lesson,
+  type NewAllowance,
   type OrderedSession,
   type SkillCard,
   type StudyFocus,
@@ -113,7 +111,8 @@ export function pickReviewCards(input: {
   focus?: StudyFocus;
   lessonIdx?: ReadonlyMap<string, string>;
   now: Date;
-  baseNew?: number;
+  /** Phase 29 Part B.4: the Review queue's new-word allowance (`ledger.newAllowance('review')`). */
+  allowance: Pick<NewAllowance, 'state' | 'allowed' | 'faces' | 'message'>;
   /** Phase 23: words due in the next session too (between sessions): their new faces wait as well. */
   holdFaceWords?: Iterable<string>;
 }): {
@@ -132,14 +131,9 @@ export function pickReviewCards(input: {
     focus && idx ? (c: SkillCard) => studyRank(focus, (i) => idx.get(`${i.kind}:${i.id}`), c.item) : undefined;
   const remaining = Math.max(0, input.cap - input.doneThisSession);
   const due = capMixedCards(input.due, { remaining, now: input.now, ...(rank ? { rank } : {}) });
-  // Phase 22: the one new-word rule (core `newWordState`): paused only when more is due now than the
-  // whole cap, and "today's limit" once the cap is used up (not a backlog).
-  const allowance = newWordState({
-    dueNow: input.due.length,
-    capLeft: remaining,
-    cap: input.cap,
-    baseNew: input.baseNew ?? PRIORITY_CONFIG.reviewNewItems,
-  });
+  // Phase 29 Part B.4: the one new-word allowance (the ledger's): paused only when more is due now
+  // than the whole cap, and "this session's limit" once the cap is used up (not a backlog).
+  const allowance = input.allowance;
   const roomForNew = Math.max(0, remaining - due.length);
   // One "new" rule for every session (core `pickNewForSession`): New cards and study-order items
   // together, never more than the allowance (Phase 20) — My class cards are no longer uncapped.
@@ -151,23 +145,16 @@ export function pickReviewCards(input: {
     newCards,
     ...(focus ? { focus } : {}),
     ...(idx ? { lessonIdx: idx } : {}),
-    allowed: Math.min(allowance.newAllowed, roomForNew),
+    allowed: Math.min(allowance.allowed, roomForNew),
     // new faces follow the same pause / halving as new words
-    allowedFaces: Math.min(
-      allowance.newState === 'open'
-        ? REVIEW_FACE_CONFIG.newFacesPerSession
-        : allowance.newState === 'reduced'
-          ? Math.floor(REVIEW_FACE_CONFIG.newFacesPerSession / 2)
-          : 0,
-      Math.max(0, roomForNew - allowance.newAllowed),
-    ),
+    allowedFaces: Math.min(allowance.faces, Math.max(0, roomForNew - allowance.allowed)),
   });
   return {
     due,
     fresh: picked.cards,
     newItems: picked.items,
     held: input.due.length - due.length,
-    newPaused: allowance.newAllowed === 0 && allowance.newState !== 'open',
-    ...(allowance.newMessage ? { newReason: allowance.newMessage } : {}),
+    newPaused: allowance.allowed === 0 && allowance.state !== 'open',
+    ...(allowance.message ? { newReason: allowance.message } : {}),
   };
 }

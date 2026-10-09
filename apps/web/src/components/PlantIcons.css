@@ -11,6 +11,8 @@
 .plant-icon .pi-petal { fill: var(--bloom); }
 .plant-icon .pi-heart { fill: var(--warn); }
 .plant-icon .pi-drop { fill: var(--water); }
+/* Phase 27: a card in the next session: a faint outline, never the filled "needs water" drop. */
+.plant-icon .pi-drop-outline { fill: none; stroke: var(--water); stroke-width: 1.2; opacity: 0.55; }
 .plant-icon .pi-shine { stroke: var(--surface); stroke-width: 1; stroke-linecap: round; opacity: 0.8; }
 
 .plant-legend {

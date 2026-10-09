@@ -4,7 +4,8 @@
 import type { SkillCard } from '../learner/types.js';
 import { capDueCards } from '../learner/review-pile.js';
 import type { Skill } from '../types.js';
-import { isInReview } from '../progress/terms.js';
+import { startsAtRecall } from '../progress/terms.js';
+import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 
 export type ReviewFace = 'meaning' | 'pick' | 'recall' | 'say' | 'grammar';
 
@@ -14,8 +15,6 @@ export interface ReviewFaceConfig {
   shares: Record<'recognition' | 'production' | 'reading', number>;
   /** Correct picks in a row that move production from Pick to Recall. */
   pickToRecall: number;
-  /** A production card without a ladder state starts at Recall when it is in review at least this stable. */
-  recallStabilityDays: number;
   /** New production / reading cards of words already being learned that may join one session
    * (on top of the new-word allowance; never in a backlog, halved while one builds). */
   newFacesPerSession: number;
@@ -24,17 +23,13 @@ export interface ReviewFaceConfig {
 export const REVIEW_FACE_CONFIG: ReviewFaceConfig = {
   shares: { recognition: 0.4, production: 0.4, reading: 0.2 },
   pickToRecall: 2,
-  recallStabilityDays: 7,
-  newFacesPerSession: 8,
+  newFacesPerSession: PROGRESS_CONFIG.newFacesPerSession,
 };
 
 /** Where a production card is on the ladder. */
-export function productionRung(
-  c: Pick<SkillCard, 'prodRung' | 'state' | 'card'>,
-  cfg: ReviewFaceConfig = REVIEW_FACE_CONFIG,
-): 'pick' | 'recall' {
+export function productionRung(c: Pick<SkillCard, 'prodRung' | 'state' | 'card'>): 'pick' | 'recall' {
   if (c.prodRung) return c.prodRung;
-  return isInReview(c) && c.card.stability >= cfg.recallStabilityDays ? 'recall' : 'pick';
+  return startsAtRecall(c) ? 'recall' : 'pick';
 }
 
 /** The face a card shows in Review. */

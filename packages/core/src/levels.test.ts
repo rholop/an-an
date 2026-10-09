@@ -3,7 +3,9 @@ import { LevelSchema } from './chat/level-schema.js';
 import { scenarioMatchesLevels, type Scenario } from './chat/scenario.js';
 import { selectClozeSource } from './cloze/source.js';
 import { buildSession } from './cloze/session.js';
-import { levelUpSuggestion, nextNewItems } from './curriculum.js';
+import { buildLedger } from './progress/ledger.js';
+import { DEFAULT_SESSION_SETTINGS } from './progress/review-sessions.js';
+import { DEFAULT_STUDY_SETTINGS } from './study/study-focus.js';
 import { pickPromptWords } from './journal/prompts.js';
 import { summarizeLevels } from './journal/summary.js';
 import { emptyCard } from './learner/fsrs-instance.js';
@@ -99,17 +101,27 @@ describe('chosen level drives the curriculum', () => {
   ];
   const lexicon = new Lexicon(words);
 
-  it('nextNewItems draws from the chosen level, not the derived frontier', () => {
-    const picks = nextNewItems([], lexicon, 2, { currentLevel: 'L3' });
-    expect(picks.map((w) => w.id)).toEqual(['l3a', 'l3b']);
+  const ledger = (cards: SkillCard[], level?: Level) =>
+    buildLedger({
+      cards,
+      evidence: [],
+      knownItems: [],
+      session: DEFAULT_SESSION_SETTINGS,
+      masteryShare: 0.9,
+      now: new Date('2026-01-02'),
+      study: { lexicon, books: [], settings: DEFAULT_STUDY_SETTINGS, ...(level ? { level } : {}) },
+    });
+
+  it('new words come from the chosen level, not the derived frontier', () => {
+    expect(ledger([], 'L3').pickNew('review', { allowed: 2 }).items.map((i) => i.id)).toEqual(['l3a', 'l3b']);
     // without a chosen level it falls back to the progress-derived frontier (N1)
-    expect(nextNewItems([], lexicon, 1).map((w) => w.id)).toEqual(['n1']);
+    expect(ledger([]).pickNew('review', { allowed: 1 }).items.map((i) => i.id)).toEqual(['n1']);
   });
 
   it('suggests (never forces) the next level at 70% coverage', () => {
-    expect(levelUpSuggestion('N1', words, [])).toBeNull();
-    expect(levelUpSuggestion('N1', words, [card('n1')])).toBe('N2');
-    expect(levelUpSuggestion('L5', words, [])).toBeNull();
+    expect(ledger([]).level('N1').next).toBeUndefined();
+    expect(ledger([card('n1')]).level('N1').next).toBe('N2');
+    expect(ledger([]).level('L5').next).toBeUndefined();
   });
 
   it('never hides due reviews, whatever level is chosen', () => {

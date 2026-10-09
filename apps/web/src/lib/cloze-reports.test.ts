@@ -70,7 +70,7 @@ describe('evidence undo (reporting after answering)', () => {
     expect(await repo.getCard({ kind: 'word', id: 'w-1' }, 'recognition')).toBeDefined();
     await handle.undo();
     expect((await repo.getCard({ kind: 'word', id: 'w-1' }, 'recognition'))?.state).toBe('unseen');
-    expect(await repo.dueCards(new Date('2030-01-01'), 10)).toEqual([]);
+    expect((await service.ledger(new Date('2030-01-01'))).session().cards).toEqual([]);
     expect(activeEvidence(await db.evidence.toArray())).toHaveLength(0);
   });
 });

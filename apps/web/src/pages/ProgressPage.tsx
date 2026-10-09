@@ -3,17 +3,11 @@ import { storyWeekStats } from '../lib/story-service.js';
 import {
   activeEvidence,
   actualRetention,
-  computeStreak,
   LEVEL_IDS,
   levelIndex,
-  levelItems,
-  isPracticeSkill,
-  pinyinShare,
   toneConfusions,
   tonePairs,
   type ToneConfusion,
-  type SkillCard,
-  dayKey,
   formatDuration,
   REWARD_TABLE,
   scenarioMetrics,
@@ -28,9 +22,8 @@ import { LearnedMastered } from '../components/LearnedMastered.js';
 import { coverageLine, levelLabel, PINYIN_TAB, storyWeekLine, toneConfusionLine, toneLabel } from '../lib/labels.js';
 import { readTargetRetention } from '../lib/retention.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
-import { useProgressData } from '../lib/study.js';
+import { useLedger } from '../lib/ledger.js';
 import { db, gameService } from '../db/instance.js';
-import { allReadingCards } from '../db/queries.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -49,10 +42,9 @@ export function ProgressPage() {
   const [retention, setRetention] = useState<ReturnType<typeof actualRetention> | null>(null);
   const [streakConfig, setStreakConfig] = useState<StreakConfig | null>(null);
   const [tones, setTones] = useState<ToneConfusion[]>([]);
-  const [readingCards, setReadingCards] = useState<SkillCard[]>([]);
   const [storyStats, setStoryStats] = useState({ chars: 0, finished: 0 });
   const script = useReadingScript();
-  const progressData = useProgressData();
+  const ledger = useLedger();
   // Phase 21: every count re-reads after a change (a review, a sync merge, a setting).
   const [tick, setTick] = useState(0);
   useEffect(() => onStudyDirty(() => setTick((t) => t + 1)), []);
@@ -79,8 +71,6 @@ export function ProgressPage() {
       setSnapshot(snap);
       setRetention(actualRetention(activeEvidence(evidence), target));
       setTones(toneConfusions(activeEvidence(evidence), new Date()));
-      const reading = await allReadingCards(db);
-      if (!cancelled) setReadingCards(reading);
       const stats = await storyWeekStats(db);
       if (!cancelled) setStoryStats(stats);
       setStreakConfig(streak);
@@ -93,7 +83,7 @@ export function ProgressPage() {
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
   if (scenariosState.status === 'error')
     return <p>Failed to load scenarios: {scenariosState.error}</p>;
-  if (!snapshot || !retention || !streakConfig || scenariosState.status !== 'ready')
+  if (!snapshot || !retention || !streakConfig || !ledger || scenariosState.status !== 'ready')
     return <p>Loading…</p>;
 
   const byKind = new Map<string, { count: number; points: number }>();
@@ -101,12 +91,9 @@ export function ProgressPage() {
     const cur = byKind.get(r.kind) ?? { count: 0, points: 0 };
     byKind.set(r.kind, { count: cur.count + 1, points: cur.points + r.points });
   }
-  const week = weeklySummary(snapshot.rewards, now);
-  const streak = computeStreak(
-    new Set(snapshot.rewards.map((r) => dayKey(r.at))),
-    now,
-    streakConfig,
-  );
+  // Phase 29 Part B.12: days and weeks in the profile's time zone (weeks start Monday).
+  const week = weeklySummary(snapshot.rewards, now, ledger.timeZone);
+  const streak = ledger.streak(new Set(snapshot.rewards.map((r) => ledger.dayKey(r.at))), streakConfig);
   const sm = scenarioMetrics(snapshot.conversations);
 
   async function updateStreak(next: StreakConfig) {
@@ -187,7 +174,7 @@ export function ProgressPage() {
         </details>
       </section>
 
-      {progressData && lexiconState.status === 'ready' && (
+      {lexiconState.status === 'ready' && (
         <section data-testid="progress-levels">
           <h2>TOCFL levels</h2>
           <ul className="progress-levels">
@@ -197,7 +184,7 @@ export function ProgressPage() {
                 <LearnedMastered
                   compact
                   testId={`level-progress-${l}`}
-                  p={progressData.index.summarize(levelItems(l, lexiconState.lexicon.allWords()).filter((i) => !progressData.index.removed(i)))}
+                  p={ledger.level(l)}
                 />
               </li>
             ))}
@@ -205,17 +192,13 @@ export function ProgressPage() {
         </section>
       )}
 
-      {progressData && (
+      {(
         <section data-testid="progress-pinyin">
           <h2>{PINYIN_TAB}</h2>
           <LearnedMastered
             testId="progress-all"
-            pinyin={pinyinShare(progressData.index, [...progressData.cards, ...readingCards]).share}
-            p={progressData.index.summarize(
-              [...new Map(progressData.cards.filter((c) => !isPracticeSkill(c.skill)).map((c) => [`${c.item.kind}:${c.item.id}`, c.item])).values()].filter(
-                (i) => !progressData.index.removed(i),
-              ),
-            )}
+            pinyin={ledger.pinyinShare().share}
+            p={ledger.summary(ledger.metItems())}
           />
           {tones.length === 0 ? (
             <p className="progress-muted" data-testid="tone-confusion-none">

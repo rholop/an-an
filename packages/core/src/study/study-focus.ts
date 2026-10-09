@@ -12,7 +12,7 @@ import type { Lexicon } from '../lexicon.js';
 import { LEVEL_IDS, tocflLabel, type Level } from '../levels.config.js';
 import { bookTitle, courseBook, courseLessonLevel, courseOrdinal, LAIXUE_COURSE, lessonBadge, type Course } from '../textbook/course.js';
 import type { Lesson, Textbook } from '../textbook/types.js';
-import { lessonCoreItems, levelItems, ProgressIndex, type GrammarUse, type LearnedMastered } from '../progress/terms.js';
+import { lessonCoreItems, lessonCoreWordIds, levelItems, ProgressIndex, type GrammarUse, type LearnedMastered } from '../progress/terms.js';
 import type { ItemRef } from '../types.js';
 
 export type StepRef =
@@ -55,6 +55,9 @@ export interface StudyProfile {
   settings: StudySettings;
   course?: Course;
   config?: PriorityConfig;
+  /** Phase 29 Part A.1: the ledger's own index (the ledger always passes it, so Now studying and
+   * the lesson numbers are the same Learned / Mastered). Absent only in direct unit tests. */
+  index?: ProgressIndex;
 }
 
 export interface Mastery {
@@ -123,11 +126,6 @@ export interface StudyFocus {
 
 const itemKey = (i: ItemRef) => `${i.kind}:${i.id}`;
 
-function lessonCoreWords(l: Lesson): string[] {
-  return lessonCoreItems(l)
-    .filter((i) => i.kind === 'word')
-    .map((i) => i.id);
-}
 
 /** Tiers: for each TOCFL level in order, its lessons (course order), then "the rest of the level". */
 export function studySteps(
@@ -200,14 +198,14 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
   const cfg = profile.config ?? PRIORITY_CONFIG;
   const course = profile.course ?? LAIXUE_COURSE;
   const steps = studySteps(profile.books, course);
-  const idx = masteryIndexOf(profile, cfg);
+  const idx = profile.index ?? masteryIndexOf(profile, cfg);
   const allWords = profile.lexicon.allWords();
   const lessonById = new Map<string, Lesson>();
   for (const b of profile.books) for (const l of b.lessons) lessonById.set(l.id, l);
 
   // Words covered by some lesson's core vocabulary (so "the rest of the level" excludes them).
   const inLesson = new Set<string>();
-  for (const l of lessonById.values()) for (const id of lessonCoreWords(l)) inLesson.add(id);
+  for (const l of lessonById.values()) for (const id of lessonCoreWordIds(l)) inLesson.add(id);
 
   const share = profile.settings.masteryShare;
   const levelWords = new Map<Level, ItemRef[]>();

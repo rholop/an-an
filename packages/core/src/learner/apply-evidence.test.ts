@@ -134,8 +134,23 @@ describe('applyEvidence: weak signals never produce a full FSRS review on their 
     expect(result.appliedEffect).toBe('ignored:unseen-weak-signal');
   });
 
+  /** A card answered once and still learning (read credit needs an answer, Phase 29 Part B.11). */
+  const learning = (due: Date, over: Partial<SkillCard> = {}): SkillCard =>
+    freshCard(NOW, { card: { ...emptyCard(NOW), due, reps: 1, state: 1 }, state: 'learning', ...over });
+
+  it('Phase 29: a New (never answered) or Nope\'d card never gets read credit', () => {
+    const past = new Date(NOW.getTime() - 86_400_000);
+    const fresh = freshCard(NOW, { card: { ...emptyCard(NOW), due: past }, familiarity: config.readNoLookupGoodThreshold - 1 });
+    expect(applyEvidence(fresh, ev('chat_read_no_lookup'), NOW, config, fsrsInstance)).toMatchObject({
+      card: undefined,
+      appliedEffect: 'ignored:not-scheduled',
+    });
+    const noped = learning(past, { flags: { snoozed: true }, familiarity: config.readNoLookupGoodThreshold - 1 });
+    expect(applyEvidence(noped, ev('chat_read_no_lookup'), NOW, config, fsrsInstance).card).toBeUndefined();
+  });
+
   it('chat_read_no_lookup below the occurrence threshold only nudges familiarity, never touches the FSRS card', () => {
-    let current = freshCard(NOW, { card: { ...emptyCard(NOW), due: new Date(NOW.getTime() - 86_400_000) } });
+    const current = learning(new Date(NOW.getTime() - 86_400_000));
     const before = current.card;
     const result = applyEvidence(current, ev('chat_read_no_lookup'), NOW, config, fsrsInstance);
     expect(result.card!.card).toBe(before); // same object: FSRS card untouched
@@ -144,27 +159,24 @@ describe('applyEvidence: weak signals never produce a full FSRS review on their 
   });
 
   it('chat_read_no_lookup below threshold does NOT apply even when due, until the threshold is reached', () => {
-    const due = new Date(NOW.getTime() - 86_400_000);
-    let current = freshCard(NOW, { card: { ...emptyCard(NOW), due } });
+    let current = learning(new Date(NOW.getTime() - 86_400_000));
     for (let i = 1; i < config.readNoLookupGoodThreshold; i++) {
       const r = applyEvidence(current, ev('chat_read_no_lookup'), NOW, config, fsrsInstance);
       expect(r.appliedEffect).toMatch(/^familiarity:/);
       current = r.card!;
     }
-    expect(current.card.reps).toBe(0); // never reviewed via FSRS
+    expect(current.card.reps).toBe(1); // no FSRS review from reading alone
   });
 
   it('chat_read_no_lookup reaching the threshold WHILE due finally counts as Good', () => {
-    const due = new Date(NOW.getTime() - 86_400_000);
-    let current = freshCard(NOW, { card: { ...emptyCard(NOW), due }, familiarity: config.readNoLookupGoodThreshold - 1 });
+    const current = learning(new Date(NOW.getTime() - 86_400_000), { familiarity: config.readNoLookupGoodThreshold - 1 });
     const result = applyEvidence(current, ev('chat_read_no_lookup'), NOW, config, fsrsInstance);
     expect(result.appliedEffect).toContain('fsrs:good');
     expect(result.card!.familiarity).toBe(0); // counter resets
   });
 
   it('chat_read_no_lookup reaching the threshold while NOT due stays a familiarity nudge, never an FSRS review', () => {
-    const notDue = new Date(NOW.getTime() + 86_400_000);
-    let current = freshCard(NOW, { card: { ...emptyCard(NOW), due: notDue }, familiarity: config.readNoLookupGoodThreshold - 1 });
+    const current = learning(new Date(NOW.getTime() + 86_400_000), { familiarity: config.readNoLookupGoodThreshold - 1 });
     const before = current.card;
     const result = applyEvidence(current, ev('chat_read_no_lookup'), NOW, config, fsrsInstance);
     expect(result.card!.card).toBe(before);

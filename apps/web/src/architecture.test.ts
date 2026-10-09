@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 /**
  * Phase 21 Part K: guard rails so the app stays cohesive. Each rule below names the one place a
  * meaning lives; a new file that re-derives it by hand fails here instead of drifting.
+ * Phase 29: only labels, My class (labels and visibility) and colours stay here. Progress (due,
+ * new, Learned, Mastered, sessions, days) is guarded by the compiler (core no longer exports the
+ * low-level predicates) and the `anan/progress-from-ledger` lint rule (eslint-rules/).
  */
 
 const REPO = path.resolve(__dirname, '../../..');
@@ -46,22 +49,6 @@ describe('Phase 21 architecture', () => {
     expect(FILES.some((f) => f.rel === 'apps/web/src/pages/ClozePage.tsx')).toBe(true);
   });
 
-  it("only core/progress decides Learned / Mastered from a card's state or stability", () => {
-    const stateCmp =
-      /\.state\s*[!=]==?\s*['"](review|mature)['"]|['"](review|mature)['"]\s*[!=]==?\s*[\w.]*\.state\b|\[\s*['"](review|mature)['"][^\]]*\]\s*\.includes/;
-    const stabilityCmp = /\bstability\s*[<>]=?\s*[\w.]+|[\w.)]+\s*[<>]=?\s*[\w.]*\.stability\b/;
-    const allowed = (rel: string) =>
-      rel.startsWith('packages/core/src/progress/') ||
-      // where the item state itself is computed from FSRS (the definition, not a reading of it)
-      rel === 'packages/core/src/learner/fsrs-instance.ts' ||
-      // which listening exercise types a word has unlocked (a difficulty ladder, not a progress number)
-      rel === 'packages/core/src/listening/exercises.ts' ||
-      // which Review face a production card starts on (the Pick → Recall ladder, Phase 23)
-      rel === 'packages/core/src/review/faces.ts';
-    expect(offenders(stateCmp, allowed)).toEqual([]);
-    expect(offenders(stabilityCmp, allowed)).toEqual([]);
-  });
-
   it('lesson, book and level labels are only built in the label modules', () => {
     const handLabel =
       /`(Lesson|Book|Level|TOCFL|L|第)\s?\$\{|['"](Lesson|Book|Level|TOCFL) ['"]\s*\+|\$\{[^}]*\}課|`來學華語\s?\$\{/;
@@ -94,32 +81,6 @@ describe('Phase 21 architecture', () => {
         'apps/web/src/pages/TextbookPage.tsx', // the My class editor and "this week" chip
       ],
     );
-  });
-
-  it('due counts come only from reviewStatus (Phase 22): no screen counts due cards itself', () => {
-    // The old per-screen counters are gone; the new-word rule is core `newWordState` via reviewStatus.
-    expect(offenders(/\b(dueForecast|reviewsDoneToday)\b/, () => false)).toEqual([]);
-    expect(
-      offenders(/\bnewItemAllowance\(/, (rel) => rel.startsWith('packages/core/src/learner/')),
-    ).toEqual([]);
-    // Pages and components never decide "due" themselves (repo queries and core do).
-    expect(
-      offenders(/\bisDueCard\(|\.card\.due\s*[<>]=?|\bdueCards\([^)]*\)\)?\.length/, (rel) => !/^apps\/web\/src\/(pages|components|App\.tsx)/.test(rel))).toEqual([]);
-    // Home, Review and Garden show the shared status.
-    for (const rel of ['apps/web/src/pages/GardenPage.tsx', 'apps/web/src/pages/ReviewPage.tsx'])
-      expect(FILES.find((f) => f.rel === rel)!.text).toMatch(/useReviewStatus\(/);
-  });
-
-  it('review sessions come only from core (Phase 23): no screen works out morning / evening itself', () => {
-    // Session windows are core `sessionAt` / `sessionWindows` in the profile's time zone; screens
-    // read them through reviewStatus. getHours() would use the device zone, not the profile's.
-    expect(
-      offenders(/\.getHours\(\)|\bsessionWindows\(|\bsessionAt\(/, (rel) => !/^apps\/web\/src\/(pages|components|App\.tsx)/.test(rel)),
-    ).toEqual([]);
-    // Practice skills (listening, reading) never count toward Learned / Mastered: one rule in core.
-    expect(
-      offenders(/skill\s*!==\s*'listening'/, (rel) => rel.startsWith('packages/core/src/progress/') || rel.startsWith('packages/core/src/listening/')),
-    ).toEqual([]);
   });
 
   it('every colour is a theme token (Phase 22): none written outside src/theme.css', () => {

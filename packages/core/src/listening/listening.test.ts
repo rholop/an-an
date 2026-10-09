@@ -244,21 +244,21 @@ describe('session planning', () => {
 
   it('new items start with hear-and-pick; due cards come first; sessions mix types as stability grows', () => {
     const plan = planListenSession({
-      lexicon, dueListening: [card('mai3', 'listening', 'review', 20)], newWordIds: ['tang1'], hasClip, sentences, rng: () => 0.3,
+      lexicon, dueListening: [card('mai3', 'listening', 'review', 20)], newWordIds: ['tang1'], newAllowed: 4, hasClip, sentences, rng: () => 0.3,
     });
     expect(plan[0]!.card?.item.id).toBe('mai3');
     expect(plan.find((p) => p.wordIds[0] === 'tang1')!.exercise.type).toBe('hear_pick');
     const strong = Array.from({ length: 30 }, (_, i) =>
-      planListenSession({ lexicon, dueListening: [card('kf', 'listening', 'review', 30)], newWordIds: [], hasClip, sentences, rng: () => i / 30 })[0]!.exercise.type);
+      planListenSession({ lexicon, dueListening: [card('kf', 'listening', 'review', 30)], newWordIds: [], newAllowed: 4, hasClip, sentences, rng: () => i / 30 })[0]!.exercise.type);
     expect(new Set(strong).size).toBeGreaterThan(2);
   });
 
   it('skips items whose clip is not usable, and tone exercises need verified clips', () => {
-    const noClip = planListenSession({ lexicon, dueListening: [card('kf', 'listening', 'review', 30)], newWordIds: [], hasClip: () => false, sentences });
+    const noClip = planListenSession({ lexicon, dueListening: [card('kf', 'listening', 'review', 30)], newWordIds: [], newAllowed: 4, hasClip: () => false, sentences });
     expect(noClip).toEqual([]);
     const autoOnly = (k: string, id: string, verified?: boolean) => !verified && hasClip(k, id);
     for (let i = 0; i < 20; i++) {
-      const p = planListenSession({ lexicon, dueListening: [card('ls', 'listening', 'review', 30)], newWordIds: [], hasClip: autoOnly, sentences, rng: () => i / 20 });
+      const p = planListenSession({ lexicon, dueListening: [card('ls', 'listening', 'review', 30)], newWordIds: [], newAllowed: 4, hasClip: autoOnly, sentences, rng: () => i / 20 });
       for (const item of p) expect(['tone_check', 'tone_pair']).not.toContain(item.exercise.type);
     }
   });
@@ -271,7 +271,7 @@ describe('session planning', () => {
   });
 
   it('restricts a lesson round to the lesson’s words', () => {
-    const plan = planListenSession({ lexicon, dueListening: [card('kf', 'listening', 'review'), card('mai3', 'listening', 'review')], newWordIds: [], hasClip, sentences, onlyWordIds: new Set(['kf']), rng: () => 0.2 });
+    const plan = planListenSession({ lexicon, dueListening: [card('kf', 'listening', 'review'), card('mai3', 'listening', 'review')], newWordIds: [], newAllowed: 4, hasClip, sentences, onlyWordIds: new Set(['kf']), rng: () => 0.2 });
     expect(plan.map((p) => p.wordIds[0])).toEqual(['kf']);
     expect(makeClipLookup(null, {})('word', 'x')).toBe(false);
   });

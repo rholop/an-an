@@ -107,26 +107,29 @@ Phases may add fields but must not rename or remove these.
 
 ## Shared terms (Phase 21: one meaning everywhere)
 
-Every screen uses these words with exactly these meanings. The definitions live in
-`packages/core/src/progress/terms.ts` (thresholds in `progress.config.ts`); nothing else
-compares a card's `state` or `stability` to decide them (an architecture test enforces this).
+Every screen uses these words with exactly these meanings. Phase 29: the app asks only the
+progress ledger (`packages/core/src/progress/ledger.ts`, web `useLedger()` / `getLedgerNow()`);
+the definitions behind it live in `progress/terms.ts` (thresholds in `progress.config.ts`), and
+nothing else reads a card's scheduling fields (the compiler and the `anan/progress-from-ledger`
+lint rule enforce this; see "Progress rule (Phase 29)" below).
 
 | Term | Meaning | Where it is computed |
 |---|---|---|
-| **New** | Introduced, never answered (`state === 'introduced'`, `reps === 0`) | `isNewCard` |
-| **Due** | Answered at least once, due now, not removed by Nope. `unseen` and New cards are never due | `isDueCard` |
-| **Review session** | Phase 23: two a day in the profile's time zone (default America/New_York): morning 04:00–10:00 holds cards due before 16:00, evening 16:00–04:00 holds cards due before 10:00 tomorrow. A session nobody does rolls into the next. Cap per session (80) and up to 5 new words per session. Between sessions: "Morning review done · Evening review opens at 4 pm (31 cards)" + Review early | `sessionAt` / `sessionWindows` (`core/progress/review-sessions.ts`) |
-| **Due now / this session** | The only counts shown for review: this session's cards, the next session (opens at …, count), distinct cards done this session, cap left, the new-word state (open, reduced, backlog pause, session limit). Home, Review, Garden and the nav badge all show these | `reviewStatus` (`core/progress/review-status.ts`, loaded by `useReviewStatus`) |
+| **New** | Introduced, never answered (`state === 'introduced'`, `reps === 0`). Never in a session, never read credit | `ledger.item`, `ledger.newCards` |
+| **Due / needs water** | Phase 29: in the current review session (recognition, production and reading cards due before the session cutoff, minus cards finished this session, after Nope). Listening is its own practice queue. "Due now" is not a concept | `ledger.session`, `ledger.needsWater`, `ledger.thirstyWords` |
+| **Review session** | Phase 23: two a day in the profile's time zone (default America/New_York): morning 04:00–10:00 holds cards due before 16:00, evening 16:00–04:00 holds cards due before 10:00 tomorrow. A session nobody does rolls into the next. Cap per session (80) and up to 5 new words per session. Between sessions: "Morning review done · Evening review opens at 4 pm (31 cards)" + Review early | `ledger.status` (built on `core/progress/review-sessions.ts`) |
+| **Due now / this session** | The only counts shown for review: this session's cards, the next session (opens at …, count), distinct cards done this session, cap left, the new-word state (open, reduced, backlog pause, session limit). Home, Review, Garden and the nav badge all show these | `ledger.status` / `ledger.session()` (`useLedger`); new words `ledger.newAllowance(queue)` |
 | **Review face** | Phase 23: recognition = Meaning, production = Pick the Mandarin (4 same-length look-alikes from `core/confusables`, Unihan radical/strokes/phonetic) then Recall after 2 right picks in a row (a lapse goes back to Pick), reading = Say it. Mixed ~40/40/20 | `reviewFace`, `capMixedCards` (`core/review/faces.ts`) |
-| **Pinyin %** | Phase 23: Learned words whose reading card is Learned too, shown as "Learned X% · Mastered Y% · Pinyin Z%". Reading never changes Learned or Mastered | `pinyinShare` |
-| **Learned** | Recognition in review after an answer in this app, or passed "I already know this". Grammar: one correct use. Leeches count as Learned | `ProgressIndex.learned` / `summarize` |
-| **Mastered** | Recognition stability ≥ 21 d and production ≥ 7 d (grammar: 3 correct uses, last one correct and on a later day than the first). Leeches and imports never count | `ProgressIndex.mastered` / `summarize` |
-| **Imported** | Seeded by Anki or placement, no answer here yet | `ProgressIndex.imported` |
-| **Tricky** | A leech: counts as Learned, never Mastered | `ProgressIndex` |
-| **Comprehensible** | Known ∪ due ∪ learning (chat, reader and open-chat coverage) | `learnerService.wordSets` |
-| **Current lesson** | The study focus's active lesson (`getStudyFocus`), which follows My class | `study/study-focus.ts` |
-| **Vocabulary ladder** | Rung 1 learned/due/learning/catch-up · 2 active lesson · 3 next lesson · 4 the lesson after · 5 current level · 6 everything else. Stories and open chat both rank words with it | `vocabLadder` (`core/progress/vocabLadder.ts`) |
+| **Pinyin %** | Phase 23: Learned words whose reading card is Learned too, shown as "Learned X% · Mastered Y% · Pinyin Z%". Reading never changes Learned or Mastered | `ledger.pinyinShare` |
+| **Learned** | Recognition in review after an answer in this app, or passed "I already know this". Grammar: one correct use. Leeches count as Learned | `ledger.item` / `ledger.summary` |
+| **Mastered** | Recognition stability ≥ 21 d and production ≥ 7 d (grammar: 3 correct uses, last one correct and on a later day than the first; ●●● means exactly this). Leeches and imports never count | `ledger.item` / `ledger.summary` |
+| **Imported** | Seeded by Anki or placement, no answer here yet | `ledger.item` |
+| **Tricky** | A leech: counts as Learned, never Mastered | `ledger.item` |
+| **Comprehensible** | Learned ∪ in session ∪ learning (answered at least once): chat, open chat, Reader, Cloze coverage and stories. Read credit (`ledger.creditsRead`): answered, not removed, in session or learning | `ledger.comprehensible` |
+| **Current lesson** | The study focus's active lesson, which follows My class. A lesson is done at the learner's lesson share; "still to master" is empty exactly then | `ledger.focus`, `ledger.lesson` |
+| **Vocabulary ladder** | Rung 1 learned/in session/learning · 2 active lesson and catch-up words never introduced · 3 next lesson · 4 the lesson after · 5 current level · 6 everything else. Stories and open chat both rank words with it | `ledger.ladder` |
 | **Your class** | The My class setting. Labels and visibility only, never priority | `useClassScope` / `currentClassScope` |
+| **Days** | Phase 29: always the profile's time zone; weeks start on Monday (streak, This week, story week, forecast, journal prompt) | `ledger.dayKey`, `ledger.weekRange`, `ledger.streak` |
 
 **Colours (Phase 22):** every colour is a token in `apps/web/src/theme.css` (light = Solarized
 Light nudged green, dark = Solarized Dark); components use only `var(--…)`. `src/theme.test.ts`
@@ -134,13 +137,37 @@ checks AA contrast and the architecture test fails on a colour written anywhere 
 shared-term icons (seed, sprout, leaf, flower, droplet) are `components/PlantIcons.tsx`.
 
 Progress is always shown as "Learned X% · Mastered Y%" (`LearnedMastered` component).
-New items for any session come from one rule, `pickNewForSession` in `study/queue.ts`.
+New items for any session come from one rule, `pickNewForSession` in `study/queue.ts`, under the
+ledger's one allowance (`ledger.newAllowance(queue)`, `ledger.pickNew`).
 
 **Labels rule:** lesson, book and level names are built only in `apps/web/src/lib/labels.ts`,
 `packages/core/src/textbook/course.ts`, `packages/core/src/levels.config.ts` and core's
 `stepName`. Never write `` `Lesson ${n}` ``, `` `L${n}` `` or `` `TOCFL ${level}` `` by hand in a page:
 add a helper to `labels.ts` instead. User-facing words for actions and feedback (Next, Undo,
 Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
+
+## Progress rule (Phase 29)
+
+- **All progress comes from the ledger.** Every progress number or decision (due, needs water,
+  new words, Learned, Mastered, lessons, levels, comprehensible words, read credit, days) comes
+  from `buildLedger` (`packages/core/src/progress/ledger.ts`); in the web app from `useLedger()`
+  or `getLedgerNow()` (`apps/web/src/lib/ledger.ts`). Nothing else reads a card's `due`,
+  `stability`, `state`, `reps`, `lapses` or `last_review`, or builds its own count.
+- Core no longer exports the low-level predicates (`isDueCard`, `isNewCard`, `ProgressIndex`,
+  `summarize`, `sessionCards`, …): `apps/web/src/__type-fixtures__/no-progress-predicates.ts`
+  fails typecheck if one comes back. The typed lint rule `anan/progress-from-ledger`
+  (`eslint-rules/`, CI and the pre-commit hook) fails on scheduling-field reads, device-time-zone
+  day maths and threshold numbers outside `core/progress`. Persistence and the scheduler may store
+  cards, one line at a time, with `// eslint-disable-next-line anan/progress-from-ledger -- <why>`.
+- **Changing a definition** means changing `ledger.ts`, the Shared terms table above and the
+  property test (`progress/ledger.property.test.ts`) together, in one commit.
+- **A feature that needs a number the ledger lacks adds it to the ledger first.**
+- The invariants are tested: the property test (garden thirsty = Water all = session words, badge
+  = session size, one Review early size, lesson done ⇔ nothing still to master, level-up ⇔
+  Learned % ≥ threshold, ●●● ⇔ Mastered, New never in session, no read credit for New or removed
+  cards, a pause stops every queue), the owner's three reports (`progress/owner-cases.test.ts`) and
+  the Playwright `e2e/numbers-agree.spec.ts` at 08:00, 12:00 and 18:00 New York time.
+- Checklist line for every change: **"Shows or uses progress? Got it from the ledger."**
 
 ## Build phases
 
@@ -165,6 +192,7 @@ Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
 | 25 | Gemini only; lesson grammar step (3 exercises per point, ≥2 types, tiles from `core/textbook/grammar-step.ts` + `lesson-grammar-step.ts`); lesson senses (`glossFor(w, {lesson})`); names out of vocab; curriculum data fixes via `data/supplement/lexicon-overrides.yaml`; `pnpm audit:curriculum` in CI (config `data/curriculum/audit-config.yaml`, report `docs/curriculum-audit.md`); naturalness pass `pnpm --filter @anan/proxy naturalness` | `25-lessons-grammar-and-story-fix.md` |
 | 26 | Stories you can read: grouped glossed word lists (`storyPromptLists`), `GEMINI_MODEL_STORY` writer, sentence repair (`/v1/story-repair`, max 3 calls + 1 check), mini lesson ("Words in this story") above the floors, real retries (variant + topic rotation, no cache), lesson stories made ahead (`pnpm stories:build`) | `26-stories-that-pass.md`, eval in `docs/stories-eval.md` |
 | 28 | Progress never lost: gzipped saves (`content-encoding: gzip`), 5 s push + session-end push, retry with backoff, a status per failure (header cloud "Saved / Saving… / Not saved for N" + Save now), fresh browser never opens empty (restore screen), Settings → Your progress (server vs browser counts, saved versions: Restore / Replace), server keeps 10 + one a day for 30 days, shrink guard (409 over 20%), `/v1/sync-selftest` deploy check (fails on 413), `sync:inspect` | `28-progress-never-lost.md` |
+| 29 | One progress rule: the progress ledger is the only source of progress numbers (`core/progress/ledger.ts`, web `useLedger`); predicates no longer exported; typed lint rule `anan/progress-from-ledger` in CI and pre-commit; property test, owner's three cases, `e2e/numbers-agree.spec.ts`. Replaces Phase 27 | `29-one-progress-rule.md`, findings closed in `docs/progress-rule.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

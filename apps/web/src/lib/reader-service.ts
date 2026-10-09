@@ -1,5 +1,6 @@
 import {
   bankEntryToReaderSentence,
+  DEFAULT_STUDY_SETTINGS,
   buildReaderGenRequest,
   evaluateReaderSentence,
   hashReaderText,
@@ -9,7 +10,6 @@ import {
   isUsableSentence,
   lessonBadge,
   lessonTag,
-  nextNewItems,
   pickFromEvaluated,
   pickGenerationWord,
   readerSentencesFromChat,
@@ -26,7 +26,7 @@ import {
   type SentenceBankEntry,
   type TutorLLM,
 } from '@anan/core';
-import { allChatLines, allJournalSentences, allTouchedCards } from '../db/queries.js';
+import { allChatLines, allJournalSentences } from '../db/queries.js';
 import { excludedZh } from './cloze-reports.js';
 import type { AnanDB, LiveSentenceRow } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
@@ -88,21 +88,17 @@ export class ReaderService {
   /** The learner's current picture, read fresh each press (cheap, and a level
    * change or a lookup a moment ago is reflected immediately). */
   async learnerState(level: Level, now: Date): Promise<ReaderLearnerState> {
-    const { db, learnerService, lexicon } = this.deps;
-    // Phase 21: the one known / due / learning definition, and the study focus's order first.
-    const [{ knownIds, dueIds, learningIds }, cards, focus] = await Promise.all([
-      learnerService.wordSets(now),
-      allTouchedCards(db),
-      this.deps.studyFocus?.().catch(() => undefined),
-    ]);
-    const priorityIds = focus?.enabled
-      ? focus.newItemsAllowed.filter((i) => i.kind === 'word').map((i) => i.id)
-      : [];
-    const frontier = nextNewItems(cards, lexicon, FRONTIER_POOL, {
-      currentLevel: level,
-      priorityIds,
-      ...(this.deps.classScope?.enabled ? { classScope: this.deps.classScope } : {}),
+    const { learnerService, lexicon } = this.deps;
+    // Phase 29: the one comprehensible set, and the "New words" pool from the one new-word picker
+    // under the one allowance (the study focus's order first).
+    const ledger = await learnerService.ledger(now, {
+      study: { lexicon, books: [], settings: { ...DEFAULT_STUDY_SETTINGS, enabled: false } },
     });
+    const { knownIds, dueIds, learningIds } = ledger.comprehensible();
+    const picked = ledger.pickNew('review', { allowed: FRONTIER_POOL, level });
+    const frontier = [...picked.cards.map((c) => c.item), ...picked.items]
+      .filter((i) => i.kind === 'word')
+      .flatMap((i) => lexicon.byId(i.id) ?? []);
     return { lexicon, learnerLevel: level, knownIds, dueIds, learningIds, frontier };
   }
 
@@ -316,7 +312,7 @@ export class ReaderService {
   }
 
   /**
-   * Leaving a sentence: every due or learning word in it that the learner did
+   * Leaving a sentence: every in-session or learning word in it that the learner did
    * NOT look up was read without help -> chat_read_no_lookup (phase 3's rule).
    */
   async recordNoLookup(
@@ -326,11 +322,12 @@ export class ReaderService {
     now: Date = new Date(),
   ): Promise<number> {
     const events: Evidence[] = [];
+    const ledger = await this.deps.learnerService.ledger(now);
     for (const wordId of new Set(wordIds)) {
       if (lookedUp.has(wordId)) continue;
       const card = await this.deps.learnerService.getCard({ kind: 'word', id: wordId }, 'recognition');
-      if (!card) continue;
-      if (card.state === 'learning' || card.card.due <= now) {
+      // Phase 29 Part B.11: one read-credit rule (a New or Nope'd card never earns it).
+      if (ledger.creditsRead(card)) {
         events.push({
           item: { kind: 'word', id: wordId },
           skill: 'recognition',
@@ -355,7 +352,7 @@ export class ReaderService {
     sentenceId: string,
     now: Date = new Date(),
   ): Promise<string[]> {
-    const { knownIds: known } = await this.deps.learnerService.wordSets(now);
+    const known = (await this.deps.learnerService.ledger(now)).learnedWordIds();
     const unknown = [...new Set(wordIds)].filter((id) => !known.has(id) && !lookedUp.has(id));
     if (unknown.length === 0) return [];
     await this.deps.learnerService.recordBulk(

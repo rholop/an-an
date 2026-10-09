@@ -369,7 +369,8 @@ describe('mixed session', () => {
       learnerLevel: 'L1',
       errorItems: [errorItem],
       now,
-      config: { maxNewItems: 1 },
+      // Phase 29: new items arrive capped by the ledger; one word slot left after the error item
+      config: { maxItems: 2 },
       rng: () => 0.5,
     });
     expect(session.some((e) => e.kind === 'error')).toBe(true);
@@ -447,12 +448,15 @@ describe('evidence', () => {
 });
 
 describe('prompts, summary and sources', () => {
-  it('rotates the daily prompt by date', () => {
-    expect(dailyPrompt(new Date(2026, 2, 1)).id).not.toBe(dailyPrompt(new Date(2026, 2, 2)).id);
-    expect(dailyPrompt(new Date(2026, 2, 1)).id).toBe(dailyPrompt(new Date(2026, 2, 1, 23)).id);
+  it("rotates the daily prompt by the profile's date (New York by default)", () => {
+    const morning = new Date('2026-03-01T13:00:00Z'); // 08:00 New York
+    expect(dailyPrompt(morning).id).not.toBe(dailyPrompt(new Date('2026-03-02T13:00:00Z')).id);
+    // 22:00 New York is still the same day there, though UTC has moved on
+    expect(dailyPrompt(morning).id).toBe(dailyPrompt(new Date('2026-03-02T03:00:00Z')).id);
+    expect(dailyPrompt(new Date('2026-03-02T03:00:00Z'), 'UTC').id).not.toBe(dailyPrompt(morning, 'UTC').id);
   });
 
-  it('picks due words, production first, one per word', () => {
+  it("picks the session's words, production first, one per word", () => {
     const mk = (hw: string, skill: SkillCard['skill'], due: string): SkillCard => ({
       item: { kind: 'word', id: wordId(hw) },
       skill,
@@ -473,7 +477,6 @@ describe('prompts, summary and sources', () => {
         mk('貓', 'recognition', '2026-01-01'),
         mk('買', 'production', '2026-02-01'),
         mk('買', 'recognition', '2026-01-01'),
-        mk('錢', 'production', '2030-01-01'),
         mk('手機', 'production', '2026-02-10'),
       ],
       lexicon,

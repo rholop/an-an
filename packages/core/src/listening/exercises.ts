@@ -1,5 +1,6 @@
 import { emptyCard } from '../learner/fsrs-instance.js';
 import type { SkillCard } from '../learner/types.js';
+import { practiceStrengthOf } from '../progress/terms.js';
 import type { Lexicon } from '../lexicon.js';
 import type { SentenceBankEntry } from '../cloze/sentence.js';
 import { levelIndex, type Level } from '../levels.config.js';
@@ -224,6 +225,8 @@ export interface ListenPlanInput {
   dueListening: readonly SkillCard[];
   /** Items with a recognition card in review+ and a clip, but no listening card yet. */
   newWordIds: readonly string[];
+  /** Phase 29 Part B.4: new listening items this session (`ledger.newAllowance('listening')`). */
+  newAllowed: number;
   hasClip: ClipLookup;
   sentences: readonly SentenceBankEntry[];
   /** Lower rank first (Phase 14 study order); absent = as given. */
@@ -282,7 +285,7 @@ export function planListenSession(input: ListenPlanInput): OrderedSession<PlanIt
     .map((id, i) => ({ id, i }))
     .sort((a, b) => rank(a.id) - rank(b.id) || a.i - b.i)
     .map((x) => x.id)
-    .slice(0, config.maxNewPerSession);
+    .slice(0, Math.max(0, input.newAllowed));
 
   const queue: Array<{ wordId: string; card?: SkillCard }> = [
     ...due.map((c) => ({ wordId: c.item.id, card: c })),
@@ -295,7 +298,7 @@ export function planListenSession(input: ListenPlanInput): OrderedSession<PlanIt
   for (const q of queue) {
     const word = input.lexicon.byId(q.wordId);
     if (!word) continue;
-    const stab = q.card?.card.stability ?? 0;
+    const stab = practiceStrengthOf(q.card);
     const options: Array<() => Exercise | undefined> = [];
     const verified = input.hasClip('word', word.id, true);
     for (const t of unlockedTypes(stab, config)) {

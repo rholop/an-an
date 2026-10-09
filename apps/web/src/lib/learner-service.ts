@@ -1,11 +1,13 @@
 import {
   applyEvidence,
+  buildLedger,
   buildFsrs,
   DEFAULT_LEARNER_CONFIG,
+  DEFAULT_SESSION_SETTINGS,
+  parkShortStep,
   productionUnlockFor,
   REVIEW_PILE_CONFIG,
   spreadBulkDue,
-  wordSets,
   type ItemRef,
   type Level,
   type NopeChoice,
@@ -13,8 +15,10 @@ import {
   type FSRS,
   type LearnerConfig,
   type LearnerRepo,
+  type SessionSettings,
+  type Ledger,
+  type LedgerStudyInputs,
   type SkillCard,
-  type WordSets,
 } from '@anan/core';
 
 interface UidRepo {
@@ -49,6 +53,13 @@ export function setBulkCapSource(fn: () => number): void {
   bulkCap = fn;
 }
 
+/** Phase 27: the profile's review sessions, so a card left in a short learning step waits for the
+ * next session's start instead of falling due minutes later (set from the profile's settings). */
+let sessionSettings: () => SessionSettings = () => DEFAULT_SESSION_SETTINGS;
+export function setSessionSettingsSource(fn: () => SessionSettings): void {
+  sessionSettings = fn;
+}
+
 /** Bulk actions whose new cards get spread-out first due dates. */
 const BULK_KINDS = new Set<Evidence['kind']>(['anki_import_seen', 'placement_known']);
 
@@ -60,11 +71,17 @@ function gated(e: Evidence): Evidence {
   return { ...e, context: { source: e.context?.source ?? 'chat', ...e.context, noIntroduce: true } };
 }
 
-/** Phase 21: the study settings' legacy "known" list, so every wordSets caller sees the same
+/** Phase 21: the study settings' legacy "known" list, so every ledger sees the same
  * Learned set (registered by lib/study.ts; avoids an import cycle). */
 let knownItemsSource: () => readonly string[] = () => [];
 export function setKnownItemsSource(fn: () => readonly string[]): void {
   knownItemsSource = fn;
+}
+
+/** Phase 29: where `ledger()` comes from (lib/ledger.ts registers the app's cached ledger). */
+let ledgerSource: ((now: Date) => Promise<Ledger>) | undefined;
+export function setLedgerSource(fn: ((now: Date) => Promise<Ledger>) | undefined): void {
+  ledgerSource = fn;
 }
 
 export interface NopeHandle {
@@ -113,7 +130,9 @@ export class LearnerService {
     now: Date,
   ): Promise<{ card: SkillCard | undefined; prior: SkillCard | undefined; uid?: string; unlocked: Evidence[] }> {
     const prior = await this.repo.getCard(evidence.item, evidence.skill);
-    const result = applyEvidence(prior, evidence, now, this.config, this.fsrsInstance);
+    const applied = applyEvidence(prior, evidence, now, this.config, this.fsrsInstance);
+    // Phase 27: a short learning step finishes in the sitting, or waits for the next session.
+    const result = applied.card ? { ...applied, card: parkShortStep(applied.card, now, sessionSettings()) } : applied;
     const writes: SkillCard[] = result.card ? [result.card] : [];
     const events: Evidence[] = [evidence];
     const unlocked: Evidence[] = [];
@@ -217,7 +236,7 @@ export class LearnerService {
       }
     }
     const changed = [...latest.entries()].filter(([k, c]) => c !== undefined && c !== original.get(k));
-    let cards = changed.map(([, c]) => c!);
+    let cards = changed.map(([, c]) => parkShortStep(c!, now, sessionSettings()));
     const currents = events.map((e) => original.get(keyOf(e)));
     // Phase 20: cards a bulk action creates (Anki import, placement) get spread-out first due
     // dates, so they never all fall due on the same day.
@@ -286,33 +305,29 @@ export class LearnerService {
     return all.filter((c): c is SkillCard => !!c);
   }
 
-  /** Phase 21: every Due card (no silent row cut; sessions cap by study-order priority). */
-  dueCards(now: Date = new Date(), limit = Infinity): Promise<SkillCard[]> {
-    return this.repo.dueCards(now, limit);
-  }
-
-  /** Phase 15: due listening cards (their own queue). */
-  dueListeningCards(now: Date = new Date(), limit = 50): Promise<SkillCard[]> {
-    return (this.repo as unknown as { dueListeningCards(n: Date, l: number): Promise<SkillCard[]> }).dueListeningCards(now, limit);
-  }
-
-  /** Phase 21: New cards (introduced, never answered); sessions take them through `pickNewForSession`. */
-  async newCards(): Promise<SkillCard[]> {
-    const repo = this.repo as LearnerRepo & { newCards?: () => Promise<SkillCard[]> };
-    return repo.newCards ? repo.newCards() : [];
-  }
-
   /** Every card (any skill, any state). */
   async allCards(): Promise<SkillCard[]> {
     const repo = this.repo as Partial<ItemCardsRepo> & LearnerRepo;
     return repo.allCards ? repo.allCards() : [];
   }
 
-  /** Phase 21: the shared known / due / learning sets (the one "comprehensible" definition). */
-  async wordSets(now: Date = new Date(), knownItems?: readonly string[]): Promise<WordSets> {
-    const repo = this.repo as Partial<ItemCardsRepo> & LearnerRepo;
-    const cards = repo.allCards ? await repo.allCards() : [];
-    return wordSets(cards, now, { knownItems: knownItems ?? knownItemsSource() });
+  /** Phase 29: the progress ledger (the app's own, registered by lib/ledger.ts; in tests, one
+   * built from this repo's cards). Services ask it for every progress number. */
+  ledger(now: Date = new Date(), fallback: { study?: LedgerStudyInputs } = {}): Promise<Ledger> {
+    if (ledgerSource) return ledgerSource(now);
+    // No app ledger (tests, tools): one from this repo's cards; `fallback.study` stands in for the
+    // study context the app's ledger carries.
+    return this.allCards().then((cards) =>
+      buildLedger({
+        cards,
+        evidence: [],
+        knownItems: knownItemsSource(),
+        session: sessionSettings(),
+        masteryShare: 0.8,
+        now,
+        ...(fallback.study ? { study: fallback.study } : {}),
+      }),
+    );
   }
 
   getCard(item: Evidence['item'], skill: Evidence['skill']): Promise<SkillCard | undefined> {

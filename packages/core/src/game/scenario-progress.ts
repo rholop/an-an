@@ -146,7 +146,7 @@ export function scenarioCoverage(corpus: readonly string[], ctx: AnalyzeContext)
   };
 }
 
-/** Phase 21: pass the shared `wordSets()` (known / due / learning) so every coverage number agrees. */
+/** Phase 21: pass the ledger's `comprehensible()` sets (known / due / learning) so every coverage number agrees. */
 export function coverageContext(
   lexicon: Lexicon,
   learnerLevel: Level,

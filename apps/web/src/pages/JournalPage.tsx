@@ -23,6 +23,8 @@ import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { BottomSheet } from '../components/BottomSheet.js';
 import { JournalProgress } from '../components/JournalProgress.js';
 import { db, gameService, learnerService } from '../db/instance.js';
+import { getLedgerNow } from '../lib/ledger.js';
+import { useReviewSettings } from '../lib/review-settings.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import type { JournalEntryRow, JournalReviewRow } from '../db/schema.js';
 import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
@@ -110,7 +112,8 @@ export function JournalPage({
   const [progressKey, setProgressKey] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
-  const dailyP = useMemo(() => dailyPrompt(new Date()), []);
+  const { timeZone } = useReviewSettings();
+  const dailyP = useMemo(() => dailyPrompt(new Date(), timeZone), [timeZone]);
   // Phase 12: while "My class" is on, the current lesson's prompts come first.
   const myClass = useMyClass();
   const textbookState = useTextbook();
@@ -210,8 +213,9 @@ export function JournalPage({
     let cancelled = false;
     (async () => {
       const now = new Date();
+      // Phase 27: prompt words come from this review session (between sessions, the next one's).
       const [due, entries] = await Promise.all([
-        learnerService.dueCards(now, 200),
+        getLedgerNow(now).then((l) => l.session(l.status.session === 'between' ? { early: true } : {}).cards.slice(0, 200)),
         db.journalEntries.where('status').notEqual('finished').sortBy('createdAt'),
       ]);
       if (cancelled) return;

@@ -16,8 +16,9 @@ import {
   storyReadingStats,
   storyRecord,
   storyRequestKey,
-  vocabLadder,
   glossFor,
+  weekRange,
+  DEFAULT_SESSION_SETTINGS,
   STORY_CONFIG,
   type Evidence,
   type Lexicon,
@@ -94,16 +95,14 @@ interface Built {
   askKey: string;
 }
 
-const startOfWeek = (now: Date): Date => {
-  const d = new Date(now);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // Monday
-  return d;
-};
-
-/** Progress: characters read and stories finished this week (from Monday), without a service. */
-export async function storyWeekStats(db: AnanDB, now: Date = new Date()): Promise<{ chars: number; finished: number }> {
-  return storyReadingStats(await db.stories.toArray(), startOfWeek(now));
+/** Progress: characters read and stories finished this week (from Monday in the profile's time
+ * zone, Phase 29 Part B.12: the ledger's `weekRange`), without a service. */
+export async function storyWeekStats(
+  db: AnanDB,
+  now: Date = new Date(),
+  timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone,
+): Promise<{ chars: number; finished: number }> {
+  return storyReadingStats(await db.stories.toArray(), weekRange(now, timeZone).from);
 }
 
 export class StoryService {
@@ -126,18 +125,11 @@ export class StoryService {
   // ---- the ladder and the request --------------------------------------------------
 
   async ladderFor(level: Level, now: Date): Promise<{ ladder: VocabLadder; sets: WordSets }> {
-    const sets = await this.learnerService.wordSets(now);
+    // Phase 29: the ladder and the comprehensible sets are the ledger's.
+    const ledger = await this.learnerService.ledger(now);
     const studyFocus = await this.env.studyFocus?.().catch(() => undefined);
-    const ladder = vocabLadder({
-      lexicon: this.lexicon,
-      level,
-      knownIds: sets.knownIds,
-      dueIds: sets.dueIds,
-      learningIds: sets.learningIds,
-      books: this.env.books(),
-      ...(studyFocus ? { studyFocus } : {}),
-    });
-    return { ladder, sets };
+    const ladder = ledger.ladder(level, {}, { books: this.env.books(), ...(studyFocus ? { focus: studyFocus } : {}) });
+    return { ladder, sets: ledger.comprehensible() };
   }
 
   /** The lesson theme (the default topic), as the prompt and the page show it. */
@@ -376,13 +368,13 @@ export class StoryService {
 
   /** "You'll find this one easier now". */
   async rereads(now: Date = new Date()): Promise<StoryRecord[]> {
-    const { knownIds } = await this.learnerService.wordSets(now);
+    const knownIds = (await this.learnerService.ledger(now)).learnedWordIds();
     return rereadSuggestions((await this.db.stories.toArray()).filter((s) => !s.report), knownIds, now);
   }
 
   /** Progress: characters read and stories finished this week (from Monday). */
   async weekStats(now: Date = new Date()): Promise<{ chars: number; finished: number }> {
-    return storyWeekStats(this.db, now);
+    return storyWeekStats(this.db, now, (await this.learnerService.ledger(now)).timeZone);
   }
 
   // ---- reading ----------------------------------------------------------------------
@@ -396,17 +388,21 @@ export class StoryService {
   }
 
   /**
-   * Finishing: every due or learning word read without a lookup gives `story_read_no_lookup` (weak,
-   * like chat). Correct answers give no word evidence, only the story's score.
+   * Finishing: every word read without a lookup that earns read credit (`ledger.creditsRead`: learning
+   * or in this session) gives `story_read_no_lookup` (weak, like chat). Correct answers give no word
+   * evidence, only the story's score.
    */
   async finish(
     story: StoryRecord,
     result: { lookedUp: ReadonlySet<string>; right: number; of: number },
     now: Date = new Date(),
   ): Promise<{ evidence: number; story: StoryRecord }> {
-    const { dueIds, learningIds } = await this.learnerService.wordSets(now);
+    const ledger = await this.learnerService.ledger(now);
+    const recognition = new Map(
+      ledger.cards.filter((c) => c.skill === 'recognition' && c.item.kind === 'word').map((c) => [c.item.id, c]),
+    );
     const events: Evidence[] = story.wordIds
-      .filter((id) => !result.lookedUp.has(id) && (dueIds.has(id) || learningIds.has(id)))
+      .filter((id) => !result.lookedUp.has(id) && ledger.creditsRead(recognition.get(id)))
       .map((id) => ({
         item: { kind: 'word' as const, id },
         skill: 'recognition' as const,

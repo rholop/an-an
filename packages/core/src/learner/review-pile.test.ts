@@ -5,10 +5,8 @@ import {
   capDueCards,
   cardSourceFor,
   cleanupGroupWordIds,
-  dueForecastOf,
   isActiveCard,
   lookupMayIntroduce,
-  newItemAllowance,
   newItemInBounds,
   pileReport,
   shouldWake,
@@ -116,11 +114,6 @@ describe('daily cap and new-card pause', () => {
     expect(capDueCards([fresh, overdue], { remaining: 1, now: NOW })[0]!.item.id).toBe('overdue');
   });
 
-  it('no new cards when due exceeds the cap; half when due exceeds half of it', () => {
-    expect(newItemAllowance(300, 10, 80)).toMatchObject({ allowed: 0, paused: true });
-    expect(newItemAllowance(50, 10, 80)).toMatchObject({ allowed: 5, paused: false });
-    expect(newItemAllowance(10, 10, 80)).toMatchObject({ allowed: 10, paused: false });
-  });
 });
 
 describe('bulk spread', () => {
@@ -207,11 +200,5 @@ describe('pile report', () => {
     expect(cardSourceFor(ev('anki_import_seen'))).toBe('anki');
     expect(cardSourceFor(ev('chat_lookup_gloss', { context: { source: 'reader' } }))).toBe('reader_lookup');
     expect(cardSourceFor(ev('chat_lookup_gloss', { context: { source: 'chat', refId: 'validator-leak' } }))).toBe('chat_leak');
-  });
-
-  it('the forecast skips removed cards', () => {
-    const due = reviewCard('a');
-    const gone = { ...reviewCard('b'), flags: { excluded: true } };
-    expect(dueForecastOf([due, gone], NOW, 7)[0]).toBe(1);
   });
 });

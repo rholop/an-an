@@ -240,6 +240,10 @@ describe('StoryService (Phase 24)', () => {
 
   it('finishing: due/learning words read without a lookup give story_read_no_lookup; answers give no word evidence', async () => {
     await seedKnown();
+    // Phase 29 Part B.11: read credit needs a card answered in the app that is learning or in this
+    // session (an imported seed is neither); 喝 and 朋友 were missed just now, so they are learning.
+    for (const h of ['喝', '朋友'])
+      await learnerService.record({ item: { kind: 'word', id: byHw(h).id }, skill: 'recognition', kind: 'review_again', at: NOW }, NOW);
     const s = service(new FakeStoryLLM(scripted(GOOD)));
     const story = await s.write({ level: 'N1', difficulty: 'middle', kind: 'lesson' }, NOW);
     const before = await db.evidence.count();

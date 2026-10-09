@@ -9,7 +9,7 @@ import { segment } from '../segment.js';
 import { checkTaiwanness, type TaiwannessResult } from '../taiwanness.js';
 import { glossFor } from '../gloss/context.js';
 import { hashText } from '../hash.js';
-import { isOpenChatAllowedWord } from '../chat/openChat.js';
+import { isAlwaysAllowedWord } from '../progress/terms.js';
 import { bestRung, type VocabLadder, type VocabRung } from '../progress/vocabLadder.js';
 import { STORY_BUDGETS, STORY_CONFIG, type RungBudget, type StoryDifficulty } from './stories.config.js';
 import type {
@@ -266,7 +266,7 @@ export function storyAllowedNames(names: readonly string[], characters: readonly
   for (const c of characters.map((x) => x.trim())) {
     if (!c || /[^\p{Script=Han}·]/u.test(c) || c.length > 4) continue;
     const words = lexicon.lookup(c);
-    if (words.length === 0 || words.every((w) => isOpenChatAllowedWord(w.tags))) out.add(c);
+    if (words.length === 0 || words.every((w) => isAlwaysAllowedWord(w.tags))) out.add(c);
   }
   return out;
 }
@@ -287,7 +287,7 @@ function storyRungOf(ctx: StoryContext): RungOf {
     if (ctx.allowedTexts?.has(text)) res = { rung: 'allowed' };
     else {
       const cands = ctx.lexicon.lookup(text);
-      if (cands.some((w) => isOpenChatAllowedWord(w.tags))) res = { rung: 'allowed', id: cands[0]!.id };
+      if (cands.some((w) => isAlwaysAllowedWord(w.tags))) res = { rung: 'allowed', id: cands[0]!.id };
       else {
         res = bestRung(ctx.ladder, cands.map((w) => w.id));
         if (res.rung === 6 && [...text].length > 1) {

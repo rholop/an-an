@@ -83,6 +83,13 @@
   font-weight: bold;
   color: var(--info-text);
 }
+.garden-next-mark {
+  position: absolute;
+  top: -5px;
+  right: -3px;
+  font-size: 0.75rem;
+  line-height: 1;
+}
 .garden-water {
   cursor: pointer;
   padding: 0.35rem 0.7rem;

@@ -176,8 +176,8 @@ export class OpenChatService {
   // ---- the learner's state as a profile ---------------------------------------------
 
   async buildProfile(level: Level, now: Date): Promise<OpenChatProfile> {
-    // Phase 21: the shared known / due / learning sets (the same as scenario chat and the reader).
-    const { knownIds: known, dueIds: due, learningIds: learning } = await this.learnerService.wordSets(now);
+    // Phase 29: the one comprehensible set (the ledger's; the same as scenario chat and the reader).
+    const { knownIds: known, dueIds: due, learningIds: learning } = (await this.learnerService.ledger(now)).comprehensible();
     const studyFocus = await this.env.studyFocus?.().catch(() => undefined);
     return {
       lexicon: this.lexicon,
@@ -379,7 +379,7 @@ export class OpenChatService {
     );
 
     // Phase 21: "New words you met" lists only words not already Learned.
-    const { knownIds } = await this.learnerService.wordSets(upper);
+    const knownIds = (await this.learnerService.ledger(upper)).learnedWordIds();
     const metIds = [...new Set(tiers.flatMap((t) => [...t.bIds, ...t.cIds, ...t.upcomingIds]))].filter(
       (id) => !knownIds.has(id),
     );

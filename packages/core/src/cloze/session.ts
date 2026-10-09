@@ -29,17 +29,12 @@ export interface SessionConfig {
   /** Total items in the session. Default 20 (phase doc §"A full 20-item
    * session works offline"). */
   maxItems: number;
-  /** Cards not yet in 'review'/'mature' state ("new" items) are capped
-   * separately so a session doesn't become all-new-material; the rest of
-   * maxItems is filled with review/mature cards. */
-  maxNewItems: number;
   /** Phase 5: error-bank clozes per session (recurring patterns first). */
   maxErrorItems: number;
 }
 
 export const DEFAULT_SESSION_CONFIG: SessionConfig = {
   maxItems: 20,
-  maxNewItems: 5,
   maxErrorItems: 5,
 };
 
@@ -88,7 +83,7 @@ const seedFrom = (options: BuildSessionOptions, rng: () => number) =>
   options.seed ?? `cloze-${Math.floor(rng() * 2 ** 32).toString(36)}`;
 
 /**
- * Phase 4 §6 session builder: caps new items, fills the rest from due
+ * Phase 4 §6 session builder: new items first (the caller's allowance), fills the rest from due
  * review/mature cards, interleaves (a plain shuffle — "across topics and
  * exercise types" falls out naturally once rungs/words aren't grouped),
  * and resolves each item's cloze source (phase doc §2's priority order) so
@@ -124,7 +119,8 @@ export function buildSession(dueCards: SkillCard[], options: BuildSessionOptions
         rng,
       ),
     ),
-  ].slice(0, config.maxNewItems);
+  ].slice(0, config.maxItems);
+  // Phase 29 Part B.4: the caller passes New cards already capped by the ledger's Cloze allowance.
   const remainingSlots = Math.max(0, config.maxItems - cappedNew.length);
   const pool = shuffle([...cappedNew, ...byRank(shuffle(reviewCards, rng)).slice(0, remainingSlots)], rng);
 

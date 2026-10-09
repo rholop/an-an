@@ -3,10 +3,8 @@ import {
   checkGrammarAnswer,
   extraExercise,
   fillSlots,
-  grammarDots,
   grammarOutcome,
   PROGRESS_CONFIG,
-  zonedDay,
   type FillExercise,
   type GrammarStepExercise,
   type Lesson,
@@ -33,9 +31,8 @@ import {
   SKIP,
   UNDO,
 } from '../lib/labels.js';
-import { useReviewSettings } from '../lib/review-settings.js';
 import { logSessionOrder, noteShown } from '../lib/session-recent.js';
-import { useProgressData } from '../lib/study.js';
+import { useLedger } from '../lib/ledger.js';
 import { fetchPrivateTextbook, loadTextbookSentences, useTextbook, type BookData, type PrivateExample } from '../lib/textbook-data.js';
 import './TextbookPage.css';
 import { buildLessonGrammarStep, buildSingleGrammarExercise, type LessonGrammarStep } from '../lib/textbook-session.js';
@@ -72,8 +69,7 @@ export function GrammarStep({
 }) {
   const script = useReadingScript();
   const textbook = useTextbook();
-  const progress = useProgressData();
-  const { timeZone } = useReviewSettings();
+  const ledger = useLedger();
   const books = textbook.status === 'ready' ? textbook.books : null;
   const [step, setStep] = useState<LessonGrammarStep | null>(null);
   const [queue, setQueue] = useState<GrammarStepExercise[]>([]);
@@ -158,7 +154,7 @@ export function GrammarStep({
     );
 
   if (!current) {
-    const today = zonedDay(new Date(), timeZone);
+    const today = ledger?.dayKey(new Date()) ?? '';
     return (
       <div className="textbook-grammar-done" role="status" data-testid="grammar-step-done">
         <p>
@@ -166,11 +162,12 @@ export function GrammarStep({
         </p>
         <ul className="grammar-outcomes">
           {lesson.grammar.map((id) => {
-            const use = progress?.grammarUses.get(id);
+            const use = ledger?.grammarUse(id);
+            const dots = ledger?.item({ kind: 'grammar', id }).dots ?? 0;
             return (
               <li key={id} data-testid="grammar-outcome">
-                <GrammarDots use={use} />{' '}
-                <span lang="zh-Hant">{grammarPointOutcome(pattern(id), grammarDots(use), NEED, grammarOutcome(use, today))}</span>
+                <GrammarDots dots={dots} />{' '}
+                <span lang="zh-Hant">{grammarPointOutcome(pattern(id), dots, NEED, grammarOutcome(use, today))}</span>
               </li>
             );
           })}
@@ -206,7 +203,7 @@ export function GrammarStep({
       <p className="textbook-muted">
         <span data-testid="grammar-position">{grammarStepPosition(idx + 1, base, queue.length - base)}</span> ·{' '}
         <span lang="zh-Hant">{pattern(current.grammarId)}</span>{' '}
-        <GrammarDots use={progress?.grammarUses.get(current.grammarId)} testId="grammar-current-dots" />{' '}
+        <GrammarDots dots={ledger?.item({ kind: 'grammar', id: current.grammarId }).dots ?? 0} testId="grammar-current-dots" />{' '}
         {history.length > 0 && (
           <button type="button" className="link-button" data-testid="grammar-undo" onClick={() => void undoLast()}>
             {UNDO}
@@ -423,18 +420,16 @@ const ROUND_SIZE = 3;
  * (at most 3 a visit), before the cloze session. Their right answers count toward the dots.
  */
 export function GrammarRound({ lexicon }: { lexicon: Lexicon }) {
-  const progress = useProgressData();
+  const ledger = useLedger();
   const script = useReadingScript();
   const [ids, setIds] = useState<string[] | null>(null);
   const [i, setI] = useState(0);
   const [skipped, setSkipped] = useState(false);
   const [round, setRound] = useState(0);
   useEffect(() => {
-    if (!progress || ids) return;
-    const g = (id: string) => ({ kind: 'grammar' as const, id });
-    const open = [...progress.grammarUses.keys()].filter((id) => progress.index.learned(g(id)) && !progress.index.mastered(g(id)) && !progress.index.removed(g(id)));
-    setIds(open.slice(0, ROUND_SIZE));
-  }, [progress, ids]);
+    if (!ledger || ids) return;
+    setIds(ledger.grammarToPractise().slice(0, ROUND_SIZE));
+  }, [ledger, ids]);
   const id = ids?.[i];
   const ex = useSingleGrammarExercise(id, lexicon, `cloze|${id ?? ''}|${round}`);
   // a point with no sentence: move on
@@ -456,7 +451,7 @@ export function GrammarRound({ lexicon }: { lexicon: Lexicon }) {
     <section className="grammar-round" data-testid="grammar-round" aria-label="Grammar practice">
       <p className="textbook-muted">
         Grammar practice · {i + 1} of {ids.length} · <span lang="zh-Hant">{pattern}</span>{' '}
-        <GrammarDots use={progress?.grammarUses.get(id)} />{' '}
+        <GrammarDots dots={ledger?.item({ kind: 'grammar', id }).dots ?? 0} />{' '}
         <button type="button" className="link-button" data-testid="grammar-round-skip" onClick={() => setSkipped(true)}>
           {SKIP}
         </button>

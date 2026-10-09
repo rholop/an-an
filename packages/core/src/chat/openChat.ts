@@ -13,6 +13,7 @@ import type { StudyFocus } from '../study/study-focus.js';
 import { vocabLadder, type VocabLadder } from '../progress/vocabLadder.js';
 import type { TurnResponse } from './types.js';
 import { locateHints } from '../validate/turn.js';
+import { isAlwaysAllowedWord } from '../progress/terms.js';
 import { glossFor } from '../gloss/context.js';
 import {
   DEFAULT_TOPICS,
@@ -76,11 +77,11 @@ export interface OpenChatProfile {
     Partial<Pick<Lexicon, 'grammarItemById'>>;
   /** The header level picker. */
   level: Level;
-  /** Word ids with a card at state ≥ review. */
+  /** Learned word ids (the ledger's `comprehensible().knownIds`). */
   knownIds: ReadonlySet<string>;
-  /** Word ids whose recognition card is due now. */
+  /** Word ids with a card in the current review session (`comprehensible().dueIds`). */
   dueIds: ReadonlySet<string>;
-  /** Word ids in `learning`/`introduced` state. */
+  /** Answered at least once, not Learned yet (`comprehensible().learningIds`). */
   learningIds: ReadonlySet<string>;
   /** Imported textbooks, in course order. Empty = no textbook. */
   books: readonly Textbook[];
@@ -169,11 +170,6 @@ function sampleOf<T>(arr: readonly T[], n: number, rng: () => number): T[] {
     [copy[i], copy[j]] = [copy[j]!, copy[i]!];
   }
   return copy.slice(0, n);
-}
-
-/** Particles, names and the like are never counted against a tier. */
-export function isOpenChatAllowedWord(tags: readonly string[]): boolean {
-  return tags.some((t) => t === 'name' || t === 'npc' || t === 'particle' || t === 'filler');
 }
 
 /**
@@ -367,7 +363,7 @@ export function analyzeOpenChatText(
       tokens.push({ text: t.text, tier: 'C' });
       continue;
     }
-    if (cands.some((w) => isOpenChatAllowedWord(w.tags))) {
+    if (cands.some((w) => isAlwaysAllowedWord(w.tags))) {
       tokens.push({ text: t.text, tier: 'allowed', wordId: cands[0]!.id });
       continue;
     }

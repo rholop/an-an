@@ -1,4 +1,5 @@
-import { createEmptyCard, fsrs, generatorParameters, State, type Card, type FSRS } from 'ts-fsrs';
+import { createEmptyCard, fsrs, generatorParameters, type Card, type FSRS } from 'ts-fsrs';
+import { itemStateOf } from '../progress/terms.js';
 import type { ItemState } from '../types.js';
 import type { LearnerConfig } from './types.js';
 
@@ -10,20 +11,8 @@ export function emptyCard(now: Date): Card {
   return createEmptyCard(now);
 }
 
-/** Map an FSRS Card's own state + stability to the game's coarser
- * unseen -> introduced -> learning -> review -> mature ladder. There is no
- * FSRS State for "unseen" — that's the absence of a SkillCard at all (see
- * applyEvidence), so this is only called once a card exists. */
-export function computeItemState(card: Card, config: LearnerConfig): ItemState {
-  switch (card.state) {
-    case State.New:
-      return 'introduced';
-    case State.Learning:
-    case State.Relearning:
-      return 'learning';
-    case State.Review:
-      return card.stability >= config.matureStabilityDays ? 'mature' : 'review';
-    default:
-      return 'introduced';
-  }
+/** Map an FSRS Card's own state + stability to the game's coarser ladder. Phase 29 Part B.9: the
+ * thresholds live in `progress.config.ts` and the mapping in `progress/terms.ts` (`itemStateOf`). */
+export function computeItemState(card: Card, _config?: LearnerConfig): ItemState {
+  return itemStateOf(card);
 }

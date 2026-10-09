@@ -3,6 +3,8 @@ import type { Lexicon } from '../lexicon.js';
 import { segment } from '../segment.js';
 import { levelIndex } from '../levels.config.js';
 import type { Level, Word } from '../types.js';
+import { DEFAULT_SESSION_SETTINGS } from '../progress/review-sessions.js';
+import { dayKey, daysBetweenKeys } from '../progress/time.js';
 
 export interface WritingPrompt {
   id: string;
@@ -37,9 +39,9 @@ export const WRITING_PROMPTS: readonly WritingPrompt[] = [
 ];
 
 /** One prompt per calendar day, cycling. `now` is injected (CLAUDE.md:
- * time is never read inside core). */
-export function dailyPrompt(now: Date): WritingPrompt {
-  const day = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86_400_000);
+ * time is never read inside core). Phase 29 Part B.12: the day is the profile's. */
+export function dailyPrompt(now: Date, timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone): WritingPrompt {
+  const day = daysBetweenKeys('1970-01-01', dayKey(now, timeZone));
   return WRITING_PROMPTS[
     ((day % WRITING_PROMPTS.length) + WRITING_PROMPTS.length) % WRITING_PROMPTS.length
   ]!;
@@ -64,8 +66,8 @@ export function isPromptWorthyWord(word: Word): boolean {
 }
 
 /**
- * "Try to use these 3 due words" (phase doc §1): from the due queue,
- * production-skill cards first, then recognition, soonest-due first; one
+ * "Try to use these 3 due words" (phase doc §1): from this review session's cards,
+ * production-skill cards first, then recognition, in session order; one
  * entry per word. Only words worth writing (isPromptWorthyWord): if too few
  * qualify, fewer than `count` are returned rather than padding with numerals
  * or particles.
@@ -83,18 +85,22 @@ export function pickPromptWords(
     const lvl = lexicon.byId(id)?.level;
     return currentLevel && lvl && levelIndex(lvl) > levelIndex(currentLevel) ? 1 : 0;
   };
+  void now;
+  // Phase 29 Part B.1: the cards are this review session's (`ledger.session()`), already "due".
   const eligible = dueCards
-    .filter((c) => {
-      if (c.item.kind !== 'word' || c.card.due > now) return false;
+    .map((c, i) => ({ c, i }))
+    .filter(({ c }) => {
+      if (c.item.kind !== 'word') return false;
       const word = lexicon.byId(c.item.id);
       return word !== undefined && isPromptWorthyWord(word);
     })
     .sort(
       (a, b) =>
-        aboveLevel(a.item.id) - aboveLevel(b.item.id) ||
-        Number(b.skill === 'production') - Number(a.skill === 'production') ||
-        a.card.due.getTime() - b.card.due.getTime(),
-    );
+        aboveLevel(a.c.item.id) - aboveLevel(b.c.item.id) ||
+        Number(b.c.skill === 'production') - Number(a.c.skill === 'production') ||
+        a.i - b.i,
+    )
+    .map((x) => x.c);
   const picked: Word[] = [];
   const seen = new Set<string>();
   for (const c of eligible) {

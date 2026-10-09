@@ -2,9 +2,6 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { useLookupGateRegistration } from './lib/lookup-gate.js';
 import {
   classLevelHint,
-  DEFAULT_CURRICULUM_CONFIG,
-  LEVEL_ORDER,
-  levelItems,
   type Level,
 } from '@anan/core';
 import { LevelPicker } from './components/LevelPicker.js';
@@ -18,9 +15,9 @@ import { useLexicon } from './lib/useLexicon.js';
 import { useMediaQuery } from './lib/useMediaQuery.js';
 import { installViewportTracking } from './lib/viewport.js';
 import { useMyClass } from './lib/my-class.js';
-import { useProgressData, useStudyContextRegistration } from './lib/study.js';
+import { useStudyContextRegistration } from './lib/study.js';
 import { ToastHost } from './components/ToastHost.js';
-import { useReviewStatus } from './lib/review-status.js';
+import { useLedger } from './lib/ledger.js';
 import { currentSession } from './db/instance.js';
 import { LEVEL, levelLabel, levelShort, navTextbookLabel, pct, UNSAVED_WARNING } from './lib/labels.js';
 // Phase 21: the stored target retention is applied at start, on profile switch and after a sync.
@@ -114,16 +111,11 @@ function LevelHeader({ route }: { route: Route }) {
     if (lexiconState.status === 'ready') void initCurrentLevelIfUnset(lexiconState.lexicon);
   }, [lexiconState]);
 
-  // Phase 21: the level-up prompt uses Learned over the one level item set (the same number as
-  // Progress), refreshed after every change.
-  const progress = useProgressData();
-  const next = LEVEL_ORDER[LEVEL_ORDER.indexOf(level) + 1];
-  const learnedShare =
-    progress && lexiconState.status === 'ready'
-      ? progress.index.summarize(levelItems(level, lexiconState.lexicon.allWords())).learnedShare
-      : 0;
-  const suggestion: Level | null =
-    next && learnedShare >= DEFAULT_CURRICULUM_CONFIG.levelAdvanceThreshold ? next : null;
+  // Phase 29: the level-up prompt is the ledger's (the same Learned share as Progress).
+  const ledger = useLedger();
+  const levelView = ledger?.level(level);
+  const learnedShare = levelView?.learnedShare ?? 0;
+  const suggestion: Level | null = levelView?.next ?? null;
 
   return (
     <header className="app-header">
@@ -242,7 +234,7 @@ export function App() {
   useLookupGateRegistration();
   const [moreOpen, setMoreOpen] = useState(false);
   // Phase 22: the nav's due badge is the same number as Home and Review.
-  const reviewState = useReviewStatus();
+  const ledger = useLedger();
   // The tab bar only exists on a phone-width screen (the CSS hides it above 640px too,
   // but then it would still be in the page and duplicate the top nav's labels).
   const isPhoneWidth = useMediaQuery('(max-width: 639.98px)');
@@ -260,7 +252,7 @@ export function App() {
         route={route}
         onGo={go}
         textbookLabel={myClass.enabled ? navTextbookLabel(myClass.currentLesson) : 'Textbook'}
-        dueNow={reviewState?.status.dueNow ?? 0}
+        dueNow={ledger?.status.dueNow ?? 0}
       />
       {/* reserved height: the tab bar and footer never jump when a screen finishes loading */}
       <main className="page-slot">
@@ -290,7 +282,7 @@ export function App() {
           onGo={go}
           moreOpen={moreOpen}
           onMore={() => setMoreOpen((o) => !o)}
-          dueNow={reviewState?.status.dueNow ?? 0}
+          dueNow={ledger?.status.dueNow ?? 0}
         />
       )}
       {isPhoneWidth && moreOpen && (

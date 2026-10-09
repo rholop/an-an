@@ -21,6 +21,19 @@ export const PROGRESS_CONFIG = {
   },
   /** Level-up prompt ("Ready to try L2?"): share of the level's TOCFL words Learned. */
   levelUpLearnedShare: 0.7,
+  /** Phase 29 (was a literal in review/faces.ts): a production card this stable (days) in review
+   * moves from Pick the Mandarin to Recall. */
+  recallStabilityDays: 7,
+  /** Phase 29 Part B.4: new items each queue may add in one session when nothing holds new words
+   * back. The backlog state (open / reduced / paused / limit reached) applies to all of them. */
+  newPerQueue: { review: 5, cloze: 5, pinyin: 10, listening: 4 },
+  /** Phase 23: new Pick / Say it faces of words already being learned, per Review session. */
+  newFacesPerSession: 8,
+  /** Share of the session cap above which new items are halved ("reduced"). */
+  newHalfShare: 0.5,
+  /** Phase 29 Part B.3: a card whose next learning step is due within this many minutes comes back
+   * in the same sitting (Review, lesson study, Water all, Cloze). */
+  sittingStepMinutes: 20,
   /** Listening: a listening card this stable (days) is "strong". */
   listeningStrongDays: 7,
   /** Pinyin fading: a recognition card this stable may show its reading on hover only... */

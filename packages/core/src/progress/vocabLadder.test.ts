@@ -125,12 +125,15 @@ function seeded() {
 }
 
 describe('vocabLadder (Phase 24 Part A)', () => {
-  it('ranks the seeded profile: learned and catch-up, this lesson, next, the one after, level, else', () => {
+  it('ranks the seeded profile: what you can read, this lesson and catch-up, next, the one after, level, else', () => {
     const p = seeded();
     expect(p.studyFocus.activeLesson?.lessonId).toBe('laixue-1-L03');
     const ladder = vocabLadder(p);
-    // rung 1: learned, learning and the catch-up lessons (1–2)
-    for (const hw of ['我', '你', '喝', '茶', '老師', '學生']) expect(ladder.rung(id(hw)), hw).toBe(1);
+    // rung 1: learned and learning
+    for (const hw of ['我', '你', '喝', '茶']) expect(ladder.rung(id(hw)), hw).toBe(1);
+    // Phase 29 Part B.10: catch-up lessons' words the learner has never met are being learned (rung 2),
+    // never "known"
+    for (const hw of ['老師', '學生']) expect(ladder.rung(id(hw)), hw).toBe(2);
     expect(ladder.rung(id('咖啡'))).toBe(2);
     expect(ladder.rung(id('便利商店'))).toBe(3);
     expect(ladder.rung(id('捷運'))).toBe(4);

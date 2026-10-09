@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Evidence, SkillCard } from '@anan/core';
-import { isDueListening, isNewCard } from '@anan/core';
 import {
   keepDeferred,
   describePlanItem,
@@ -10,16 +9,18 @@ import {
   newSessionSeed,
   placeExtras,
   planListenSession,
-  requeueAgain,
+  inShortStep,
+  requeueInSitting,
   sessionMeta,
+  stepInSitting,
   type PlanItem,
 } from '@anan/core';
 import { buildReviewSession, newSessionCard, pickReviewCards } from '../lib/review-session.js';
 import { useReadingScript } from '../components/AnnotatedInline.js';
-import { dueNewLine, NOTHING_DUE, REVIEW_EARLY, sessionLine, UNDO, waitingSiblings } from '../lib/labels.js';
+import { dueNewLine, learnedTodayLine, NOTHING_DUE, REVIEW_EARLY, sessionLine, UNDO, waitingSiblings } from '../lib/labels.js';
 import { NopeToast } from '../components/Nope.js';
 import { nopeWord, wakeSnoozed } from '../lib/nope.js';
-import { loadSessionCards, useReviewStatus } from '../lib/review-status.js';
+import { getLedgerNow, useLedger } from '../lib/ledger.js';
 import { useSaveWhenDone } from '../lib/save-progress.js';
 import { noteConfusion, useConfusables } from '../lib/confusables.js';
 import { ReviewCard, type Grade, type RateExtra } from './ReviewCard.js';
@@ -37,6 +38,16 @@ import './ReviewPage.css';
 
 export { ReviewCard, type Grade, type RateExtra } from './ReviewCard.js';
 
+/** Phase 27: words answered in a sitting whose every answered card left its short learning step. */
+function wordsOutOfStep(answered: ReadonlyMap<string, SkillCard>): number {
+  const byWord = new Map<string, boolean>();
+  for (const c of answered.values()) {
+    if (c.item.kind !== 'word') continue;
+    byWord.set(c.item.id, (byWord.get(c.item.id) ?? true) && !inShortStep(c));
+  }
+  return [...byWord.values()].filter(Boolean).length;
+}
+
 /** `focusCards` (Phase 6 garden, Phase 21 lesson session): review exactly these Due cards (and
  * `freshCards`, New ones) instead of the due queue. `reviewAll` (Phase 22 Home "Review all"): every
  * card due now up to the daily cap, no new words. `keepEvery`: a sibling the gap would hold back
@@ -49,7 +60,8 @@ export function ReviewPage({
   title,
   lesson,
   reviewAll = false,
-  keepEvery = reviewAll,
+  reviewEarly = false,
+  keepEvery = reviewAll || reviewEarly,
 }: {
   focusCards?: SkillCard[];
   freshCards?: SkillCard[];
@@ -59,6 +71,8 @@ export function ReviewPage({
   /** Phase 25: the lesson these cards are studied in (its meaning of a word is shown). */
   lesson?: { bookId: string; n: number };
   reviewAll?: boolean;
+  /** Phase 29 Part B.5: the one Review early (Home, Garden and Review all open this). */
+  reviewEarly?: boolean;
   keepEvery?: boolean;
 } = {}) {
   const lexiconState = useLexicon();
@@ -76,15 +90,21 @@ export function ReviewPage({
     prevIndex: number;
     prevSlots: Map<number, PlanItem>;
     prevDone: Set<number>;
+    prevAnswered: Map<string, SkillCard>;
+    prevRepeats: Set<SkillCard>;
   } | null>(null);
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   // Phase 28: the end of a session pushes progress to the server straight away.
   useSaveWhenDone(queue !== null && queue.length > 0 && index >= queue.length);
-  // Phase 22: the same numbers as Home (core `reviewStatus`), live.
-  const reviewState = useReviewStatus();
+  // Phase 27: every card answered in this sitting, as it is now (lesson end: "Learned today").
+  const [answered, setAnswered] = useState<Map<string, SkillCard>>(new Map());
+  // Phase 29: the same numbers as Home (the ledger), live.
+  const ledgerNow = useLedger();
   // Phase 23: between sessions, "Review early" opens the next session's cards here.
-  const [early, setEarly] = useState(false);
+  const [early, setEarly] = useState(reviewEarly);
+  // Phase 29 Part B.5: Again repeats in this sitting ("+2 again" in the header).
+  const [repeats, setRepeats] = useState<Set<SkillCard>>(new Set());
   // Phase 15: a "Listen" session, and ~20% listening exercises mixed in once an item has a listening card.
   const clips = useListeningClips();
   const listeningOn = useListeningEnabled();
@@ -121,20 +141,18 @@ export function ReviewPage({
       // Phase 23: the cards of this review session (morning / evening), or the next one's when
       // "Review early" was asked for between sessions.
       await ensureFaceCards(now).catch(() => 0);
-      const [inSession, newCards] = await Promise.all([
-        loadSessionCards(now, early ? { early: true } : {}),
-        reviewAll ? Promise.resolve([]) : learnerService.newCards(),
-      ]);
-      const { status } = inSession;
+      const ledger = await getLedgerNow(now);
+      const { status } = ledger;
+      const inSession = ledger.session(early ? { early: true } : {});
       // between sessions, the next session's words keep their new faces for that session
-      const upcoming =
-        status.session === 'between' && !early ? (await loadSessionCards(now, { early: true })).cards : [];
+      const upcoming = status.session === 'between' && !early ? ledger.session({ early: true }).cards : [];
+      const allowance = ledger.newAllowance('review');
       const picked = pickReviewCards({
         holdFaceWords: upcoming.map((c) => `${c.item.kind}:${c.item.id}`),
         due: inSession.cards,
-        newCards,
+        newCards: reviewAll ? [] : ledger.newCards(),
         doneThisSession: status.doneThisSession,
-        ...(reviewAll ? { baseNew: 0 } : {}),
+        allowance: reviewAll ? { ...allowance, allowed: 0, faces: 0 } : allowance,
         cap: status.cap,
         ...(focus ? { focus } : {}),
         lessonIdx: lessonIndex(getStudyBooks()),
@@ -160,7 +178,8 @@ export function ReviewPage({
     const next = keepEvery ? keepDeferred(ordered) : ordered;
     logSessionOrder('review', sessionSeed, next.length, sessionMeta(next)?.deferred.length ?? 0);
     setSeed(sessionSeed);
-    setFreshSet(new Set(fresh.filter((c) => isNewCard(c) || c.state === 'unseen')));
+    setFreshSet(new Set(fresh));
+    setRepeats(new Set());
     setDeferred(sessionMeta(next)?.deferred.length ?? 0);
     setQueue(next);
     setIndex(0);
@@ -183,7 +202,8 @@ export function ReviewPage({
     (async () => {
       const now = new Date();
       const cards = await ensureListeningCards(clips.hasClip, now);
-      const practiced = cards.filter((c) => isDueListening(c, now));
+      // Phase 29 Part B.2: listening is its own queue (the ledger's, this session's window).
+      const practiced = (await getLedgerNow(now)).practice('listening').due;
       const n = Math.min(practiced.length, Math.round(queue.length * LISTENING_CONFIG.mixShare));
       if (n <= 0) return;
       const plan = planListenSession({
@@ -193,6 +213,7 @@ export function ReviewPage({
         hasClip: clips.hasClip,
         sentences: [],
         size: n,
+        newAllowed: 0,
       });
       // spread over the session, never first, and never within the gap of a card on the same word
       const next = placeExtras(queue, plan, describeSkillCard, describePlanItem);
@@ -259,21 +280,24 @@ export function ReviewPage({
       context: { source: 'review', face: extra.face, ...(extra.pickedId ? { pickedId: extra.pickedId } : {}) },
     };
     if (extra.pickedId) noteConfusion(confusables, current.item.id, extra.pickedId);
-    const before = { prevQueue: queue, prevIndex: index, prevSlots: slots, prevDone: doneSlots };
+    const before = { prevQueue: queue, prevIndex: index, prevSlots: slots, prevDone: doneSlots, prevAnswered: answered, prevRepeats: repeats };
     const handle = await learnerService.recordUndoable(evidence, evidence.at);
     setLastAnswer({ undo: handle.undo, ...before });
     // Phase 19: answered cards count as "just shown" for the next session's sibling gap.
     const w = current.item.kind === 'word' ? lexicon.byId(current.item.id) : undefined;
     noteShown([`${current.item.kind}:${current.item.id}`, ...(w ? [`zh:${w.headword}`] : [])]);
-    // Phase 19 rule 6: "Again" comes back later in this session (≥5 cards on, away from siblings).
-    if (grade === 'again' && queue) {
-      const q = requeueAgain(queue, index, describeSkillCard);
+    if (handle.card) setAnswered((m) => new Map(m).set(`${current.item.kind}:${current.item.id}|${current.skill}`, handle.card!));
+    // Phase 27 (and Phase 19 rule 6): a card still in a short learning step comes back later in this
+    // sitting (≥5 cards on, away from siblings) until FSRS moves it out of the step.
+    if (stepInSitting(handle.card, evidence.at) && queue) {
+      const q = requeueInSitting(queue, index, describeSkillCard, { replace: handle.card! });
       if (q.length !== queue.length) {
         // Listening slots after the inserted card move down one with the cards around them.
-        const at = q.findIndex((c, i) => c !== queue[i]);
+        const at = q.lastIndexOf(handle.card!);
         const shift = (k: number) => (k >= at ? k + 1 : k);
         setSlots((m) => new Map([...m].map(([k, v]) => [shift(k), v])));
         setDoneSlots((d) => new Set([...d].map(shift)));
+        setRepeats((r) => new Set(r).add(handle.card!));
         setQueue(q);
       }
     }
@@ -289,25 +313,28 @@ export function ReviewPage({
     setIndex(lastAnswer.prevIndex);
     setSlots(lastAnswer.prevSlots);
     setDoneSlots(lastAnswer.prevDone);
+    setAnswered(lastAnswer.prevAnswered);
+    setRepeats(lastAnswer.prevRepeats);
     setRevealed(true);
     setLastAnswer(null);
   }
 
   const rest = queue.slice(index);
   const newLeft = rest.filter((c) => freshSet.has(c)).length;
-  const dueLeft = rest.length - newLeft;
+  const againLeft = rest.filter((c) => repeats.has(c)).length;
+  const dueLeft = rest.length - newLeft - againLeft;
 
   return (
     <div className="review-page">
       {onExit && <button onClick={onExit}>{exitLabel}</button>}
       <h1>{title ?? (focusCards ? 'Water these words' : 'Review')}</h1>
-      {reviewState && !focusCards && (
+      {ledgerNow && !focusCards && (
         <p className="review-status" data-testid="review-status">
-          <DueIcon /> {sessionLine(reviewState.status)}
+          <DueIcon /> {sessionLine(ledgerNow.status)}
         </p>
       )}
       <p className="review-meta" data-testid="review-counts">
-        {dueNewLine(dueLeft, newLeft)}
+        {dueNewLine(dueLeft, newLeft, againLeft)}
       </p>
 
       {lastAnswer && (
@@ -354,6 +381,9 @@ export function ReviewPage({
       ) : !current ? (
         <div className="review-done" data-testid="review-done">
           <EmptySprout />
+          {lesson && answered.size > 0 && (
+            <p data-testid="learned-today">{learnedTodayLine(wordsOutOfStep(answered))}</p>
+          )}
           {deferred > 0 ? (
             <p>
               {waitingSiblings(deferred)}{' '}
@@ -361,7 +391,7 @@ export function ReviewPage({
                 Check again
               </button>
             </p>
-          ) : !focusCards && !early && reviewState && reviewState.status.nextSession.count > 0 ? (
+          ) : !focusCards && !early && ledgerNow && ledgerNow.status.nextSession.count > 0 ? (
             <p>
               {NOTHING_DUE}{' '}
               <button type="button" className="link-button" onClick={() => setEarly(true)} data-testid="review-early">

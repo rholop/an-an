@@ -4,10 +4,12 @@ import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
+import anan from './eslint-rules/progress-from-ledger.js';
 
 export default [
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/data/build/**', '**/*.config.js', '**/*.config.cjs'],
+    // test-fixtures: deliberately bad files the lint tests lint on purpose (apps/web/src/progress-lint.test.ts)
+    ignores: ['**/dist/**', '**/node_modules/**', '**/data/build/**', '**/*.config.js', '**/*.config.cjs', '**/test-fixtures/**'],
   },
   js.configs.recommended,
   {
@@ -90,5 +92,17 @@ export default [
         { name: 'indexedDB', message: 'core must stay storage-agnostic.' },
       ],
     },
+  },
+  {
+    // Phase 29 Part C.2: progress comes from the ledger. Typed (the rule asks the type checker which
+    // interface a field belongs to), on all of apps/web/src and packages/core/src outside progress/.
+    files: ['apps/web/src/**/*.ts', 'apps/web/src/**/*.tsx', 'packages/core/src/**/*.ts'],
+    ignores: ['packages/core/src/progress/**', '**/*.test.ts', '**/*.test.tsx', 'apps/web/src/__type-fixtures__/**'],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    plugins: { anan },
+    rules: { 'anan/progress-from-ledger': 'error' },
   },
 ];

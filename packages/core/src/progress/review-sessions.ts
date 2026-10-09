@@ -4,6 +4,10 @@
 // covers everything up to the next one and nothing is ever "due at 3:40 pm". All times are in the
 // profile's time zone. Pure; time is always injected.
 
+import { isValidTimeZone, zonedDate, zonedParts, zonedStartOfDay } from './time.js';
+
+export * from './time.js';
+
 export type SessionName = 'morning' | 'evening';
 
 /** Per profile (Settings → Review). Times are "HH:MM" in `timeZone`. */
@@ -35,103 +39,6 @@ export interface SessionWindow {
   endsAt: Date;
   /** It holds every card due before this. */
   cutoff: Date;
-}
-
-// ---------------------------------------------------------------------------------------------
-// Time zones (Intl only, no library)
-
-const formatters = new Map<string, Intl.DateTimeFormat>();
-function formatter(timeZone: string): Intl.DateTimeFormat {
-  let f = formatters.get(timeZone);
-  if (!f) {
-    f = new Intl.DateTimeFormat('en-US', {
-      timeZone,
-      hourCycle: 'h23',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-    formatters.set(timeZone, f);
-  }
-  return f;
-}
-
-/** Is this an IANA time zone the runtime knows? */
-export function isValidTimeZone(timeZone: string): boolean {
-  try {
-    formatter(timeZone);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export interface ZonedParts {
-  year: number;
-  month: number;
-  day: number;
-  hour: number;
-  minute: number;
-  second: number;
-}
-
-/** The wall-clock time of `at` in `timeZone`. */
-export function zonedParts(at: Date, timeZone: string): ZonedParts {
-  const parts: Record<string, number> = {};
-  for (const p of formatter(timeZone).formatToParts(at))
-    if (p.type !== 'literal') parts[p.type] = Number(p.value);
-  return {
-    year: parts.year!,
-    month: parts.month!,
-    day: parts.day!,
-    hour: parts.hour! % 24,
-    minute: parts.minute!,
-    second: parts.second!,
-  };
-}
-
-/** Minutes `timeZone` is ahead of UTC at `at`. */
-function offsetMinutes(at: Date, timeZone: string): number {
-  const p = zonedParts(at, timeZone);
-  const asUtc = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
-  return Math.round((asUtc - Math.floor(at.getTime() / 1000) * 1000) / 60_000);
-}
-
-/** The instant a wall-clock time happens in `timeZone`. A time skipped by a DST change moves
- * forward by the gap. Days and months may overflow (day 32 is the 1st of the next month). */
-export function zonedDate(
-  year: number,
-  month: number,
-  day: number,
-  hour: number,
-  minute: number,
-  timeZone: string,
-): Date {
-  const guess = Date.UTC(year, month - 1, day, hour, minute);
-  const first = guess - offsetMinutes(new Date(guess), timeZone) * 60_000;
-  const second = guess - offsetMinutes(new Date(first), timeZone) * 60_000;
-  const wall = (t: number) => {
-    const p = zonedParts(new Date(t), timeZone);
-    return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute) === guess;
-  };
-  const valid = [first, second].filter(wall);
-  // Neither shows this wall time only inside a spring-forward gap: the later one is the time after it.
-  return new Date(valid.length > 0 ? Math.min(...valid) : Math.max(first, second));
-}
-
-/** "YYYY-MM-DD" of `at` in `timeZone`. */
-export function zonedDay(at: Date, timeZone: string): string {
-  const p = zonedParts(at, timeZone);
-  return `${p.year}-${String(p.month).padStart(2, '0')}-${String(p.day).padStart(2, '0')}`;
-}
-
-/** Start of the local day of `at` in `timeZone` (midnight, or the first instant after a DST gap). */
-export function zonedStartOfDay(at: Date, timeZone: string): Date {
-  const p = zonedParts(at, timeZone);
-  return zonedDate(p.year, p.month, p.day, 0, 0, timeZone);
 }
 
 // ---------------------------------------------------------------------------------------------

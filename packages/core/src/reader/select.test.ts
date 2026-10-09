@@ -125,7 +125,7 @@ describe('selectLocalReaderSentence', () => {
     const bank = [entry('我去便利商店', '便利商店'), entry('我喜歡咖啡', '咖啡')];
     const r = selectLocalReaderSentence(base({ bank }));
     expect(r.exact?.sentence.zh).toBe('我去便利商店');
-    expect(r.exact?.reason).toBe('Practising 便利商店 (due today)');
+    expect(r.exact?.reason).toBe('Practising 便利商店 (in this review session)');
     expect(r.exact?.sentence.source).toBe('bank');
   });
 

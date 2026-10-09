@@ -7,8 +7,10 @@ import { levelIndex, type Level } from '../levels.config.js';
 import { courseOrdinal, LAIXUE_COURSE } from '../textbook/course.js';
 import type { Lesson, Textbook } from '../textbook/types.js';
 import type { StudyFocus } from '../study/study-focus.js';
+import { lessonCoreWordIds } from './terms.js';
 
-/** 1 learned / due / learning / catch-up · 2 this lesson · 3 next lesson · 4 the lesson after ·
+/** 1 learned / in session / learning (comprehensible) · 2 this lesson and catch-up words not met yet ·
+ * 3 next lesson · 4 the lesson after ·
  * 5 the picked TOCFL level (and the ones below it) · 6 anything else. */
 export type VocabRung = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -29,9 +31,9 @@ export interface VocabLadderInput {
   level: Level;
   /** Learned words (Phase 21 "Learned", "I already know this" included). */
   knownIds: ReadonlySet<string>;
-  /** Due now. */
+  /** Words with a card in the current review session (Phase 29: the ledger's session). */
   dueIds: ReadonlySet<string>;
-  /** Learning / introduced. */
+  /** Answered at least once, not Learned yet (the ledger's `comprehensible().learningIds`). */
   learningIds: ReadonlySet<string>;
   /** Imported textbooks, in course order. */
   books: readonly Textbook[];
@@ -66,11 +68,6 @@ export interface VocabLadder {
 
 const describe = (l: Lesson, bookId: string): LadderLesson => ({ lessonId: l.id, bookId, n: l.n, topic: l.topic, titleEn: l.titleEn });
 
-/** A lesson's core words (vocab + grammar words), names left out. */
-function lessonCore(l: Lesson): string[] {
-  const proper = new Set(l.properNouns);
-  return [...new Set([...l.vocab, ...(l.grammarWords ?? [])])].filter((id) => !proper.has(id));
-}
 
 /** Every lesson of the imported books, in course order. */
 export function lessonsInCourseOrder(books: readonly Textbook[]): Array<{ lesson: Lesson; bookId: string; ordinal: number }> {
@@ -92,9 +89,10 @@ export function vocabLadder(input: VocabLadderInput, options: Partial<VocabLadde
   const opts = { ...VOCAB_LADDER_DEFAULTS, ...options };
   const focus = input.studyFocus?.enabled ? input.studyFocus : undefined;
 
-  // rung 1: learned, due, learning and the catch-up lessons' words
+  // rung 1: what the learner can read (learned, in this session, learning). Phase 29 Part B.10: a
+  // catch-up lesson's word the learner has never met is being learned (rung 2), never "known".
   const r1 = new Set<string>([...input.knownIds, ...input.dueIds, ...input.learningIds]);
-  for (const i of focus?.reviewItems ?? []) if (i.kind === 'word') r1.add(i.id);
+  const catchUp = (focus?.reviewItems ?? []).filter((i) => i.kind === 'word' && !r1.has(i.id)).map((i) => i.id);
 
   let source: LadderSource = 'none';
   const lessons: VocabLadder['lessons'] = {};
@@ -132,7 +130,8 @@ export function vocabLadder(input: VocabLadderInput, options: Partial<VocabLadde
     for (const id of ids) if (!sets.slice(0, rungIdx).some((s) => s.has(id))) sets[rungIdx].add(id);
   };
   if (source === 'level-step') place(levelWords, 1);
-  window.forEach((w, i) => place(lessonCore(w.lesson), (i + 1) as 1 | 2 | 3));
+  window.forEach((w, i) => place(lessonCoreWordIds(w.lesson), (i + 1) as 1 | 2 | 3));
+  place(catchUp, 1);
 
   const picked = levelIndex(input.level);
   for (const w of input.lexicon.allWords()) {
@@ -147,7 +146,7 @@ export function vocabLadder(input: VocabLadderInput, options: Partial<VocabLadde
     for (let i = 0; i < 5; i++) if (sets[i]!.has(id)) return (i + 1) as VocabRung;
     return 6;
   };
-  const upcomingWordIds = source === 'level-step' ? levelWords : [...new Set(window.flatMap((w) => lessonCore(w.lesson)))];
+  const upcomingWordIds = source === 'level-step' ? levelWords : [...new Set(window.flatMap((w) => lessonCoreWordIds(w.lesson)))];
   return {
     rung,
     ids: { 1: sets[0], 2: sets[1], 3: sets[2], 4: sets[3], 5: sets[4] },

@@ -208,11 +208,10 @@ describe('bracket gaps', () => {
     expect(card?.flags.priority).toBe(true);
     expect(card?.card.due.getTime()).toBeLessThanOrEqual(now.getTime());
 
-    // Phase 21: the priority card is New (never answered), so it comes from newCards, not dueCards.
-    const dueCards = [
-      ...(await learnerService.dueCards(new Date(now.getTime() + 1000), 100)),
-      ...(await learnerService.newCards()),
-    ];
+    // Phase 21: the priority card is New (never answered), so it comes from the ledger's New cards,
+    // not this session's.
+    const ledger = await learnerService.ledger(new Date(now.getTime() + 1000));
+    const dueCards = [...ledger.session().cards, ...ledger.newCards()];
     const filler = ['w-i', 'w-go', 'w-buy', 'w-phone', 'w-mrt', 'w-coffee'].map((id) => ({
       ...card!,
       flags: {},
@@ -222,7 +221,7 @@ describe('bracket gaps', () => {
       lexicon,
       knownIds: new Set(),
       learnerLevel: 'L3',
-      config: { maxNewItems: 1 },
+      config: { maxItems: 1 },
       rng: () => 0.9,
     });
     expect(session.map((s) => s.word.headword)).toEqual(['健身房']);

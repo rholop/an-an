@@ -5,6 +5,7 @@ import type { Lexicon } from '../lexicon.js';
 import { levelIndex } from '../levels.config.js';
 import type { Level, Word } from '../types.js';
 import { analyzeText, type AnalyzeContext } from '../validate/turn.js';
+import { COMPREHENSIBLE_CLASSES } from '../progress/terms.js';
 
 /**
  * Phase 9: which sentence the reader's "New sentence" button shows next.
@@ -48,7 +49,7 @@ export interface ReaderPick {
   focus: ReaderFocus;
   /** The due / learning / new word this sentence was chosen for. */
   focusWordId?: string;
-  /** "Practising 便利商店 (due today)", "New word: 垃圾車", … */
+  /** "Practising 便利商店 (in this review session)", "New word: 垃圾車", … */
   reason: string;
   /** Meets the coverage rule (and the focus rule). False = "closest match". */
   exact: boolean;
@@ -59,13 +60,13 @@ export interface ReaderPick {
 export interface ReaderLearnerState {
   lexicon: Lexicon;
   learnerLevel: Level;
-  /** Word ids at state >= review. */
+  /** Learned word ids (the ledger's `comprehensible().knownIds`). */
   knownIds: ReadonlySet<string>;
-  /** Word ids with a recognition card due now. */
+  /** Word ids with a card in the current review session (`comprehensible().dueIds`). */
   dueIds: ReadonlySet<string>;
-  /** Word ids with a recognition card in learning / introduced state. */
+  /** Answered at least once, not Learned yet (`comprehensible().learningIds`). */
   learningIds: ReadonlySet<string>;
-  /** Never-touched words at the learner's level (curriculum.nextNewItems). */
+  /** New words the next session may introduce (the ledger's `pickNew`, one new-word rule). */
   frontier: readonly Word[];
 }
 
@@ -146,7 +147,6 @@ export interface ReaderEvaluation {
   closeness: number;
 }
 
-const COMPREHENSIBLE = new Set(['known', 'due', 'learning', 'allowed']);
 
 /** The ids the focus is built around, in priority order. */
 export function focusWordIds(focus: ReaderFocus, state: ReaderLearnerState): Set<string> {
@@ -202,7 +202,7 @@ export function evaluateReaderSentence(
       ? analysis.classifications.filter((c) => c.wordId !== newHit[0])
       : analysis.classifications;
   const coverage =
-    rest.length === 0 ? 1 : rest.filter((c) => COMPREHENSIBLE.has(c.class)).length / rest.length;
+    rest.length === 0 ? 1 : rest.filter((c) => COMPREHENSIBLE_CLASSES.has(c.class)).length / rest.length;
   const unknownCount = analysis.unknown.length;
   const taiwanClean = analysis.taiwanness.isClean;
 
@@ -225,7 +225,7 @@ function reasonFor(
   if (word) {
     if (focus === 'new' || state.frontier.some((w) => w.id === word.id))
       return `New word: ${word.headword}`;
-    if (state.dueIds.has(word.id)) return `Practising ${word.headword} (due today)`;
+    if (state.dueIds.has(word.id)) return `Practising ${word.headword} (in this review session)`;
     return `Practising ${word.headword} (still learning)`;
   }
   return 'Mostly words you know';

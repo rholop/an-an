@@ -18,7 +18,7 @@ import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { LevelChips } from '../components/LevelPicker.js';
 import { db } from '../db/instance.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
-import { NOTHING_DUE, TERM } from '../lib/labels.js';
+import { allWateredLine, NOTHING_DUE, nextSessionTip, TERM } from '../lib/labels.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -26,8 +26,8 @@ import { useScenarios } from '../lib/useScenarios.js';
 import { useStudyFocus } from '../lib/study.js';
 import { NowStudying } from '../components/NowStudying.js';
 import { DueForecast, HomeReviewActions } from '../components/DueForecast.js';
-import { EmptySprout, PlantLegend, StageIcon } from '../components/PlantIcons.js';
-import { loadSessionCards, useReviewStatus } from '../lib/review-status.js';
+import { EmptySprout, NextDropIcon, PlantLegend, StageIcon } from '../components/PlantIcons.js';
+import { useLedger } from '../lib/ledger.js';
 import { WaterAllPage } from './WaterAllPage.js';
 import { HomeStoryLine } from './StoriesSection.js';
 import { StoryView } from './StoryView.js';
@@ -43,7 +43,7 @@ const STAGE_LABEL: Record<GrowthStage, string> = {
   bloom: TERM.mastered,
 };
 const WILT_LABEL: Record<Wilt, string> = {
-  healthy: 'not due',
+  healthy: 'not due in this session',
   wilting: `${TERM.due} — needs water`,
   withered: `${TERM.due}, fading fast — needs water`,
 };
@@ -64,8 +64,8 @@ export function GardenPage() {
   const [textbookOnly, setTextbookOnly] = useState(false);
   const [focus, setFocus] = useState<SkillCard[] | null>(null);
   // Phase 22: Home's "Water all", "Review all" and "Review early" (Phase 23: the next session now).
-  const [session, setSession] = useState<'water-all' | 'review-all' | { early: SkillCard[] } | { story: StoryRecord } | null>(null);
-  const reviewState = useReviewStatus();
+  const [session, setSession] = useState<'water-all' | 'review-all' | 'review-early' | { story: StoryRecord } | null>(null);
+  const ledger = useLedger();
   const stories = useOptionalStoryService(lexiconState.status === 'ready' ? lexiconState.lexicon : null);
   // Phase 14: tiles that belong to the active study step are highlighted.
   const { focus: studyFocus } = useStudyFocus();
@@ -75,6 +75,11 @@ export function GardenPage() {
   const [refresh, setRefresh] = useState(0);
   // Phase 21: every change (a review here, "Study this lesson", a sync merge) refreshes the garden.
   useEffect(() => onStudyDirty(() => setRefresh((k) => k + 1)), []);
+  // Phase 27: when a session opens or ends (the status re-reads itself then), the plants follow.
+  const sessionMark = ledger ? `${ledger.status.session}|${ledger.status.nextSession.opensAt.getTime()}` : '';
+  useEffect(() => {
+    if (sessionMark) setRefresh((k) => k + 1);
+  }, [sessionMark]);
 
   useEffect(() => {
     if (lexiconState.status !== 'ready' || scenariosState.status !== 'ready') return;
@@ -113,8 +118,9 @@ export function GardenPage() {
         onExit={backHome}
       />
     );
-  if (session && typeof session === 'object' && 'early' in session)
-    return <ReviewPage focusCards={session.early} keepEvery title="Review early" exitLabel="← Back to home" onExit={backHome} />;
+  // Phase 29 Part B.5: one Review early (the Review page's own, capped like any session).
+  if (session === 'review-early')
+    return <ReviewPage reviewEarly title="Review early" exitLabel="← Back to home" onExit={backHome} />;
   if (focus) {
     return <ReviewPage focusCards={focus} keepEvery onExit={backHome} />;
   }
@@ -143,23 +149,26 @@ export function GardenPage() {
       <h1>Word garden</h1>
       <NowStudying />
       <HomeReviewActions
-        loaded={reviewState}
+        ledger={ledger}
         onWaterAll={() => setSession('water-all')}
         onReviewAll={() => setSession('review-all')}
-        onReviewEarly={() =>
-          void loadSessionCards(new Date(), { early: true }).then(({ cards }) => setSession({ early: cards }))
-        }
+        onReviewEarly={() => setSession('review-early')}
       />
       {stories && <HomeStoryLine service={stories} level={level} onOpen={(story) => setSession({ story })} />}
-      <DueForecast loaded={reviewState} />
+      <DueForecast ledger={ledger} />
       {snapshot.plants.length === 0 && <EmptySprout />}
       <p className="garden-meta">
         {shownPlants.length === 0
           ? snapshot.plants.length === 0
             ? 'No words yet. Meet some words in Chat or Review and they will appear here.'
             : 'No words at the selected levels yet.'
-          : `${shownPlants.length} words · ${wilting === 0 ? 'nothing due right now' : `${wilting} need water (${TERM.due.toLowerCase()})`}`}
+          : `${shownPlants.length} words${wilting === 0 ? '' : ` · ${wilting} need water (${TERM.due.toLowerCase()})`}`}
       </p>
+      {snapshot.plants.length > 0 && snapshot.status.thirstyWords === 0 && (
+        <p className="garden-meta garden-watered" data-testid="garden-watered">
+          {allWateredLine(snapshot.status.nextSession, snapshot.status.nextSessionWordIds.length, snapshot.status.timeZone)}
+        </p>
+      )}
       <PlantLegend extra={<span>⚠ tricky word (never {TERM.mastered})</span>} />
       <LevelChips selected={levelFilter} onChange={setLevelFilter} current={level} />
       {(hasTextbookWords || textbookOnly) && (
@@ -185,7 +194,8 @@ export function GardenPage() {
             plot={plot}
             lexicon={lexicon}
             script={script}
-            onWater={() => setFocus(wiltingCards(plot))}
+            // Phase 29 Part B.5: a plot's water button is one session too (capped like any session).
+            onWater={() => setFocus(wiltingCards(plot).slice(0, Math.max(1, ledger?.status.capLeft ?? Infinity)))}
             activeIds={activeIds}
           />
         ))}
@@ -254,7 +264,7 @@ function Tile({
     <div
       className={`garden-tile garden-tile--${plant.wilt}${active ? ' garden-tile--active' : ''}`}
       role="group"
-      aria-label={`${plant.headword}: ${STAGE_LABEL[plant.stage]}${plant.leech ? `, ${TERM.leech.toLowerCase()}` : ''}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : `, ${pct}% remembered`}`}
+      aria-label={`${plant.headword}: ${STAGE_LABEL[plant.stage]}${plant.leech ? `, ${TERM.leech.toLowerCase()}` : ''}, ${WILT_LABEL[plant.wilt]}${plant.wilt === 'healthy' && plant.nextSession ? ` (${nextSessionTip(plant.nextSession).toLowerCase()})` : ''}${pct === null ? '' : `, ${pct}% remembered`}`}
       title={`${plant.headword} — ${STAGE_LABEL[plant.stage]}${plant.leech ? ` (${TERM.leech.toLowerCase()})` : ''}, ${WILT_LABEL[plant.wilt]}${pct === null ? '' : ` (${pct}%)`}`}
       data-stage={plant.stage}
     >
@@ -271,6 +281,11 @@ function Tile({
       )}
       {plant.wilt !== 'healthy' && (
         <span className="garden-wilt-mark">{plant.wilt === 'withered' ? '!!' : '!'}</span>
+      )}
+      {plant.wilt === 'healthy' && plant.nextSession && (
+        <span className="garden-next-mark" title={nextSessionTip(plant.nextSession)} data-testid="next-session-mark">
+          <NextDropIcon label={nextSessionTip(plant.nextSession)} />
+        </span>
       )}
     </div>
   );

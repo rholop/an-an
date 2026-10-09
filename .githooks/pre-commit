@@ -1,0 +1,5 @@
+#!/bin/sh
+# Phase 29 Part C.2: the progress rule (anan/progress-from-ledger) and the rest of the lint run
+# before every commit, as in CI. Installed by `pnpm install` (the root `prepare` script sets
+# core.hooksPath to .githooks). Skip once with `git commit --no-verify` only if you must.
+pnpm -s lint

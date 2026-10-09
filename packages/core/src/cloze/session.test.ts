@@ -68,23 +68,17 @@ describe('buildSession', () => {
     expect(byRung[3]).toBe('typed');
   });
 
-  it('caps New (never answered) items separately from due items (Phase 21 shared "New")', () => {
-    const newWords = Array.from({ length: 10 }, (_, i) => word({ id: `new${i}`, headword: `新${i}` }));
+  it('New (never answered) items come first and are not capped again here (Phase 29: the ledger caps them)', () => {
+    const newWords = Array.from({ length: 3 }, (_, i) => word({ id: `new${i}`, headword: `新${i}` }));
     const reviewWords = Array.from({ length: 10 }, (_, i) => word({ id: `rev${i}`, headword: `舊${i}` }));
     const lexicon = new Lexicon([...newWords, ...reviewWords]);
     const cards = [
       ...newWords.map((w) => card(w, { state: 'introduced' })),
       ...reviewWords.map((w) => card(w, { state: 'review' })),
     ];
-    const items = buildSession(cards, {
-      lexicon,
-      knownIds: new Set(),
-      learnerLevel: 'N1',
-      config: { maxItems: 20, maxNewItems: 3 },
-    });
-    const newCount = items.filter((i) => i.card.state === 'introduced').length;
-    expect(newCount).toBeLessThanOrEqual(3);
-    expect(items.length).toBeLessThanOrEqual(20);
+    const items = buildSession(cards, { lexicon, knownIds: new Set(), learnerLevel: 'N1', config: { maxItems: 5 } });
+    expect(items.filter((i) => i.card.state === 'introduced')).toHaveLength(3);
+    expect(items).toHaveLength(5);
   });
 
   it('respects maxItems overall', () => {
@@ -118,7 +112,7 @@ describe('buildSession', () => {
       knownIds,
       learnerLevel: 'N1',
       chatLines,
-      config: { maxItems: 20, maxNewItems: 0 },
+      config: { maxItems: 20 },
     };
     const items = buildSession(cards, options);
 
@@ -132,7 +126,7 @@ describe('Phase 14: textbook-first rank', () => {
   const words = ['a', 'b', 'c', 'd', 'e', 'f'].map((id) => word({ id, headword: `字${id}` }));
   const lexicon = new Lexicon(words);
   const cards = words.map((w) => card(w));
-  const opts = { lexicon, knownIds: new Set<string>(), learnerLevel: 'N1' as const, config: { maxItems: 3, maxNewItems: 0, maxErrorItems: 0 } };
+  const opts = { lexicon, knownIds: new Set<string>(), learnerLevel: 'N1' as const, config: { maxItems: 3, maxErrorItems: 0 } };
 
   it('with a rank, the lowest-ranked review cards fill the limited slots', () => {
     const textbook = new Set(['d', 'e', 'f']);

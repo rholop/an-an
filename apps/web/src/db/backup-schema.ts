@@ -47,6 +47,8 @@ export const SkillCardSchema = z.object({
   // Phase 23 (additive): the production ladder in Review.
   prodRung: z.enum(['pick', 'recall']).optional(),
   prodStreak: z.number().optional(),
+  // Phase 27 (additive): a short step's own due time while card.due waits for the next session.
+  stepDue: z.coerce.date().optional(),
   familiarity: z.number(),
   readingDependence: z.number(),
   flags: z.object({

@@ -72,7 +72,11 @@ export const lessonsMasteredLine = (done: number, total: number): string =>
 /** One coverage label (Chat, Progress, Reader). */
 export const coverageLine = (share: number): string => `You know about ${pct(share)} of the words here`;
 /** Review header: "12 due · 3 new". */
-export const dueNewLine = (due: number, fresh: number): string => `${due} ${TERM.due.toLowerCase()} · ${fresh} ${TERM.new.toLowerCase()}`;
+/** Phase 29 Part B.2: the Listen tab's own count (listening is never part of watering or Review). */
+export const listenLine = (n: number): string => `${n} to listen to this session`;
+/** Phase 29 Part B.5: Again repeats in this sitting are shown apart ("12 due · 3 new · +2 again"). */
+export const dueNewLine = (due: number, fresh: number, again = 0): string =>
+  `${due} ${TERM.due.toLowerCase()} · ${fresh} ${TERM.new.toLowerCase()}${again > 0 ? ` · +${again} again` : ''}`;
 /** Phase 23: a clock time in the profile's time zone ("4 pm", "3:40 pm"), right on any device. */
 export const timeOfDay = (d: Date, timeZone?: string): string => {
   const opts: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', ...(timeZone ? { timeZone } : {}) };
@@ -118,6 +122,26 @@ export const waterAllLabel = (n: number): string => `💧 Water all (${n})`;
 export const reviewAllLabel = (n: number): string => `Review all (${n})`;
 export const REVIEW_EARLY = 'Review early';
 export const ALL_WATERED = 'All watered 🌱';
+/** Phase 27: the garden between sessions (or once this session is watered):
+ * "All watered 🌱 · 10 words in the evening session (opens 4 pm)". */
+export const allWateredLine = (
+  next: { name: 'morning' | 'evening'; opensAt: Date },
+  words: number,
+  timeZone: string,
+  now: Date = new Date(),
+): string => {
+  if (words === 0) return ALL_WATERED;
+  const day = (d: Date) => d.toLocaleDateString('en-CA', { timeZone });
+  const tomorrow = day(next.opensAt) !== day(now) ? ' tomorrow' : '';
+  return `${ALL_WATERED} · ${words} word${words === 1 ? '' : 's'} in the ${next.name} session (opens ${timeOfDay(next.opensAt, timeZone)}${tomorrow})`;
+};
+/** Phase 27: the faint droplet's tooltip ("Evening session"). */
+export const nextSessionTip = (name: 'morning' | 'evening'): string => `${name === 'morning' ? 'Morning' : 'Evening'} session`;
+/** Phase 27: the lesson page between sessions (the same cards as the garden plot). */
+export const lessonNothingThisSession = (next: { name: 'morning' | 'evening' }, count: number): string =>
+  `Nothing from this lesson to review in this session.${count > 0 ? ` ${count} word${count === 1 ? '' : 's'} from it in the ${next.name} session.` : ''}`;
+/** Phase 27: the lesson study end screen: words that left their short learning step. */
+export const learnedTodayLine = (n: number): string => `${TERM.learned} today: ${n} word${n === 1 ? '' : 's'}`;
 export const NOTHING_NEXT_SESSION = 'All watered 🌱 Nothing waiting for the next session yet.';
 /** Phase 22: Water all's end-of-session line. */
 export const wateredSummary = (words: number, perked: number): string =>

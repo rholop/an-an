@@ -179,8 +179,8 @@ function greedyOrder<T>(
   const rng = seededRng(seed);
   const deferred: T[] = [];
   // Rule 3: a new item's production card comes after its recognition card. When the recognition
-  // card is not in the session the word was met before (an unreviewed card is always due), so
-  // the production card is free to go.
+  // card is not in this session the word was met in an earlier one, so the production card is
+  // free to go.
   const recognitionKeys = new Set(all.filter((x) => x.d.direction === 'zh-en').flatMap((x) => x.d.keys));
   const recognitionIn = (keys: readonly string[]) => keys.some((k) => recognitionKeys.has(k));
 

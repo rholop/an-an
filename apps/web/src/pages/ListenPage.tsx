@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSaveWhenDone } from '../lib/save-progress.js';
-import { isDueListening } from '@anan/core';
 import {
   lessonIndex,
   planListenSession,
@@ -14,7 +13,6 @@ import {
   type Lexicon,
   type PlanItem,
   type SentenceBankEntry,
-  type SkillCard,
 } from '@anan/core';
 import { describePlanItem, newSessionSeed, requeueAgain, sessionMeta } from '@anan/core';
 import { logSessionOrder, recentShown } from '../lib/session-recent.js';
@@ -22,6 +20,7 @@ import { ListenExercise, type ListenResult } from '../components/ListenExercise.
 import { learnerService } from '../db/instance.js';
 import { ensureListeningCards, recordListeningEvidence, prefetchClips, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
+import { getLedgerNow, useLedger } from '../lib/ledger.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
 import { sentenceOrdinal, useTextbookSentences } from '../lib/textbook-data.js';
@@ -29,7 +28,7 @@ import { useClassScope, useStudyFocus } from '../lib/study.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { excludedZh } from '../lib/cloze-reports.js';
 import { db } from '../db/instance.js';
-import { CURRENT_LESSON, UNDO, YOUR_LEVEL, levelShort, lessonLabel, stepName } from '../lib/labels.js';
+import { CURRENT_LESSON, UNDO, YOUR_LEVEL, levelShort, lessonLabel, listenLine, stepName } from '../lib/labels.js';
 
 type Clips = ReturnType<typeof useListeningClips>;
 
@@ -182,6 +181,8 @@ export function ListenPage({
   const tbSentences = useTextbookSentences(true);
   const scope = useClassScope();
   const { focus } = useStudyFocus();
+  const ledger = useLedger();
+  const listenCount = ledger ? ledger.practice('listening').due.length : undefined;
   const [excluded, setExcluded] = useState<Set<string> | null>(null);
   useEffect(() => {
     void excludedZh(db).then(setExcluded);
@@ -215,8 +216,12 @@ export function ListenPage({
       const rank = focus?.enabled
         ? (id: string) => studyRank(focus, (it) => idx.get(`${it.kind}:${it.id}`), { kind: 'word', id })
         : undefined;
-      const practiced = listening.filter((c: SkillCard) => isDueListening(c, now));
-      const fresh = listening.filter((c) => c.card.reps === 0).map((c) => c.item.id);
+      // Phase 29 Part B.2: listening is its own queue (this session's window, answered at least once),
+      // with its own new-word allowance.
+      const queue = (await getLedgerNow(now)).practice('listening');
+      const practiced = queue.due;
+      const fresh = queue.fresh.map((c) => c.item.id);
+      const newAllowed = (await getLedgerNow(now)).newAllowance('listening').allowed;
       const lessonFresh = onlyWordIds ? [...onlyWordIds].filter((id) => !listening.some((c) => c.item.id === id)) : [];
       const seed = newSessionSeed('listen');
       const p = planListenSession({
@@ -225,6 +230,7 @@ export function ListenPage({
         lexicon: lexiconState.lexicon,
         dueListening: practiced,
         newWordIds: [...fresh, ...lessonFresh],
+        newAllowed,
         hasClip: clips.hasClip,
         sentences,
         ...(rank ? { rank } : {}),
@@ -257,6 +263,12 @@ export function ListenPage({
             {CURRENT_LESSON}:{' '}
             {focus.activeLesson ? lessonLabel(focus.activeLesson.n, focus.activeLesson.bookId) : stepName(focus.activeStep)}
           </>
+        )}
+        {listenCount !== undefined && (
+          <span data-testid="listen-count">
+            {' · '}
+            {listenLine(listenCount)}
+          </span>
         )}
       </p>
       {!enabled ? (
