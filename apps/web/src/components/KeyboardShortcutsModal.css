@@ -1,0 +1,127 @@
+.shortcuts-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.shortcuts-dialog {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.shortcuts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.shortcuts-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-family: var(--font-heading);
+  color: var(--text);
+}
+
+.shortcuts-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.shortcuts-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.shortcuts-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.shortcuts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.shortcuts-section-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.shortcuts-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.shortcuts-label {
+  color: var(--text);
+}
+
+.shortcuts-keys {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.shortcuts-keys kbd {
+  display: inline-block;
+  padding: 0.2rem 0.45rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 var(--border-strong);
+}
+
+.shortcuts-footer {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+  text-align: center;
+}

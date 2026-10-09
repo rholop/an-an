@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useKeyboardShortcut } from '../lib/keyboard-shortcuts.js';
 import { isDueListening } from '@anan/core';
 import {
   isUsableSentence,
@@ -898,6 +899,12 @@ function ChoiceExerciseView({
     onAnswer(option.isCorrect ? 'correct' : 'wrong');
   }
 
+  useKeyboardShortcut('choice-1', () => { if (options[0]) choose(options[0]); }, !answered && Boolean(options[0]));
+  useKeyboardShortcut('choice-2', () => { if (options[1]) choose(options[1]); }, !answered && Boolean(options[1]));
+  useKeyboardShortcut('choice-3', () => { if (options[2]) choose(options[2]); }, !answered && Boolean(options[2]));
+  useKeyboardShortcut('choice-4', () => { if (options[3]) choose(options[3]); }, !answered && Boolean(options[3]));
+  useKeyboardShortcut('next', () => onNext(), Boolean(answered));
+
   return (
     <div className="cloze-exercise">
       {exercise ? (
@@ -970,6 +977,9 @@ function TypedExerciseView({
     if (answered || !typed.trim()) return;
     onAnswer(gradeClozeAnswer(typed, item.word, mode));
   }
+
+  useKeyboardShortcut('submit', submit, !answered);
+  useKeyboardShortcut('next', () => onNext(), Boolean(answered));
 
   return (
     <div className="cloze-exercise">
@@ -1130,6 +1140,7 @@ function Feedback({
 }) {
   const reading = readingText(word, script);
   const [claimed, setClaimed] = useState(false);
+  useKeyboardShortcut('next', () => onNext(), true);
   return (
     <div className={`cloze-feedback cloze-feedback--${outcome}`} data-testid="cloze-feedback">
       <p>

@@ -211,6 +211,20 @@ export function MoreSheet({
         ))}
       </ul>
       <div className="more-theme">
+        <span>Shortcuts</span>
+        <button
+          type="button"
+          className="header-shortcuts-btn"
+          onClick={() => {
+            onClose();
+            window.dispatchEvent(new CustomEvent('anan:toggle-shortcuts-help'));
+          }}
+          data-testid="more-shortcuts-btn"
+        >
+          ⌨️ View keys (?)
+        </button>
+      </div>
+      <div className="more-theme">
         <span>Theme</span>
         <ThemeToggle />
       </div>

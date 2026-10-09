@@ -47,8 +47,9 @@ export function SpeakerButton(props: Props) {
           e.stopPropagation();
           void play();
         }}
-        aria-label={`Play ${props.label ?? clip.text}`}
-        title={clip.zhuyin ? `${clip.text} · ${clip.zhuyin}` : clip.text}
+        aria-label={`Play ${props.label ?? clip.text} (P)`}
+        title={`${clip.zhuyin ? `${clip.text} · ${clip.zhuyin}` : clip.text} (Play: P)`}
+        data-testid="speaker-btn"
       >
         🔊
       </button>
