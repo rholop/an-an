@@ -54,6 +54,13 @@ export interface StoryEnvironment {
   lessonStories?(bookId: string): Promise<readonly LessonStory[]>;
 }
 
+/** A textbook lesson, by id (Phase 30 Part B.4). */
+export interface LessonRef {
+  lessonId: string;
+  bookId: string;
+  n: number;
+}
+
 export type StoryTopicKind = 'lesson' | 'journal' | 'typed' | 'chip' | 'continue';
 
 export interface StoryAsk {
@@ -302,44 +309,119 @@ export class StoryService {
   }
 
   /**
-   * "Next story": a ready one when there is one, then an unread lesson story written ahead for the
-   * current lesson (Phase 26 Part E, no model call), otherwise a new one on the lesson theme.
+   * Phase 30 Part B.4: the lessons whose made-ahead stories are offered: every catch-up lesson
+   * (earlier, not yet Mastered: the study focus's review lessons, earliest first) and the active one.
+   */
+  async offeredLessons(level: Level, now: Date = new Date()): Promise<{ ladder: VocabLadder; active?: LessonRef; catchUp: LessonRef[] }> {
+    const { ladder } = await this.ladderFor(level, now);
+    const focus = await this.env.studyFocus?.().catch(() => undefined);
+    const a = ladder.lessons.active;
+    const active = a ? { lessonId: a.lessonId, bookId: a.bookId, n: a.n } : undefined;
+    const catchUp = [...(focus?.enabled ? focus.reviewLessons : [])]
+      .sort((x, y) => x.ordinal - y.ordinal)
+      .filter((l) => l.lessonId !== active?.lessonId)
+      .map((l) => ({ lessonId: l.lessonId, bookId: l.bookId, n: l.n }));
+    return { ladder, ...(active ? { active } : {}), catchUp };
+  }
+
+  /** The catch-up lessons now (for the "· catch-up" badge). */
+  async catchUpLessonIds(level: Level, now: Date = new Date()): Promise<Set<string>> {
+    return new Set((await this.offeredLessons(level, now)).catchUp.map((l) => l.lessonId));
+  }
+
+  /**
+   * "Next story" (Phase 30 Part B.3): an unread story made ahead for the offered lessons first (no
+   * model call), then a ready live one, then a new one on the lesson theme.
    */
   async next(level: Level, difficulty: StoryDifficulty, now: Date = new Date(), onProgress?: (stage: StoryStage) => void): Promise<StoryRecord> {
-    const ready = (await this.readyFor(level, now)).find((s) => s.difficulty === difficulty);
-    if (ready) return ready;
     const lesson = await this.nextLessonStory(level, now);
     if (lesson) return lesson;
+    const ready = (await this.readyFor(level, now)).find((s) => s.difficulty === difficulty);
+    if (ready) return ready;
     return this.write({ level, difficulty, kind: 'lesson' }, now, onProgress);
   }
 
-  /** Phase 26 Part E: the next unread lesson story for the current lesson, put in the library. */
-  async nextLessonStory(level: Level, now: Date = new Date()): Promise<StoryRecord | undefined> {
+  /**
+   * The next story made ahead (Phase 26 Part E, Phase 30 Part B.4), put in the library: the earliest
+   * catch-up lesson with an unread story and the active lesson take turns, so the active lesson
+   * still gets every second story. A catch-up lesson's read story comes back to read again after a
+   * few days while that lesson is not Mastered.
+   */
+  async nextLessonStory(level: Level, now: Date = new Date(), opts: { peek?: boolean } = {}): Promise<StoryRecord | undefined> {
     if (!this.env.lessonStories) return undefined;
-    const { ladder } = await this.ladderFor(level, now);
-    const active = ladder.lessons.active;
-    if (!active) return undefined;
-    const pool = await this.env.lessonStories(active.bookId).catch(() => [] as LessonStory[]);
-    const library = new Map((await this.db.stories.toArray()).map((s) => [s.id, s]));
-    for (const ls of pool.filter((x) => x.lessonId === active.lessonId)) {
-      const id = `lesson-${ls.id}`;
-      const have = library.get(id);
-      if (have) {
+    const { ladder, active, catchUp } = await this.offeredLessons(level, now);
+    if (!active && catchUp.length === 0) return undefined;
+    const library = (await this.db.stories.toArray()) as StoryRecord[];
+    const byId = new Map(library.map((s) => [s.id, s]));
+    const pools = new Map<string, readonly LessonStory[]>();
+    const poolOf = async (bookId: string) => {
+      if (!pools.has(bookId)) pools.set(bookId, await this.env.lessonStories!(bookId).catch(() => [] as LessonStory[]));
+      return pools.get(bookId)!;
+    };
+    /** An unread (or not yet opened) story of this lesson, as a library record. */
+    const unread = async (l: LessonRef): Promise<StoryRecord | LessonStory | undefined> => {
+      for (const ls of (await poolOf(l.bookId)).filter((x) => x.lessonId === l.lessonId)) {
+        const have = byId.get(`lesson-${ls.id}`);
+        if (!have) return ls;
         if (!have.readAt && !have.report) return have;
-        continue;
       }
-      const res = ls.story;
-      const names = ladder.properNounIds.flatMap((x) => this.lexicon.byId(x)?.headword ?? []);
-      const report = analyzeStory(
-        res.paragraphs.map((p) => p.zh),
-        { ladder, lexicon: this.lexicon, allowedTexts: storyAllowedNames(names, res.characters, this.lexicon), glossed: new Set(res.glosses.map((g) => g.zh)) },
-        storyBudget('middle'),
-      );
-      const record = storyRecord(res, report, res.questions, { id, level, difficulty: 'middle', topic: ls.topic, lessonId: ls.lessonId }, now);
-      await this.db.stories.put(record);
-      return record;
+      return undefined;
+    };
+    const cfg = STORY_CONFIG.lessonStories;
+    /** A read story of a catch-up lesson that is due to come back. */
+    const reread = (l: LessonRef): StoryRecord | undefined =>
+      library
+        .filter((s) => s.lessonId === l.lessonId && s.id.startsWith('lesson-') && s.readAt && !s.report)
+        .filter((s) => {
+          const reads = s.readDates?.length ?? 1;
+          const days = (now.getTime() - s.readAt!.getTime()) / 86_400_000;
+          return days >= (reads <= 1 ? cfg.rereadAfterDays : cfg.rereadEveryDays);
+        })
+        .sort((x, y) => x.readAt!.getTime() - y.readAt!.getTime())[0];
+    const fromCatchUp = async (): Promise<StoryRecord | LessonStory | undefined> => {
+      for (const l of catchUp) {
+        const u = await unread(l);
+        if (u) return u;
+      }
+      // a read story coming back is not "waiting": it never holds back a live story
+      if (opts.peek) return undefined;
+      for (const l of catchUp) {
+        const r = reread(l);
+        if (r) return r;
+      }
+      return undefined;
+    };
+    const fromActive = async () => (active ? unread(active) : undefined);
+    // take turns: after a catch-up story, the active lesson's comes first
+    const last = library
+      .filter((s) => s.id.startsWith('lesson-') && s.lessonId)
+      .sort((x, y) => (y.readAt ?? y.createdAt).getTime() - (x.readAt ?? x.createdAt).getTime())[0];
+    const lastWasCatchUp = !!last && last.lessonId !== active?.lessonId;
+    const order = lastWasCatchUp ? [fromActive, fromCatchUp] : [fromCatchUp, fromActive];
+    for (const pick of order) {
+      const got = await pick();
+      if (!got) continue;
+      if ('chars' in got) return got;
+      return opts.peek ? this.recordFrom(got, ladder, level, now) : this.store(this.recordFrom(got, ladder, level, now));
     }
     return undefined;
+  }
+
+  /** A made-ahead story analysed against the learner's ladder now (new words underlined right). */
+  private recordFrom(ls: LessonStory, ladder: VocabLadder, level: Level, now: Date): StoryRecord {
+    const res = ls.story;
+    const names = ladder.properNounIds.flatMap((x) => this.lexicon.byId(x)?.headword ?? []);
+    const report = analyzeStory(
+      res.paragraphs.map((p) => p.zh),
+      { ladder, lexicon: this.lexicon, allowedTexts: storyAllowedNames(names, res.characters, this.lexicon), glossed: new Set(res.glosses.map((g) => g.zh)) },
+      storyBudget('middle'),
+    );
+    return storyRecord(res, report, res.questions, { id: `lesson-${ls.id}`, level, difficulty: 'middle', topic: ls.topic, lessonId: ls.lessonId }, now);
+  }
+
+  private async store(record: StoryRecord): Promise<StoryRecord> {
+    await this.db.stories.put(record);
+    return record;
   }
 
   /** Keeps `readyAhead` unread stories for the current lesson, in the background. Failures are quiet. */
@@ -351,6 +433,8 @@ export class StoryService {
     keepGoing: () => boolean = () => true,
   ): Promise<number> {
     let ready = (await this.readyFor(level, now)).filter((s) => s.difficulty === difficulty).length;
+    // Phase 30 Part B.3: no live story while a made-ahead one is waiting (saves the free quota).
+    if (await this.nextLessonStory(level, now, { peek: true })) return ready;
     const pause = STORY_CONFIG.readyAheadPause;
     while (ready < STORY_CONFIG.readyAhead && keepGoing() && now.getTime() >= this.readyPausedUntil) {
       try {
