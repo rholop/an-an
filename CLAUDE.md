@@ -120,7 +120,7 @@ compares a card's `state` or `stability` to decide them (an architecture test en
 | **Review face** | Phase 23: recognition = Meaning, production = Pick the Mandarin (4 same-length look-alikes from `core/confusables`, Unihan radical/strokes/phonetic) then Recall after 2 right picks in a row (a lapse goes back to Pick), reading = Say it. Mixed ~40/40/20 | `reviewFace`, `capMixedCards` (`core/review/faces.ts`) |
 | **Pinyin %** | Phase 23: Learned words whose reading card is Learned too, shown as "Learned X% · Mastered Y% · Pinyin Z%". Reading never changes Learned or Mastered | `pinyinShare` |
 | **Learned** | Recognition in review after an answer in this app, or passed "I already know this". Grammar: one correct use. Leeches count as Learned | `ProgressIndex.learned` / `summarize` |
-| **Mastered** | Recognition stability ≥ 21 d and production ≥ 7 d (grammar: 3 correct uses, last one correct). Leeches and imports never count | `ProgressIndex.mastered` / `summarize` |
+| **Mastered** | Recognition stability ≥ 21 d and production ≥ 7 d (grammar: 3 correct uses, last one correct and on a later day than the first). Leeches and imports never count | `ProgressIndex.mastered` / `summarize` |
 | **Imported** | Seeded by Anki or placement, no answer here yet | `ProgressIndex.imported` |
 | **Tricky** | A leech: counts as Learned, never Mastered | `ProgressIndex` |
 | **Comprehensible** | Known ∪ due ∪ learning (chat, reader and open-chat coverage) | `learnerService.wordSets` |
@@ -162,6 +162,7 @@ Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
 | 22 | Home "💧 Water all" and "Review all", matching due counts, Garden light/dark theme tokens (`apps/web/src/theme.css`), plant icons, nav with More | `22-home-buttons-and-garden-theme.md` |
 | 23 | Morning and evening review sessions (profile time zone, cap per session), Review faces (Meaning, Pick, Recall, Say it) with look-alike options, "Pinyin & tones" tab (7 tap exercises on the `reading` skill, tone confusion table on Progress) | `23-review-sessions-and-pinyin-practice.md` |
 | 24 | Graded stories from known words (vocabulary ladder, Stories in the Reader, Home "Today's story", optional lesson story step) | `24-graded-stories.md`, eval in `docs/stories-eval.md` |
+| 25 | Gemini only; lesson grammar step (3 exercises per point, ≥2 types, tiles from `core/textbook/grammar-step.ts` + `lesson-grammar-step.ts`); lesson senses (`glossFor(w, {lesson})`); names out of vocab; curriculum data fixes via `data/supplement/lexicon-overrides.yaml`; `pnpm audit:curriculum` in CI (config `data/curriculum/audit-config.yaml`, report `docs/curriculum-audit.md`); naturalness pass `pnpm --filter @anan/proxy naturalness` | `25-lessons-grammar-and-story-fix.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 
