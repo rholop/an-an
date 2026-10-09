@@ -1,3 +1,4 @@
+import { gunzipSync } from 'node:zlib';
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures.js';
 
@@ -218,7 +219,10 @@ test.describe('every tab stays fresh without a reload', () => {
     await page.route('**/v1/sync/**', async (route) => {
       const req = route.request();
       if (req.method() === 'PUT') {
-        remote = (JSON.parse(req.postData() ?? '{}') as { data: unknown }).data;
+        // Phase 28: pushes are gzipped
+        const raw = req.postDataBuffer() ?? Buffer.from('{}');
+        const text = req.headers()['content-encoding'] === 'gzip' ? gunzipSync(raw).toString('utf8') : raw.toString('utf8');
+        remote = (JSON.parse(text) as { data: unknown }).data;
         await route.fulfill({ json: { rev: 1 } });
       } else {
         await route.fulfill({ json: { rev: 2, updatedAt: new Date().toISOString(), data: remote } });

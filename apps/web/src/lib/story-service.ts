@@ -32,6 +32,7 @@ import {
   type VocabRung,
   type WordSets,
 } from '@anan/core';
+import { saveProgressNow } from './save-progress.js';
 import type { AnanDB } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
 
@@ -423,6 +424,7 @@ export class StoryService {
       readDates: [...(story.readDates ?? []), now],
     };
     await this.db.stories.put(updated);
+    saveProgressNow(); // Phase 28: a finished story reaches the server straight away
     return { evidence: events.length, story: updated };
   }
 

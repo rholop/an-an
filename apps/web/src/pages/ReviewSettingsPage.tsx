@@ -18,6 +18,7 @@ import { updateReviewSettings, useReviewSettings } from '../lib/review-settings.
 import { SESSION_NAME } from '../lib/labels.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { ReadingControls } from '../components/ReadingControls.js';
+import { YourProgress } from '../components/YourProgress.js';
 import { useAnswerInputMode, type AnswerInputMode } from '../lib/reading.js';
 import { readTargetRetention, RETENTION_MAX, RETENTION_MIN, setTargetRetention } from '../lib/retention.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
@@ -125,6 +126,7 @@ export function ReviewSettingsPage() {
   return (
     <div className="review-settings">
       <h1>Settings</h1>
+      <YourProgress />
       <SharedSettings />
       <h2 className="review-settings-group">Review</h2>
 

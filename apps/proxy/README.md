@@ -85,9 +85,25 @@ pushes can't both win. It sits behind the tiny `SyncStore` interface
 (`get`, `put(profileId, blob, baseRev)`), so moving to a KV/blob store later
 means writing one class.
 
-**Versions:** the last **10** revisions per profile are kept. To list them or
-roll a profile back (the old version becomes the newest revision; devices merge
-it in like any update):
+**Phase 28:** saves may be gzipped (`content-encoding: gzip`; the 40 MB cap applies to the
+body and to what it unpacks to) and pulls are gzipped when the client sends
+`accept-encoding: gzip`. A push that would drop more than 20% of the saved copy's cards or
+evidence is refused with 409 (and the server copy, so the client merges and pushes the union)
+unless the body says `confirmReplace: true`. `GET /v1/sync/:profile/versions` lists the saved
+versions with their counts; `GET /v1/sync/:profile/versions/:rev` returns one.
+`PUT /v1/sync-selftest` takes a large body and discards it (the deploy's nginx check).
+
+To see what the server holds for each profile (read-only):
+
+```sh
+pnpm --filter @anan/proxy sync:inspect         # every profile
+pnpm --filter @anan/proxy sync:inspect ron     # one
+```
+
+**Versions:** the last **10** revisions per profile are kept, plus the newest of each day for
+the last **30** days. To list them or roll a profile back on the server (the old version becomes
+the newest revision; devices merge it in like any update). In the app, Settings → Your progress
+→ Saved versions does the same per profile (Restore merges; Replace overwrites, after a confirm):
 
 ```sh
 pnpm --filter @anan/proxy sync-rollback ron        # list

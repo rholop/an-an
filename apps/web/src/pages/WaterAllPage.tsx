@@ -34,6 +34,7 @@ import { NOTHING_DUE, UNDO, wateredSummary } from '../lib/labels.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { useAnswerInputMode, useReadingSettings } from '../lib/reading.js';
 import { loadSessionCards } from '../lib/review-status.js';
+import { useSaveWhenDone } from '../lib/save-progress.js';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
@@ -180,6 +181,7 @@ function WaterSession({
     correct: number;
   } | null>(null);
   const [summary, setSummary] = useState<{ words: number; perked: number } | null>(null);
+  useSaveWhenDone(summary !== null); // Phase 28
   // a few listening exercises for words that already have a practised listening card
   const clips = useListeningClips();
   const listeningOn = useListeningEnabled();

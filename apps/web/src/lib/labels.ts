@@ -257,3 +257,46 @@ export const storyReasonsLine = (reasons: readonly string[]): string => {
   return parts.length === 0 ? '' : `(Not shown because ${parts.join(', and ')}.)`;
 };
 export const SKIP = 'Skip';
+
+// --- Phase 28: progress saved to the server ----------------------------------------------------
+const thousands = (n: number) => n.toLocaleString('en-US');
+/** "today 9:58 am", "yesterday 9:58 am", "Oct 7, 9:58 am" (device time, before a profile is open). */
+export const savedWhen = (iso: string | Date, now: Date = new Date(), timeZone?: string): string => {
+  const d = new Date(iso);
+  const day = (x: Date) => x.toLocaleDateString('en-CA', timeZone ? { timeZone } : {});
+  const yesterday = new Date(now.getTime() - 86_400_000);
+  const time = timeOfDay(d, timeZone);
+  if (day(d) === day(now)) return `today ${time}`;
+  if (day(d) === day(yesterday)) return `yesterday ${time}`;
+  return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(timeZone ? { timeZone } : {}) })}, ${time}`;
+};
+/** "1,240 cards · 412 Learned" */
+export const copyCounts = (s: { cards: number; learned: number }): string =>
+  `${thousands(s.cards)} card${s.cards === 1 ? '' : 's'} · ${thousands(s.learned)} ${TERM.learned}`;
+/** The restore screen while a fresh browser fills itself from the server. */
+export const restoringLine = (name: string, found?: { cards: number; savedAt: string }): string =>
+  `Restoring ${name}'s progress…${found ? ` found ${thousands(found.cards)} card${found.cards === 1 ? '' : 's'}, last saved ${savedWhen(found.savedAt)}` : ''}`;
+export const noServerCopy = (name: string): string => `No saved progress found on the server for ${name}.`;
+export const SERVER_UNREACHABLE = "Couldn't reach the server, so your saved progress couldn't be loaded.";
+export const APP_OUTDATED = 'Your saved progress is from a newer version of the app. Reload to update it.';
+export const TRY_AGAIN = 'Try again';
+export const START_FRESH = 'Start fresh';
+export const RELOAD_APP = 'Reload';
+/** Header status (the cloud). */
+export const SAVED = 'Saved';
+export const SAVING = 'Saving…';
+export const SAVE_NOW = 'Save now';
+/** "Not saved for 2 h" / "Not saved for 12 min" */
+export const notSavedFor = (since: Date, now: Date = new Date()): string => {
+  const min = Math.max(1, Math.round((now.getTime() - since.getTime()) / 60_000));
+  return min < 60 ? `Not saved for ${min} min` : `Not saved for ${Math.round(min / 60)} h`;
+};
+/** Why the last save failed, in words (never a dot only). */
+export const SAVE_TOO_LARGE = 'Your progress is too big to save to the server. Tell Claude (server body limit).';
+export const SAVE_RETRYING = 'Not saved to the server yet. Retrying.';
+export const SAVE_OUTDATED = 'The server has progress from a newer version of the app. Reload to update.';
+export const UNSAVED_WARNING = "Some progress isn't on the server yet.";
+/** Settings → Your progress. */
+export const lastSavedLine = (s: { savedAt: string; cards: number; learned: number }, now: Date = new Date()): string =>
+  `Last saved to the server: ${savedWhen(s.savedAt, now)} · ${copyCounts(s)}`;
+export const thisBrowserLine = (s: { cards: number; learned: number }): string => `This browser: ${copyCounts(s)}`;

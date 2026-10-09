@@ -1,11 +1,15 @@
 import type { AnanDB } from '../db/schema.js';
 import { closeSession, currentSession, openSession, type Session } from '../db/instance.js';
 import type { ProfileId } from '../profiles.js';
-import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
+import { authHeaders, getSiteCode, handleUnauthorized, proxyBase } from './api.js';
+
+/** The pull was answered with the household code accepted (a 401 asks for the code instead). */
+const getSiteCodeOk = () => Boolean(getSiteCode());
 import { reloadCurrentLevel } from './current-level.js';
 import { reloadMyClass } from './my-class.js';
 import { markStudyDirty } from './study-dirty.js';
-import { SyncManager, type SyncStatus } from './sync.js';
+import { setProgressSaver } from './save-progress.js';
+import { SyncManager, type SavedInfo, type SyncStatus } from './sync.js';
 
 export const PROFILE_KEY = 'anan.profile';
 
@@ -41,6 +45,23 @@ export interface ControllerEvents {
   onDataChanged: () => void;
   onSyncStatus: (s: SyncStatus) => void;
   onUnauthorized: () => void;
+  /** Phase 28: a fresh browser's pull found this on the server (shown while it is merged in). */
+  onRestoreFound?: (summary: SavedInfo) => void;
+}
+
+/** Phase 28: why a fresh browser could not be filled from the server. It never opens silently empty. */
+export type RestoreProblem = 'none' | 'unreachable' | 'outdated';
+
+/** Ask the browser to keep this site's storage (much less likely to be cleared on its own). Once per profile. */
+export function askPersistentStorage(profileId: string): void {
+  const key = `anan.persist.${profileId}`;
+  try {
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+  } catch {
+    return;
+  }
+  void navigator.storage?.persist?.().catch(() => false);
 }
 
 /** Opens a profile (database + sync) and switches between them. UI-agnostic. */
@@ -67,6 +88,8 @@ export async function isReturningDevice(db: AnanDB): Promise<boolean> {
 export class ProfileController {
   private sync: SyncManager | null = null;
   private unsubscribeStatus: (() => void) | null = null;
+  /** Phase 28: set by `activate` when a fresh browser found nothing to restore (or couldn't look). */
+  restoreProblem: RestoreProblem | null = null;
 
   constructor(private readonly events: ControllerEvents) {}
 
@@ -107,6 +130,7 @@ export class ProfileController {
     // e2e suite so unrelated specs don't share one server copy).
     if (localStorage.getItem('anan.sync.disabled') === '1') return session;
     sync.start();
+    setProgressSaver(() => sync.saveNow());
     // Pull if the server moved on, then push anything pending.
     //  - A device that already has this profile's data waits only briefly: on a slow
     //    or stalled connection the app opens on the local copy, and when the pull
@@ -115,9 +139,19 @@ export class ProfileController {
     //    takes. Opening on an empty database would let first-run defaults (the
     //    starting level, ...) be written with a newer timestamp than the real
     //    values on the server, and then win the merge and overwrite them.
-    if (await isReturningDevice(session.db))
-      await withDeadline(sync.flush(), FIRST_PULL_DEADLINE_MS);
-    else await sync.flush().catch(() => undefined);
+    this.restoreProblem = null;
+    askPersistentStorage(profileId);
+    if (await isReturningDevice(session.db)) await withDeadline(sync.flush(), FIRST_PULL_DEADLINE_MS);
+    else {
+      // Phase 28: a fresh browser says what it found, and never opens on an empty database silently.
+      const pulled = await sync
+        .pull((summary) => this.events.onRestoreFound?.(summary))
+        .catch(() => ({ reachable: false, found: false, merged: false }));
+      if (sync.status === 'outdated') this.restoreProblem = 'outdated';
+      else if (!pulled.reachable) this.restoreProblem = 'unreachable';
+      else if (!pulled.found && getSiteCodeOk()) this.restoreProblem = 'none';
+      if (sync.isDirty()) void sync.flush().catch(() => undefined);
+    }
     this.events.onSyncStatus(sync.status);
     return session;
   }
@@ -137,6 +171,7 @@ export class ProfileController {
   }
 
   teardown(): void {
+    setProgressSaver(null);
     this.unsubscribeStatus?.();
     this.sync?.dispose();
     this.sync = null;

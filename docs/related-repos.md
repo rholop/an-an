@@ -25,6 +25,20 @@ The nginx config lives in `holop-dev`'s own repo at `nginx/holop.dev.conf`
 editing it in that repo does not by itself reload nginx). The `/an-an` and
 `/an-an/api` blocks were added there for this project.
 
+**Body size (Phase 28, required):** a profile's progress save is several MB, and nginx's
+default body limit is 1 MB. Without this line every save over 1 MB is refused with 413 and the
+server keeps an old copy:
+
+```nginx
+location /an-an/api/ {
+    client_max_body_size 40m;
+    # … proxy_pass http://localhost:3002/; …
+}
+```
+
+Then `sudo nginx -t && sudo systemctl reload nginx`. Every deploy checks this: it pushes a 5 MB
+test body to `/an-an/api/v1/sync-selftest` through the public address and the deploy fails on 413.
+
 **What this means for apps/web's build**: it's served from a subpath, not
 domain root — `vite.config.ts` sets `base: '/an-an/'` for production builds
 only (the dev server still serves from `/`), and any runtime code that

@@ -1,3 +1,4 @@
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import type { Scenario, SentenceGenRequest, TurnRequest } from '@anan/core';
 import { createApp } from './app.js';
@@ -877,6 +878,85 @@ describe('sync endpoints (phase 8)', () => {
     expect((await put(app, 'ron', { baseRev: -1, data: data(1) })).status).toBe(400);
     expect((await put(app, 'ron', { baseRev: 0, data: 'str' })).status).toBe(400);
     expect((await app.request('/v1/sync/ron', { method: 'PUT', body: '{nope' })).status).toBe(400);
+  });
+});
+
+describe('sync endpoints (phase 28): compressed, guarded, versioned', () => {
+  const card = (id: string) => ({
+    item: { kind: 'word', id },
+    skill: 'recognition',
+    card: { due: '2026-11-01T00:00:00.000Z', stability: 30, difficulty: 5, elapsed_days: 3, scheduled_days: 30, learning_steps: 0, reps: 3, lapses: 0, state: 2 },
+    state: 'review',
+    flags: {},
+  });
+  const copy = (cards: number, evidence = cards) => ({
+    schemaVersion: 7,
+    items: Array.from({ length: cards }, (_, i) => card(`w${i}`)),
+    evidence: Array.from({ length: evidence }, (_, i) => ({ at: new Date(Date.UTC(2026, 9, 9, 13, i)).toISOString() })),
+    settings: {},
+  });
+  const putRaw = (app: ReturnType<typeof buildApp>, body: Buffer | string, headers: Record<string, string> = {}) =>
+    app.request('/v1/sync/ron', { method: 'PUT', headers: { 'content-type': 'application/json', ...headers }, body });
+  const put = (app: ReturnType<typeof buildApp>, body: unknown) => putRaw(app, JSON.stringify(body));
+
+  it('accepts a gzipped push and serves a gzipped pull when asked', async () => {
+    const app = buildApp();
+    const body = gzipSync(JSON.stringify({ baseRev: 0, data: copy(30) }));
+    const res = await putRaw(app, body, { 'content-encoding': 'gzip' });
+    expect(res.status).toBe(200);
+    const pulled = await app.request('/v1/sync/ron', { headers: { 'accept-encoding': 'gzip, br' } });
+    expect(pulled.headers.get('content-encoding')).toBe('gzip');
+    const back = JSON.parse(gunzipSync(Buffer.from(await pulled.arrayBuffer())).toString('utf8'));
+    expect(back.rev).toBe(1);
+    expect(back.data.items).toHaveLength(30);
+    // without accept-encoding: plain JSON, as before
+    expect(((await (await app.request('/v1/sync/ron')).json()) as { rev: number }).rev).toBe(1);
+  });
+
+  it('refuses a gzip body that unpacks past the limit (413), and a broken one (400)', async () => {
+    const app = buildApp();
+    const bomb = gzipSync(Buffer.alloc(41 * 1024 * 1024, 32));
+    expect((await putRaw(app, bomb, { 'content-encoding': 'gzip' })).status).toBe(413);
+    expect((await putRaw(app, Buffer.from('not gzip'), { 'content-encoding': 'gzip' })).status).toBe(400);
+  });
+
+  it('refuses a push that would lose over 20% of the cards or evidence, unless it is a confirmed replace', async () => {
+    const app = buildApp();
+    expect((await put(app, { baseRev: 0, data: copy(100) })).status).toBe(200);
+    const shrunk = await put(app, { baseRev: 1, data: copy(50) });
+    expect(shrunk.status).toBe(409);
+    const body = (await shrunk.json()) as { error: string; reason: string; rev: number; data: { items: unknown[] } };
+    expect(body.error).toBe('shrinking copy');
+    expect(body.reason).toMatch(/cards would drop from 100 to 50/);
+    expect(body.data.items).toHaveLength(100); // the client merges this and pushes the union
+    expect((await put(app, { baseRev: 1, data: copy(85) })).status).toBe(200); // a small drop is fine
+    expect((await put(app, { baseRev: 2, data: copy(10), confirmReplace: true })).status).toBe(200);
+  });
+
+  it('lists saved versions with what each holds, newest first, and serves one', async () => {
+    const app = buildApp();
+    await put(app, { baseRev: 0, data: copy(25) });
+    await put(app, { baseRev: 1, data: copy(30) });
+    const { versions } = (await (await app.request('/v1/sync/ron/versions')).json()) as {
+      versions: { rev: number; cards: number; learned: number; evidence: number; lastEvidenceAt: string; bytes: number }[];
+    };
+    expect(versions.map((v) => v.rev)).toEqual([2, 1]);
+    expect(versions[0]).toMatchObject({ cards: 30, learned: 30, evidence: 30 });
+    expect(versions[0]!.bytes).toBeGreaterThan(1000);
+    const one = (await (await app.request('/v1/sync/ron/versions/1')).json()) as { rev: number; data: { items: unknown[] } };
+    expect(one.rev).toBe(1);
+    expect(one.data.items).toHaveLength(25);
+    expect((await app.request('/v1/sync/ron/versions/9')).status).toBe(404);
+    expect((await app.request('/v1/sync/mallory/versions')).status).toBe(404);
+  });
+
+  it('the deploy self-test takes a 5 MB body behind the household code', async () => {
+    const app = buildApp();
+    const res = await app.request('/v1/sync-selftest', { method: 'PUT', body: Buffer.alloc(5 * 1024 * 1024, 97) });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, bytes: 5 * 1024 * 1024 });
+    const noCode = buildApp({ autoCode: false });
+    expect((await noCode.request('/v1/sync-selftest', { method: 'PUT', body: 'x' })).status).toBe(401);
   });
 });
 

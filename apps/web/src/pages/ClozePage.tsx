@@ -57,6 +57,7 @@ import { NopeButton, NopeToast } from '../components/Nope.js';
 import { nopeWord } from '../lib/nope.js';
 import { useReviewSettings } from '../lib/review-settings.js';
 import { useReviewStatus } from '../lib/review-status.js';
+import { useSaveWhenDone } from '../lib/save-progress.js';
 import { DEFAULT_SESSION_CONFIG, newWordState } from '@anan/core';
 import type { NopeHandle } from '../lib/learner-service.js';
 import type { NopeChoice } from '@anan/core';
@@ -254,6 +255,8 @@ export function ClozePage() {
   // Phase 20: the last Nope in this session (Undo / Change).
   const [nope, setNope] = useState<{ handle: NopeHandle; item: SkillCard['item']; word: string; prev: SessionEntry[]; prevIndex: number } | null>(null);
   const [index, setIndex] = useState(0);
+  // Phase 28: the end of a session pushes progress to the server straight away.
+  useSaveWhenDone(!!session && session.length > 0 && index >= session.length);
   const [tally, setTally] = useState({ correct: 0, hinted: 0, wrong: 0 });
   const [showBonus, setShowBonus] = useState(false);
   // Phase 15: ~20% of a session is listening exercises for items that already have a listening card.

@@ -1,6 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 import { syncDir } from './e2e/sync-dir.js';
 
+/** Specs that sign in for real and read or write the server's copies of 羅恩 and 冠宇. */
+const SYNC_SPECS = ['profiles.spec.ts', 'progress-never-lost.spec.ts', 'sync.spec.ts'];
+
 export default defineConfig({
   testDir: './e2e',
   timeout: 15000,
@@ -35,7 +38,10 @@ export default defineConfig({
   },
   projects: [
     // The existing suite: desktop Chromium.
-    { name: 'desktop', testIgnore: 'mobile/**' },
+    { name: 'desktop', testIgnore: ['mobile/**', ...SYNC_SPECS] },
+    // Phase 28: the specs that use the real server copies of the two profiles run one at a time
+    // (each counts the other's cards otherwise); the rest of the suite runs alongside them.
+    { name: 'desktop-sync', testMatch: SYNC_SPECS, workers: 1 },
     // Phase 11: the app only needs to work in Safari and Chrome on newer
     // iPhones. Chrome on iOS is WebKit too, so ONE engine covers both — the
     // two projects are a small and a large current iPhone. Real WebKit (not
@@ -46,13 +52,13 @@ export default defineConfig({
     {
       name: 'iphone-13',
       testMatch: 'mobile/**/*.spec.ts',
-      dependencies: ['desktop'],
+      dependencies: ['desktop', 'desktop-sync'],
       use: { ...devices['iPhone 13'] },
     },
     {
       name: 'iphone-15-pro-max',
       testMatch: 'mobile/**/*.spec.ts',
-      dependencies: ['desktop'],
+      dependencies: ['desktop', 'desktop-sync'],
       use: { ...devices['iPhone 15 Pro Max'] },
     },
   ],

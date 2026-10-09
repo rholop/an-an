@@ -26,7 +26,8 @@ export interface SyncVersion {
  *
  * Contract: `put` only succeeds when `baseRev` equals the stored rev (0 when
  * nothing is stored yet), and each success creates rev + 1. The last
- * `KEEP_VERSIONS` revs per profile are kept so a bad save can be rolled back.
+ * `KEEP_VERSIONS` revs per profile, plus one per day for `KEEP_DAILY_DAYS` days (Phase 28), are
+ * kept so a bad save can be rolled back.
  */
 export interface SyncStore {
   get(profileId: string): Promise<SyncRecord | null>;
@@ -36,6 +37,34 @@ export interface SyncStore {
 }
 
 export const KEEP_VERSIONS = 10;
+/** Phase 28: besides the last `KEEP_VERSIONS`, the newest copy of each of the last `KEEP_DAILY_DAYS`
+ * days is kept, so a burst of saves can't push every good copy out. */
+export const KEEP_DAILY_DAYS = 30;
+
+/**
+ * Which revisions to keep (Phase 28): the last `keep` revisions, plus the newest revision of each
+ * (UTC) day within the last `dailyDays` days. `entries` in any order; `at` is epoch ms.
+ */
+export function revisionsToKeep(
+  entries: readonly { rev: number; at: number }[],
+  now: Date,
+  opts: { keep?: number; dailyDays?: number } = {},
+): Set<number> {
+  const keep = opts.keep ?? KEEP_VERSIONS;
+  const days = opts.dailyDays ?? KEEP_DAILY_DAYS;
+  const sorted = [...entries].sort((a, b) => a.rev - b.rev);
+  const out = new Set(sorted.slice(-keep).map((e) => e.rev));
+  const since = now.getTime() - days * 86_400_000;
+  const newestOfDay = new Map<string, { rev: number; at: number }>();
+  for (const e of sorted) {
+    if (e.at < since) continue;
+    const day = new Date(e.at).toISOString().slice(0, 10);
+    const prev = newestOfDay.get(day);
+    if (!prev || e.rev > prev.rev) newestOfDay.set(day, e);
+  }
+  for (const e of newestOfDay.values()) out.add(e.rev);
+  return out;
+}
 
 /** Serialises operations per profile so two simultaneous PUTs can't both pass
  * the baseRev check. */
@@ -69,7 +98,11 @@ export class MemorySyncStore implements SyncStore {
       if ((current?.rev ?? 0) !== baseRev) return { ok: false as const, current: current! };
       const rec: SyncRecord = { rev: baseRev + 1, updatedAt: this.now().toISOString(), blob };
       list.push(rec);
-      this.data.set(profileId, list.slice(-KEEP_VERSIONS));
+      const keep = revisionsToKeep(
+        list.map((r) => ({ rev: r.rev, at: Date.parse(r.updatedAt) })),
+        this.now(),
+      );
+      this.data.set(profileId, list.filter((r) => keep.has(r.rev)));
       return { ok: true as const, rev: rec.rev, updatedAt: rec.updatedAt };
     });
   }
@@ -147,8 +180,9 @@ export class FileSyncStore implements SyncStore {
       const tmp = `${final}.tmp`;
       await writeFile(tmp, blob);
       await rename(tmp, final);
-      for (const old of entries.slice(0, Math.max(0, entries.length + 1 - KEEP_VERSIONS))) {
-        await rm(path.join(dir, old.file), { force: true });
+      const keep = revisionsToKeep([...entries, { rev, at }], this.now());
+      for (const old of entries) {
+        if (!keep.has(old.rev)) await rm(path.join(dir, old.file), { force: true });
       }
       return { ok: true as const, rev, updatedAt: new Date(at).toISOString() };
     });

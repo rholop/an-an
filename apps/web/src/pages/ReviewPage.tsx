@@ -20,6 +20,7 @@ import { dueNewLine, NOTHING_DUE, REVIEW_EARLY, sessionLine, UNDO, waitingSiblin
 import { NopeToast } from '../components/Nope.js';
 import { nopeWord, wakeSnoozed } from '../lib/nope.js';
 import { loadSessionCards, useReviewStatus } from '../lib/review-status.js';
+import { useSaveWhenDone } from '../lib/save-progress.js';
 import { noteConfusion, useConfusables } from '../lib/confusables.js';
 import { ReviewCard, type Grade, type RateExtra } from './ReviewCard.js';
 import type { NopeChoice } from '@anan/core';
@@ -78,6 +79,8 @@ export function ReviewPage({
   } | null>(null);
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  // Phase 28: the end of a session pushes progress to the server straight away.
+  useSaveWhenDone(queue !== null && queue.length > 0 && index >= queue.length);
   // Phase 22: the same numbers as Home (core `reviewStatus`), live.
   const reviewState = useReviewStatus();
   // Phase 23: between sessions, "Review early" opens the next session's cards here.

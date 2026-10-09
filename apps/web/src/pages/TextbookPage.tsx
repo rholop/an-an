@@ -24,6 +24,7 @@ import { SpeakerButton } from '../components/SpeakerButton.js';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { db, learnerService } from '../db/instance.js';
 import { loadReviewStatus } from '../lib/review-status.js';
+import { saveProgressNow } from '../lib/save-progress.js';
 import { setMyClass, useMyClass } from '../lib/my-class.js';
 import { GrammarStep } from './GrammarStep.js';
 import { GrammarDots } from '../components/GrammarDots.js';
@@ -635,7 +636,12 @@ function StudySession({
   const [i, setI] = useState(0);
   const step = steps[i];
   const next = useCallback(
-    () => (i + 1 >= steps.length ? onExit() : setI(i + 1)),
+    () => {
+      // Phase 28: every finished step pushes progress to the server straight away.
+      saveProgressNow();
+      if (i + 1 >= steps.length) onExit();
+      else setI(i + 1);
+    },
     [i, steps.length, onExit],
   );
 

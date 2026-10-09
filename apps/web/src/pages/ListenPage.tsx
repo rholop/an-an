@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSaveWhenDone } from '../lib/save-progress.js';
 import { isDueListening } from '@anan/core';
 import {
   lessonIndex,
@@ -188,6 +189,7 @@ export function ListenPage({
   const [plan, setPlan] = useState<PlanItem[] | null>(null);
   const [cardIds, setCardIds] = useState<Set<string>>(new Set());
   const [summary, setSummary] = useState<{ done: number; correct: number; skipped: number } | null>(null);
+  useSaveWhenDone(summary !== null); // Phase 28
 
   const sentences: SentenceBankEntry[] = useMemo(() => {
     const active = focus?.enabled ? focus.activeLesson : undefined;

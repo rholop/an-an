@@ -16,8 +16,17 @@ import {
   legacyDbExists,
   migrateLegacyInto,
 } from '../lib/legacy-migration.js';
-import { ProfileController, rememberedProfile } from '../lib/profile-controller.js';
-import type { SyncStatus } from '../lib/sync.js';
+import { ProfileController, rememberedProfile, type RestoreProblem } from '../lib/profile-controller.js';
+import type { SavedInfo, SyncManager, SyncStatus } from '../lib/sync.js';
+import {
+  APP_OUTDATED,
+  noServerCopy,
+  RELOAD_APP,
+  restoringLine,
+  SERVER_UNREACHABLE,
+  START_FRESH,
+  TRY_AGAIN,
+} from '../lib/labels.js';
 import './ProfileGate.css';
 
 type Stage =
@@ -25,13 +34,19 @@ type Stage =
   | { kind: 'code' }
   | { kind: 'legacy' }
   | { kind: 'who' }
-  | { kind: 'loading' }
+  | { kind: 'loading'; profile?: ProfileId; found?: SavedInfo }
+  /** Phase 28: a fresh browser found nothing on the server, or couldn't reach it. */
+  | { kind: 'restore'; profile: ProfileId; problem: RestoreProblem }
   | { kind: 'error'; message: string; profile: ProfileId }
   | { kind: 'ready' };
 
 interface ProfileContextValue {
   profile: Profile;
   syncStatus: SyncStatus;
+  /** Phase 28: the profile's sync (saved info, last failure, Save now); null when sync is off. */
+  sync: SyncManager | null;
+  /** Changes whenever the sync's saved info or failure changes (re-render the cloud). */
+  syncTick: number;
   /** Saves drafts, pushes, then opens the other profile — no page reload. */
   switchProfile: (id: ProfileId) => Promise<void>;
 }
@@ -57,23 +72,40 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [epoch, setEpoch] = useState(0);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('synced');
+  const [syncTick, setSyncTick] = useState(0);
   const controller = useRef<ProfileController | null>(null);
   if (!controller.current) {
     controller.current = new ProfileController({
       onDataChanged: () => setEpoch((e) => e + 1),
-      onSyncStatus: setSyncStatus,
+      onSyncStatus: (st) => {
+        setSyncStatus(st);
+        setSyncTick((t) => t + 1);
+      },
       onUnauthorized: () => setStage({ kind: 'code' }),
+      onRestoreFound: (found) => setStage((st) => (st.kind === 'loading' ? { ...st, found } : st)),
     });
   }
   const ctl = controller.current;
 
+  const open = useCallback((id: ProfileId) => {
+    setProfile(PROFILES.find((p) => p.id === id)!);
+    setEpoch((e) => e + 1);
+    setStage({ kind: 'ready' });
+  }, []);
+
   const enter = useCallback(
     async (id: ProfileId) => {
-      setStage({ kind: 'loading' });
+      setStage({ kind: 'loading', profile: id });
       await ctl.activate(id);
       // The server may have said 401 during the first pull (code changed): ask again.
       if (!getSiteCode() && !sessionStorage.getItem('anan.offlineCode')) {
         setStage({ kind: 'code' });
+        return;
+      }
+      // Phase 28: never open a fresh browser on an empty database without saying so.
+      if (ctl.restoreProblem === 'outdated' && reloadOnceForUpdate()) return;
+      if (ctl.restoreProblem) {
+        setStage({ kind: 'restore', profile: id, problem: ctl.restoreProblem });
         return;
       }
       setProfile(PROFILES.find((p) => p.id === id)!);
@@ -103,6 +135,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     async (id: ProfileId) => {
       if (currentSession()?.profileId === id) return;
       await ctl.switchTo(id);
+      if (ctl.restoreProblem) {
+        setStage({ kind: 'restore', profile: id, problem: ctl.restoreProblem });
+        return;
+      }
       setProfile(PROFILES.find((p) => p.id === id)!);
       setEpoch((e) => e + 1);
     },
@@ -135,8 +171,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<ProfileContextValue | null>(
-    () => (profile ? { profile, syncStatus, switchProfile } : null),
-    [profile, syncStatus, switchProfile],
+    () =>
+      profile
+        ? { profile, syncStatus, switchProfile, sync: ctl.syncManager?.started ? ctl.syncManager : null, syncTick }
+        : null,
+    [profile, syncStatus, switchProfile, ctl, syncTick],
   );
 
   if (stage.kind === 'ready' && value) {
@@ -169,9 +208,34 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         />
       )}
       {stage.kind === 'loading' && (
-        <p className="gate-note" role="status">
-          Loading your progress…
+        <p className="gate-note" role="status" data-testid="gate-loading">
+          {stage.profile
+            ? restoringLine(PROFILES.find((p) => p.id === stage.profile)!.name, stage.found)
+            : 'Loading your progress…'}
         </p>
+      )}
+      {stage.kind === 'restore' && (
+        <div className="gate-error" role="alert" data-testid="gate-restore">
+          <p lang="zh-Hant">
+            {stage.problem === 'none'
+              ? noServerCopy(PROFILES.find((p) => p.id === stage.profile)!.name)
+              : stage.problem === 'outdated'
+                ? APP_OUTDATED
+                : SERVER_UNREACHABLE}
+          </p>
+          {stage.problem === 'outdated' ? (
+            <button className="gate-small" onClick={() => void reloadForUpdate()}>
+              {RELOAD_APP}
+            </button>
+          ) : (
+            <button className="gate-small" onClick={() => void enter(stage.profile)} data-testid="gate-try-again">
+              {TRY_AGAIN}
+            </button>
+          )}
+          <button className="gate-small" onClick={() => open(stage.profile)} data-testid="gate-start-fresh">
+            {START_FRESH}
+          </button>
+        </div>
       )}
       {stage.kind === 'error' && (
         <div className="gate-error" role="alert">
@@ -186,6 +250,25 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       )}
     </div>
   );
+}
+
+/** Phase 28: the server copy is from a newer app. Update the service worker and reload, once per tab
+ * session (a second time the restore screen offers Reload instead). Returns whether it reloads. */
+function reloadOnceForUpdate(): boolean {
+  if (sessionStorage.getItem('anan.reloadedForUpdate')) return false;
+  sessionStorage.setItem('anan.reloadedForUpdate', '1');
+  void reloadForUpdate();
+  return true;
+}
+
+async function reloadForUpdate(): Promise<void> {
+  try {
+    const reg = await navigator.serviceWorker?.getRegistration();
+    await reg?.update();
+  } catch {
+    /* no service worker (dev, private mode): a plain reload is enough */
+  }
+  location.reload();
 }
 
 /** Two large buttons with the names. Nothing else (unless a title is needed to ask a question). */

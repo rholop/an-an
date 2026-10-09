@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { startFreshIfAsked } from './gate.js';
 
 declare global {
   interface Window {
@@ -56,6 +57,7 @@ test.describe('household code, who are you, switching', () => {
     await expect(page.locator('.gate')).not.toContainText('Household code');
 
     await names.nth(1).click();
+    await startFreshIfAsked(page, '冠宇');
     await expect(page.getByTestId('profile-chip')).toContainText('冠宇', { timeout: 15000 });
     expect(await page.evaluate(() => localStorage.getItem('anan.profile'))).toBe('guanyu');
 
@@ -75,6 +77,7 @@ test.describe('household code, who are you, switching', () => {
         localStorage.setItem('anan.profile', 'ron');
     });
     await page.goto('/?page=reader');
+    await startFreshIfAsked(page);
     await expect(page.getByTestId('profile-chip')).toContainText('羅恩', { timeout: 15000 });
     await page.waitForFunction(() => Boolean(window.__anan));
     expect(await page.evaluate(() => window.__anan.profileId)).toBe('ron');
@@ -99,6 +102,7 @@ test.describe('household code, who are you, switching', () => {
     const switchTo = async (name: string) => {
       await page.getByTestId('profile-chip').click();
       await page.getByRole('menuitem', { name }).click();
+      await startFreshIfAsked(page, name);
       await expect(page.getByTestId('profile-chip')).toContainText(name, { timeout: 15000 });
       await page.waitForFunction(() => Boolean(window.__anan));
     };
@@ -129,6 +133,7 @@ test.describe('household code, who are you, switching', () => {
         localStorage.setItem('anan.profile', 'ron');
     });
     await page.goto('/?page=reader');
+    await startFreshIfAsked(page);
     await expect(page.getByText(/Lexicon v2/)).toBeVisible({ timeout: 20000 });
     await page.getByLabel('My level').selectOption('L3');
     await page.locator('.reader-controls select').nth(1).selectOption('zhuyin');
@@ -138,6 +143,7 @@ test.describe('household code, who are you, switching', () => {
     // switch immediately — before the draft's own 400ms save timer
     await page.getByTestId('profile-chip').click();
     await page.getByRole('menuitem', { name: '冠宇' }).click();
+    await startFreshIfAsked(page, '冠宇');
     await expect(page.getByTestId('profile-chip')).toContainText('冠宇', { timeout: 15000 });
 
     await expect(page.getByLabel('My level')).toHaveValue('N1'); // 冠宇 has chosen nothing yet
@@ -148,6 +154,7 @@ test.describe('household code, who are you, switching', () => {
 
     await page.getByTestId('profile-chip').click();
     await page.getByRole('menuitem', { name: '羅恩' }).click();
+    await startFreshIfAsked(page, '羅恩');
     await expect(page.getByTestId('profile-chip')).toContainText('羅恩', { timeout: 15000 });
     await expect(page.getByLabel('My level')).toHaveValue('L3');
     await page.getByRole('button', { name: 'Journal' }).click();

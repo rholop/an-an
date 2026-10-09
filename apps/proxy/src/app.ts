@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { gunzipSync, gzipSync } from 'node:zlib';
-import { AudioKindSchema, isProfileId } from '@anan/core';
+import { AudioKindSchema, isProfileId, summarizeSavedCopy, type SavedCopySummary } from '@anan/core';
 import { z } from 'zod';
 import {
   ClozeCheckRequestSchema,
@@ -108,6 +108,32 @@ export function failureBody(
 }
 import type { ScenarioStore } from './scenarios.js';
 
+/** Phase 28: a push may lose at most this share of the saved copy's cards or evidence. */
+export const SHRINK_GUARD_SHARE = 0.2;
+/** Copies smaller than this are never guarded (a first few answers move a lot in relative terms). */
+const SHRINK_GUARD_MIN = 20;
+
+const countsOf = (data: unknown) => {
+  const d = data as { items?: unknown; evidence?: unknown };
+  return {
+    cards: Array.isArray(d.items) ? (d.items as { state?: string }[]).filter((c) => c?.state !== 'unseen').length : 0,
+    evidence: Array.isArray(d.evidence) ? d.evidence.length : 0,
+  };
+};
+
+/** Why a push would shrink the saved copy too much, or null when it is fine. */
+export function shrinkReason(
+  current: { cards: number; evidence: number },
+  next: { cards: number; evidence: number },
+  share = SHRINK_GUARD_SHARE,
+): string | null {
+  for (const k of ['cards', 'evidence'] as const) {
+    if (current[k] >= SHRINK_GUARD_MIN && next[k] < current[k] * (1 - share))
+      return `${k} would drop from ${current[k]} to ${next[k]}`;
+  }
+  return null;
+}
+
 export interface AppDeps {
   env: Pick<Env, 'CORS_ORIGIN'>;
   scenarioStore: ScenarioStore;
@@ -160,29 +186,91 @@ export function createApp(deps: AppDeps): Hono {
   app.get('/v1/auth/check', (c) => c.json({ ok: true }));
 
   // ---- Phase 8 sync: GET/PUT one profile's saved copy --------------------
+  // Phase 28: bodies may be gzipped (content-encoding: gzip; the cap applies to both the compressed
+  // body and what it unpacks to), pulls are gzipped when the browser accepts it, a push that would
+  // shrink the copy a lot is refused unless confirmed, and saved versions can be listed and read.
   const SYNC_MAX_BYTES = 40 * 1024 * 1024;
+  const tooLarge = (c: Context) => c.json({ error: 'too large', limitBytes: SYNC_MAX_BYTES }, 413);
+
+  /** A JSON response, gzipped when the client accepts it (a profile copy is several MB of JSON). */
+  const jsonMaybeGzip = (c: Context, text: string, status: 200 | 409 = 200) => {
+    const headers: Record<string, string> = { 'content-type': 'application/json; charset=UTF-8', vary: 'accept-encoding' };
+    if (/\bgzip\b/.test(c.req.header('accept-encoding') ?? '')) {
+      return new Response(gzipSync(text), { status, headers: { ...headers, 'content-encoding': 'gzip' } });
+    }
+    return new Response(text, { status, headers });
+  };
+  /** `{"rev":…,"updatedAt":…,"data":…}` without parsing the stored copy again. */
+  const copyText = (rec: { rev: number; updatedAt: string; blob: Buffer } | null | undefined, extra: Record<string, unknown> = {}) => {
+    const head = JSON.stringify({ ...extra, rev: rec?.rev ?? 0, updatedAt: rec?.updatedAt ?? null });
+    return `${head.slice(0, -1)},"data":${rec ? gunzipSync(rec.blob).toString('utf8') : 'null'}}`;
+  };
+
+  /** Summaries of stored versions never change (a revision is immutable), so they are kept. */
+  const summaries = new Map<string, SavedCopySummary & { bytes: number }>();
+  const summaryOf = (profileId: string, rec: { rev: number; blob: Buffer }) => {
+    const key = `${profileId}:${rec.rev}`;
+    let s = summaries.get(key);
+    if (!s) {
+      const text = gunzipSync(rec.blob).toString('utf8');
+      s = { ...summarizeSavedCopy(JSON.parse(text)), bytes: Buffer.byteLength(text) };
+      summaries.set(key, s);
+    }
+    return s;
+  };
 
   app.get('/v1/sync/:profileId', async (c) => {
     const profileId = c.req.param('profileId');
     if (!isProfileId(profileId)) return c.json({ error: 'unknown profile' }, 404);
     const rec = await deps.sync.get(profileId);
-    if (!rec) return c.json({ rev: 0, updatedAt: null, data: null });
-    return c.json({
-      rev: rec.rev,
-      updatedAt: rec.updatedAt,
-      data: JSON.parse(gunzipSync(rec.blob).toString('utf8')),
-    });
+    return jsonMaybeGzip(c, copyText(rec));
   });
+
+  /** Phase 28: the saved versions, newest first, each with what it holds. */
+  app.get('/v1/sync/:profileId/versions', async (c) => {
+    const profileId = c.req.param('profileId');
+    if (!isProfileId(profileId)) return c.json({ error: 'unknown profile' }, 404);
+    const versions = await deps.sync.versions(profileId);
+    const out = [];
+    for (const v of [...versions].reverse()) {
+      const rec = await deps.sync.getVersion(profileId, v.rev);
+      if (rec) out.push({ rev: v.rev, updatedAt: v.updatedAt, ...summaryOf(profileId, rec) });
+    }
+    return c.json({ versions: out });
+  });
+
+  app.get('/v1/sync/:profileId/versions/:rev', async (c) => {
+    const profileId = c.req.param('profileId');
+    if (!isProfileId(profileId)) return c.json({ error: 'unknown profile' }, 404);
+    const rev = Number(c.req.param('rev'));
+    const rec = Number.isInteger(rev) ? await deps.sync.getVersion(profileId, rev) : null;
+    if (!rec) return c.json({ error: 'no such version' }, 404);
+    return jsonMaybeGzip(c, copyText(rec));
+  });
+
+  /** The request body as text: gunzipped when sent with content-encoding: gzip (capped). */
+  async function bodyText(c: Context): Promise<string | Response> {
+    const raw = Buffer.from(await c.req.arrayBuffer());
+    if (!/\bgzip\b/i.test(c.req.header('content-encoding') ?? '')) return raw.toString('utf8');
+    try {
+      return gunzipSync(raw, { maxOutputLength: SYNC_MAX_BYTES }).toString('utf8');
+    } catch (err) {
+      if ((err as { code?: string }).code === 'ERR_BUFFER_TOO_LARGE' || err instanceof RangeError) return tooLarge(c);
+      return c.json({ error: 'invalid gzip body' }, 400);
+    }
+  }
 
   app.put(
     '/v1/sync/:profileId',
-    bodyLimit({ maxSize: SYNC_MAX_BYTES, onError: (c) => c.json({ error: 'too large' }, 413) }),
+    bodyLimit({ maxSize: SYNC_MAX_BYTES, onError: tooLarge }),
     async (c) => {
       const profileId = c.req.param('profileId');
       if (!isProfileId(profileId)) return c.json({ error: 'unknown profile' }, 404);
-      let body: { baseRev?: unknown; data?: unknown };
+      const text = await bodyText(c);
+      if (text instanceof Response) return text;
+      let body: { baseRev?: unknown; data?: unknown; confirmReplace?: unknown };
       try {
-        body = await c.req.json();
+        body = JSON.parse(text);
       } catch {
         return c.json({ error: 'invalid JSON body' }, 400);
       }
@@ -195,11 +283,19 @@ export function createApp(deps: AppDeps): Hono {
       ) {
         return c.json({ error: 'expected { baseRev: number, data: object }' }, 400);
       }
-      const result = await deps.sync.put(
-        profileId,
-        gzipSync(JSON.stringify(body.data)),
-        body.baseRev,
-      );
+      // Phase 28: a copy that lost a lot of cards or evidence is a bug, not progress: refuse it (409,
+      // with the server copy, so the client merges and pushes the union) unless it is a confirmed Replace.
+      if (body.confirmReplace !== true) {
+        const current = await deps.sync.get(profileId);
+        if (current && current.rev === body.baseRev) {
+          const reason = shrinkReason(summaryOf(profileId, current), countsOf(body.data));
+          if (reason) {
+            log({ route: 'PUT /v1/sync', profileId, refused: 'shrink', reason });
+            return jsonMaybeGzip(c, copyText(current, { error: 'shrinking copy', reason }), 409);
+          }
+        }
+      }
+      const result = await deps.sync.put(profileId, gzipSync(JSON.stringify(body.data)), body.baseRev);
       if (!result.ok) {
         const cur = result.current;
         log({
@@ -210,20 +306,24 @@ export function createApp(deps: AppDeps): Hono {
           serverRev: cur?.rev ?? 0,
         });
         // 409 carries the server copy so the client can merge and retry in one round trip.
-        return c.json(
-          {
-            error: 'stale baseRev',
-            rev: cur?.rev ?? 0,
-            updatedAt: cur?.updatedAt ?? null,
-            data: cur ? JSON.parse(gunzipSync(cur.blob).toString('utf8')) : null,
-          },
-          409,
-        );
+        return jsonMaybeGzip(c, copyText(cur, { error: 'stale baseRev' }), 409);
       }
-      log({ route: 'PUT /v1/sync', profileId, rev: result.rev });
+      log({ route: 'PUT /v1/sync', profileId, rev: result.rev, bytes: text.length, gzip: /gzip/i.test(c.req.header('content-encoding') ?? '') });
       return c.json({ rev: result.rev, updatedAt: result.updatedAt });
     },
   );
+
+  // Phase 28: the deploy's body-size check. Accepts a large body and throws it away, so a wrong
+  // nginx limit (413 before the request reaches us) can't go unnoticed. Behind the code, rate limited.
+  const selftestTimes: number[] = [];
+  app.put('/v1/sync-selftest', bodyLimit({ maxSize: SYNC_MAX_BYTES, onError: tooLarge }), async (c) => {
+    const now = Date.now();
+    while (selftestTimes.length && selftestTimes[0]! < now - 60_000) selftestTimes.shift();
+    if (selftestTimes.length >= 6) return c.json({ error: 'rate limited' }, 429);
+    selftestTimes.push(now);
+    const bytes = (await c.req.arrayBuffer()).byteLength;
+    return c.json({ ok: true, bytes });
+  });
 
   // ---- Phase 10 audio marks: shared by both profiles ----------------------
   const AudioMarkRequestSchema = z.object({

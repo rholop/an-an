@@ -3,6 +3,26 @@
 Notable changes that affect how An'an is run. Phase-by-phase features are in the
 `CLAUDE.md` phase table.
 
+## Phase 28 (2026-10-09)
+
+- **Required on the server:** nginx must accept large saves. Add `client_max_body_size 40m;`
+  to the `location /an-an/api/` block (see `docs/related-repos.md`), then
+  `sudo nginx -t && sudo systemctl reload nginx`. Every deploy now pushes a 5 MB test body
+  to `/v1/sync-selftest` through the public address and **fails on 413**.
+- Saves are gzipped (`content-encoding: gzip`, unpacked on the server with the same 40 MB cap)
+  and pulls are gzipped when the browser accepts it. A push waits 5 s after a change (was 30 s),
+  is retried after 30 s, 2 min and then every 10 min while it fails, and every session end
+  pushes straight away.
+- Every failure has its own words in the header cloud ("Not saved for 2 h", tap for the reason
+  and **Save now**). Settings → Your progress shows what the server and this browser hold, and
+  lists the saved versions (Restore merges one in; Replace, confirmed, overwrites).
+- The server keeps the last 10 versions plus one per day for 30 days, and refuses (409) a push
+  that would drop more than 20% of the cards or evidence unless it is a confirmed Replace.
+- A fresh browser says what it found ("Restoring 羅恩's progress… found 1,240 cards") and never
+  opens empty silently: no copy on the server or no server gives Try again / Start fresh.
+- New `pnpm --filter @anan/proxy sync:inspect [profile]`: each saved version's date, size,
+  cards, Learned, Mastered and newest evidence time, read from the server's `SYNC_DIR`.
+
 ## Phase 26 (2026-10-09)
 
 - **Stories are repaired, not thrown away.** Only the sentences with a word outside

@@ -12,6 +12,7 @@
     "scripted-run": "tsx scripts/scripted-run.ts",
     "journal-eval": "tsx scripts/journal-eval.ts",
     "sync-rollback": "tsx scripts/sync-rollback.ts",
+    "sync:inspect": "tsx scripts/sync-inspect.ts",
     "journal-cloze-eval": "tsx scripts/journal-cloze-eval.ts",
     "stories-eval": "tsx scripts/stories-eval.ts",
     "naturalness": "tsx scripts/curriculum-naturalness.ts",

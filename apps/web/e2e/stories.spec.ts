@@ -40,7 +40,10 @@ test.describe('Graded stories (phase 24)', () => {
     await page.addInitScript(() => localStorage.removeItem('anan.study.disabled'));
     await page.goto('/?page=textbook');
     await expect(page.getByRole('heading', { name: /來學華語/ }).first()).toBeVisible({ timeout: 20_000 });
-    await page.getByTestId('my-class-toggle').check();
+    // the textbook page may still be settling (a late load re-renders the toggle): check until it holds
+    await expect(async () => {
+      await page.getByTestId('my-class-toggle').check({ timeout: 2000 });
+    }).toPass({ timeout: 15_000 });
     await page.getByTestId('my-class-lesson').selectOption('4');
     await expect(page.getByTestId('class-status')).toHaveText('Your class: 來學華語 1 · Lesson 4');
 

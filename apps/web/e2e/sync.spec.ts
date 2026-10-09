@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { startFreshIfAsked } from './gate.js';
 
 declare global {
   interface Window {
@@ -20,6 +21,7 @@ async function signIn(page: import('@playwright/test').Page, name: string, code 
   await page.getByLabel('Household code').fill(code);
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('button', { name }).click();
+  await startFreshIfAsked(page, name);
   await expect(page.getByTestId('profile-chip')).toContainText(name, { timeout: 20000 });
   await page.waitForFunction(() => Boolean(window.__anan && window.__ananSync));
   // The opening screen (Home) has finished loading its code, so going offline later can't break it.
@@ -59,6 +61,7 @@ test.describe('sync between browsers (phase 8)', () => {
     // the other profile on B is untouched by 冠宇's data
     await b.getByTestId('profile-chip').click();
     await b.getByRole('menuitem', { name: '羅恩' }).click();
+    await startFreshIfAsked(b, '羅恩');
     await expect(b.getByTestId('profile-chip')).toContainText('羅恩', { timeout: 15000 });
     await b.waitForFunction(() => Boolean(window.__anan));
     expect(await b.evaluate(() => window.__anan.db.items.count())).toBe(0);

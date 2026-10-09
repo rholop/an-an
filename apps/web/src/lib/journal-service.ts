@@ -29,6 +29,7 @@ import {
   type TutorLLM,
   type Word,
 } from '@anan/core';
+import { saveProgressNow } from './save-progress.js';
 import type { AnanDB, JournalEntryRow, JournalReviewRow, ResolvedBracket } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
 import { getProtectedTerms } from './journal-protected.js';
@@ -176,6 +177,7 @@ export class JournalService {
       await this.db.journalEntries.add(entry);
       await this.db.journalReviews.add(reviewRow);
     });
+    saveProgressNow(); // Phase 28
     return { entry, review: reviewRow };
   }
 
@@ -399,6 +401,7 @@ export class JournalService {
         .map(({ index }) => index);
       await this.onFinished(entryId, selfFixed, now);
     }
+    saveProgressNow(); // Phase 28: a finished entry reaches the server straight away
     return { errorItemCount: built.items, evidence };
   }
 

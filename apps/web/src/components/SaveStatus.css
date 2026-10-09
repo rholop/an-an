@@ -1,0 +1,61 @@
+/* Phase 28: the header's "saved to the server" cloud. Colours are theme tokens only. */
+.save-status-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.save-cloud {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+.save-status--saved .save-cloud {
+  stroke: var(--accent);
+}
+.save-status--unsaved {
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--warn);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  color: var(--warn-text);
+}
+.save-status--unsaved .save-cloud {
+  stroke: var(--warn);
+}
+.save-status-pop {
+  position: absolute;
+  right: 0;
+  top: 120%;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(18rem, 80vw);
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: var(--shadow-pop);
+  color: var(--text);
+  font-size: 0.9rem;
+  white-space: normal;
+}
+.profile-menu-warn {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  color: var(--warn-text);
+}
+/* phones: the icon and a short word only */
+@media (max-width: 639.98px) {
+  .save-status--saved .save-status-text {
+    display: none;
+  }
+}

@@ -1,5 +1,6 @@
 /**
- * Roll a profile back to one of its last 10 saved versions (phase 8). Not an
+ * Roll a profile back to one of its saved versions (phase 8; Phase 28 keeps the last 10 plus one a
+ * day for 30 days). Not an
  * HTTP endpoint on purpose: a rollback is an owner action on the server.
  *
  *   pnpm --filter @anan/proxy sync-rollback ron            # list versions
@@ -10,6 +11,7 @@
  * because merging never deletes records, a rollback undoes in-place changes
  * (cards, settings) but cannot remove records that devices already hold.
  */
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isProfileId } from '@anan/core';
@@ -21,6 +23,8 @@ if (!profileId || !isProfileId(profileId)) {
   console.error('usage: sync-rollback <profileId> [rev]');
   process.exit(1);
 }
+const envFile = fileURLToPath(new URL('../.env', import.meta.url));
+if (existsSync(envFile)) process.loadEnvFile(envFile);
 const env = loadEnv();
 const dir =
   env.SYNC_DIR ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../sync-data');

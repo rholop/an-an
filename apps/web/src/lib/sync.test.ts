@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { gunzipSync } from 'node:zlib';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_LEARNER_CONFIG } from '@anan/core';
 import { exportBackup } from '../db/backup.js';
 import { DexieLearnerRepo } from '../db/learner-repo.js';
@@ -14,19 +15,40 @@ class FakeServer {
   unauthorized = false;
   puts = 0;
   versions: unknown[] = [];
+  /** Phase 28: answer every PUT with this status (413, 502…). */
+  failWith = 0;
+  gzipped: boolean[] = [];
+  confirmed: boolean[] = [];
 
   fetch: typeof fetch = async (input, init) => {
     if (!this.online) throw new TypeError('Failed to fetch');
     if (this.unauthorized) return new Response('{}', { status: 401 });
     const url = String(input);
-    expect(url).toMatch(/\/v1\/sync\/(ron|guanyu)$/);
+    expect(url).toMatch(/\/v1\/sync\/(ron|guanyu)(\/versions(\/\d+)?)?$/);
+    const ver = /\/versions\/(\d+)$/.exec(url);
+    if (ver) {
+      const n = Number(ver[1]);
+      return new Response(JSON.stringify({ rev: n, updatedAt: 'then', data: this.versions[n - 1] }), { status: 200 });
+    }
+    if (url.endsWith('/versions')) {
+      const versions = this.versions.map((_, i) => ({ rev: i + 1, updatedAt: 'then', cards: 0, learned: 0, mastered: 0, evidence: 0, lastEvidenceAt: null, bytes: 1 }));
+      return new Response(JSON.stringify({ versions: versions.reverse() }), { status: 200 });
+    }
     if (!init?.method || init.method === 'GET') {
       return new Response(JSON.stringify({ rev: this.rev, updatedAt: null, data: this.data }), {
         status: 200,
       });
     }
     this.puts++;
-    const body = JSON.parse(String(init.body)) as { baseRev: number; data: unknown };
+    if (this.failWith) return new Response('{}', { status: this.failWith });
+    const headers = (init.headers ?? {}) as Record<string, string>;
+    this.gzipped.push(headers['content-encoding'] === 'gzip');
+    const raw =
+      headers['content-encoding'] === 'gzip'
+        ? gunzipSync(Buffer.from(init.body as ArrayBuffer)).toString('utf8')
+        : String(init.body);
+    const body = JSON.parse(raw) as { baseRev: number; data: unknown; confirmReplace?: boolean };
+    this.confirmed.push(body.confirmReplace === true);
     if (body.baseRev !== this.rev) {
       return new Response(JSON.stringify({ error: 'stale', rev: this.rev, data: this.data }), {
         status: 409,
@@ -245,5 +267,102 @@ describe('SyncManager', () => {
     await a.m.pull();
     expect(a.m.status).toBe('outdated');
     expect(await ids(dbA)).toEqual(['w1']);
+  });
+
+  describe('Phase 28: no silent failures', () => {
+    it('pushes a gzipped body and remembers what the server now holds', async () => {
+      const a = manager(dbA);
+      await learn(dbA, 'w1', at(1));
+      await a.m.flush();
+      expect(server.gzipped).toEqual([true]);
+      expect(a.m.savedInfo).toMatchObject({ rev: 1, cards: 1, evidence: 1 });
+      expect(a.m.unsavedSince()).toBeNull();
+    });
+
+    it('a 413 is its own status with the reason kept, and is not retried blindly', async () => {
+      const a = manager(dbA, { retryDelaysMs: [10] });
+      await learn(dbA, 'w1', at(1));
+      server.failWith = 413;
+      await a.m.flush();
+      expect(a.m.status).toBe('too_large');
+      expect(a.m.lastFailure).toMatchObject({ kind: 'too_large', status: 413 });
+      const puts = server.puts;
+      await sleep(60);
+      expect(server.puts).toBe(puts);
+      expect(a.m.isDirty()).toBe(true);
+    });
+
+    it('a 5xx or network failure retries with backoff until it saves, without a new change', async () => {
+      const a = manager(dbA, { retryDelaysMs: [15, 30] });
+      await learn(dbA, 'w1', at(1));
+      server.failWith = 502;
+      await a.m.flush();
+      expect(a.m.status).toBe('offline');
+      expect(a.m.lastFailure).toMatchObject({ kind: 'server', status: 502 });
+      await sleep(40); // first retry: still failing
+      expect(server.puts).toBeGreaterThanOrEqual(2);
+      server.failWith = 0;
+      await vi.waitFor(() => expect(a.m.status).toBe('synced'), { timeout: 500, interval: 10 });
+      expect(a.m.lastFailure).toBeNull();
+      expect(server.rev).toBe(1);
+
+      server.online = false;
+      await learn(dbA, 'w2', at(2));
+      await a.m.saveNow();
+      expect(a.m.lastFailure).toMatchObject({ kind: 'network' });
+      server.online = true;
+      await vi.waitFor(() => expect(a.m.status).toBe('synced'), { timeout: 500, interval: 10 });
+    });
+
+    it('remembers since when changes are unsaved (the header warning), across a restart', async () => {
+      const storage = new MemStorage();
+      const clock = { t: at(0) };
+      const first = manager(dbA, { storage, debounceMs: 60_000, now: () => clock.t });
+      await learn(dbA, 'w1', at(1));
+      expect(first.m.unsavedSince()?.getTime()).toBe(at(0).getTime());
+      first.m.dispose();
+      clock.t = at(30);
+      const second = manager(dbA, { storage, now: () => clock.t });
+      expect(second.m.unsavedSince()?.getTime()).toBe(at(0).getTime());
+      await second.m.flush();
+      expect(second.m.unsavedSince()).toBeNull();
+    });
+
+    it('a pull says whether the server has a copy, and what it holds, before merging', async () => {
+      const a = manager(dbA);
+      expect(await a.m.pull()).toMatchObject({ reachable: true, found: false });
+      await learn(dbA, 'w1', at(1));
+      await a.m.flush();
+      const b = manager(dbB);
+      const found: unknown[] = [];
+      const res = await b.m.pull((s) => found.push(s));
+      expect(res).toMatchObject({ reachable: true, found: true, summary: { cards: 1, rev: 1 } });
+      expect(found).toHaveLength(1);
+      server.online = false;
+      expect(await manager(dbB).m.pull()).toMatchObject({ reachable: false });
+    });
+
+    it('Restore merges a saved version in (nothing newer is lost); Replace makes it the copy everywhere', async () => {
+      const a = manager(dbA);
+      await learn(dbA, 'w-old', at(1));
+      await a.m.flush(); // rev 1 = {w-old}
+      await dbA.items.clear(); // a bug wiped this browser's cards
+      await learn(dbA, 'w-new', at(2));
+      await a.m.flush(); // rev 2: merging kept w-old anyway (the union)
+      expect((await a.m.versions()).map((v) => v.rev)).toEqual([2, 1]);
+
+      const b = manager(dbB);
+      await learn(dbB, 'w-b', at(3));
+      await b.m.restoreVersion(1, 'merge');
+      expect(await ids(dbB)).toEqual(['w-b', 'w-new', 'w-old']); // the version, plus the newest copy, plus this browser
+      expect(b.changed.length).toBeGreaterThan(0);
+      const pushed = (server.data as { items: { item: { id: string } }[] }).items.map((i) => i.item.id).sort();
+      expect(pushed).toEqual(['w-b', 'w-new', 'w-old']);
+
+      await b.m.restoreVersion(1, 'replace');
+      expect(await ids(dbB)).toEqual(['w-old']);
+      expect((server.data as { items: unknown[] }).items).toHaveLength(1);
+      expect(server.confirmed.at(-1)).toBe(true);
+    });
   });
 });

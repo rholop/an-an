@@ -54,3 +54,22 @@ jobs:
             pm2 restart an-an-proxy --update-env || \
               pm2 start apps/proxy/ecosystem.config.cjs --env production
             pm2 save
+
+            # Phase 28: a progress save is several MB. Push 5 MB through the PUBLIC address
+            # (Cloudflare -> nginx -> proxy) to a route that throws it away. nginx's default 1 MB
+            # body limit answers 413 before the proxy sees anything, and then every save fails, so
+            # the deploy fails here instead of progress silently not being saved.
+            for i in $(seq 1 30); do curl -fsS http://localhost:3002/v1/health >/dev/null 2>&1 && break; sleep 1; done
+            SITE_CODE_VALUE=$(grep -E '^SITE_CODE=' apps/proxy/.env 2>/dev/null | head -1 | cut -d= -f2- | tr -d "\"'" || true)
+            head -c 5242880 /dev/zero > /tmp/an-an-selftest.bin
+            status=$(curl -s -o /tmp/an-an-selftest.out -w '%{http_code}' -X PUT \
+              -H "x-site-code: ${SITE_CODE_VALUE}" -H 'content-type: application/octet-stream' \
+              --data-binary @/tmp/an-an-selftest.bin https://holop.dev/an-an/api/v1/sync-selftest || echo 000)
+            rm -f /tmp/an-an-selftest.bin
+            if [ "$status" = "413" ]; then
+              echo "::error::Progress saves are too big for nginx (413 on a 5 MB test save)."
+              echo "Add 'client_max_body_size 40m;' to the 'location /an-an/api/' block, then: sudo nginx -t && sudo systemctl reload nginx"
+              exit 1
+            fi
+            echo "sync self-test (5 MB save through nginx): HTTP $status $(cat /tmp/an-an-selftest.out 2>/dev/null)"
+

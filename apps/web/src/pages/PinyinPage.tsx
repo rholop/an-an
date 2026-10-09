@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSaveWhenDone } from '../lib/save-progress.js';
 import {
   glossFor,
   gradeMatch,
@@ -84,6 +85,7 @@ export function PinyinPage({ onOpenListen }: { onOpenListen?: () => void } = {})
   const [index, setIndex] = useState(0);
   const [tally, setTally] = useState({ words: 0, right: 0 });
   const [done, setDone] = useState(false);
+  useSaveWhenDone(done); // Phase 28
   const [history, setHistory] = useState<{ index: number; tally: typeof tally; undos: (() => Promise<void>)[] }[]>([]);
   const [attempt, setAttempt] = useState(0);
   const [listen, setListen] = useState(false);

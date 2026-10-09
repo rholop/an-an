@@ -2,7 +2,7 @@ import { mkdtempSync, readdirSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { FileSyncStore, KEEP_VERSIONS, MemorySyncStore, type SyncStore } from './sync-store.js';
+import { FileSyncStore, KEEP_VERSIONS, MemorySyncStore, revisionsToKeep, type SyncStore } from './sync-store.js';
 
 const blob = (s: string) => Buffer.from(s);
 
@@ -71,5 +71,35 @@ describe('FileSyncStore on disk', () => {
       true,
     );
     await expect(reopened.get('../etc')).rejects.toThrow(/bad profile id/);
+  });
+});
+
+describe('revisionsToKeep (phase 28): the last 10 plus one per day for 30 days', () => {
+  const DAY = 86_400_000;
+  const now = new Date('2026-10-09T15:00:00Z');
+  it('keeps the newest of each day within 30 days, besides the last 10', () => {
+    // 40 days, 5 saves a day: 200 revisions, oldest first
+    const entries = Array.from({ length: 200 }, (_, i) => ({
+      rev: i + 1,
+      at: now.getTime() - (39 - Math.floor(i / 5)) * DAY + (i % 5) * 3_600_000,
+    }));
+    const keep = revisionsToKeep(entries, now);
+    const daily = entries.filter((e) => e.rev % 5 === 0 && e.at >= now.getTime() - 30 * DAY);
+    for (const e of daily) expect(keep.has(e.rev), `rev ${e.rev}`).toBe(true);
+    for (let r = 191; r <= 200; r++) expect(keep.has(r)).toBe(true);
+    expect(keep.size).toBe(new Set([...daily.map((e) => e.rev), ...Array.from({ length: 10 }, (_, i) => 191 + i)]).size);
+    expect(keep.has(1)).toBe(false); // 39 days old
+  });
+
+  it('the file store keeps yesterday\'s copy through a burst of saves today', async () => {
+    let t = new Date('2026-10-08T20:00:00Z');
+    const store = new FileSyncStore(mkdtempSync(path.join(os.tmpdir(), 'sync-daily-')), () => t);
+    await store.put('ron', blob('yesterday'), 0);
+    t = new Date('2026-10-09T09:00:00Z');
+    for (let i = 1; i <= 15; i++) await store.put('ron', blob(`today ${i}`), i);
+    const revs = (await store.versions('ron')).map((v) => v.rev);
+    expect(revs).toContain(1);
+    expect(revs).toHaveLength(KEEP_VERSIONS + 1);
+    expect((await store.getVersion('ron', 1))?.blob.toString()).toBe('yesterday');
   });
 });

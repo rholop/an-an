@@ -10,6 +10,7 @@ import {
 import { LevelPicker } from './components/LevelPicker.js';
 import { MoreSheet, TabBar, TopNav } from './components/TabBar.js';
 import { ThemeToggle } from './components/ThemeToggle.js';
+import { SaveStatus, unsavedTooLong } from './components/SaveStatus.js';
 import { useProfile } from './components/ProfileGate.js';
 import { PROFILES } from './profiles.js';
 import { initCurrentLevelIfUnset, useCurrentLevel } from './lib/current-level.js';
@@ -21,7 +22,7 @@ import { useProgressData, useStudyContextRegistration } from './lib/study.js';
 import { ToastHost } from './components/ToastHost.js';
 import { useReviewStatus } from './lib/review-status.js';
 import { currentSession } from './db/instance.js';
-import { LEVEL, levelLabel, levelShort, navTextbookLabel, pct } from './lib/labels.js';
+import { LEVEL, levelLabel, levelShort, navTextbookLabel, pct, UNSAVED_WARNING } from './lib/labels.js';
 // Phase 21: the stored target retention is applied at start, on profile switch and after a sync.
 import './lib/retention.js';
 import './lib/audio-slow.js';
@@ -167,14 +168,16 @@ function ClassLevelHint({ text }: { text: string }) {
   );
 }
 
-/** The current name in the header; tap to switch (phase 8 §5). A small dot
- * shows when the latest changes are not on the server yet (offline). */
+/** The current name in the header; tap to switch (phase 8 §5). Phase 28: a cloud beside it says
+ * whether progress is saved to the server (never a dot only), and the menu warns before switching
+ * away from changes that aren't saved yet. */
 function ProfileChip() {
-  const { profile, syncStatus, switchProfile } = useProfile();
+  const { profile, switchProfile, sync } = useProfile();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   return (
     <div className="profile-chip-wrap">
+      {sync && <SaveStatus sync={sync} />}
       <button
         className="profile-chip"
         aria-haspopup="menu"
@@ -184,19 +187,15 @@ function ProfileChip() {
         data-testid="profile-chip"
       >
         <span lang="zh-Hant">{profile.name}</span>
-        {syncStatus === 'offline' && (
-          <span
-            className="sync-dot"
-            role="img"
-            aria-label="not synced"
-            title="not synced"
-            data-testid="sync-dot"
-          />
-        )}
         <span aria-hidden="true">▾</span>
       </button>
       {open && (
         <div className="profile-menu" role="menu">
+          {unsavedTooLong(sync) && (
+            <p className="profile-menu-warn" role="alert" data-testid="unsaved-warning">
+              {UNSAVED_WARNING}
+            </p>
+          )}
           {PROFILES.map((p) => (
             <button
               key={p.id}
