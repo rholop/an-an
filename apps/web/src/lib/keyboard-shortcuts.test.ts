@@ -87,6 +87,9 @@ describe('keyboard shortcuts', () => {
   });
 
   describe('global keyboard listener', () => {
+    const bodyTarget = { tagName: 'BODY' } as unknown as EventTarget;
+    const inputTarget = { tagName: 'INPUT', type: 'text' } as unknown as EventTarget;
+
     it('triggers next on Space', () => {
       const cleanup = initKeyboardShortcuts();
       const nextSpy = vi.fn();
@@ -96,7 +99,7 @@ describe('keyboard shortcuts', () => {
         type: 'keydown',
         key: ' ',
         code: 'Space',
-        target: { tagName: 'BODY' },
+        target: bodyTarget,
       });
       expect(nextSpy).toHaveBeenCalledTimes(1);
 
@@ -113,7 +116,7 @@ describe('keyboard shortcuts', () => {
         type: 'keydown',
         key: 'l',
         preventDefault: vi.fn(),
-        target: { tagName: 'BODY' },
+        target: bodyTarget,
       });
       expect(levelSpy).toHaveBeenCalledTimes(1);
 
@@ -130,7 +133,7 @@ describe('keyboard shortcuts', () => {
         type: 'keydown',
         key: 'p',
         preventDefault: vi.fn(),
-        target: { tagName: 'BODY' },
+        target: bodyTarget,
       });
       expect(audioSpy).toHaveBeenCalledTimes(1);
 
@@ -138,7 +141,7 @@ describe('keyboard shortcuts', () => {
         type: 'keydown',
         key: 'r',
         preventDefault: vi.fn(),
-        target: { tagName: 'BODY' },
+        target: bodyTarget,
       });
       expect(audioSpy).toHaveBeenCalledTimes(2);
 
@@ -158,7 +161,7 @@ describe('keyboard shortcuts', () => {
         type: 'keydown',
         key: '1',
         preventDefault: vi.fn(),
-        target: { tagName: 'BODY' },
+        target: bodyTarget,
       });
       expect(choice1Spy).toHaveBeenCalledTimes(1);
 
@@ -166,7 +169,7 @@ describe('keyboard shortcuts', () => {
         type: 'keydown',
         key: '4',
         preventDefault: vi.fn(),
-        target: { tagName: 'BODY' },
+        target: bodyTarget,
       });
       expect(choice4Spy).toHaveBeenCalledTimes(1);
 
@@ -184,7 +187,7 @@ describe('keyboard shortcuts', () => {
         type: 'keydown',
         key: 'p',
         preventDefault: vi.fn(),
-        target: { tagName: 'INPUT', type: 'text' },
+        target: inputTarget,
       });
       expect(audioSpy).not.toHaveBeenCalled();
 
@@ -201,7 +204,7 @@ describe('keyboard shortcuts', () => {
         type: 'keydown',
         key: 'Enter',
         preventDefault: vi.fn(),
-        target: { tagName: 'INPUT', type: 'text' },
+        target: inputTarget,
       });
       expect(submitSpy).toHaveBeenCalledTimes(1);
 
