@@ -35,7 +35,7 @@ scenarios:
     title: "Lisa asks about your family"
     npc:
       id: lisa
-      name: Lisa
+      name: 麗莎
       personality: >
         Gloria's sweet, warm-hearted coworker. Genuinely interested in other
         people's families and always asks a friendly follow-up.
@@ -52,7 +52,7 @@ scenarios:
       - { id: married, description: "Say who is married and whether they have children.", keywordHints: ["結婚了", "孩子"] }
       - { id: both, description: "Say that two people both do something (都).", keywordHints: ["都"] }
     vocabExtras: [他, 不, 學生, 大學, 在, 哪裡, 工作, 銀行, 先生, 電腦, 公司, 孩子, 兒子, 女兒, 小孩, 都, 小學, 畢業了, 結婚了, 他們, 念書, 法國, 和]
-    opener: { zh: 你好，我是Lisa。你姊姊是學生嗎？, en: "Hello, I'm Lisa. Is your older sister a student?" }
+    opener: { zh: 你好，我是麗莎。你姊姊是學生嗎？, en: "Hello, I'm Lisa. Is your older sister a student?" }
     successLine: { zh: 你姊姊結婚了，他們有兩個孩子。他們都不是學生。, en: "Your sister is married and they have two children. They are not students." }
 journalPrompts:
   - { en: "Where do the members of your family work or study?", zh: 我哥哥在銀行工作。, words: [在, 工作, 銀行], grammar: [gram-zai-place] }

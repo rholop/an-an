@@ -7938,16 +7938,13 @@
     },
     {
       "id": "tb-L09-011",
-      "zh": "二零二五年十月四號是星期六。",
+      "zh": "二〇二五年十月四號是星期六。",
       "en": "October 4th, 2025 is a Saturday.",
       "targetWordId": "tb-cc63efa7b1",
       "level": "N1",
       "tokens": [
         {
           "text": "二"
-        },
-        {
-          "text": "零"
         },
         {
           "text": "二"
@@ -7991,7 +7988,7 @@
     },
     {
       "id": "tb-L09-012",
-      "zh": "我二零二五年二月五號去臺灣。",
+      "zh": "我二〇二五年二月五號去臺灣。",
       "en": "I go to Taiwan on February 5th, 2025.",
       "targetWordId": "tocfl-df8a004869",
       "level": "N1",
@@ -8001,9 +7998,6 @@
         },
         {
           "text": "二"
-        },
-        {
-          "text": "零"
         },
         {
           "text": "二"
@@ -8046,8 +8040,8 @@
     },
     {
       "id": "tb-L09-013",
-      "zh": "他二零二四年八月去美國。",
-      "en": "He goes to the United States in August 2024.",
+      "zh": "他二〇二四年八月去美國。",
+      "en": "He went to the United States in August 2024.",
       "targetWordId": "tocfl-c8b02f2841",
       "level": "N1",
       "tokens": [
@@ -8056,9 +8050,6 @@
         },
         {
           "text": "二"
-        },
-        {
-          "text": "零"
         },
         {
           "text": "二"

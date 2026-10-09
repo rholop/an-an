@@ -65,6 +65,13 @@ export const BookConfigSchema = z.object({
       }),
     )
     .default([]),
+  /**
+   * Phase 25: book words taught as their Taiwan form instead (自行車 → 腳踏車). The lesson links to
+   * the `to` word; `reason` says why.
+   */
+  vocabSwaps: z
+    .array(z.object({ from: z.string(), to: z.string(), reason: z.string().min(10) }))
+    .default([]),
   /** Human explanations of any difference between the book's stated counts and what was parsed. */
   explanations: z.array(z.string()).default([]),
 });

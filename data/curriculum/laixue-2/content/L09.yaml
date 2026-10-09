@@ -15,7 +15,7 @@ sentences:
   - { zh: 弟弟沒去醫院，他在家休息。, en: "My younger brother didn't go to the hospital; he's resting at home.", grammar: [gram-mei-negation] }
   - { zh: 他昨天沒有發燒。, en: "He didn't have a fever yesterday.", grammar: [gram-mei-negation] }
   - { zh: 我沒有咳嗽，可是頭很痛。, en: "I don't have a cough, but my head hurts a lot.", grammar: [gram-mei-negation] }
-  - { zh: 我今天沒有時間看醫生。, en: "I don't have time to see a doctor today.", grammar: [gram-mei-negation] }
+  - { zh: 我昨天沒有去看醫生。, en: "I didn't go to see a doctor yesterday.", grammar: [gram-mei-negation] }
   - { zh: 她沒買藥，因為她已經好多了。, en: "She didn't buy medicine because she is already much better.", grammar: [gram-mei-negation] }
   - { zh: 昨天我沒洗澡。, en: "I didn't take a shower yesterday.", grammar: [gram-mei-negation] }
   - { zh: 他又感冒了。, en: "He has caught a cold again.", grammar: [gram-you-again] }

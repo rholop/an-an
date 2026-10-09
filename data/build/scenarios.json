@@ -2,7 +2,7 @@
   "meta": {
     "version": "v1",
     "buildDate": "2026-10-09",
-    "contentHash": "d1a61f83ad58b5caa596233ff438f23740840d3b25d0cb27f14a915905d20ace"
+    "contentHash": "04161605228706e341ca00d6a23c43b3591537208a1593f7b090fd32213e7a9b"
   },
   "scenarios": [
     {
@@ -412,7 +412,7 @@
       },
       "npc": {
         "id": "lisa",
-        "name": "Lisa",
+        "name": "麗莎",
         "personality": "Gloria's sweet, warm-hearted coworker. Genuinely interested in other people's families and always asks a friendly follow-up.\n",
         "speechStyle": "Short, kind sentences using only words from lessons 1–3. One question at a time; repeats the learner's answer back to confirm.\n",
         "particles": []
@@ -477,7 +477,7 @@
         "和"
       ],
       "opener": {
-        "zh": "你好，我是Lisa。你姊姊是學生嗎？",
+        "zh": "你好，我是麗莎。你姊姊是學生嗎？",
         "en": "Hello, I'm Lisa. Is your older sister a student?"
       },
       "successLine": {
@@ -660,7 +660,7 @@
       },
       "npc": {
         "id": "lisa",
-        "name": "Lisa",
+        "name": "麗莎",
         "personality": "Gloria's sweet, warm-hearted coworker who loves chatting about hobbies and weekend plans.\n",
         "speechStyle": "Short, friendly sentences using only words from lessons 1–6. One question at a time; reacts to what the learner likes with 也 or 還.\n",
         "particles": []
@@ -929,7 +929,7 @@
       },
       "npc": {
         "id": "lisa",
-        "name": "Lisa",
+        "name": "麗莎",
         "personality": "Gloria's sweet, warm-hearted coworker. Friendly and flexible, but her Saturday is already taken, so she needs a different day.\n",
         "speechStyle": "Short, friendly sentences using only words from lessons 1–9. Gives a clear answer to each question: \"不行\" for Saturday, \"沒問題\" for Friday.\n",
         "particles": []
@@ -1308,7 +1308,7 @@
       },
       "npc": {
         "id": "waiter",
-        "name": "服務員",
+        "name": "服務生",
         "personality": "A polite, quick waiter in a Chinese restaurant. He is proud of the braised fish and always offers one more choice between two dishes.\n",
         "speechStyle": "Very short polite sentences with words from books 1 and 2 (up to lesson 3). Offers two choices with 還是 and makes suggestions with 吧.\n",
         "particles": []
@@ -1720,8 +1720,8 @@
         "en": "Hello! Are you moving next month? Is it far from here?"
       },
       "successLine": {
-        "zh": "從你家到公司開車只要二十分鐘，太好了！",
-        "en": "From your home to the office is only a twenty-minute drive. Great!"
+        "zh": "從你家到公司，開車二十分鐘就到了，太好了！",
+        "en": "From your home it's a twenty-minute drive to the office. Great!"
       },
       "textbook": {
         "textbookId": "laixue-2",
@@ -3396,8 +3396,8 @@
         "沒關係"
       ],
       "opener": {
-        "zh": "莉亞，午安。你終於有好消息了嗎？",
-        "en": "Liya, good afternoon. Do you finally have good news?"
+        "zh": "午安！你終於有好消息了嗎？",
+        "en": "Good afternoon! Do you finally have good news?"
       },
       "successLine": {
         "zh": "放心，我弟弟會去機場接你，你一定會喜歡臺灣的。",
@@ -3766,7 +3766,6 @@
         "車票",
         "認為",
         "騎",
-        "自行車",
         "黃色",
         "難怪",
         "奇怪",

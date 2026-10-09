@@ -1059,13 +1059,16 @@
     },
     {
       "id": "tb-b2-L02-003",
-      "zh": "我給媽媽買了一盒巧克力。",
-      "en": "I bought a box of chocolates for my mom.",
+      "zh": "我要給媽媽買一盒巧克力。",
+      "en": "I want to buy my mom a box of chocolates.",
       "targetWordId": "tocfl-e196b9937d",
       "level": "L1",
       "tokens": [
         {
           "text": "我"
+        },
+        {
+          "text": "要"
         },
         {
           "text": "給"
@@ -1075,9 +1078,6 @@
         },
         {
           "text": "買"
-        },
-        {
-          "text": "了"
         },
         {
           "text": "一"
@@ -1147,13 +1147,16 @@
     },
     {
       "id": "tb-b2-L02-005",
-      "zh": "他給太太買了太陽眼鏡。",
-      "en": "He bought sunglasses for his wife.",
+      "zh": "他想給太太買太陽眼鏡。",
+      "en": "He wants to buy his wife sunglasses.",
       "targetWordId": "tb-5941d06958",
       "level": "L1",
       "tokens": [
         {
           "text": "他"
+        },
+        {
+          "text": "想"
         },
         {
           "text": "給"
@@ -1163,9 +1166,6 @@
         },
         {
           "text": "買"
-        },
-        {
-          "text": "了"
         },
         {
           "text": "太陽眼鏡"
@@ -1750,8 +1750,8 @@
     },
     {
       "id": "tb-b2-L02-020",
-      "zh": "這家百貨公司的東西又多又便宜。",
-      "en": "This department store has lots of things and they are cheap.",
+      "zh": "這家百貨公司的東西又好又便宜。",
+      "en": "The things in this department store are good and cheap.",
       "targetWordId": "tocfl-5c8b9eb82d",
       "level": "L1",
       "tokens": [
@@ -1774,7 +1774,7 @@
           "text": "又"
         },
         {
-          "text": "多"
+          "text": "好"
         },
         {
           "text": "又"
@@ -5581,8 +5581,8 @@
     },
     {
       "id": "tb-b2-L06-009",
-      "zh": "從這裡到公園，走路只要五分鐘。",
-      "en": "From here to the park it's only a five-minute walk.",
+      "zh": "從這裡到公園，走路要五分鐘。",
+      "en": "It takes five minutes to walk from here to the park.",
       "targetWordId": "tocfl-493bda239f",
       "level": "L1",
       "tokens": [
@@ -5602,7 +5602,7 @@
           "text": "走路"
         },
         {
-          "text": "只要"
+          "text": "要"
         },
         {
           "text": "五"
@@ -6065,9 +6065,9 @@
     },
     {
       "id": "tb-b2-L06-020",
-      "zh": "我每天開車去公司，開二十分鐘。",
-      "en": "I drive to the company every day, for twenty minutes.",
-      "targetWordId": "tocfl-e99b72fb8b",
+      "zh": "我每天走路去公司，要走二十分鐘。",
+      "en": "I walk to the office every day; it takes twenty minutes.",
+      "targetWordId": "tocfl-8ed2dbb53f",
       "level": "L1",
       "tokens": [
         {
@@ -6077,7 +6077,7 @@
           "text": "每天"
         },
         {
-          "text": "開車"
+          "text": "走路"
         },
         {
           "text": "去"
@@ -6086,7 +6086,10 @@
           "text": "公司"
         },
         {
-          "text": "開"
+          "text": "要"
+        },
+        {
+          "text": "走"
         },
         {
           "text": "二"
@@ -6112,13 +6115,16 @@
     },
     {
       "id": "tb-b2-L06-021",
-      "zh": "我在臺灣住了一年。",
-      "en": "I lived in Taiwan for a year.",
+      "zh": "我想在臺灣住一年。",
+      "en": "I want to live in Taiwan for a year.",
       "targetWordId": "tocfl-df8a004869",
       "level": "L1",
       "tokens": [
         {
           "text": "我"
+        },
+        {
+          "text": "想"
         },
         {
           "text": "在"
@@ -6128,9 +6134,6 @@
         },
         {
           "text": "住"
-        },
-        {
-          "text": "了"
         },
         {
           "text": "一"
@@ -7273,19 +7276,16 @@
     },
     {
       "id": "tb-b2-L07-022",
-      "zh": "我等了幾分鐘。",
-      "en": "I waited a few minutes.",
-      "targetWordId": "tocfl-df8a004869",
+      "zh": "請等幾分鐘。",
+      "en": "Please wait a few minutes.",
+      "targetWordId": "tocfl-eefeda1588",
       "level": "L1",
       "tokens": [
         {
-          "text": "我"
+          "text": "請"
         },
         {
           "text": "等"
-        },
-        {
-          "text": "了"
         },
         {
           "text": "幾"
@@ -7434,8 +7434,8 @@
     },
     {
       "id": "tb-b2-L07-026",
-      "zh": "我買了幾個蘋果。",
-      "en": "I bought a few apples.",
+      "zh": "我想買幾個蘋果。",
+      "en": "I want to buy a few apples.",
       "targetWordId": "tocfl-df8a004869",
       "level": "L1",
       "tokens": [
@@ -7443,10 +7443,10 @@
           "text": "我"
         },
         {
-          "text": "買"
+          "text": "想"
         },
         {
-          "text": "了"
+          "text": "買"
         },
         {
           "text": "幾個"
@@ -7545,8 +7545,8 @@
     },
     {
       "id": "tb-b2-L08-003",
-      "zh": "我下班以後，先回家，然後做晚飯。",
-      "en": "After work I first go home, then cook dinner.",
+      "zh": "我下班以後，先去買菜，然後做晚飯。",
+      "en": "After work I first go grocery shopping, then cook dinner.",
       "targetWordId": "tocfl-9c60a7b612",
       "level": "L1",
       "tokens": [
@@ -7563,7 +7563,10 @@
           "text": "先"
         },
         {
-          "text": "回家"
+          "text": "去"
+        },
+        {
+          "text": "買菜"
         },
         {
           "text": "然後"
@@ -7668,8 +7671,8 @@
     },
     {
       "id": "tb-b2-L08-006",
-      "zh": "我們先去超級市場買菜，然後回家做飯。",
-      "en": "We first go to the supermarket to buy vegetables, then go home to cook.",
+      "zh": "我們先去超級市場買菜，然後在家做飯。",
+      "en": "We first go to the supermarket to buy groceries, then cook at home.",
       "targetWordId": "tocfl-d04277c625",
       "level": "L1",
       "tokens": [
@@ -7692,7 +7695,7 @@
           "text": "然後"
         },
         {
-          "text": "回家"
+          "text": "在家"
         },
         {
           "text": "做飯"
@@ -8116,8 +8119,8 @@
     },
     {
       "id": "tb-b2-L08-017",
-      "zh": "他下班了，現在回家。",
-      "en": "He has finished work and is going home now.",
+      "zh": "他下班了，現在去運動。",
+      "en": "He has finished work and is going to exercise now.",
       "targetWordId": "tocfl-9c60a7b612",
       "level": "L1",
       "tokens": [
@@ -8134,7 +8137,10 @@
           "text": "現在"
         },
         {
-          "text": "回家"
+          "text": "去"
+        },
+        {
+          "text": "運動"
         }
       ],
       "source": "generated",
@@ -9011,8 +9017,8 @@
     },
     {
       "id": "tb-b2-L09-016",
-      "zh": "我今天沒有時間看醫生。",
-      "en": "I don't have time to see a doctor today.",
+      "zh": "我昨天沒有去看醫生。",
+      "en": "I didn't go to see a doctor yesterday.",
       "targetWordId": "tocfl-df8a004869",
       "level": "L1",
       "tokens": [
@@ -9020,13 +9026,13 @@
           "text": "我"
         },
         {
-          "text": "今天"
+          "text": "昨天"
         },
         {
           "text": "沒有"
         },
         {
-          "text": "時間"
+          "text": "去"
         },
         {
           "text": "看醫生"
@@ -9429,8 +9435,8 @@
     },
     {
       "id": "tb-b2-L10-003",
-      "zh": "我在寫論文，不能出去。",
-      "en": "I'm writing my thesis and can't go out.",
+      "zh": "我在寫論文，不能去玩。",
+      "en": "I'm writing my thesis, so I can't go out and have fun.",
       "targetWordId": "tocfl-1fb98be339",
       "level": "L1",
       "tokens": [
@@ -9450,7 +9456,10 @@
           "text": "不能"
         },
         {
-          "text": "出去"
+          "text": "去"
+        },
+        {
+          "text": "玩"
         }
       ],
       "source": "generated",
@@ -9837,8 +9846,8 @@
     },
     {
       "id": "tb-b2-L10-015",
-      "zh": "我一下班就回家。",
-      "en": "As soon as I get off work I go home.",
+      "zh": "我一下班就去運動。",
+      "en": "As soon as I get off work, I go and exercise.",
       "targetWordId": "tocfl-df8a004869",
       "level": "L1",
       "tokens": [
@@ -9855,7 +9864,10 @@
           "text": "就"
         },
         {
-          "text": "回家"
+          "text": "去"
+        },
+        {
+          "text": "運動"
         }
       ],
       "source": "generated",
@@ -9872,7 +9884,7 @@
     },
     {
       "id": "tb-b2-L10-016",
-      "zh": "王先生一到家，王太太就出去買東西了。",
+      "zh": "王先生一到家，王太太就去買東西了。",
       "en": "As soon as Mr. Wang got home, Mrs. Wang went out shopping.",
       "targetWordId": "tb-f31eb37a1d",
       "level": "L1",
@@ -9899,7 +9911,7 @@
           "text": "就"
         },
         {
-          "text": "出去"
+          "text": "去"
         },
         {
           "text": "買東西"

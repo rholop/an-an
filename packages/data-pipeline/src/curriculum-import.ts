@@ -294,9 +294,14 @@ export function importBook(bookId: string): void {
       }
       const isNameGloss =
         w.section === 'proper' || /example of a (sur)?name|\(a surname\)/i.test(w.glossEn);
-      const link: LinkResult = isNameGloss
-        ? { tier: 'none', overlap: 0 }
-        : linkBookWord(w, lexicon);
+      const swap = cfg.vocabSwaps.find((x) => x.from === w.headword);
+      const swapped = swap ? lexicon.lookup(swap.to).find((x) => x.source !== 'textbook') : undefined;
+      if (swap && !swapped) throw new Error(`vocabSwaps: ${swap.to} is not in the lexicon`);
+      const link: LinkResult = swapped
+        ? { word: swapped, tier: 'exact', overlap: 1 }
+        : isNameGloss
+          ? { tier: 'none', overlap: 0 }
+          : linkBookWord(w, lexicon);
       links.set(w, link);
       let id: string;
       if (link.word) {
@@ -350,7 +355,11 @@ export function importBook(bookId: string): void {
 
     for (const nm of cfg.extraNames.filter((e) => e.lesson === n)) {
       const hint = nm.pinyin;
-      if (lexicon.lookup(nm.headword).some((x) => x.tags.includes('name'))) continue;
+      const known = lexicon.lookup(nm.headword).find((x) => x.tags.includes('name'));
+      if (known) {
+        properIds.push(known.id);
+        continue;
+      }
       const id = prior.get(`${nm.headword}|${hint}`) ?? stableId('tb', nm.headword, hint, bookId);
       properIds.push(id);
       if (prior.has(`${nm.headword}|${hint}`)) continue;
@@ -413,7 +422,7 @@ export function importBook(bookId: string): void {
       topic: front.topic,
       objectives: front.objectives,
       vocab: [...new Set(vocabIds)],
-      supplementary: [...new Set(suppIds)],
+      supplementary: [...new Set(suppIds)].filter((id) => !vocabIds.includes(id)),
       grammarWords: [...new Set(grammarWordIds)].filter(
         (id) => !vocabIds.includes(id) && !suppIds.includes(id),
       ),
@@ -555,8 +564,10 @@ export function importBook(bookId: string): void {
         lesson: w.lesson,
         n: w.n,
         section: w.section,
-        headword: w.headword,
-        pinyin: w.pinyin,
+        // a swapped word (自行車 → 腳踏車) is noted in the form the lesson teaches
+        ...(cfg.vocabSwaps.some((x) => x.from === w.headword) && l.word
+          ? { headword: l.word.headword, pinyin: l.word.pinyin.replace(/ /g, '') }
+          : { headword: w.headword, pinyin: w.pinyin }),
         pos: w.pos,
         glossEn: w.glossEn,
       };

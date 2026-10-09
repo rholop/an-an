@@ -2,7 +2,7 @@ lesson: 9
 sentences:
   - { zh: 你上來吧，我在樓上。, en: "Come on up; I'm upstairs.", grammar: [gram-directional-lai-qu] }
   - { zh: 他下來了，我們出去吧。, en: "He has come down; let's go out.", grammar: [gram-directional-lai-qu] }
-  - { zh: 請進來，客廳在左邊。, en: "Please come in; the living room is on the left.", grammar: [gram-directional-lai-qu] }
+  - { zh: 請進來，客廳在左邊。, en: "Please come in; the living room is on the left.", grammar: [gram-directional-lai-qu], tiles: [請, 進來, ，, 客廳, 在, 左邊, 。] }
   - { zh: 我哥哥已經回來了。, en: "My older brother has already come back.", grammar: [gram-directional-lai-qu] }
   - { zh: 他出去了，一個鐘頭以後回來。, en: "He went out and will be back in an hour.", grammar: [gram-directional-lai-qu] }
   - { zh: 老師過來了。, en: "The teacher has come over.", grammar: [gram-directional-lai-qu] }

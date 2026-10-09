@@ -48,7 +48,7 @@ scenarios:
       - { id: request, description: "Ask the friend to do something (請你把……V一V).", keywordHints: ["請你", "把"] }
       - { id: pickup, description: "Talk about getting picked up at the airport (接, 機場).", keywordHints: ["機場", "接"] }
     vocabExtras: [午安, 遲到, 事情, 消息, 終於, 興奮, 生活, 機場, 接, 擔心, 迷路, 半年, 留, 除了, 試試看, 像, 打聽, 課, 替, 留下, 美好, 印象, 對不起, 沒關係]
-    opener: { zh: 莉亞，午安。你終於有好消息了嗎？, en: "Liya, good afternoon. Do you finally have good news?" }
+    opener: { zh: 午安！你終於有好消息了嗎？, en: "Good afternoon! Do you finally have good news?" }
     successLine: { zh: 放心，我弟弟會去機場接你，你一定會喜歡臺灣的。, en: "Don't worry, my younger brother will pick you up at the airport; you will surely like Taiwan." }
 journalPrompts:
   - { en: "Write a paragraph about a job or life change and the reason for it (的話, 除了……還 / 也……).", zh: 公司派我去臺灣工作。, words: [消息, 終於, 興奮, 生活], grammar: [gram-de-hua-if, gram-chule-hai] }

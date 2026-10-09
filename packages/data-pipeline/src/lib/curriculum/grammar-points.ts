@@ -66,7 +66,7 @@ export const LAIXUE1_GRAMMAR: BookGrammarPoint[] = [
     pattern: 'S + 有 / 沒有 + O',
     explanationEn:
       '有 means "to have" (or "there is"). Its negative is 沒有 (never 不有): 我沒有弟弟.',
-    matcher: '有',
+    matcher: '沒有|有',
   },
   {
     id: 'gram-ma-question',
@@ -407,7 +407,7 @@ export const LAIXUE1_GRAMMAR: BookGrammarPoint[] = [
     pdfPage: 159,
     pattern: 'S + V + 多少 / 幾 + (measure word) + N？',
     explanationEn:
-      '多少 asks about any quantity (the measure word is optional); 幾 is for small numbers (up to about ten) and always takes a measure word: 你有幾個孩子？',
+      '多少 asks about any quantity (the measure word is optional); 幾 is for small numbers (up to about ten). Before a noun 幾 takes a measure word (你有幾個孩子？); with words that are units themselves it does not (幾月幾號, 幾歲, 幾點).',
     matcher: '多少|幾[個位杯家]',
   },
 ];

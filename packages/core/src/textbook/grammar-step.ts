@@ -67,10 +67,22 @@ export type GrammarSentence = Pick<SentenceBankEntry, 'id' | 'zh' | 'en' | 'gram
   tiles?: string[];
 };
 
+/**
+ * Words a tile may be. `allowed`: words the learner can read at this lesson (a word outside it, such
+ * as 天才 in 每天才, is never a tile); `taught`: the words the course has taught so far, preferred over
+ * words that are only readable from their parts. A bare function is `allowed`.
+ */
+export interface TileWords {
+  allowed?: (headword: string) => boolean;
+  taught?: (headword: string) => boolean;
+}
+export type TileWordsArg = TileWords | ((headword: string) => boolean) | undefined;
+const tileWords = (a: TileWordsArg): TileWords => (typeof a === 'function' ? { allowed: a } : (a ?? {}));
+
 /** A sentence's tiles: its content override when it has one (and it spells the sentence), else the split. */
-export function sentenceTiles(s: Pick<GrammarSentence, 'zh' | 'tiles'>, lexicon: Lexicon, allowed?: (h: string) => boolean): string[] {
+export function sentenceTiles(s: Pick<GrammarSentence, 'zh' | 'tiles'>, lexicon: Lexicon, words?: TileWordsArg): string[] {
   if (s.tiles && s.tiles.join('') === s.zh) return [...s.tiles];
-  return reorderTiles(s.zh, lexicon, allowed);
+  return reorderTiles(s.zh, lexicon, words);
 }
 
 type Rng = () => number;
@@ -90,26 +102,29 @@ function shuffle<T>(arr: readonly T[], rng: Rng): T[] {
 const PUNCT = /^[\s，。？！、；：「」『』（）,.?!;:"'()…—～~]+$/u;
 const NUMBER_CHARS = '〇零一二兩三四五六七八九十百千萬幾半0123456789０１２３４５６７８９';
 /** Measure words and time units a number takes as one tile (十一點, 三個, 五月, 二十塊). */
-const NUMBER_UNITS = [
+export const NUMBER_UNITS = [
   '點', '號', '月', '日', '個', '歲', '塊', '本', '張', '天', '年', '分', '杯', '位', '次', '件', '條',
   '隻', '碗', '樓', '口', '雙', '種', '份', '支', '枝', '家', '間', '台', '臺', '輛', '頁', '課', '週',
   '刻', '元', '毛', '角', '公斤', '公尺', '公里', '分鐘', '小時', '星期', '樣', '題', '堂', '節', '片',
 ] as const;
 const isNumberChar = (ch: string) => NUMBER_CHARS.includes(ch);
+/** 這個, 那家, 每個: a demonstrative takes its measure word too (這個/星期, never 這/個星期). */
+const DEMONSTRATIVES = '這那哪每';
 
 /**
  * The tiles of a reorder / build exercise. A number and its measure word or time unit are one tile
- * (十一點, 三個, 幾月); punctuation is its own token; the rest is matched over the words the learner
- * can know (`allowed`: a word outside it, such as 天才 in 每天才, is never a tile), taking the
- * segmentation with fewer tiles, then fewer single characters, then backward matching on a tie
- * (從/小時候, 請/進來, 從來/沒有, 一/下班).
+ * (十一點, 三個, 幾月); punctuation is its own token; the rest is split over the words the learner
+ * can know (`words.allowed`: a word outside it, such as 天才 in 每天才, is never a tile), taking the
+ * split with the fewest tiles, then the fewest words not taught yet (`words.taught`), then the
+ * fewest single characters, then the longer word last on a tie (從/小時候, 請/進來, 從來/沒有, 一/下班).
  */
-export function reorderTiles(zh: string, lexicon: Lexicon, allowed?: (headword: string) => boolean): string[] {
+export function reorderTiles(zh: string, lexicon: Lexicon, words?: TileWordsArg): string[] {
+  const { allowed, taught } = tileWords(words);
   const chars = [...zh];
   const out: string[] = [];
   let chunk: string[] = [];
   const flush = () => {
-    if (chunk.length) out.push(...segmentChunk(chunk, lexicon, allowed));
+    if (chunk.length) out.push(...segmentChunk(chunk, lexicon, allowed, taught));
     chunk = [];
   };
   let i = 0;
@@ -123,14 +138,24 @@ export function reorderTiles(zh: string, lexicon: Lexicon, allowed?: (headword: 
       i = j;
       continue;
     }
-    if (isNumberChar(ch)) {
-      let j = i;
-      while (j < chars.length && isNumberChar(chars[j]!)) j++;
-      const rest = chars.slice(j).join('');
+    // 星期一, 禮拜五, 星期幾: the day is one tile
+    const day = /^(星期|禮拜)[一二三四五六日天幾]/u.exec(chars.slice(i, i + 3).join(''));
+    if (day) {
+      flush();
+      out.push(day[0]);
+      i += 3;
+      continue;
+    }
+    if (isNumberChar(ch) || (DEMONSTRATIVES.includes(ch) && UNITS_LONGEST_FIRST.some((u) => chars.slice(i + 1).join('').startsWith(u)))) {
+      let j = i + 1;
+      if (isNumberChar(ch)) while (j < chars.length && isNumberChar(chars[j]!)) j++;
+      // 一百多個, 三十多歲: "more than" sits between the number and its unit
+      const more = isNumberChar(ch) && chars[j] === '多' && UNITS_LONGEST_FIRST.some((u) => chars.slice(j + 1).join('').startsWith(u)) ? 1 : 0;
+      const rest = chars.slice(j + more).join('');
       const unit = UNITS_LONGEST_FIRST.find((u) => rest.startsWith(u));
       if (unit !== undefined || j - i >= 2 || /[0-9０-９]/.test(chars.slice(i, j).join(''))) {
         flush();
-        const len = j - i + (unit ? [...unit].length : 0);
+        const len = j - i + (unit ? more + [...unit].length : 0);
         out.push(chars.slice(i, i + len).join(''));
         i += len;
         continue;
@@ -148,34 +173,40 @@ const UNITS_LONGEST_FIRST = [...NUMBER_UNITS].sort((a, b) => b.length - a.length
 /** A sentence-final particle is always its own tile (您呢 is two tiles, so 呢 can be practised). */
 const FINAL_PARTICLE = /^.+[呢嗎吧啊]$/u;
 
-function segmentChunk(chars: string[], lexicon: Lexicon, allowed?: (h: string) => boolean): string[] {
+function segmentChunk(
+  chars: string[],
+  lexicon: Lexicon,
+  allowed?: (h: string) => boolean,
+  taught?: (h: string) => boolean,
+): string[] {
   const ok = (w: string) => !FINAL_PARTICLE.test(w) && lexicon.lookup(w).length > 0 && (!allowed || allowed(w));
   const max = Math.min(lexicon.maxHeadwordLength, chars.length);
-  const fmm: string[] = [];
-  for (let i = 0; i < chars.length; ) {
-    let len = 1;
-    for (let l = Math.min(max, chars.length - i); l > 1; l--)
-      if (ok(chars.slice(i, i + l).join(''))) {
-        len = l;
-        break;
-      }
-    fmm.push(chars.slice(i, i + len).join(''));
-    i += len;
+  // best[i]: the best split of chars[0, i) as [tiles, not-taught words, single characters, last length]
+  type Best = { cost: [number, number, number]; last: number; prev: number };
+  const best: Array<Best | undefined> = [{ cost: [0, 0, 0], last: 0, prev: -1 }];
+  const better = (a: Best, b: Best | undefined) => {
+    if (!b) return true;
+    for (let k = 0; k < 3; k++) if (a.cost[k] !== b.cost[k]) return a.cost[k]! < b.cost[k]!;
+    return a.last > b.last;
+  };
+  for (let i = 1; i <= chars.length; i++) {
+    for (let len = 1; len <= Math.min(max, i); len++) {
+      const from = best[i - len];
+      if (!from) continue;
+      const w = chars.slice(i - len, i).join('');
+      if (len > 1 && !ok(w)) continue;
+      const c = from.cost;
+      const cand: Best = {
+        cost: [c[0] + 1, c[1] + (len > 1 && taught && !taught(w) ? 1 : 0), c[2] + (len === 1 ? 1 : 0)],
+        last: len,
+        prev: i - len,
+      };
+      if (better(cand, best[i])) best[i] = cand;
+    }
   }
-  const bmm: string[] = [];
-  for (let e = chars.length; e > 0; ) {
-    let len = 1;
-    for (let l = Math.min(max, e); l > 1; l--)
-      if (ok(chars.slice(e - l, e).join(''))) {
-        len = l;
-        break;
-      }
-    bmm.unshift(chars.slice(e - len, e).join(''));
-    e -= len;
-  }
-  if (fmm.length !== bmm.length) return fmm.length < bmm.length ? fmm : bmm;
-  const singles = (t: string[]) => t.filter((x) => [...x].length === 1).length;
-  return singles(fmm) < singles(bmm) ? fmm : bmm;
+  const out: string[] = [];
+  for (let i = chars.length; i > 0; i = best[i]!.prev) out.unshift(chars.slice(best[i]!.prev, i).join(''));
+  return out;
 }
 
 export const isPunctTile = (t: string): boolean => PUNCT.test(t);
@@ -331,8 +362,9 @@ export interface GrammarStepInputs {
   lexicon: Lexicon;
   /** Signal words of every point up to this lesson: fill distractors and the build distractor tile. */
   pool: readonly string[];
-  /** Words the learner can know at this lesson (tiles never use a word outside it). */
+  /** Words the learner can know at this lesson (tiles never use a word outside it), and the taught ones. */
   allowed?: (headword: string) => boolean;
+  taught?: (headword: string) => boolean;
   rng: Rng;
   perPoint?: number;
 }
@@ -348,7 +380,7 @@ export interface GrammarStepPlan {
 type Maker = (type: GrammarExerciseType, s: GrammarSentence) => GrammarStepExercise | undefined;
 
 function makerFor(inputs: GrammarStepInputs, g: Pick<GrammarItem, 'id' | 'focus' | 'matcher'>): Maker {
-  const { lexicon, rng, pool, allowed } = inputs;
+  const { lexicon, rng, pool, allowed, taught } = inputs;
   return (type, s) => {
     switch (type) {
       case 'fill':
@@ -356,7 +388,7 @@ function makerFor(inputs: GrammarStepInputs, g: Pick<GrammarItem, 'id' | 'focus'
       case 'pick':
         return buildPickExercise(s, g.id, rng);
       default:
-        return buildTileExercise(type, s, g.id, sentenceTiles(s, lexicon, allowed), rng, pool);
+        return buildTileExercise(type, s, g.id, sentenceTiles(s, lexicon, { allowed, taught }), rng, pool);
     }
   };
 }

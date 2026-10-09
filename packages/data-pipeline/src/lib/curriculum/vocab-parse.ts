@@ -255,7 +255,7 @@ export function entryToWord(
     }
   }
   const headRaw = cells[0] ?? '';
-  const pinyin = (cells[1] ?? '').trim();
+  const pinyin = (cells[1] ?? '').trim().replace(/[.,;:]+$/, '');
   let idx = 2;
   const pos: string[] = [];
   if (cells[idx] && isPosCell(cells[idx]!)) {
@@ -274,7 +274,8 @@ export function entryToWord(
     if (glossCells.length > 0 && (TONES.test(c) || /^\(\d\)/.test(c))) break;
     glossCells.push(c);
   }
-  const glossEn = glossCells.join(' ').replace(/\s+/g, ' ').trim();
+  // Phase 25: no stray punctuation left over from the PDF columns ("for example,")
+  const glossEn = glossCells.join(' ').replace(/\s+/g, ' ').trim().replace(/[\s,;:]+$/, '');
   const variantsAll = splitVariants(headRaw).map((v) =>
     CJK.test(v) ? v.replace(/^[A-Za-z]+\s+/, '') : v,
   );

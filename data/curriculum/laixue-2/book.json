@@ -52,7 +52,9 @@
           "tocfl-1a0883e6a7",
           "tocfl-f1abc0e7bd"
         ],
-        "grammarWords": [],
+        "grammarWords": [
+          "tocfl-45f633b897"
+        ],
         "properNouns": [
           "tb-ffdb02ab2e",
           "tb-7e3658e3b9",
@@ -164,7 +166,10 @@
           "tocfl-989ea1d693",
           "tb-39373942bd"
         ],
-        "grammarWords": [],
+        "grammarWords": [
+          "tocfl-b03f382540",
+          "tocfl-59b3c68a07"
+        ],
         "properNouns": [],
         "grammar": [
           "gram-gei-for",
@@ -490,7 +495,7 @@
             "id": "laixue-2-L05-jp1",
             "lessonId": "laixue-2-L05",
             "promptEn": "Describe something you bought recently and how much it cost.",
-            "promptZh": "我買了一件外套，三百五十塊。",
+            "promptZh": "這件外套三百五十塊。",
             "useWords": [
               "tocfl-2ab9d25b39",
               "tocfl-f23a1636b7",
@@ -1651,7 +1656,7 @@
       "id": "gram-mei-negation",
       "pattern": "S + 沒 (有) + V + (O)",
       "level": "L1",
-      "explanationEn": "沒(有) negates a completed action: 昨天沒來上班 (didn't come to work yesterday). Do not use 了 with it.",
+      "explanationEn": "沒(有) negates a completed action: 昨天沒來上班 (didn't come to work yesterday). Don't put 了 after the verb (not 我沒吃了飯); a 了 at the end of the sentence can still mark a change or a repeat, as in 又沒……了.",
       "examples": [
         "tb-b2-L09-010",
         "tb-b2-L09-011",
@@ -4962,6 +4967,36 @@
         "N"
       ],
       "glossEn": "English"
+    },
+    {
+      "wordId": "tocfl-45f633b897",
+      "lesson": 1,
+      "n": 0,
+      "section": "grammar",
+      "headword": "了",
+      "pinyin": "le",
+      "pos": [],
+      "glossEn": "completed action marker"
+    },
+    {
+      "wordId": "tocfl-b03f382540",
+      "lesson": 2,
+      "n": 0,
+      "section": "grammar",
+      "headword": "上面",
+      "pinyin": "shàng mian",
+      "pos": [],
+      "glossEn": "up; upper; above; previous; first; above-mentioned"
+    },
+    {
+      "wordId": "tocfl-59b3c68a07",
+      "lesson": 2,
+      "n": 0,
+      "section": "grammar",
+      "headword": "下面",
+      "pinyin": "xià miàn",
+      "pos": [],
+      "glossEn": "below; under; next; the following"
     }
   ]
 }

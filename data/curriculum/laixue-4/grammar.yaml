@@ -89,7 +89,7 @@
   lesson: 4
   n: 1
   pattern: "Condition clause，S + 才 + V"
-  explanationEn: "才 in the second clause says the result happens ONLY after the first clause is satisfied, and often later or harder than hoped: 雞腿便當賣完了，他才買烤肉便當."
+  explanationEn: "才 in the second clause says the result happens only when the first clause is true: 要有悠遊卡，才能坐捷運 (you can ride the MRT only with an EasyCard). The first clause is the condition; 才 comes after the subject of the second."
   matcher: "才"
   focus: ["才"]
 - id: gram-nanguai
@@ -156,7 +156,7 @@
   lesson: 6
   n: 2
   pattern: "A + 跟 + B + (沒) 有關係"
-  explanationEn: "跟…有關係 says A is connected to B, and B influences A. The negative is 沒有關係; 有關alone also works."
+  explanationEn: "跟…有關係 says A is connected to B, and B influences A. The negative is 跟…沒有關係; in writing, 有關 alone also works (跟天氣有關)."
   matcher: "有關"
   focus: ["跟", "關係"]
 - id: gram-zhe-continuing
@@ -283,6 +283,6 @@
   lesson: 10
   n: 3
   pattern: "一般來說，……"
-  explanationEn: "一般來說 introduces a general rule or the usual situation: 一般來說，臺灣人七點上班."
+  explanationEn: "一般來說 introduces a general rule or the usual situation: 一般來說，臺灣的夏天很熱."
   matcher: "一般來說"
   focus: ["一般來說"]

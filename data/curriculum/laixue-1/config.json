@@ -35,7 +35,8 @@
     { "headword": "王小文", "pinyin": "Wáng Xiǎowén", "glossEn": "Wang Xiaowen (name)", "lesson": 5 },
     { "headword": "李", "pinyin": "Lǐ", "glossEn": "Li (surname)", "lesson": 4 },
     { "headword": "安安", "pinyin": "Ān’ān", "glossEn": "Anan (given name)", "lesson": 3 },
-    { "headword": "明美", "pinyin": "Míngměi", "glossEn": "Mingmei (given name)", "lesson": 3 }
+    { "headword": "明美", "pinyin": "Míngměi", "glossEn": "Mingmei (given name)", "lesson": 3 },
+    { "headword": "麗莎", "pinyin": "Lìshā", "glossEn": "Lisa (given name)", "lesson": 3 }
   ],
   "explanations": [
     "Repeats of the same word and sense (和 L3/L6, 今天 L4/L8) count once; 家 (home → measure word for shops) and 要 (want → want to) are new senses and count again: 225 − 2 = 223."

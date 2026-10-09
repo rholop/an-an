@@ -235,7 +235,8 @@
           "tb-b5912b1dd9",
           "tb-de30499b7f",
           "tb-a2402f3044",
-          "tb-aebbb5d86c"
+          "tb-aebbb5d86c",
+          "tb-780285e4f5"
         ],
         "grammar": [
           "gram-bu-negation",
@@ -1080,7 +1081,7 @@
         "沒有",
         "有"
       ],
-      "matcher": "有"
+      "matcher": "沒有|有"
     },
     {
       "id": "gram-ma-question",
@@ -1725,7 +1726,7 @@
       "id": "gram-duoshao-ji",
       "pattern": "S + V + 多少 / 幾 + (measure word) + N？",
       "level": "N1",
-      "explanationEn": "多少 asks about any quantity (the measure word is optional); 幾 is for small numbers (up to about ten) and always takes a measure word: 你有幾個孩子？",
+      "explanationEn": "多少 asks about any quantity (the measure word is optional); 幾 is for small numbers (up to about ten). Before a noun 幾 takes a measure word (你有幾個孩子？); with words that are units themselves it does not (幾月幾號, 幾歲, 幾點).",
       "examples": [
         "tb-L10-024",
         "tb-L10-025",

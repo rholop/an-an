@@ -19,6 +19,7 @@
     "curriculum:build": "pnpm --filter @anan/data-pipeline curriculum:build",
     "curriculum:plan": "pnpm --filter @anan/data-pipeline curriculum:plan",
     "curriculum:content": "pnpm --filter @anan/data-pipeline curriculum:content",
+    "audit:curriculum": "pnpm --filter @anan/data-pipeline audit:curriculum",
     "eval:journal": "pnpm --filter @anan/proxy journal-cloze-eval",
     "eval:stories": "pnpm --filter @anan/proxy stories-eval",
     "smoke:proxy": "pnpm --filter @anan/proxy smoke"

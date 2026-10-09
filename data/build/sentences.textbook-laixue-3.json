@@ -1636,8 +1636,8 @@
     },
     {
       "id": "tb-b3-L02-016",
-      "zh": "這個菜怎麼做？",
-      "en": "How do you make this dish?",
+      "zh": "這個蛋糕怎麼做？",
+      "en": "How do you make this cake?",
       "targetWordId": "tocfl-0d98acf663",
       "level": "L2",
       "tokens": [
@@ -1645,7 +1645,7 @@
           "text": "這個"
         },
         {
-          "text": "菜"
+          "text": "蛋糕"
         },
         {
           "text": "怎麼"
@@ -3552,8 +3552,8 @@
     },
     {
       "id": "tb-b3-L04-016",
-      "zh": "我們開車開到海邊。",
-      "en": "We drove all the way to the beach.",
+      "zh": "我們走到海邊。",
+      "en": "We walked to the beach.",
       "targetWordId": "tocfl-1f6fbc0616",
       "level": "L2",
       "tokens": [
@@ -3561,10 +3561,7 @@
           "text": "我們"
         },
         {
-          "text": "開車"
-        },
-        {
-          "text": "開"
+          "text": "走"
         },
         {
           "text": "到"
@@ -3742,8 +3739,8 @@
     },
     {
       "id": "tb-b3-L04-021",
-      "zh": "多喝水對身體有好處。",
-      "en": "Drinking more water is good for your health.",
+      "zh": "多運動對身體有幫助。",
+      "en": "Exercising more is good for your health.",
       "targetWordId": "tocfl-c75d36aadb",
       "level": "L2",
       "tokens": [
@@ -3751,10 +3748,7 @@
           "text": "多"
         },
         {
-          "text": "喝"
-        },
-        {
-          "text": "水"
+          "text": "運動"
         },
         {
           "text": "對"
@@ -3766,7 +3760,7 @@
           "text": "有"
         },
         {
-          "text": "好處"
+          "text": "幫助"
         }
       ],
       "source": "generated",
@@ -4187,8 +4181,8 @@
     },
     {
       "id": "tb-b3-L05-007",
-      "zh": "弟弟沒有哥哥那麼高。",
-      "en": "My younger brother is not as tall as my older brother.",
+      "zh": "弟弟沒有哥哥那麼忙。",
+      "en": "My younger brother is not as busy as my older brother.",
       "targetWordId": "tocfl-80c4c8a3da",
       "level": "L2",
       "tokens": [
@@ -4205,7 +4199,7 @@
           "text": "那麼"
         },
         {
-          "text": "高"
+          "text": "忙"
         }
       ],
       "source": "generated",
@@ -6754,25 +6748,37 @@
     },
     {
       "id": "tb-b3-L07-023",
-      "zh": "老闆八點才來。",
-      "en": "The boss doesn't come until eight.",
-      "targetWordId": "tocfl-99dbbfef28",
+      "zh": "這件衣服才一百塊，很便宜。",
+      "en": "This piece of clothing is only a hundred dollars; very cheap.",
+      "targetWordId": "tocfl-3c3d83d113",
       "level": "L2",
       "tokens": [
         {
-          "text": "老闆"
+          "text": "這"
         },
         {
-          "text": "八"
+          "text": "件"
         },
         {
-          "text": "點"
+          "text": "衣服"
         },
         {
           "text": "才"
         },
         {
-          "text": "來"
+          "text": "一"
+        },
+        {
+          "text": "百"
+        },
+        {
+          "text": "塊"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "便宜"
         }
       ],
       "source": "generated",
@@ -6789,25 +6795,37 @@
     },
     {
       "id": "tb-b3-L07-024",
-      "zh": "公車十點才來。",
-      "en": "The bus doesn't come until ten.",
-      "targetWordId": "tocfl-5be0e90990",
+      "zh": "我昨天才看了一個小時的書。",
+      "en": "Yesterday I only read for an hour.",
+      "targetWordId": "tocfl-3c3d83d113",
       "level": "L2",
       "tokens": [
         {
-          "text": "公車"
+          "text": "我"
         },
         {
-          "text": "十"
-        },
-        {
-          "text": "點"
+          "text": "昨天"
         },
         {
           "text": "才"
         },
         {
-          "text": "來"
+          "text": "看"
+        },
+        {
+          "text": "了"
+        },
+        {
+          "text": "一個"
+        },
+        {
+          "text": "小時"
+        },
+        {
+          "text": "的"
+        },
+        {
+          "text": "書"
         }
       ],
       "source": "generated",
@@ -7937,6 +7955,15 @@
       "textbookId": "laixue-3",
       "grammarIds": [
         "gram-directional-lai-qu"
+      ],
+      "tiles": [
+        "請",
+        "進來",
+        "，",
+        "客廳",
+        "在",
+        "左邊",
+        "。"
       ]
     },
     {

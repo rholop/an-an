@@ -17,6 +17,7 @@
     "curriculum:content": "tsx src/build-textbook-content.ts",
     "curriculum:build": "tsx src/curriculum-import.ts all && tsx src/build-textbook-content.ts all && tsx src/build-lexicon.ts && tsx src/build-scenarios.ts",
     "curriculum:plan": "tsx src/curriculum-plan.ts",
+    "audit:curriculum": "tsx src/audit-curriculum.ts",
     "review-pile": "tsx src/review-pile-report.ts",
     "gen:char-shapes": "tsx src/gen-char-shapes.ts"
   },

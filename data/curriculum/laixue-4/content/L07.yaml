@@ -5,7 +5,7 @@ sentences:
   - { zh: 他從來不遲到。, en: "He is never late.", grammar: [gram-conglai] }
   - { zh: 我從來沒看過美式足球比賽。, en: "I have never watched an American football game.", grammar: [gram-conglai] }
   - { zh: 弟弟從來不喝咖啡。, en: "My younger brother never drinks coffee.", grammar: [gram-conglai] }
-  - { zh: 她從來沒有忘記過我的生日。, en: "She has never forgotten my birthday.", grammar: [gram-conglai] }
+  - { zh: 她從來沒有忘記過我的生日。, en: "She has never forgotten my birthday.", grammar: [gram-conglai], tiles: [她, 從來, 沒有, 忘記, 過, 我, 的, 生日, 。] }
   - { zh: 我本來不喜歡足球，後來變成球迷了。, en: "I didn't like soccer at first, but later I became a fan.", grammar: [gram-benlai-houlai] }
   - { zh: 我本來想去海邊，現在想在家休息。, en: "I originally wanted to go to the beach; now I want to rest at home.", grammar: [gram-benlai-houlai] }
   - { zh: 他本來是我的同事，後來變成我的男朋友。, en: "He was originally my colleague and later became my boyfriend.", grammar: [gram-benlai-houlai] }

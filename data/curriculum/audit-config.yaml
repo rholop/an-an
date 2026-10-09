@@ -1,0 +1,44 @@
+# Phase 25 D: settings for `pnpm audit:curriculum` (packages/data-pipeline/src/audit-curriculum.ts).
+
+# Headwords allowed to contain Latin letters.
+allowedLatin: [KTV]
+
+# Grammar id -> a regex that detects a real use of the point, for "a grammar point from a later
+# lesson". Only points a regex can recognise reliably are listed (a bare 了 or 會 can't be told apart).
+detect:
+  gram-le-completion: "(?<![為除受])了(?!解|[，。！？]|$)"
+  gram-guo-experience: "[^經不難]過(?![去來年])"
+  gram-bi-comparison: "比(?!較|賽|起來)"
+  gram-ba-directional: "把"
+  gram-bei-passive: "被"
+  gram-zhe-continuing: "[坐站躺看聽拿穿帶開關掛排]著"
+  gram-de-complement: ".得(很|不|好|怎麼樣|不錯|快)"
+  gram-yuelaiyue: "越來越"
+  gram-yibian-yibian: "一邊.+一邊"
+  gram-suiran-keshi: "雖然"
+  gram-ruguo-jiu: "如果"
+  gram-xian-ranhou: "先.+然後"
+  gram-yi-jiu: "一[^，。？！]{1,4}就"
+  gram-lian-dou: "連.+[都也]"
+  gram-budan-erqie: "不但"
+  gram-de-hua-if: "的話"
+  gram-chule-hai: "除了"
+  gram-zhiyao-jiu: "只要"
+  gram-rang-let: "讓"
+  gram-v-wan: "[吃喝做寫看讀說聽洗用買]完"
+  gram-qilai-judgement: "[看聽吃喝穿寫說做用]起來"
+  gram-kuaiyao-le: "快要"
+  gram-fei-buke: "非.+不可"
+
+
+# Findings accepted on purpose. Each must match a finding (check + where) and say why.
+allow:
+  - check: sentence-later-word
+    where: tb-b3-L05-017
+    reason: 上課 split by the separable-verb point it practises (上了兩個鐘頭課); 課 is the object of 上課, not the later measure word.
+  - check: sentence-later-word
+    where: tb-b3-L05-019
+    reason: 跑步 split by the separable-verb point it practises (跑了三十分鐘步); 步 is the object of 跑步.
+  - check: sentence-blank
+    where: tb-b3-L06-013
+    reason: The potential-complement blank is the 不 of 聽不懂, which is right; the standalone 得 is the earlier 說得太快 complement.

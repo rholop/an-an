@@ -8,7 +8,7 @@ sentences:
   - { zh: 你家離游泳池遠不遠？, en: "Is your home far from the swimming pool?", grammar: [gram-li-distance] }
   - { zh: 那個社區離東區不太遠。, en: "That neighborhood is not very far from the eastern district.", grammar: [gram-li-distance] }
   - { zh: 從我家到學校，開車要二十分鐘。, en: "From my home to school it takes twenty minutes by car.", grammar: [gram-cong-dao] }
-  - { zh: 從這裡到公園，走路只要五分鐘。, en: "From here to the park it's only a five-minute walk.", grammar: [gram-cong-dao] }
+  - { zh: 從這裡到公園，走路要五分鐘。, en: "It takes five minutes to walk from here to the park.", grammar: [gram-cong-dao] }
   - { zh: 從我家到超級市場很近。, en: "From my home to the supermarket is close.", grammar: [gram-cong-dao] }
   - { zh: 從南區到東區，開車要多久？, en: "How long does it take to drive from the southern district to the eastern district?", grammar: [gram-cong-dao] }
   - { zh: 從公司到我家，走路要一個鐘頭。, en: "From the company to my home it takes an hour on foot.", grammar: [gram-cong-dao] }
@@ -19,8 +19,8 @@ sentences:
   - { zh: 我每天走路，走三十分鐘。, en: "I walk thirty minutes every day.", grammar: [gram-duration] }
   - { zh: 她每天看電視，看一個鐘頭。, en: "She watches TV for an hour every day.", grammar: [gram-duration] }
   - { zh: 我哥哥每天游泳，游一個鐘頭。, en: "My older brother swims for an hour every day.", grammar: [gram-duration] }
-  - { zh: 我每天開車去公司，開二十分鐘。, en: "I drive to the company every day, for twenty minutes.", grammar: [gram-duration] }
-  - { zh: 我在臺灣住了一年。, en: "I lived in Taiwan for a year.", grammar: [gram-duration] }
+  - { zh: 我每天走路去公司，要走二十分鐘。, en: "I walk to the office every day; it takes twenty minutes.", grammar: [gram-duration] }
+  - { zh: 我想在臺灣住一年。, en: "I want to live in Taiwan for a year.", grammar: [gram-duration] }
   - { zh: 他們每天練習說話，練習四十分鐘。, en: "They practise speaking for forty minutes every day.", grammar: [gram-duration] }
   - { zh: 我住的地方離公園很近。, en: "The place where I live is very close to the park.", grammar: [gram-de-modifier, gram-li-distance] }
   - { zh: 我太太做的蛋糕很好吃。, en: "The cake my wife made is delicious.", grammar: [gram-de-modifier] }
@@ -52,7 +52,7 @@ scenarios:
       - { id: place, description: "Describe the kind of place you want to live (住的地方).", keywordHints: ["住的地方", "地方"] }
     vocabExtras: [南區, 離, 遠, 從, 東區, 城市, 附近, 那裡, 近, 到, 分鐘, 超級市場, 社區, 游泳池, 天天, 地方, 搬家, 搬到, 開車, 多久, 買菜, 游泳, 走路, 鐘頭, 日本, 蘋果]
     opener: { zh: 你好！你們下個月搬家嗎？離這裡遠不遠？, en: "Hello! Are you moving next month? Is it far from here?" }
-    successLine: { zh: 從你家到公司開車只要二十分鐘，太好了！, en: "From your home to the office is only a twenty-minute drive. Great!" }
+    successLine: { zh: 從你家到公司，開車二十分鐘就到了，太好了！, en: "From your home it's a twenty-minute drive to the office. Great!" }
 journalPrompts:
   - { en: "Describe where you live now and how far it is from your school or office.", zh: 我家離公園很近。, words: [離, 遠, 近, 附近], grammar: [gram-li-distance] }
   - { en: "Write how long it takes to get from your home to a place you often go.", words: [分鐘, 開車, 多久], grammar: [gram-cong-dao, gram-duration] }

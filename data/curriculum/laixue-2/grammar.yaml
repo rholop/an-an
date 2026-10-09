@@ -21,6 +21,7 @@
   explanationEn: "太…了 means 'too …' or 'so …'. It can be a complaint (太貴了) or enthusiasm (太好了), depending on the verb."
   matcher: "太.+了"
   focus: ["太"]
+  words: ["了"]
 - id: gram-neng-possibility
   lesson: 1
   n: 3
@@ -55,6 +56,7 @@
   explanationEn: "Relative time words: 上個, 這個, 下個 before 星期 or 月 give last, this and next; 去年, 今年, 明年 are last, this and next year. Time words come before the verb."
   matcher: "[上這下]個(星期|禮拜|月)|去年|今年|明年|上星期|下星期"
   focus: []
+  words: ["上", "下"]
 - id: gram-you-and-you
   lesson: 2
   n: 3
@@ -250,7 +252,7 @@
   n: 2
   pdfPage: 145
   pattern: "S + 沒 (有) + V + (O)"
-  explanationEn: "沒(有) negates a completed action: 昨天沒來上班 (didn't come to work yesterday). Do not use 了 with it."
+  explanationEn: "沒(有) negates a completed action: 昨天沒來上班 (didn't come to work yesterday). Don't put 了 after the verb (not 我沒吃了飯); a 了 at the end of the sentence can still mark a change or a repeat, as in 又沒……了."
   matcher: "沒"
   focus: ["沒"]
 - id: gram-you-again

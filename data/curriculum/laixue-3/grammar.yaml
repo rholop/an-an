@@ -134,6 +134,7 @@
   explanationEn: "This is the 'not as … as' pattern: 這裡的海邊沒有那裡的漂亮 / 沒有那麼漂亮. 那麼 points to something further away, 這麼 to something close."
   matcher: "沒有.+(那麼|這麼)"
   focus: ["沒有", "那麼", "這麼"]
+  words: ["這麼", "那麼"]
 - id: gram-vv-kan
   lesson: 5
   n: 2
@@ -212,7 +213,7 @@
   lesson: 7
   n: 4
   pattern: "S + 才 + V / number"
-  explanationEn: "才 says an amount or time is smaller or later than expected: 現在才三點, 我才學了一個月. Compare 就, which suggests 'already, so early'."
+  explanationEn: "才 before a number says an amount, an age or a time is small or early: 現在才三點, 他才二十歲, 我才學了一個月. Book 4 adds a second use, 才 after a length of time for 'only then, late'."
   matcher: "才"
   focus: ["才"]
 

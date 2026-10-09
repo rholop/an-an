@@ -21,11 +21,11 @@ sentences:
   - { zh: 這家餐廳在百貨公司的下面。, en: "This restaurant is below the department store.", grammar: [gram-zai-location, gram-positional-words] }
   - { zh: 我家有幾個房間？, en: "How many rooms does my home have?", grammar: [gram-ji-approximate] }
   - { zh: 這個社區有十幾家商店。, en: "This neighborhood has a dozen or so shops.", grammar: [gram-ji-approximate] }
-  - { zh: 我等了幾分鐘。, en: "I waited a few minutes.", grammar: [gram-ji-approximate] }
+  - { zh: 請等幾分鐘。, en: "Please wait a few minutes.", grammar: [gram-ji-approximate] }
   - { zh: 這家餐廳有二十幾個人。, en: "There are twenty-some people in this restaurant.", grammar: [gram-ji-approximate] }
   - { zh: 他住在這裡十幾年了。, en: "He has lived here for over ten years.", grammar: [gram-ji-approximate] }
   - { zh: 我們公司有三十幾個人。, en: "Our company has thirty-some people.", grammar: [gram-ji-approximate] }
-  - { zh: 我買了幾個蘋果。, en: "I bought a few apples.", grammar: [gram-ji-approximate] }
+  - { zh: 我想買幾個蘋果。, en: "I want to buy a few apples.", grammar: [gram-ji-approximate] }
 scenarios:
   - slug: find-supermarket
     title: "Jiawen is looking for the supermarket"

@@ -2990,37 +2990,37 @@
     },
     {
       "id": "tb-b4-L04-001",
-      "zh": "雞腿便當賣完了，王小姐才買雞肉三明治。",
-      "en": "The chicken-leg boxed meals sold out, and only then did Miss Wang buy a chicken sandwich.",
-      "targetWordId": "tb-79e63dddb5",
+      "zh": "你要多練習，才會說得好。",
+      "en": "Only if you practise a lot will you speak it well.",
+      "targetWordId": "tocfl-3c3d83d113",
       "level": "L2",
       "tokens": [
         {
-          "text": "雞腿"
+          "text": "你"
         },
         {
-          "text": "便當"
+          "text": "要"
         },
         {
-          "text": "賣"
+          "text": "多"
         },
         {
-          "text": "完了"
-        },
-        {
-          "text": "王"
-        },
-        {
-          "text": "小姐"
+          "text": "練習"
         },
         {
           "text": "才"
         },
         {
-          "text": "買"
+          "text": "會"
         },
         {
-          "text": "雞肉三明治"
+          "text": "說"
+        },
+        {
+          "text": "得"
+        },
+        {
+          "text": "好"
         }
       ],
       "source": "generated",
@@ -3207,43 +3207,34 @@
     },
     {
       "id": "tb-b4-L04-006",
-      "zh": "公車十點才來，所以我晚一點才到。",
-      "en": "The bus only comes at ten, so I will arrive a bit later.",
+      "zh": "你要多休息，身體才會好。",
+      "en": "Only if you rest more will you get well.",
       "targetWordId": "tocfl-3c3d83d113",
       "level": "L2",
       "tokens": [
         {
-          "text": "公車"
+          "text": "你"
         },
         {
-          "text": "十"
+          "text": "要"
         },
         {
-          "text": "點"
+          "text": "多"
         },
         {
-          "text": "才"
+          "text": "休息"
         },
         {
-          "text": "來"
-        },
-        {
-          "text": "所以"
-        },
-        {
-          "text": "我"
-        },
-        {
-          "text": "晚"
-        },
-        {
-          "text": "一點"
+          "text": "身體"
         },
         {
           "text": "才"
         },
         {
-          "text": "到"
+          "text": "會"
+        },
+        {
+          "text": "好"
         }
       ],
       "source": "generated",
@@ -3260,8 +3251,8 @@
     },
     {
       "id": "tb-b4-L04-007",
-      "zh": "一定要準時，才可以參加。",
-      "en": "You must be on time to be allowed to join.",
+      "zh": "一定要買票，才可以進去。",
+      "en": "You can only go in with a ticket.",
       "targetWordId": "tocfl-3c3d83d113",
       "level": "L2",
       "tokens": [
@@ -3272,7 +3263,7 @@
           "text": "要"
         },
         {
-          "text": "準時"
+          "text": "買票"
         },
         {
           "text": "才"
@@ -3281,7 +3272,7 @@
           "text": "可以"
         },
         {
-          "text": "參加"
+          "text": "進去"
         }
       ],
       "source": "generated",
@@ -6651,6 +6642,17 @@
       "textbookId": "laixue-4",
       "grammarIds": [
         "gram-conglai"
+      ],
+      "tiles": [
+        "她",
+        "從來",
+        "沒有",
+        "忘記",
+        "過",
+        "我",
+        "的",
+        "生日",
+        "。"
       ]
     },
     {
@@ -7566,6 +7568,17 @@
       "textbookId": "laixue-4",
       "grammarIds": [
         "gram-cong-qi"
+      ],
+      "tiles": [
+        "從",
+        "小時候",
+        "起",
+        "，",
+        "我",
+        "就",
+        "愛",
+        "看書",
+        "。"
       ]
     },
     {
@@ -10354,6 +10367,17 @@
       "textbookId": "laixue-4",
       "grammarIds": [
         "gram-yiban-laishuo"
+      ],
+      "tiles": [
+        "一般來說",
+        "，",
+        "鳳梨酥",
+        "是",
+        "很",
+        "好",
+        "的",
+        "紀念品",
+        "。"
       ]
     },
     {

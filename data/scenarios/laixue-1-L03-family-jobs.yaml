@@ -6,7 +6,7 @@ levelRange:
   max: N2
 npc:
   id: lisa
-  name: Lisa
+  name: 麗莎
   personality: >
     Gloria's sweet, warm-hearted coworker. Genuinely interested in other people's families and
     always asks a friendly follow-up.
@@ -61,7 +61,7 @@ vocabExtras:
   - 法國
   - 和
 opener:
-  zh: 你好，我是Lisa。你姊姊是學生嗎？
+  zh: 你好，我是麗莎。你姊姊是學生嗎？
   en: Hello, I'm Lisa. Is your older sister a student?
 successLine:
   zh: 你姊姊結婚了，他們有兩個孩子。他們都不是學生。

@@ -52,6 +52,6 @@ scenarios:
     opener: { zh: 您好！您想看外套還是長褲？, en: "Hello! Would you like to look at coats or pants?" }
     successLine: { zh: 好的，一共三百五十塊，謝謝您！, en: "Alright, that's 350 dollars altogether. Thank you!" }
 journalPrompts:
-  - { en: "Describe something you bought recently and how much it cost.", zh: 我買了一件外套，三百五十塊。, words: [外套, 錢, 一共, 好看], grammar: [gram-money-units] }
+  - { en: "Describe something you bought recently and how much it cost.", zh: 這件外套三百五十塊。, words: [外套, 錢, 一共, 好看], grammar: [gram-money-units] }
   - { en: "Write about a change in your life using 了 (for example 我不喝咖啡了).", words: [最近, 胖, 穿], grammar: [gram-le-new-situation] }
   - { en: "Use 雖然……可是…… to say something is nice but has a problem.", words: [裙子, 顏色, 樣子, 好看], grammar: [gram-suiran-keshi] }

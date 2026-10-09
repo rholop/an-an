@@ -6,7 +6,7 @@ sentences:
   - { zh: 我的中文沒有你那麼好。, en: "My Chinese is not as good as yours.", grammar: [gram-meiyou-nameme] }
   - { zh: 這家店的東西沒有那家那麼貴。, en: "The things in this shop are not as expensive as at that one.", grammar: [gram-meiyou-nameme] }
   - { zh: 今天沒有昨天那麼熱。, en: "Today is not as hot as yesterday.", grammar: [gram-meiyou-nameme] }
-  - { zh: 弟弟沒有哥哥那麼高。, en: "My younger brother is not as tall as my older brother.", grammar: [gram-meiyou-nameme] }
+  - { zh: 弟弟沒有哥哥那麼忙。, en: "My younger brother is not as busy as my older brother.", grammar: [gram-meiyou-nameme] }
   - { zh: 這個工作沒有那個工作那麼麻煩。, en: "This job is not as troublesome as that one.", grammar: [gram-meiyou-nameme] }
   - { zh: 你喝喝看這杯烏龍茶。, en: "Try this cup of oolong tea.", grammar: [gram-vv-kan] }
   - { zh: 這個甜點很好吃，你吃吃看。, en: "This dessert is delicious; try it.", grammar: [gram-vv-kan] }

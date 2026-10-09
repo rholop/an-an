@@ -6,7 +6,7 @@ levelRange:
   max: L1
 npc:
   id: waiter
-  name: 服務員
+  name: 服務生
   personality: >
     A polite, quick waiter in a Chinese restaurant. He is proud of the braised fish and always
     offers one more choice between two dishes.

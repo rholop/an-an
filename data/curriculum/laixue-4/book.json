@@ -372,7 +372,7 @@
           "tocfl-1b83020852",
           "tocfl-df657c203d",
           "tocfl-146fd654fd",
-          "tocfl-e819af9284",
+          "tocfl-6c031665a6",
           "tocfl-883ff27c4c",
           "tocfl-cc90601820",
           "tocfl-2b1aff1209",
@@ -389,7 +389,6 @@
           "moec-eca33c9f70"
         ],
         "supplementary": [
-          "tocfl-6c031665a6",
           "tocfl-c0d931c34a"
         ],
         "grammarWords": [],
@@ -429,7 +428,7 @@
             "useWords": [
               "tocfl-df3821c6e9",
               "tocfl-0ce131f786",
-              "tocfl-e819af9284",
+              "tocfl-6c031665a6",
               "tocfl-df657c203d",
               "tocfl-2b1aff1209"
             ],
@@ -956,8 +955,7 @@
           "tocfl-aaf3a1db71",
           "moec-d98944b0c2",
           "tocfl-541940ca90",
-          "tocfl-db79a04994",
-          "tb-e154c43375"
+          "tocfl-db79a04994"
         ],
         "supplementary": [],
         "grammarWords": [],
@@ -970,7 +968,8 @@
           "tb-3f39cd7be5",
           "tb-028c667d00",
           "tb-37b1e482f1",
-          "tb-06f27e8f3e"
+          "tb-06f27e8f3e",
+          "tb-e154c43375"
         ],
         "grammar": [
           "gram-ge-v-ge-de",
@@ -1402,7 +1401,7 @@
       "id": "gram-cai-condition",
       "pattern": "Condition clause，S + 才 + V",
       "level": "L2",
-      "explanationEn": "才 in the second clause says the result happens ONLY after the first clause is satisfied, and often later or harder than hoped: 雞腿便當賣完了，他才買烤肉便當.",
+      "explanationEn": "才 in the second clause says the result happens only when the first clause is true: 要有悠遊卡，才能坐捷運 (you can ride the MRT only with an EasyCard). The first clause is the condition; 才 comes after the subject of the second.",
       "examples": [
         "tb-b4-L04-001",
         "tb-b4-L04-002",
@@ -1602,7 +1601,7 @@
       "id": "gram-gen-guanxi",
       "pattern": "A + 跟 + B + (沒) 有關係",
       "level": "L3",
-      "explanationEn": "跟…有關係 says A is connected to B, and B influences A. The negative is 沒有關係; 有關alone also works.",
+      "explanationEn": "跟…有關係 says A is connected to B, and B influences A. The negative is 跟…沒有關係; in writing, 有關 alone also works (跟天氣有關).",
       "examples": [
         "tb-b4-L06-007",
         "tb-b4-L06-008",
@@ -1980,7 +1979,7 @@
       "id": "gram-yiban-laishuo",
       "pattern": "一般來說，……",
       "level": "L3",
-      "explanationEn": "一般來說 introduces a general rule or the usual situation: 一般來說，臺灣人七點上班.",
+      "explanationEn": "一般來說 introduces a general rule or the usual situation: 一般來說，臺灣的夏天很熱.",
       "examples": [
         "tb-b4-L10-017",
         "tb-b4-L10-018",
@@ -3307,12 +3306,12 @@
       "glossEn": "ride [astride]"
     },
     {
-      "wordId": "tocfl-e819af9284",
+      "wordId": "tocfl-6c031665a6",
       "lesson": 4,
       "n": 19,
       "section": "core",
-      "headword": "自行車",
-      "pinyin": "zìxíngchē",
+      "headword": "腳踏車",
+      "pinyin": "jiǎotàchē",
       "pos": [
         "N"
       ],
@@ -3475,18 +3474,6 @@
       "pinyin": "dà bùfèn",
       "pos": [],
       "glossEn": "most [of something]"
-    },
-    {
-      "wordId": "tocfl-6c031665a6",
-      "lesson": 4,
-      "n": 34,
-      "section": "supplementary",
-      "headword": "腳踏車",
-      "pinyin": "jiǎotàchē",
-      "pos": [
-        "N"
-      ],
-      "glossEn": "bicycle"
     },
     {
       "wordId": "tocfl-c0d931c34a",
@@ -5133,7 +5120,7 @@
       "n": 5,
       "section": "core",
       "headword": "海岸",
-      "pinyin": "hǎi'àn.",
+      "pinyin": "hǎi'àn",
       "pos": [
         "N"
       ],
@@ -5839,7 +5826,7 @@
       "headword": "比方說",
       "pinyin": "bǐfāng shuō",
       "pos": [],
-      "glossEn": "for example,"
+      "glossEn": "for example"
     },
     {
       "wordId": "tocfl-e69e12fa5a",
@@ -5849,7 +5836,7 @@
       "headword": "一般來說",
       "pinyin": "yìbān láishuō",
       "pos": [],
-      "glossEn": "generally speaking,"
+      "glossEn": "generally speaking"
     },
     {
       "wordId": "tb-135593900a",

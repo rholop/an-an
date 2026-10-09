@@ -15,12 +15,12 @@ sentences:
   - { zh: 我們坐飛機飛到臺灣。, en: "We fly to Taiwan by plane.", grammar: [gram-v-dao-arrive] }
   - { zh: 他搬到東區了。, en: "He has moved to the eastern district.", grammar: [gram-v-dao-arrive] }
   - { zh: 請你送到我的公司。, en: "Please deliver it to my company.", grammar: [gram-v-dao-arrive] }
-  - { zh: 我們開車開到海邊。, en: "We drove all the way to the beach.", grammar: [gram-v-dao-arrive] }
+  - { zh: 我們走到海邊。, en: "We walked to the beach.", grammar: [gram-v-dao-arrive] }
   - { zh: 我走到公園，坐一下。, en: "I walked to the park and sat for a bit.", grammar: [gram-v-dao-arrive] }
   - { zh: 我們送到你家，好不好？, en: "We'll deliver it to your home, okay?", grammar: [gram-v-dao-arrive] }
   - { zh: 我對中文很有興趣。, en: "I am very interested in Chinese.", grammar: [gram-dui-you-noun] }
   - { zh: 他對科技產品很有興趣。, en: "He is very interested in technology products.", grammar: [gram-dui-you-noun] }
-  - { zh: 多喝水對身體有好處。, en: "Drinking more water is good for your health.", grammar: [gram-dui-you-noun] }
+  - { zh: 多運動對身體有幫助。, en: "Exercising more is good for your health.", grammar: [gram-dui-you-noun] }
   - { zh: 這個工作對我很有幫助。, en: "This job is very helpful to me.", grammar: [gram-dui-you-noun] }
   - { zh: 你對這個工作有經驗嗎？, en: "Do you have experience with this job?", grammar: [gram-dui-you-noun] }
   - { zh: 她對世界很有興趣。, en: "She is very interested in the world.", grammar: [gram-dui-you-noun] }

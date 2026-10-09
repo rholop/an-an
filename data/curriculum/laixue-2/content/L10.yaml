@@ -2,7 +2,7 @@ lesson: 10
 sentences:
   - { zh: 他在看電視。, en: "He is watching TV.", grammar: [gram-zai-progressive] }
   - { zh: 高莉亞在做晚飯呢。, en: "Gloria is cooking dinner.", grammar: [gram-zai-progressive] }
-  - { zh: 我在寫論文，不能出去。, en: "I'm writing my thesis and can't go out.", grammar: [gram-zai-progressive] }
+  - { zh: 我在寫論文，不能去玩。, en: "I'm writing my thesis, so I can't go out and have fun.", grammar: [gram-zai-progressive] }
   - { zh: 他們在找機會去亞洲。, en: "They are looking for a chance to go to Asia.", grammar: [gram-zai-progressive] }
   - { zh: 你們在做什麼？, en: "What are you all doing?", grammar: [gram-zai-progressive] }
   - { zh: 我在練習說英文。, en: "I'm practising speaking English.", grammar: [gram-zai-progressive] }
@@ -14,8 +14,8 @@ sentences:
   - { zh: 我的論文快要寫好了。, en: "My thesis is almost finished.", grammar: [gram-kuaiyao-le] }
   - { zh: 天氣快要冷了。, en: "The weather is about to turn cold.", grammar: [gram-kuaiyao-le] }
   - { zh: 我們快要放假了。, en: "We are about to go on vacation.", grammar: [gram-kuaiyao-le] }
-  - { zh: 我一下班就回家。, en: "As soon as I get off work I go home.", grammar: [gram-yi-jiu] }
-  - { zh: 王先生一到家，王太太就出去買東西了。, en: "As soon as Mr. Wang got home, Mrs. Wang went out shopping.", grammar: [gram-yi-jiu] }
+  - { zh: 我一下班就去運動。, en: "As soon as I get off work, I go and exercise.", grammar: [gram-yi-jiu] }
+  - { zh: 王先生一到家，王太太就去買東西了。, en: "As soon as Mr. Wang got home, Mrs. Wang went out shopping.", grammar: [gram-yi-jiu] }
   - { zh: 他一有空就去游泳。, en: "He goes swimming whenever he has time.", grammar: [gram-yi-jiu] }
   - { zh: 我一起床就洗澡。, en: "I take a shower as soon as I get up.", grammar: [gram-yi-jiu] }
   - { zh: 媽媽一回來，我們就吃飯。, en: "As soon as Mom comes back, we eat.", grammar: [gram-yi-jiu] }

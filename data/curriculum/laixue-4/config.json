@@ -56,5 +56,12 @@
       ],
       "lesson": 1
     }
+  ],
+  "vocabSwaps": [
+    {
+      "from": "自行車",
+      "to": "腳踏車",
+      "reason": "自行車 is the mainland word for a bicycle; Taiwan says 腳踏車 (data/supplement/mainland-terms.yaml)."
+    }
   ]
 }

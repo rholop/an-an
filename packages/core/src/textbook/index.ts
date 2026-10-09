@@ -6,3 +6,4 @@ export * from './grammar-exercise.js';
 export * from './grammar-step.js';
 export * from './level-filter.js';
 export * from './grammar-ids.js';
+export * from './lesson-grammar-step.js';

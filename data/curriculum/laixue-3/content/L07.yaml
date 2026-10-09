@@ -22,8 +22,8 @@ sentences:
   - { zh: 現在才七點，你怎麼起床了？, en: "It's only seven; why are you up?", grammar: [gram-cai-little] }
   - { zh: 我才學了三個月中文。, en: "I have studied Chinese for only three months.", grammar: [gram-cai-little] }
   - { zh: 這家店才開一個月。, en: "This shop has been open only a month.", grammar: [gram-cai-little] }
-  - { zh: 老闆八點才來。, en: "The boss doesn't come until eight.", grammar: [gram-cai-little] }
-  - { zh: 公車十點才來。, en: "The bus doesn't come until ten.", grammar: [gram-cai-little] }
+  - { zh: 這件衣服才一百塊，很便宜。, en: "This piece of clothing is only a hundred dollars; very cheap.", grammar: [gram-cai-little] }
+  - { zh: 我昨天才看了一個小時的書。, en: "Yesterday I only read for an hour.", grammar: [gram-cai-little] }
   - { zh: 他才二十歲，很年輕。, en: "He is only twenty, very young.", grammar: [gram-cai-little] }
 scenarios:
   - slug: europe-business-trip

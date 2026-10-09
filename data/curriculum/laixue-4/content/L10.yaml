@@ -18,7 +18,7 @@ sentences:
   - { zh: 我今天吃不下早飯。, en: "I can't eat breakfast today.", grammar: [gram-v-xia] }
   - { zh: 一般來說，臺灣人七點上班。, en: "Generally speaking, Taiwanese people start work at seven.", grammar: [gram-yiban-laishuo] }
   - { zh: 一般來說，夜市下午才開始營業。, en: "Generally, night markets open only in the afternoon.", grammar: [gram-yiban-laishuo] }
-  - { zh: 一般來說，鳳梨酥是很好的紀念品。, en: "Generally, pineapple cakes make good souvenirs.", grammar: [gram-yiban-laishuo] }
+  - { zh: 一般來說，鳳梨酥是很好的紀念品。, en: "Generally, pineapple cakes make good souvenirs.", grammar: [gram-yiban-laishuo], tiles: [一般來說, ，, 鳳梨酥, 是, 很, 好, 的, 紀念品, 。] }
   - { zh: 一般來說，外國人覺得臺灣人很熱情。, en: "Generally, foreigners find Taiwanese people warm.", grammar: [gram-yiban-laishuo] }
   - { zh: 一般來說，租金包括水費和電費。, en: "Generally, the rent includes water and electricity bills.", grammar: [gram-yiban-laishuo] }
   - { zh: 一般來說，現代的人比以前忙。, en: "Generally, modern people are busier than before.", grammar: [gram-yiban-laishuo] }

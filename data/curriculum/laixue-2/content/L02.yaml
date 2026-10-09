@@ -2,9 +2,9 @@ lesson: 2
 sentences:
   - { zh: 我要給爸爸買一個背包。, en: "I am going to buy a backpack for my dad.", grammar: [gram-gei-for] }
   - { zh: 她想給她先生買一件衣服。, en: "She wants to buy a piece of clothing for her husband.", grammar: [gram-gei-for] }
-  - { zh: 我給媽媽買了一盒巧克力。, en: "I bought a box of chocolates for my mom.", grammar: [gram-gei-for] }
+  - { zh: 我要給媽媽買一盒巧克力。, en: "I want to buy my mom a box of chocolates.", grammar: [gram-gei-for] }
   - { zh: 我想給弟弟買一雙運動鞋。, en: "I want to buy a pair of sports shoes for my younger brother.", grammar: [gram-gei-for] }
-  - { zh: 他給太太買了太陽眼鏡。, en: "He bought sunglasses for his wife.", grammar: [gram-gei-for] }
+  - { zh: 他想給太太買太陽眼鏡。, en: "He wants to buy his wife sunglasses.", grammar: [gram-gei-for] }
   - { zh: 你想給家人買什麼禮物？, en: "What gifts do you want to buy for your family?", grammar: [gram-gei-for] }
   - { zh: 我想給我父母做牛肉麵。, en: "I want to make beef noodle soup for my parents.", grammar: [gram-gei-for] }
   - { zh: 明文想給家文買帽子。, en: "Mingwen wants to buy a hat for Jiawen.", grammar: [gram-gei-for] }
@@ -19,7 +19,7 @@ sentences:
   - { zh: 網路商店的東西又便宜又方便。, en: "Things from online stores are both cheap and convenient.", grammar: [gram-you-and-you] }
   - { zh: 她又高興又累。, en: "She is both happy and tired.", grammar: [gram-you-and-you] }
   - { zh: 這件衣服又大又貴。, en: "This piece of clothing is both big and expensive.", grammar: [gram-you-and-you] }
-  - { zh: 這家百貨公司的東西又多又便宜。, en: "This department store has lots of things and they are cheap.", grammar: [gram-you-and-you] }
+  - { zh: 這家百貨公司的東西又好又便宜。, en: "The things in this department store are good and cheap.", grammar: [gram-you-and-you] }
   - { zh: 因為我今天有空，所以想去逛街。, en: "Because I am free today, I want to go shopping.", grammar: [gram-yinwei-suoyi] }
   - { zh: 因為網路商店的東西比較便宜，所以我常常上網買東西。, en: "Because things in online stores are cheaper, I often shop online.", grammar: [gram-yinwei-suoyi] }
   - { zh: 因為明天是媽媽的生日，所以我想給她買禮物。, en: "Because tomorrow is my mom's birthday, I want to buy her a gift.", grammar: [gram-yinwei-suoyi, gram-gei-for] }

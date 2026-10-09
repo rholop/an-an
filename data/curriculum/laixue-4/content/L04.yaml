@@ -1,12 +1,12 @@
 lesson: 4
 sentences:
-  - { zh: 雞腿便當賣完了，王小姐才買雞肉三明治。, en: "The chicken-leg boxed meals sold out, and only then did Miss Wang buy a chicken sandwich.", grammar: [gram-cai-condition] }
+  - { zh: 你要多練習，才會說得好。, en: "Only if you practise a lot will you speak it well.", grammar: [gram-cai-condition] }
   - { zh: 你先寫完作業，才可以看電視。, en: "You can watch TV only after you finish your homework.", grammar: [gram-cai-condition] }
   - { zh: 要有悠遊卡，才能坐捷運。, en: "You need an EasyCard in order to ride the MRT.", grammar: [gram-cai-condition] }
   - { zh: 他說了三次，我才聽懂。, en: "He said it three times before I understood.", grammar: [gram-cai-condition] }
   - { zh: 你告訴我，我才知道。, en: "I know only because you told me.", grammar: [gram-cai-condition] }
-  - { zh: 公車十點才來，所以我晚一點才到。, en: "The bus only comes at ten, so I will arrive a bit later.", grammar: [gram-cai-condition] }
-  - { zh: 一定要準時，才可以參加。, en: "You must be on time to be allowed to join.", grammar: [gram-cai-condition] }
+  - { zh: 你要多休息，身體才會好。, en: "Only if you rest more will you get well.", grammar: [gram-cai-condition] }
+  - { zh: 一定要買票，才可以進去。, en: "You can only go in with a ticket.", grammar: [gram-cai-condition] }
   - { zh: 他買了車票，才上火車。, en: "He bought a ticket and only then got on the train.", grammar: [gram-cai-condition] }
   - { zh: 你先吃藥，才會好。, en: "You will get better only after you take medicine.", grammar: [gram-cai-condition] }
   - { zh: 他在臺灣住了十年，難怪中文說得這麼好。, en: "He lived in Taiwan for ten years; no wonder his Chinese is so good.", grammar: [gram-nanguai] }
@@ -49,10 +49,10 @@ scenarios:
       - { id: nowonder, description: "React with 難怪 to something he says.", keywordHints: ["難怪"] }
       - { id: only, description: "Say you can go only if a condition is met (……才……).", keywordHints: ["才"] }
       - { id: free, description: "Say you can go however you like (想……就……).", keywordHints: ["想", "就"] }
-    vocabExtras: [豆漿, 蛋餅, 午餐, 夠, 雞腿, 便當, 豐富, 改天, 才, 計程車, 條, 路線, 站, 不必, 班次, 車票, 認為, 騎, 自行車, 黃色, 難怪, 奇怪, 悠遊卡, 汽車, 危險, 完全, 普遍, 為了, 轉車, 綠線, 受歡迎, 大部分, 腳踏車, 機車]
+    vocabExtras: [豆漿, 蛋餅, 午餐, 夠, 雞腿, 便當, 豐富, 改天, 才, 計程車, 條, 路線, 站, 不必, 班次, 車票, 認為, 騎, 黃色, 難怪, 奇怪, 悠遊卡, 汽車, 危險, 完全, 普遍, 為了, 轉車, 綠線, 受歡迎, 大部分, 腳踏車, 機車]
     opener: { zh: 早！你每天怎麼上班？坐捷運還是坐公車？, en: "Morning! How do you go to work every day? MRT or bus?" }
     successLine: { zh: 你想怎麼去就怎麼去，不過坐捷運又快又方便。, en: "Go however you like; but the MRT is both fast and convenient." }
 journalPrompts:
   - { en: "Write a paragraph about how you go to work or school and why you chose it (才, 難怪).", zh: 我坐捷運上班。, words: [車票, 站, 路線, 班次, 認為], grammar: [gram-cai-condition, gram-nanguai] }
-  - { en: "Write a paragraph about the good and bad points of two means of transport (難怪, 才).", words: [危險, 計程車, 自行車, 認為, 奇怪], grammar: [gram-nanguai, gram-cai-condition] }
+  - { en: "Write a paragraph about the good and bad points of two means of transport (難怪, 才).", words: [危險, 計程車, 腳踏車, 認為, 奇怪], grammar: [gram-nanguai, gram-cai-condition] }
   - { en: "Write a paragraph about something you can freely choose, using a question word twice (想……什麼就……什麼).", words: [便當, 豐富, 夠, 改天], grammar: [gram-qpr-same-reference, gram-cai-condition] }

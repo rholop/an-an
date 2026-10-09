@@ -478,7 +478,10 @@
           "moec-d2432031ec"
         ],
         "supplementary": [],
-        "grammarWords": [],
+        "grammarWords": [
+          "tocfl-5b865ba0a8",
+          "tocfl-81dbeac696"
+        ],
         "properNouns": [],
         "grammar": [
           "gram-meiyou-nameme",
@@ -1702,7 +1705,7 @@
       "id": "gram-cai-little",
       "pattern": "S + 才 + V / number",
       "level": "L2",
-      "explanationEn": "才 says an amount or time is smaller or later than expected: 現在才三點, 我才學了一個月. Compare 就, which suggests 'already, so early'.",
+      "explanationEn": "才 before a number says an amount, an age or a time is small or early: 現在才三點, 他才二十歲, 我才學了一個月. Book 4 adds a second use, 才 after a length of time for 'only then, late'.",
       "examples": [
         "tb-b3-L07-020",
         "tb-b3-L07-021",
@@ -5478,6 +5481,26 @@
         "V"
       ],
       "glossEn": "place [somewhere], let go of"
+    },
+    {
+      "wordId": "tocfl-5b865ba0a8",
+      "lesson": 5,
+      "n": 0,
+      "section": "grammar",
+      "headword": "這麼",
+      "pinyin": "zhè me",
+      "pos": [],
+      "glossEn": "so much; this much; this way"
+    },
+    {
+      "wordId": "tocfl-81dbeac696",
+      "lesson": 5,
+      "n": 0,
+      "section": "grammar",
+      "headword": "那麼",
+      "pinyin": "nà me",
+      "pos": [],
+      "glossEn": "like that; in that way"
     }
   ]
 }

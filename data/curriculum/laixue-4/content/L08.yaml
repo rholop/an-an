@@ -2,7 +2,7 @@ lesson: 8
 sentences:
   - { zh: 從下個月起，公司不用加班了。, en: "From next month on, the company doesn't need overtime.", grammar: [gram-cong-qi] }
   - { zh: 從今天開始，我要多運動。, en: "Starting today, I'm going to exercise more.", grammar: [gram-cong-qi] }
-  - { zh: 從小時候起，我就愛看書。, en: "Since I was little, I have loved reading.", grammar: [gram-cong-qi] }
+  - { zh: 從小時候起，我就愛看書。, en: "Since I was little, I have loved reading.", grammar: [gram-cong-qi], tiles: [從, 小時候, 起, ，, 我, 就, 愛, 看書, 。] }
   - { zh: 從明年起，我們要搬到臺北。, en: "From next year, we will move to Taipei.", grammar: [gram-cong-qi] }
   - { zh: 從星期一開始，我每天早起。, en: "From Monday on, I get up early every day.", grammar: [gram-cong-qi] }
   - { zh: 從這個月起，房租要貴一點。, en: "From this month on, the rent will be a bit higher.", grammar: [gram-cong-qi] }

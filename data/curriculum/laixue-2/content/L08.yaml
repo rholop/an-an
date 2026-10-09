@@ -2,10 +2,10 @@ lesson: 8
 sentences:
   - { zh: 我早上先洗澡，然後吃早飯。, en: "In the morning I first take a shower, then eat breakfast.", grammar: [gram-xian-ranhou] }
   - { zh: 她先起床，然後洗頭髮。, en: "She gets up first, then washes her hair.", grammar: [gram-xian-ranhou] }
-  - { zh: 我下班以後，先回家，然後做晚飯。, en: "After work I first go home, then cook dinner.", grammar: [gram-xian-ranhou] }
+  - { zh: 我下班以後，先去買菜，然後做晚飯。, en: "After work I first go grocery shopping, then cook dinner.", grammar: [gram-xian-ranhou] }
   - { zh: 他先喝咖啡，然後看書。, en: "He first drinks coffee, then reads.", grammar: [gram-xian-ranhou] }
   - { zh: 你先吃飯，然後休息一下吧。, en: "Eat first, then take a little rest.", grammar: [gram-xian-ranhou] }
-  - { zh: 我們先去超級市場買菜，然後回家做飯。, en: "We first go to the supermarket to buy vegetables, then go home to cook.", grammar: [gram-xian-ranhou] }
+  - { zh: 我們先去超級市場買菜，然後在家做飯。, en: "We first go to the supermarket to buy groceries, then cook at home.", grammar: [gram-xian-ranhou] }
   - { zh: 她每天先帶狗去散步，然後上班。, en: "Every day she first takes the dog for a walk, then goes to work.", grammar: [gram-xian-ranhou] }
   - { zh: 我明天先去銀行，然後去百貨公司。, en: "Tomorrow I'll go to the bank first, then the department store.", grammar: [gram-xian-ranhou] }
   - { zh: 我吃早飯了。, en: "I have eaten breakfast.", grammar: [gram-le-completion] }
@@ -16,7 +16,7 @@ sentences:
   - { zh: 昨天我洗了頭髮。, en: "Yesterday I washed my hair.", grammar: [gram-le-completion] }
   - { zh: 每天我吃了早飯，開車去上班。, en: "Every day after I eat breakfast, I drive to work.", grammar: [gram-le-completion] }
   - { zh: 我明天吃了飯，就去看電影。, en: "Tomorrow after I eat, I'll go to a movie.", grammar: [gram-le-completion] }
-  - { zh: 他下班了，現在回家。, en: "He has finished work and is going home now.", grammar: [gram-le-completion] }
+  - { zh: 他下班了，現在去運動。, en: "He has finished work and is going to exercise now.", grammar: [gram-le-completion] }
   - { zh: 我今天早上七點起床了。, en: "I got up at seven this morning.", grammar: [gram-le-completion] }
   - { zh: 他晚上喜歡在家聽聽音樂。, en: "In the evening he likes to listen to some music at home.", grammar: [gram-verb-reduplication] }
   - { zh: 我們週末在公園走走。, en: "On weekends we stroll in the park.", grammar: [gram-verb-reduplication] }

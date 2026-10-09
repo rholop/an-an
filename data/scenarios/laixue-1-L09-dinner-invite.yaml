@@ -6,7 +6,7 @@ levelRange:
   max: N2
 npc:
   id: lisa
-  name: Lisa
+  name: 麗莎
   personality: >
     Gloria's sweet, warm-hearted coworker. Friendly and flexible, but her Saturday is already taken,
     so she needs a different day.

@@ -15,7 +15,7 @@ sentences:
   - { zh: 請問，到旅館怎麼走？, en: "Excuse me, how do I get to the hotel?", grammar: [gram-zenme-how] }
   - { zh: 這個字怎麼寫？, en: "How do you write this character?", grammar: [gram-zenme-how] }
   - { zh: 我們怎麼去旅館？, en: "How are we getting to the hotel?", grammar: [gram-zenme-how] }
-  - { zh: 這個菜怎麼做？, en: "How do you make this dish?", grammar: [gram-zenme-how] }
+  - { zh: 這個蛋糕怎麼做？, en: "How do you make this cake?", grammar: [gram-zenme-how] }
   - { zh: 潛水怎麼學？, en: "How does one learn to dive?", grammar: [gram-zenme-how] }
   - { zh: 你們是怎麼去海邊的？, en: "How did you get to the beach?", grammar: [gram-shi-de-focus, gram-zenme-how] }
   - { zh: 我是上個月去海邊的。, en: "It was last month that I went to the beach.", grammar: [gram-shi-de-focus] }
