@@ -770944,7 +770944,8 @@
       "focus": [
         "姓",
         "叫"
-      ]
+      ],
+      "matcher": "姓|叫"
     },
     {
       "id": "gram-shi-identity",
@@ -770965,7 +770966,8 @@
       ],
       "focus": [
         "是"
-      ]
+      ],
+      "matcher": "是"
     },
     {
       "id": "gram-shenme-question",
@@ -770983,7 +770985,8 @@
       ],
       "focus": [
         "什麼"
-      ]
+      ],
+      "matcher": "什麼"
     },
     {
       "id": "gram-you-meiyou",
@@ -771005,7 +771008,8 @@
       "focus": [
         "沒有",
         "有"
-      ]
+      ],
+      "matcher": "有"
     },
     {
       "id": "gram-ma-question",
@@ -771026,7 +771030,8 @@
       ],
       "focus": [
         "嗎"
-      ]
+      ],
+      "matcher": "嗎"
     },
     {
       "id": "gram-number-measure",
@@ -771048,7 +771053,8 @@
       "focus": [
         "個",
         "雙"
-      ]
+      ],
+      "matcher": "[一兩二三四五六七八九十][個雙位杯家]"
     },
     {
       "id": "gram-ye-also",
@@ -771069,7 +771075,8 @@
       ],
       "focus": [
         "也"
-      ]
+      ],
+      "matcher": "也"
     },
     {
       "id": "gram-bu-negation",
@@ -771090,7 +771097,8 @@
       ],
       "focus": [
         "不"
-      ]
+      ],
+      "matcher": "不"
     },
     {
       "id": "gram-zai-place",
@@ -771111,7 +771119,8 @@
       ],
       "focus": [
         "在"
-      ]
+      ],
+      "matcher": "在.+(工作|念書|教|住|看|吃|打|跑)"
     },
     {
       "id": "gram-dou-all",
@@ -771132,7 +771141,8 @@
       ],
       "focus": [
         "都"
-      ]
+      ],
+      "matcher": "都"
     },
     {
       "id": "gram-a-not-a",
@@ -771151,7 +771161,8 @@
         "textbook:laixue-1",
         "textbook:laixue-1:L04"
       ],
-      "focus": []
+      "focus": [],
+      "matcher": "(.)不\\1|(..)不\\2|有沒有"
     },
     {
       "id": "gram-ne-followup",
@@ -771172,7 +771183,8 @@
       ],
       "focus": [
         "呢"
-      ]
+      ],
+      "matcher": "呢"
     },
     {
       "id": "gram-de-possessive",
@@ -771193,7 +771205,8 @@
       ],
       "focus": [
         "的"
-      ]
+      ],
+      "matcher": "的"
     },
     {
       "id": "gram-zhe-shi-intro",
@@ -771214,7 +771227,8 @@
       ],
       "focus": [
         "這是"
-      ]
+      ],
+      "matcher": "這是|這位是"
     },
     {
       "id": "gram-zhuzai",
@@ -771235,7 +771249,8 @@
       ],
       "focus": [
         "住在"
-      ]
+      ],
+      "matcher": "住在"
     },
     {
       "id": "gram-question-words",
@@ -771258,7 +771273,8 @@
         "誰",
         "哪裡",
         "什麼"
-      ]
+      ],
+      "matcher": "誰|哪裡|什麼"
     },
     {
       "id": "gram-qu-place-verb",
@@ -771279,7 +771295,8 @@
       ],
       "focus": [
         "去"
-      ]
+      ],
+      "matcher": "去.{0,12}(玩|念書|工作|看|吃|買|跑)"
     },
     {
       "id": "gram-hai-also",
@@ -771300,7 +771317,8 @@
       ],
       "focus": [
         "還"
-      ]
+      ],
+      "matcher": "還"
     },
     {
       "id": "gram-time-place-order",
@@ -771321,7 +771339,8 @@
       ],
       "focus": [
         "在"
-      ]
+      ],
+      "matcher": "(晚上|週末|每天|下午|平常|現在).*在.+(看|吃|跑|念|做|運動|打|聽|唱|跳|玩|工作|教|住)"
     },
     {
       "id": "gram-ye-dou-order",
@@ -771343,7 +771362,8 @@
       "focus": [
         "也",
         "都"
-      ]
+      ],
+      "matcher": "也都|都不|都沒|也不|也沒"
     },
     {
       "id": "gram-numbers-0-100",
@@ -771362,7 +771382,8 @@
         "textbook:laixue-1",
         "textbook:laixue-1:L07"
       ],
-      "focus": []
+      "focus": [],
+      "matcher": "[零一二三四五六七八九十百兩]|幾號"
     },
     {
       "id": "gram-gei-call",
@@ -771383,7 +771404,8 @@
       ],
       "focus": [
         "給"
-      ]
+      ],
+      "matcher": "給.*打電話"
     },
     {
       "id": "gram-yihou",
@@ -771406,7 +771428,8 @@
       ],
       "focus": [
         "以後"
-      ]
+      ],
+      "matcher": "以後"
     },
     {
       "id": "gram-dates",
@@ -771428,7 +771451,8 @@
       "focus": [
         "月",
         "號"
-      ]
+      ],
+      "matcher": "[一二三四五六七八九十]+月|[一二三四五六七八九十]+[號日]"
     },
     {
       "id": "gram-ji-questions",
@@ -771449,7 +771473,8 @@
       ],
       "focus": [
         "幾"
-      ]
+      ],
+      "matcher": "幾月|幾號|幾歲"
     },
     {
       "id": "gram-tag-question",
@@ -771472,7 +771497,8 @@
         "好不好",
         "可以嗎",
         "好嗎"
-      ]
+      ],
+      "matcher": "好不好|好嗎|可以嗎|可以不可以"
     },
     {
       "id": "gram-xingqi",
@@ -771493,7 +771519,8 @@
       ],
       "focus": [
         "星期"
-      ]
+      ],
+      "matcher": "星期|禮拜"
     },
     {
       "id": "gram-year-date",
@@ -771511,7 +771538,8 @@
       ],
       "focus": [
         "年"
-      ]
+      ],
+      "matcher": "年.*月"
     },
     {
       "id": "gram-dian-clock",
@@ -771532,7 +771560,8 @@
       ],
       "focus": [
         "點"
-      ]
+      ],
+      "matcher": "[一二兩三四五六七八九十]+點|幾點"
     },
     {
       "id": "gram-gen-yiqi",
@@ -771553,7 +771582,8 @@
       ],
       "focus": [
         "跟"
-      ]
+      ],
+      "matcher": "跟.+一起"
     },
     {
       "id": "gram-de-complement",
@@ -771574,7 +771604,8 @@
       ],
       "focus": [
         "得"
-      ]
+      ],
+      "matcher": ".得(很|不|好|怎麼樣|不錯|快)"
     },
     {
       "id": "gram-youyidian",
@@ -771596,7 +771627,8 @@
       "focus": [
         "有一點",
         "有點"
-      ]
+      ],
+      "matcher": "有一?點[累難忙貴快]"
     },
     {
       "id": "gram-hui-can",
@@ -771617,7 +771649,8 @@
       ],
       "focus": [
         "會"
-      ]
+      ],
+      "matcher": "會"
     },
     {
       "id": "gram-duoshao-ji",
@@ -771639,7 +771672,8 @@
       "focus": [
         "多少",
         "幾"
-      ]
+      ],
+      "matcher": "多少|幾[個位杯家]"
     },
     {
       "id": "gram-bi-comparison",
@@ -771660,7 +771694,8 @@
       ],
       "focus": [
         "比"
-      ]
+      ],
+      "matcher": "比"
     },
     {
       "id": "gram-tai-le",
@@ -771681,7 +771716,8 @@
       ],
       "focus": [
         "太"
-      ]
+      ],
+      "matcher": "太.+了"
     },
     {
       "id": "gram-neng-possibility",
@@ -771701,7 +771737,8 @@
       ],
       "focus": [
         "能"
-      ]
+      ],
+      "matcher": "能"
     },
     {
       "id": "gram-hui-likelihood",
@@ -771722,7 +771759,8 @@
       ],
       "focus": [
         "會"
-      ]
+      ],
+      "matcher": "會"
     },
     {
       "id": "gram-gei-for",
@@ -771743,7 +771781,8 @@
       ],
       "focus": [
         "給"
-      ]
+      ],
+      "matcher": "給.{1,6}[買做寫送拿]"
     },
     {
       "id": "gram-time-expressions",
@@ -771762,7 +771801,8 @@
         "textbook:laixue-2",
         "textbook:laixue-2:L02"
       ],
-      "focus": []
+      "focus": [],
+      "matcher": "[上這下]個(星期|禮拜|月)|去年|今年|明年|上星期|下星期"
     },
     {
       "id": "gram-you-and-you",
@@ -771782,7 +771822,8 @@
       ],
       "focus": [
         "又"
-      ]
+      ],
+      "matcher": "又.+又"
     },
     {
       "id": "gram-yinwei-suoyi",
@@ -771803,7 +771844,8 @@
       "focus": [
         "因為",
         "所以"
-      ]
+      ],
+      "matcher": "因為.+所以|因為|所以"
     },
     {
       "id": "gram-qpr-dou",
@@ -771824,7 +771866,8 @@
       ],
       "focus": [
         "都"
-      ]
+      ],
+      "matcher": "(什麼|誰|哪裡|哪|什麼時候).*都"
     },
     {
       "id": "gram-haishi-or",
@@ -771845,7 +771888,8 @@
       ],
       "focus": [
         "還是"
-      ]
+      ],
+      "matcher": "還是"
     },
     {
       "id": "gram-ba-suggestion",
@@ -771866,7 +771910,8 @@
       ],
       "focus": [
         "吧"
-      ]
+      ],
+      "matcher": "吧"
     },
     {
       "id": "gram-de-omit-noun",
@@ -771887,7 +771932,8 @@
       ],
       "focus": [
         "的"
-      ]
+      ],
+      "matcher": "[熱冰大小貴便宜甜鹹紅杯]的(還是|[。，？！吧嗎]|$)"
     },
     {
       "id": "gram-ruguo-jiu",
@@ -771909,7 +771955,8 @@
       "focus": [
         "如果",
         "就"
-      ]
+      ],
+      "matcher": "如果.+就"
     },
     {
       "id": "gram-gen-yiyang",
@@ -771930,7 +771977,8 @@
       ],
       "focus": [
         "一樣"
-      ]
+      ],
+      "matcher": "跟.+一樣"
     },
     {
       "id": "gram-le-new-situation",
@@ -771951,7 +771999,8 @@
       ],
       "focus": [
         "了"
-      ]
+      ],
+      "matcher": "了([，。！？]|$)"
     },
     {
       "id": "gram-suiran-keshi",
@@ -771973,7 +772022,8 @@
       "focus": [
         "雖然",
         "可是"
-      ]
+      ],
+      "matcher": "雖然.+可是"
     },
     {
       "id": "gram-money-units",
@@ -771994,7 +772044,8 @@
       ],
       "focus": [
         "塊"
-      ]
+      ],
+      "matcher": "[0-9一二兩三四五六七八九十百]+塊|毛|分錢"
     },
     {
       "id": "gram-li-distance",
@@ -772015,7 +772066,8 @@
       ],
       "focus": [
         "離"
-      ]
+      ],
+      "matcher": "離.+[遠近]"
     },
     {
       "id": "gram-cong-dao",
@@ -772032,14 +772084,13 @@
       ],
       "tags": [
         "textbook:laixue-2",
-        "textbook:laixue-2:L06",
-        "textbook:laixue-3",
-        "textbook:laixue-3:L03"
+        "textbook:laixue-2:L06"
       ],
       "focus": [
         "從",
         "到"
-      ]
+      ],
+      "matcher": "從.+到"
     },
     {
       "id": "gram-duration",
@@ -772058,7 +772109,8 @@
         "textbook:laixue-2",
         "textbook:laixue-2:L06"
       ],
-      "focus": []
+      "focus": [],
+      "matcher": "(兩|三|四|五|六|七|八|九|十|一|半)(個)?(鐘頭|分鐘|小時|天|年|月)|一個月|半年"
     },
     {
       "id": "gram-de-modifier",
@@ -772079,7 +772131,8 @@
       ],
       "focus": [
         "的"
-      ]
+      ],
+      "matcher": "[住做買喝吃看寫說賣開穿作班學].{0,6}的(人|地方|東西|蛋糕|菜|書|衣服|房子|時候|事|蘋果|飲料|咖啡|電影|老師|朋友|學校|餐廳)"
     },
     {
       "id": "gram-positional-words",
@@ -772098,7 +772151,8 @@
         "textbook:laixue-2",
         "textbook:laixue-2:L07"
       ],
-      "focus": []
+      "focus": [],
+      "matcher": "(前|後|裡|外|上|下)面|左邊|右邊|旁邊|對面|前邊|後邊|裡邊|外邊|樓上|樓下"
     },
     {
       "id": "gram-zai-location",
@@ -772119,7 +772173,8 @@
       ],
       "focus": [
         "在"
-      ]
+      ],
+      "matcher": "在.+((前|後|裡|外|上|下)面|左邊|右邊|旁邊|對面|樓上|樓下)"
     },
     {
       "id": "gram-ji-approximate",
@@ -772140,7 +772195,8 @@
       ],
       "focus": [
         "幾"
-      ]
+      ],
+      "matcher": "幾"
     },
     {
       "id": "gram-xian-ranhou",
@@ -772162,7 +772218,8 @@
       "focus": [
         "先",
         "然後"
-      ]
+      ],
+      "matcher": "先.+然後"
     },
     {
       "id": "gram-le-completion",
@@ -772183,7 +772240,8 @@
       ],
       "focus": [
         "了"
-      ]
+      ],
+      "matcher": "了"
     },
     {
       "id": "gram-verb-reduplication",
@@ -772202,7 +772260,8 @@
         "textbook:laixue-2",
         "textbook:laixue-2:L08"
       ],
-      "focus": []
+      "focus": [],
+      "matcher": "(.)\\1[音樂書電視]|看一看|(聽聽|看看|走走|玩玩|坐坐|想想|問問|試試|逛逛)"
     },
     {
       "id": "gram-duo-shao",
@@ -772224,7 +772283,8 @@
       "focus": [
         "多",
         "少"
-      ]
+      ],
+      "matcher": "[多少][休息喝吃睡運動看練習走注說寫買]"
     },
     {
       "id": "gram-mei-negation",
@@ -772245,7 +772305,8 @@
       ],
       "focus": [
         "沒"
-      ]
+      ],
+      "matcher": "沒"
     },
     {
       "id": "gram-you-again",
@@ -772266,7 +772327,8 @@
       ],
       "focus": [
         "又"
-      ]
+      ],
+      "matcher": "又.+了"
     },
     {
       "id": "gram-zai-progressive",
@@ -772287,7 +772349,8 @@
       ],
       "focus": [
         "在"
-      ]
+      ],
+      "matcher": "在[^，。？！]{0,4}[做看吃喝寫聽說玩學洗找準想練]"
     },
     {
       "id": "gram-kuaiyao-le",
@@ -772308,7 +772371,8 @@
       ],
       "focus": [
         "快"
-      ]
+      ],
+      "matcher": "快.*了"
     },
     {
       "id": "gram-yi-jiu",
@@ -772330,7 +772394,8 @@
       "focus": [
         "一",
         "就"
-      ]
+      ],
+      "matcher": "一.+就"
     },
     {
       "id": "gram-guo-experience",
@@ -772351,7 +772416,8 @@
       ],
       "focus": [
         "過"
-      ]
+      ],
+      "matcher": "[^經]過[^去來]|過了"
     },
     {
       "id": "gram-di-ordinal",
@@ -772372,7 +772438,8 @@
       ],
       "focus": [
         "第"
-      ]
+      ],
+      "matcher": "第[一二三四五六七八九十0-9幾]"
     },
     {
       "id": "gram-jiu-indeed",
@@ -772393,7 +772460,8 @@
       ],
       "focus": [
         "就"
-      ]
+      ],
+      "matcher": "就(是|在)"
     },
     {
       "id": "gram-yiqian-before",
@@ -772413,7 +772481,8 @@
       ],
       "focus": [
         "以前"
-      ]
+      ],
+      "matcher": "以前"
     },
     {
       "id": "gram-number-duo",
@@ -772433,7 +772502,8 @@
       ],
       "focus": [
         "多"
-      ]
+      ],
+      "matcher": "[一二兩三四五六七八九十百千0-9]+(個|塊|年|天|分鐘|歲|公里|人|次|星期|月|小時|鐘頭|元)多|[十百]多|[二三四五六七八九]十多"
     },
     {
       "id": "gram-qilai-judgement",
@@ -772454,7 +772524,8 @@
       ],
       "focus": [
         "起來"
-      ]
+      ],
+      "matcher": "[看聽吃喝穿寫說做用][起]來"
     },
     {
       "id": "gram-yibian-yibian",
@@ -772474,7 +772545,8 @@
       ],
       "focus": [
         "一邊"
-      ]
+      ],
+      "matcher": "一邊.+一邊"
     },
     {
       "id": "gram-zenme-how",
@@ -772495,7 +772567,8 @@
       ],
       "focus": [
         "怎麼"
-      ]
+      ],
+      "matcher": "怎麼[^樣了]"
     },
     {
       "id": "gram-shi-de-focus",
@@ -772516,7 +772589,31 @@
       ],
       "focus": [
         "是"
-      ]
+      ],
+      "matcher": "是[^，。？！]{1,14}的[。？！]?$"
+    },
+    {
+      "id": "gram-cong-dao-time",
+      "pattern": "從 + time + 到 + time，……",
+      "level": "L2",
+      "explanationEn": "從…到… also marks a stretch of time: 從星期一到星期五, 從現在到感恩節. Book 2 used it for places (從我家到學校); this is its own grammar point, with its own progress.",
+      "examples": [
+        "tb-b3-L03-001",
+        "tb-b3-L03-002",
+        "tb-b3-L03-003",
+        "tb-b3-L03-004",
+        "tb-b3-L03-005",
+        "tb-b3-L03-006"
+      ],
+      "tags": [
+        "textbook:laixue-3",
+        "textbook:laixue-3:L03"
+      ],
+      "focus": [
+        "從",
+        "到"
+      ],
+      "matcher": "從.+到"
     },
     {
       "id": "gram-zao-wan-yidian",
@@ -772538,7 +772635,8 @@
       "focus": [
         "早",
         "晚"
-      ]
+      ],
+      "matcher": "[早晚]一點"
     },
     {
       "id": "gram-vs-yidian",
@@ -772559,7 +772657,8 @@
       ],
       "focus": [
         "一點"
-      ]
+      ],
+      "matcher": "(貴|便宜|大|小|多|少|快|慢|好|高|低|長|短|近|遠|冷|熱|輕鬆|甜|辣|淡|濃|清楚|方便|舒服|簡單)一點"
     },
     {
       "id": "gram-hai-still",
@@ -772580,7 +772679,8 @@
       ],
       "focus": [
         "還"
-      ]
+      ],
+      "matcher": "還[^是]"
     },
     {
       "id": "gram-dui-to",
@@ -772601,7 +772701,8 @@
       ],
       "focus": [
         "對"
-      ]
+      ],
+      "matcher": "對[^，。？！]{1,6}(說|很好|不好|笑|客氣|友善|好|有|很)"
     },
     {
       "id": "gram-v-dao-arrive",
@@ -772622,7 +772723,8 @@
       ],
       "focus": [
         "到"
-      ]
+      ],
+      "matcher": "[飛走跑搬寄送帶開坐拿回]到"
     },
     {
       "id": "gram-dui-you-noun",
@@ -772644,7 +772746,8 @@
       "focus": [
         "對",
         "有"
-      ]
+      ],
+      "matcher": "對.+有(興趣|幫助|經驗|好處|信心|意見)"
     },
     {
       "id": "gram-meiyou-nameme",
@@ -772667,7 +772770,8 @@
         "沒有",
         "那麼",
         "這麼"
-      ]
+      ],
+      "matcher": "沒有.+(那麼|這麼)"
     },
     {
       "id": "gram-vv-kan",
@@ -772688,7 +772792,8 @@
       ],
       "focus": [
         "看"
-      ]
+      ],
+      "matcher": "(吃吃|喝喝|做做|聽聽|學學|寫寫|穿穿|逛逛|打打|試試|問問|想想|玩玩|找找|說說|聞聞|看看)看"
     },
     {
       "id": "gram-separable-verbs",
@@ -772707,7 +772812,8 @@
         "textbook:laixue-3",
         "textbook:laixue-3:L05"
       ],
-      "focus": []
+      "focus": [],
+      "matcher": "(吃|做|喝|上|唱|跑|看|學|照|見|寫|買|生|請|游|洗|開|打|睡)(了|過|著)[^，。？！]{0,8}(飯|茶|課|網|歌|步|電視|班|相|面|字|菜|病|假|澡|泳|氣|球|覺)"
     },
     {
       "id": "gram-v-wan",
@@ -772728,7 +772834,8 @@
       ],
       "focus": [
         "完"
-      ]
+      ],
+      "matcher": "[吃喝做寫看讀說聽洗用買]完"
     },
     {
       "id": "gram-v-dong",
@@ -772747,7 +772854,8 @@
       ],
       "focus": [
         "懂"
-      ]
+      ],
+      "matcher": "[聽看讀學]懂"
     },
     {
       "id": "gram-potential-de-bu",
@@ -772769,7 +772877,8 @@
       "focus": [
         "得",
         "不"
-      ]
+      ],
+      "matcher": "[看聽說寫吃做找買學拿帶睡決辦完]得(懂|到|完|見|好|清楚|出來|了|下|起)|[看聽說寫吃做找買學拿帶睡決辦完]不(懂|到|完|見|好|清楚|出來|了|下|起)"
     },
     {
       "id": "gram-youde-youde",
@@ -772789,7 +772898,8 @@
       ],
       "focus": [
         "有的"
-      ]
+      ],
+      "matcher": "有的.+有的"
     },
     {
       "id": "gram-vsvs-de-adverb",
@@ -772809,7 +772919,8 @@
       ],
       "focus": [
         "地"
-      ]
+      ],
+      "matcher": "(好好|慢慢|快快|輕輕|早早|多多|少少|仔細仔細)地?[^，。？！]"
     },
     {
       "id": "gram-v-dao-result",
@@ -772830,7 +772941,8 @@
       ],
       "focus": [
         "到"
-      ]
+      ],
+      "matcher": "[找看買聽見遇碰學吃想]到|[找看買聽見遇碰學吃想][得不]到"
     },
     {
       "id": "gram-v-hao-result",
@@ -772851,7 +772963,8 @@
       ],
       "focus": [
         "好"
-      ]
+      ],
+      "matcher": "[做寫準備安排整理訂洗穿吃約定談]好"
     },
     {
       "id": "gram-yuelaiyue",
@@ -772872,7 +772985,8 @@
       ],
       "focus": [
         "越來越"
-      ]
+      ],
+      "matcher": "越來越"
     },
     {
       "id": "gram-cai-little",
@@ -772893,7 +773007,8 @@
       ],
       "focus": [
         "才"
-      ]
+      ],
+      "matcher": "才"
     },
     {
       "id": "gram-v-cuo",
@@ -772914,7 +773029,8 @@
       ],
       "focus": [
         "錯"
-      ]
+      ],
+      "matcher": "[說寫做看聽走買拿打]錯"
     },
     {
       "id": "gram-bei-passive",
@@ -772935,7 +773051,8 @@
       ],
       "focus": [
         "被"
-      ]
+      ],
+      "matcher": "被"
     },
     {
       "id": "gram-rang-let",
@@ -772956,7 +773073,8 @@
       ],
       "focus": [
         "讓"
-      ]
+      ],
+      "matcher": "讓"
     },
     {
       "id": "gram-yong-with",
@@ -772977,7 +773095,8 @@
       ],
       "focus": [
         "用"
-      ]
+      ],
+      "matcher": "用[^，。？！]{1,8}[說寫做吃看打買開翻存交檢查寄]"
     },
     {
       "id": "gram-directional-lai-qu",
@@ -772999,7 +773118,8 @@
       "focus": [
         "來",
         "去"
-      ]
+      ],
+      "matcher": "[上下進出回過起][來去]"
     },
     {
       "id": "gram-action-directional",
@@ -773021,7 +773141,8 @@
       "focus": [
         "來",
         "去"
-      ]
+      ],
+      "matcher": "[走跑拿爬帶搬開送寄飛跳].{0,6}[上下進出回過][來去]"
     },
     {
       "id": "gram-topic-sentence",
@@ -773042,7 +773163,8 @@
       ],
       "focus": [
         "都"
-      ]
+      ],
+      "matcher": "[這那些個].{0,6}(我|你|他|她|們|大家).{0,3}[都也不]"
     },
     {
       "id": "gram-ba-directional",
@@ -773063,7 +773185,8 @@
       ],
       "focus": [
         "把"
-      ]
+      ],
+      "matcher": "把.+[上下進出回過][來去]"
     },
     {
       "id": "gram-ba-gei-dao-zai",
@@ -773084,7 +773207,8 @@
       ],
       "focus": [
         "把"
-      ]
+      ],
+      "matcher": "把.+(給|到|在)"
     },
     {
       "id": "gram-buzhidao-clause",
@@ -773105,7 +773229,8 @@
       ],
       "focus": [
         "不知道"
-      ]
+      ],
+      "matcher": "不知道"
     },
     {
       "id": "gram-geng-more",
@@ -773126,7 +773251,8 @@
       ],
       "focus": [
         "更"
-      ]
+      ],
+      "matcher": "更"
     },
     {
       "id": "gram-budan-erqie",
@@ -773148,7 +773274,8 @@
       "focus": [
         "不但",
         "而且"
-      ]
+      ],
+      "matcher": "不但.+(而且|也|還)"
     },
     {
       "id": "gram-de-hua-if",
@@ -773169,7 +773296,8 @@
       ],
       "focus": [
         "的話"
-      ]
+      ],
+      "matcher": "的話"
     },
     {
       "id": "gram-chule-hai",
@@ -773192,7 +773320,8 @@
         "除了",
         "還",
         "也"
-      ]
+      ],
+      "matcher": "除了.+(還|也)"
     },
     {
       "id": "gram-ba-reduplicated-request",
@@ -773213,7 +773342,8 @@
       ],
       "focus": [
         "把"
-      ]
+      ],
+      "matcher": "把.+(洗一洗|看一看|試一試|想一想|整理整理|檢查檢查|看看|洗洗|想想|整理整理|聽聽|問問|擦擦|寫寫|做做|收拾收拾|烤一烤|打掃打掃)"
     },
     {
       "id": "gram-bu-deliao",
@@ -773234,7 +773364,8 @@
       ],
       "focus": [
         "不得了"
-      ]
+      ],
+      "matcher": "得不得了"
     },
     {
       "id": "gram-xian-zai",
@@ -773256,7 +773387,8 @@
       "focus": [
         "先",
         "再"
-      ]
+      ],
+      "matcher": "先.+再"
     },
     {
       "id": "gram-yidian-dou-bu",
@@ -773278,7 +773410,8 @@
       "focus": [
         "一點",
         "都"
-      ]
+      ],
+      "matcher": "一點.*[都也][不沒]"
     },
     {
       "id": "gram-cong-wang",
@@ -773299,7 +773432,8 @@
       ],
       "focus": [
         "往"
-      ]
+      ],
+      "matcher": "往[前後左右東西南北上下]"
     },
     {
       "id": "gram-lingwai",
@@ -773320,7 +773454,8 @@
       ],
       "focus": [
         "另外"
-      ]
+      ],
+      "matcher": "另外"
     },
     {
       "id": "gram-suanshi",
@@ -773342,7 +773477,8 @@
       "focus": [
         "算是",
         "不算"
-      ]
+      ],
+      "matcher": "算是|不算"
     },
     {
       "id": "gram-zai-jia-shang",
@@ -773363,7 +773499,8 @@
       ],
       "focus": [
         "再加上"
-      ]
+      ],
+      "matcher": "再加上"
     },
     {
       "id": "gram-deng-zai",
@@ -773385,7 +773522,8 @@
       "focus": [
         "等",
         "再"
-      ]
+      ],
+      "matcher": "等.+再"
     },
     {
       "id": "gram-cai-condition",
@@ -773406,7 +773544,8 @@
       ],
       "focus": [
         "才"
-      ]
+      ],
+      "matcher": "才"
     },
     {
       "id": "gram-nanguai",
@@ -773427,7 +773566,8 @@
       ],
       "focus": [
         "難怪"
-      ]
+      ],
+      "matcher": "難怪"
     },
     {
       "id": "gram-qpr-same-reference",
@@ -773448,7 +773588,8 @@
       ],
       "focus": [
         "就"
-      ]
+      ],
+      "matcher": "(什麼|哪裡|哪兒|誰|哪個|哪一個|怎麼|幾).*(什麼|哪裡|哪兒|誰|哪個|哪一個|怎麼|幾)"
     },
     {
       "id": "gram-zaojiu-le",
@@ -773469,7 +773610,8 @@
       ],
       "focus": [
         "早就"
-      ]
+      ],
+      "matcher": "早就.+了"
     },
     {
       "id": "gram-hui-de-assure",
@@ -773491,7 +773633,8 @@
       "focus": [
         "會",
         "的"
-      ]
+      ],
+      "matcher": "會[^，。？！]*的[。！]"
     },
     {
       "id": "gram-dui-laishuo",
@@ -773513,7 +773656,8 @@
       "focus": [
         "對",
         "來說"
-      ]
+      ],
+      "matcher": "對.+來說"
     },
     {
       "id": "gram-buguan-dou",
@@ -773534,7 +773678,8 @@
       "focus": [
         "不管",
         "都"
-      ]
+      ],
+      "matcher": "不管.+都"
     },
     {
       "id": "gram-vsvs-de-modifier",
@@ -773555,7 +773700,8 @@
       ],
       "focus": [
         "的"
-      ]
+      ],
+      "matcher": "([\\u4e00-\\u9fff])\\1的"
     },
     {
       "id": "gram-double-le-duration",
@@ -773576,7 +773722,8 @@
       ],
       "focus": [
         "了"
-      ]
+      ],
+      "matcher": "了.*了"
     },
     {
       "id": "gram-gen-guanxi",
@@ -773598,7 +773745,8 @@
       "focus": [
         "跟",
         "關係"
-      ]
+      ],
+      "matcher": "有關"
     },
     {
       "id": "gram-zhe-continuing",
@@ -773619,7 +773767,8 @@
       ],
       "focus": [
         "著"
-      ]
+      ],
+      "matcher": "[坐站躺看聽拿穿帶開關掛排]著"
     },
     {
       "id": "gram-bi-qilai",
@@ -773639,7 +773788,8 @@
       ],
       "focus": [
         "比起來"
-      ]
+      ],
+      "matcher": "比起來"
     },
     {
       "id": "gram-cai-later",
@@ -773659,7 +773809,8 @@
       ],
       "focus": [
         "才"
-      ]
+      ],
+      "matcher": "[年月天週鐘頭小時分久]才|才[^，。？！]*了"
     },
     {
       "id": "gram-conglai",
@@ -773680,7 +773831,8 @@
       ],
       "focus": [
         "從來"
-      ]
+      ],
+      "matcher": "從來[沒不]"
     },
     {
       "id": "gram-benlai-houlai",
@@ -773702,7 +773854,8 @@
       "focus": [
         "本來",
         "後來"
-      ]
+      ],
+      "matcher": "本來.+(後來|現在)"
     },
     {
       "id": "gram-zhiyao-jiu",
@@ -773724,7 +773877,8 @@
       "focus": [
         "只要",
         "就"
-      ]
+      ],
+      "matcher": "只要.+就"
     },
     {
       "id": "gram-zai-shang",
@@ -773745,7 +773899,8 @@
       ],
       "focus": [
         "上"
-      ]
+      ],
+      "matcher": "(生活|價錢|個性|習慣|文化|品質|工作|學習|健康)上"
     },
     {
       "id": "gram-cong-qi",
@@ -773766,7 +773921,8 @@
       ],
       "focus": [
         "從"
-      ]
+      ],
+      "matcher": "從.+(起|開始)"
     },
     {
       "id": "gram-youqi",
@@ -773787,7 +773943,8 @@
       ],
       "focus": [
         "尤其"
-      ]
+      ],
+      "matcher": "尤其"
     },
     {
       "id": "gram-lian-dou",
@@ -773809,7 +773966,8 @@
       "focus": [
         "連",
         "都"
-      ]
+      ],
+      "matcher": "連.+[都也]"
     },
     {
       "id": "gram-v-chulai",
@@ -773830,7 +773988,8 @@
       ],
       "focus": [
         "出來"
-      ]
+      ],
+      "matcher": "[看聽想猜認說做找吃][得不]出來|[看聽想猜認說做找吃]出來"
     },
     {
       "id": "gram-ge-v-ge-de",
@@ -773851,7 +774010,8 @@
       ],
       "focus": [
         "各"
-      ]
+      ],
+      "matcher": "各.各的"
     },
     {
       "id": "gram-deng-and-so-on",
@@ -773872,7 +774032,8 @@
       ],
       "focus": [
         "等"
-      ]
+      ],
+      "matcher": "[、，]\\S{1,6}等"
     },
     {
       "id": "gram-fei-buke",
@@ -773894,7 +774055,8 @@
       "focus": [
         "非",
         "不可"
-      ]
+      ],
+      "matcher": "非.+不可"
     },
     {
       "id": "gram-gei-dailai",
@@ -773916,7 +774078,8 @@
       "focus": [
         "給",
         "帶來"
-      ]
+      ],
+      "matcher": "給.+帶來"
     },
     {
       "id": "gram-v-xia",
@@ -773937,7 +774100,8 @@
       ],
       "focus": [
         "下"
-      ]
+      ],
+      "matcher": "[坐吃住放裝睡][得不]下"
     },
     {
       "id": "gram-yiban-laishuo",
@@ -773958,7 +774122,8 @@
       ],
       "focus": [
         "一般來說"
-      ]
+      ],
+      "matcher": "一般來說"
     }
   ],
   "charIndex": {

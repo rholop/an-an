@@ -1,4 +1,5 @@
 import type { Backup } from './backup-schema.js';
+import { splitGrammarEvidence } from '@anan/core';
 
 /**
  * Phase 8 merge: combine this device's copy of a profile with the server's.
@@ -78,7 +79,10 @@ export function mergeBackups(local: Backup, remote: Backup): Backup {
     local.evidence.map((e) => ({ ...e, uid: evidenceUid(e) })),
     remote.evidence.map((e) => ({ ...e, uid: evidenceUid(e) })),
     (e) => e.uid,
-  ).sort((a, b) => a.at.getTime() - b.at.getTime());
+  )
+    // Phase 25: a device that hasn't upgraded yet may still send the old grammar id.
+    .map(splitGrammarEvidence)
+    .sort((a, b) => a.at.getTime() - b.at.getTime());
 
   // ---- conversations & turns (matched by uid, numeric ids re-assigned) ----
   const convUid = (c: Backup['conversations'][number]) =>

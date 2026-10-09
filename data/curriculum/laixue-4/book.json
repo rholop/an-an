@@ -1181,7 +1181,8 @@
       ],
       "focus": [
         "的話"
-      ]
+      ],
+      "matcher": "的話"
     },
     {
       "id": "gram-chule-hai",
@@ -1204,7 +1205,8 @@
         "除了",
         "還",
         "也"
-      ]
+      ],
+      "matcher": "除了.+(還|也)"
     },
     {
       "id": "gram-ba-reduplicated-request",
@@ -1225,7 +1227,8 @@
       ],
       "focus": [
         "把"
-      ]
+      ],
+      "matcher": "把.+(洗一洗|看一看|試一試|想一想|整理整理|檢查檢查|看看|洗洗|想想|整理整理|聽聽|問問|擦擦|寫寫|做做|收拾收拾|烤一烤|打掃打掃)"
     },
     {
       "id": "gram-bu-deliao",
@@ -1246,7 +1249,8 @@
       ],
       "focus": [
         "不得了"
-      ]
+      ],
+      "matcher": "得不得了"
     },
     {
       "id": "gram-xian-zai",
@@ -1268,7 +1272,8 @@
       "focus": [
         "先",
         "再"
-      ]
+      ],
+      "matcher": "先.+再"
     },
     {
       "id": "gram-yidian-dou-bu",
@@ -1290,7 +1295,8 @@
       "focus": [
         "一點",
         "都"
-      ]
+      ],
+      "matcher": "一點.*[都也][不沒]"
     },
     {
       "id": "gram-cong-wang",
@@ -1311,7 +1317,8 @@
       ],
       "focus": [
         "往"
-      ]
+      ],
+      "matcher": "往[前後左右東西南北上下]"
     },
     {
       "id": "gram-lingwai",
@@ -1332,7 +1339,8 @@
       ],
       "focus": [
         "另外"
-      ]
+      ],
+      "matcher": "另外"
     },
     {
       "id": "gram-suanshi",
@@ -1354,7 +1362,8 @@
       "focus": [
         "算是",
         "不算"
-      ]
+      ],
+      "matcher": "算是|不算"
     },
     {
       "id": "gram-zai-jia-shang",
@@ -1375,7 +1384,8 @@
       ],
       "focus": [
         "再加上"
-      ]
+      ],
+      "matcher": "再加上"
     },
     {
       "id": "gram-deng-zai",
@@ -1397,7 +1407,8 @@
       "focus": [
         "等",
         "再"
-      ]
+      ],
+      "matcher": "等.+再"
     },
     {
       "id": "gram-cai-condition",
@@ -1418,7 +1429,8 @@
       ],
       "focus": [
         "才"
-      ]
+      ],
+      "matcher": "才"
     },
     {
       "id": "gram-nanguai",
@@ -1439,7 +1451,8 @@
       ],
       "focus": [
         "難怪"
-      ]
+      ],
+      "matcher": "難怪"
     },
     {
       "id": "gram-qpr-same-reference",
@@ -1460,7 +1473,8 @@
       ],
       "focus": [
         "就"
-      ]
+      ],
+      "matcher": "(什麼|哪裡|哪兒|誰|哪個|哪一個|怎麼|幾).*(什麼|哪裡|哪兒|誰|哪個|哪一個|怎麼|幾)"
     },
     {
       "id": "gram-zaojiu-le",
@@ -1481,7 +1495,8 @@
       ],
       "focus": [
         "早就"
-      ]
+      ],
+      "matcher": "早就.+了"
     },
     {
       "id": "gram-hui-de-assure",
@@ -1503,7 +1518,8 @@
       "focus": [
         "會",
         "的"
-      ]
+      ],
+      "matcher": "會[^，。？！]*的[。！]"
     },
     {
       "id": "gram-dui-laishuo",
@@ -1525,7 +1541,8 @@
       "focus": [
         "對",
         "來說"
-      ]
+      ],
+      "matcher": "對.+來說"
     },
     {
       "id": "gram-buguan-dou",
@@ -1546,7 +1563,8 @@
       "focus": [
         "不管",
         "都"
-      ]
+      ],
+      "matcher": "不管.+都"
     },
     {
       "id": "gram-vsvs-de-modifier",
@@ -1567,7 +1585,8 @@
       ],
       "focus": [
         "的"
-      ]
+      ],
+      "matcher": "([\\u4e00-\\u9fff])\\1的"
     },
     {
       "id": "gram-double-le-duration",
@@ -1588,7 +1607,8 @@
       ],
       "focus": [
         "了"
-      ]
+      ],
+      "matcher": "了.*了"
     },
     {
       "id": "gram-gen-guanxi",
@@ -1610,7 +1630,8 @@
       "focus": [
         "跟",
         "關係"
-      ]
+      ],
+      "matcher": "有關"
     },
     {
       "id": "gram-zhe-continuing",
@@ -1631,7 +1652,8 @@
       ],
       "focus": [
         "著"
-      ]
+      ],
+      "matcher": "[坐站躺看聽拿穿帶開關掛排]著"
     },
     {
       "id": "gram-bi-qilai",
@@ -1651,7 +1673,8 @@
       ],
       "focus": [
         "比起來"
-      ]
+      ],
+      "matcher": "比起來"
     },
     {
       "id": "gram-cai-later",
@@ -1671,7 +1694,8 @@
       ],
       "focus": [
         "才"
-      ]
+      ],
+      "matcher": "[年月天週鐘頭小時分久]才|才[^，。？！]*了"
     },
     {
       "id": "gram-conglai",
@@ -1692,7 +1716,8 @@
       ],
       "focus": [
         "從來"
-      ]
+      ],
+      "matcher": "從來[沒不]"
     },
     {
       "id": "gram-benlai-houlai",
@@ -1714,7 +1739,8 @@
       "focus": [
         "本來",
         "後來"
-      ]
+      ],
+      "matcher": "本來.+(後來|現在)"
     },
     {
       "id": "gram-zhiyao-jiu",
@@ -1736,7 +1762,8 @@
       "focus": [
         "只要",
         "就"
-      ]
+      ],
+      "matcher": "只要.+就"
     },
     {
       "id": "gram-zai-shang",
@@ -1757,7 +1784,8 @@
       ],
       "focus": [
         "上"
-      ]
+      ],
+      "matcher": "(生活|價錢|個性|習慣|文化|品質|工作|學習|健康)上"
     },
     {
       "id": "gram-cong-qi",
@@ -1778,7 +1806,8 @@
       ],
       "focus": [
         "從"
-      ]
+      ],
+      "matcher": "從.+(起|開始)"
     },
     {
       "id": "gram-youqi",
@@ -1799,7 +1828,8 @@
       ],
       "focus": [
         "尤其"
-      ]
+      ],
+      "matcher": "尤其"
     },
     {
       "id": "gram-lian-dou",
@@ -1821,7 +1851,8 @@
       "focus": [
         "連",
         "都"
-      ]
+      ],
+      "matcher": "連.+[都也]"
     },
     {
       "id": "gram-v-chulai",
@@ -1842,7 +1873,8 @@
       ],
       "focus": [
         "出來"
-      ]
+      ],
+      "matcher": "[看聽想猜認說做找吃][得不]出來|[看聽想猜認說做找吃]出來"
     },
     {
       "id": "gram-ge-v-ge-de",
@@ -1863,7 +1895,8 @@
       ],
       "focus": [
         "各"
-      ]
+      ],
+      "matcher": "各.各的"
     },
     {
       "id": "gram-deng-and-so-on",
@@ -1884,7 +1917,8 @@
       ],
       "focus": [
         "等"
-      ]
+      ],
+      "matcher": "[、，]\\S{1,6}等"
     },
     {
       "id": "gram-fei-buke",
@@ -1906,7 +1940,8 @@
       "focus": [
         "非",
         "不可"
-      ]
+      ],
+      "matcher": "非.+不可"
     },
     {
       "id": "gram-gei-dailai",
@@ -1928,7 +1963,8 @@
       "focus": [
         "給",
         "帶來"
-      ]
+      ],
+      "matcher": "給.+帶來"
     },
     {
       "id": "gram-v-xia",
@@ -1949,7 +1985,8 @@
       ],
       "focus": [
         "下"
-      ]
+      ],
+      "matcher": "[坐吃住放裝睡][得不]下"
     },
     {
       "id": "gram-yiban-laishuo",
@@ -1970,7 +2007,8 @@
       ],
       "focus": [
         "一般來說"
-      ]
+      ],
+      "matcher": "一般來說"
     }
   ],
   "wordNotes": [

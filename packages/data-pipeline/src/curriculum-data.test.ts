@@ -210,12 +210,21 @@ describe.skipIf(builtIds.length < 2)('the series is one course', () => {
   });
 
   it('a grammar point taught again keeps ONE item with every lesson tag', () => {
-    for (const id of ['gram-yihou', 'gram-cong-dao']) {
+    // Phase 25: only truly identical patterns stay shared (progress is shared: see core grammar-ids.ts).
+    for (const id of ['gram-yihou']) {
       const g = lexicon.grammarItemById(id);
       if (!g || !builtIds.includes('laixue-3')) continue;
       expect(lexRaw.grammar.filter((x) => x.id === id)).toHaveLength(1);
       expect(g.tags!.filter((t) => t.startsWith('textbook:laixue-') && /:L\d\d$/.test(t)).length).toBeGreaterThan(1);
     }
+  });
+
+  it('Phase 25: 從…到 for places (book 2) and for time (book 3) are separate points', () => {
+    if (!builtIds.includes('laixue-3')) return;
+    const place = lexicon.grammarItemById('gram-cong-dao')!;
+    const time = lexicon.grammarItemById('gram-cong-dao-time')!;
+    expect(place.tags!.some((t) => t.startsWith('textbook:laixue-3'))).toBe(false);
+    expect(time.tags).toContain('textbook:laixue-3:L03');
   });
 
   it('textbook scenarios are ordered by course position and use course-scoped vocabulary', () => {

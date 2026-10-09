@@ -51,7 +51,7 @@ describe('schema upgrades (v6 phase 9, v8 phase 17)', () => {
 
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(10);
+    expect(db.verno).toBe(11);
     // Phase 24 (v10): the story library exists and starts empty
     expect(await db.stories.count()).toBe(0);
     expect(await db.settings.get('currentLevel')).toMatchObject({ value: 'L2' });
@@ -140,7 +140,7 @@ describe('schema v9 (phase 20)', () => {
 
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(10);
+    expect(db.verno).toBe(11);
     const rows = await db.items.toArray();
     expect(rows.find((r) => r.item.id === 'w1')!.source).toBe('study_order');
     const imported = rows.filter((r) => r.item.id.startsWith('imp-'));
@@ -151,6 +151,34 @@ describe('schema v9 (phase 20)', () => {
       perDay.set(d, (perDay.get(d) ?? 0) + 1);
     }
     expect(Math.max(...perDay.values())).toBeLessThanOrEqual(40);
+    db.close();
+  });
+});
+
+describe('schema v11 (phase 25)', () => {
+  it('moves 從…到 answers given in book 3 to gram-cong-dao-time; book 2 answers stay', async () => {
+    name = `anan-upgrade-${Math.random()}`;
+    await seedV5(name);
+    const old = new Dexie(name);
+    await old.open();
+    const g = (uid: string, refId: string) => ({
+      item: { kind: 'grammar', id: 'gram-cong-dao' },
+      skill: 'recognition',
+      kind: 'cloze_correct_nohint',
+      at: new Date('2026-10-01'),
+      uid,
+      context: { source: 'textbook', refId },
+    });
+    await old.table('evidence').bulkAdd([g('b2', 'laixue-2-L06'), g('b3', 'laixue-3-L03')]);
+    old.close();
+
+    const db = new AnanDB(name);
+    await db.open();
+    expect(db.verno).toBe(11);
+    const byUid = new Map((await db.evidence.toArray()).map((e) => [e.uid, e.item.id]));
+    expect(byUid.get('b2')).toBe('gram-cong-dao');
+    expect(byUid.get('b3')).toBe('gram-cong-dao-time');
+    expect(byUid.get('ev-1')).toBe('w1');
     db.close();
   });
 });

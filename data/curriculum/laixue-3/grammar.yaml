@@ -74,12 +74,11 @@
   focus: ["是"]
 
 # ---- Lesson 3
-- id: gram-cong-dao
+- id: gram-cong-dao-time
   lesson: 3
   n: 1
-  reteaches: true
   pattern: "從 + time + 到 + time，……"
-  explanationEn: "從…到… also marks a stretch of time: 從星期一到星期五, 從現在到感恩節. It is the same pattern as for places in book 2."
+  explanationEn: "從…到… also marks a stretch of time: 從星期一到星期五, 從現在到感恩節. Book 2 used it for places (從我家到學校); this is its own grammar point, with its own progress."
   matcher: "從.+到"
   focus: ["從", "到"]
 - id: gram-zao-wan-yidian

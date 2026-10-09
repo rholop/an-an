@@ -1,12 +1,12 @@
 lesson: 3
 sentences:
-  - { zh: 從星期一到星期五，我都上班。, en: "From Monday to Friday I work.", grammar: [gram-cong-dao] }
-  - { zh: 從現在到感恩節，只有十天。, en: "From now until Thanksgiving there are only ten days.", grammar: [gram-cong-dao] }
-  - { zh: 從早上八點到下午五點，我在公司工作。, en: "From eight in the morning to five in the afternoon I work at the company.", grammar: [gram-cong-dao] }
-  - { zh: 我們從下個月一號到十號放假。, en: "We are on vacation from the 1st to the 10th of next month.", grammar: [gram-cong-dao] }
-  - { zh: 從七月到九月，這裡的天氣都很熱。, en: "From July to September the weather here is hot.", grammar: [gram-cong-dao] }
-  - { zh: 他從早上到晚上都在準備晚飯。, en: "He is preparing dinner from morning till night.", grammar: [gram-cong-dao] }
-  - { zh: 從今天到下星期，我都有空。, en: "From today until next week I am free.", grammar: [gram-cong-dao] }
+  - { zh: 從星期一到星期五，我都上班。, en: "From Monday to Friday I work.", grammar: [gram-cong-dao-time] }
+  - { zh: 從現在到感恩節，只有十天。, en: "From now until Thanksgiving there are only ten days.", grammar: [gram-cong-dao-time] }
+  - { zh: 從早上八點到下午五點，我在公司工作。, en: "From eight in the morning to five in the afternoon I work at the company.", grammar: [gram-cong-dao-time] }
+  - { zh: 我們從下個月一號到十號放假。, en: "We are on vacation from the 1st to the 10th of next month.", grammar: [gram-cong-dao-time] }
+  - { zh: 從七月到九月，這裡的天氣都很熱。, en: "From July to September the weather here is hot.", grammar: [gram-cong-dao-time] }
+  - { zh: 他從早上到晚上都在準備晚飯。, en: "He is preparing dinner from morning till night.", grammar: [gram-cong-dao-time] }
+  - { zh: 從今天到下星期，我都有空。, en: "From today until next week I am free.", grammar: [gram-cong-dao-time] }
   - { zh: 我明天想早一點起床。, en: "Tomorrow I want to get up a little earlier.", grammar: [gram-zao-wan-yidian] }
   - { zh: 今天工作很多，我要晚一點下班。, en: "There is a lot of work today; I'll get off work a bit later.", grammar: [gram-zao-wan-yidian] }
   - { zh: 你可以早一點來幫忙嗎？, en: "Can you come a little earlier to help?", grammar: [gram-zao-wan-yidian] }
@@ -49,6 +49,6 @@ scenarios:
     opener: { zh: 嗨！感恩節你想怎麼過？, en: "Hi! How would you like to spend Thanksgiving?" }
     successLine: { zh: 太好了！感恩節我們一起過，一定很熱鬧。, en: "Great! We'll spend Thanksgiving together; it will surely be lively." }
 journalPrompts:
-  - { en: "Write about when you are free and busy (從……到……) and what you will do earlier or later (早一點 / 晚一點).", zh: 從星期一到星期五，我都上班。, words: [過節, 早一點, 回家, 晚], grammar: [gram-cong-dao, gram-zao-wan-yidian] }
+  - { en: "Write about when you are free and busy (從……到……) and what you will do earlier or later (早一點 / 晚一點).", zh: 從星期一到星期五，我都上班。, words: [過節, 早一點, 回家, 晚], grammar: [gram-cong-dao-time, gram-zao-wan-yidian] }
   - { en: "Write a paragraph about the dishes for a holiday meal and whether they should be bigger, sweeter or cheaper (……一點).", words: [火雞, 沙拉, 麵包, 甜點], grammar: [gram-vs-yidian, gram-zao-wan-yidian] }
-  - { en: "Write a paragraph about how you would spend Thanksgiving or another holiday and who you would invite (從……到……, ……一點).", words: [感恩節, 熱鬧, 參加, 開心, 建議], grammar: [gram-cong-dao, gram-vs-yidian] }
+  - { en: "Write a paragraph about how you would spend Thanksgiving or another holiday and who you would invite (從……到……, ……一點).", words: [感恩節, 熱鬧, 參加, 開心, 建議], grammar: [gram-cong-dao-time, gram-vs-yidian] }

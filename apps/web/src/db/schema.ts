@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import { cardSourceFor, isUnreviewedBulkCard, spreadBulkDue } from '@anan/core';
+import { cardSourceFor, isUnreviewedBulkCard, splitGrammarEvidence, spreadBulkDue } from '@anan/core';
 import type {
   ErrorItem,
   RawSentenceReview,
@@ -471,6 +471,20 @@ export class AnanDB extends Dexie {
 
     // v10 (Phase 24): the graded-story library. Purely additive.
     this.version(10).stores({ stories: 'id, createdAt, lessonId, readAt' });
+
+    // v11 (Phase 25): grammar ids split by meaning (從…到 for time is gram-cong-dao-time): answers given
+    // in the later book's lessons move to the new id. No index changes.
+    this.version(11)
+      .stores({})
+      .upgrade(async (tx) => {
+        await tx
+          .table('evidence')
+          .toCollection()
+          .modify((e: Evidence) => {
+            const moved = splitGrammarEvidence(e);
+            if (moved !== e) e.item = moved.item;
+          });
+      });
 
     this.installHooks();
   }

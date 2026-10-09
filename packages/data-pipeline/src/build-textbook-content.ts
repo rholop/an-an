@@ -57,7 +57,17 @@ const MIN_PROMPT_GRAMMAR: Record<string, number> = { 'laixue-1': 1, 'laixue-2': 
 const ContentSchema = z.object({
   lesson: z.number().int().min(1).max(10),
   sentences: z.array(
-    z.object({ zh: z.string(), en: z.string(), grammar: z.array(z.string()).min(1) }),
+    z.object({
+      zh: z.string(),
+      en: z.string(),
+      grammar: z.array(z.string()).min(1),
+      /** Phase 25: other word orders just as right (time / place words), for reorder grading. */
+      altOrders: z.array(z.string()).optional(),
+      /** Phase 25: the sentence with a typical error for its point ("Which sentence is right?"). */
+      wrong: z.string().optional(),
+      /** Phase 25: the reorder tiles when the automatic split is wrong (joined they are `zh`). */
+      tiles: z.array(z.string()).optional(),
+    }),
   ),
   scenarios: z.array(
     z.object({
@@ -201,6 +211,13 @@ function buildBook(bookId: string, lexicon: Lexicon, allBooks: Map<string, BookS
         else if (!matcherOf(gid).test(s.zh))
           fail(`${L} sentence "${s.zh}": does not match pattern of ${gid}`);
       }
+      // Phase 25 content fields: same characters reordered, a real difference, tiles that spell it.
+      const sorted = (x: string) => [...x.replace(/[\s，。？！、]/gu, '')].sort().join('');
+      for (const alt of s.altOrders ?? [])
+        if (alt === s.zh || sorted(alt) !== sorted(s.zh)) fail(`${L} sentence "${s.zh}": altOrder "${alt}" is not a reordering`);
+      if (s.wrong !== undefined && (s.wrong === s.zh || !check(`sentence ${i} wrong`, s.wrong)))
+        fail(`${L} sentence "${s.zh}": wrong version "${s.wrong}" must differ and use only allowed words`);
+      if (s.tiles && s.tiles.join('') !== s.zh) fail(`${L} sentence "${s.zh}": tiles do not spell the sentence`);
       if (!ok) continue;
       const tokens = segment(s.zh, lexicon, { hints: scopeHints(s.zh) }).filter(
         (t) => t.kind === 'word' || t.kind === 'latin',
@@ -227,6 +244,9 @@ function buildBook(bookId: string, lexicon: Lexicon, allBooks: Map<string, BookS
         lesson: n,
         ...(bookId === 'laixue-1' ? {} : { textbookId: bookId }),
         grammarIds: s.grammar,
+        ...(s.altOrders ? { altOrders: s.altOrders } : {}),
+        ...(s.wrong ? { wrong: s.wrong } : {}),
+        ...(s.tiles ? { tiles: s.tiles } : {}),
       });
     }
     if (content.sentences.length < MIN_SENTENCES)
@@ -330,7 +350,15 @@ function buildBook(bookId: string, lexicon: Lexicon, allBooks: Map<string, BookS
       .slice(0, 6)
       .map((s) => s.id);
   }
-  void ownGrammar;
+  // Phase 25: the grammar items follow their source (pattern, explanation, signal words, matcher).
+  for (const g of book.grammarItems) {
+    const src = ownGrammar.find((x) => x.id === g.id);
+    if (!src) continue;
+    g.pattern = src.pattern;
+    g.explanationEn = src.explanationEn;
+    g.focus = [...src.focus];
+    g.matcher = src.matcher;
+  }
   writeFileSync(
     path.join(REPO, 'data/build', `sentences.textbook-${bookId}.json`),
     JSON.stringify(

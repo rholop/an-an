@@ -1027,7 +1027,8 @@
       "focus": [
         "姓",
         "叫"
-      ]
+      ],
+      "matcher": "姓|叫"
     },
     {
       "id": "gram-shi-identity",
@@ -1048,7 +1049,8 @@
       ],
       "focus": [
         "是"
-      ]
+      ],
+      "matcher": "是"
     },
     {
       "id": "gram-shenme-question",
@@ -1066,7 +1068,8 @@
       ],
       "focus": [
         "什麼"
-      ]
+      ],
+      "matcher": "什麼"
     },
     {
       "id": "gram-you-meiyou",
@@ -1088,7 +1091,8 @@
       "focus": [
         "沒有",
         "有"
-      ]
+      ],
+      "matcher": "有"
     },
     {
       "id": "gram-ma-question",
@@ -1109,7 +1113,8 @@
       ],
       "focus": [
         "嗎"
-      ]
+      ],
+      "matcher": "嗎"
     },
     {
       "id": "gram-number-measure",
@@ -1131,7 +1136,8 @@
       "focus": [
         "個",
         "雙"
-      ]
+      ],
+      "matcher": "[一兩二三四五六七八九十][個雙位杯家]"
     },
     {
       "id": "gram-ye-also",
@@ -1152,7 +1158,8 @@
       ],
       "focus": [
         "也"
-      ]
+      ],
+      "matcher": "也"
     },
     {
       "id": "gram-bu-negation",
@@ -1173,7 +1180,8 @@
       ],
       "focus": [
         "不"
-      ]
+      ],
+      "matcher": "不"
     },
     {
       "id": "gram-zai-place",
@@ -1194,7 +1202,8 @@
       ],
       "focus": [
         "在"
-      ]
+      ],
+      "matcher": "在.+(工作|念書|教|住|看|吃|打|跑)"
     },
     {
       "id": "gram-dou-all",
@@ -1215,7 +1224,8 @@
       ],
       "focus": [
         "都"
-      ]
+      ],
+      "matcher": "都"
     },
     {
       "id": "gram-a-not-a",
@@ -1234,7 +1244,8 @@
         "textbook:laixue-1",
         "textbook:laixue-1:L04"
       ],
-      "focus": []
+      "focus": [],
+      "matcher": "(.)不\\1|(..)不\\2|有沒有"
     },
     {
       "id": "gram-ne-followup",
@@ -1255,7 +1266,8 @@
       ],
       "focus": [
         "呢"
-      ]
+      ],
+      "matcher": "呢"
     },
     {
       "id": "gram-de-possessive",
@@ -1276,7 +1288,8 @@
       ],
       "focus": [
         "的"
-      ]
+      ],
+      "matcher": "的"
     },
     {
       "id": "gram-zhe-shi-intro",
@@ -1297,7 +1310,8 @@
       ],
       "focus": [
         "這是"
-      ]
+      ],
+      "matcher": "這是|這位是"
     },
     {
       "id": "gram-zhuzai",
@@ -1318,7 +1332,8 @@
       ],
       "focus": [
         "住在"
-      ]
+      ],
+      "matcher": "住在"
     },
     {
       "id": "gram-question-words",
@@ -1341,7 +1356,8 @@
         "誰",
         "哪裡",
         "什麼"
-      ]
+      ],
+      "matcher": "誰|哪裡|什麼"
     },
     {
       "id": "gram-qu-place-verb",
@@ -1362,7 +1378,8 @@
       ],
       "focus": [
         "去"
-      ]
+      ],
+      "matcher": "去.{0,12}(玩|念書|工作|看|吃|買|跑)"
     },
     {
       "id": "gram-hai-also",
@@ -1383,7 +1400,8 @@
       ],
       "focus": [
         "還"
-      ]
+      ],
+      "matcher": "還"
     },
     {
       "id": "gram-time-place-order",
@@ -1404,7 +1422,8 @@
       ],
       "focus": [
         "在"
-      ]
+      ],
+      "matcher": "(晚上|週末|每天|下午|平常|現在).*在.+(看|吃|跑|念|做|運動|打|聽|唱|跳|玩|工作|教|住)"
     },
     {
       "id": "gram-ye-dou-order",
@@ -1426,7 +1445,8 @@
       "focus": [
         "也",
         "都"
-      ]
+      ],
+      "matcher": "也都|都不|都沒|也不|也沒"
     },
     {
       "id": "gram-numbers-0-100",
@@ -1445,7 +1465,8 @@
         "textbook:laixue-1",
         "textbook:laixue-1:L07"
       ],
-      "focus": []
+      "focus": [],
+      "matcher": "[零一二三四五六七八九十百兩]|幾號"
     },
     {
       "id": "gram-gei-call",
@@ -1466,7 +1487,8 @@
       ],
       "focus": [
         "給"
-      ]
+      ],
+      "matcher": "給.*打電話"
     },
     {
       "id": "gram-yihou",
@@ -1487,7 +1509,8 @@
       ],
       "focus": [
         "以後"
-      ]
+      ],
+      "matcher": "以後"
     },
     {
       "id": "gram-dates",
@@ -1509,7 +1532,8 @@
       "focus": [
         "月",
         "號"
-      ]
+      ],
+      "matcher": "[一二三四五六七八九十]+月|[一二三四五六七八九十]+[號日]"
     },
     {
       "id": "gram-ji-questions",
@@ -1530,7 +1554,8 @@
       ],
       "focus": [
         "幾"
-      ]
+      ],
+      "matcher": "幾月|幾號|幾歲"
     },
     {
       "id": "gram-tag-question",
@@ -1553,7 +1578,8 @@
         "好不好",
         "可以嗎",
         "好嗎"
-      ]
+      ],
+      "matcher": "好不好|好嗎|可以嗎|可以不可以"
     },
     {
       "id": "gram-xingqi",
@@ -1574,7 +1600,8 @@
       ],
       "focus": [
         "星期"
-      ]
+      ],
+      "matcher": "星期|禮拜"
     },
     {
       "id": "gram-year-date",
@@ -1592,7 +1619,8 @@
       ],
       "focus": [
         "年"
-      ]
+      ],
+      "matcher": "年.*月"
     },
     {
       "id": "gram-dian-clock",
@@ -1613,7 +1641,8 @@
       ],
       "focus": [
         "點"
-      ]
+      ],
+      "matcher": "[一二兩三四五六七八九十]+點|幾點"
     },
     {
       "id": "gram-gen-yiqi",
@@ -1634,7 +1663,8 @@
       ],
       "focus": [
         "跟"
-      ]
+      ],
+      "matcher": "跟.+一起"
     },
     {
       "id": "gram-de-complement",
@@ -1655,7 +1685,8 @@
       ],
       "focus": [
         "得"
-      ]
+      ],
+      "matcher": ".得(很|不|好|怎麼樣|不錯|快)"
     },
     {
       "id": "gram-youyidian",
@@ -1677,7 +1708,8 @@
       "focus": [
         "有一點",
         "有點"
-      ]
+      ],
+      "matcher": "有一?點[累難忙貴快]"
     },
     {
       "id": "gram-hui-can",
@@ -1698,7 +1730,8 @@
       ],
       "focus": [
         "會"
-      ]
+      ],
+      "matcher": "會"
     },
     {
       "id": "gram-duoshao-ji",
@@ -1720,7 +1753,8 @@
       "focus": [
         "多少",
         "幾"
-      ]
+      ],
+      "matcher": "多少|幾[個位杯家]"
     }
   ],
   "wordNotes": [
