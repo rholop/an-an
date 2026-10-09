@@ -2,11 +2,11 @@
 // the topic picker and the library (newest first, lesson badge, read / unread).
 import { useEffect, useState } from 'react';
 import { storyMinutes, type Level, type Lexicon, type StoryDifficulty, type StoryRecord } from '@anan/core';
-import { lessonLabel, EASIER_NOW, NEXT_STORY, STORIES, STORY_DIFFICULTY, AI_QUOTA_USED, RETRY, STORY_UNAVAILABLE, STORY_WRITING, storyPitch } from '../lib/labels.js';
+import { lessonLabel, EASIER_NOW, NEXT_STORY, STORIES, STORY_DIFFICULTY, RETRY, STORY_WRITING, storyPitch } from '../lib/labels.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
 import { FAKE_STORY_KEY, canWriteStories, prepareStories, storyFakeOn, storyLesson, useStoryDifficulty } from '../lib/stories.js';
 import { STORY_TOPIC_CHIPS, type StoryAsk, type StoryService } from '../lib/story-service.js';
-import { isQuotaError } from '../lib/tutor-llm.js';
+import { storyErrorText } from '../lib/story-errors.js';
 import './StoryView.css';
 
 interface Props {
@@ -31,7 +31,7 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
   const [busy, setBusy] = useState(false);
   /** The ask that failed (Retry repeats it), or null. */
   const [failed, setFailed] = useState<Omit<StoryAsk, 'level' | 'difficulty'> | 'next' | null>(null);
-  const [quota, setQuota] = useState(false);
+  const [errorText, setErrorText] = useState('');
   const [tick, setTick] = useState(0);
   const [fake, setFake] = useState(storyFakeOn());
   useEffect(() => onStudyDirty(() => setTick((t) => t + 1)), []);
@@ -69,7 +69,7 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
       setTick((t) => t + 1);
       onOpen(story);
     } catch (err) {
-      setQuota(isQuotaError(err));
+      setErrorText(storyErrorText(err));
       setFailed(ask);
     } finally {
       setBusy(false);
@@ -107,7 +107,7 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
       </div>
       {failed && (
         <p className="stories-error" role="status" data-testid="story-error">
-          {quota ? AI_QUOTA_USED : STORY_UNAVAILABLE}{' '}
+          {errorText}{' '}
           <button type="button" data-testid="story-retry" disabled={busy} onClick={() => void run(failed)}>
             {RETRY}
           </button>

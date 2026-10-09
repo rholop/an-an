@@ -37,6 +37,8 @@ export const STORY_CONFIG = {
   } satisfies Record<Level, { min: number; max: number }>,
   /** A story may be this much shorter / longer than the target and still be shown. */
   lengthSlack: 0.25,
+  /** Phase 25: shorter than the slack allows is still shown (after one regeneration) down to this share of the minimum. */
+  minLengthShare: 0.4,
   /** What the prompt receives: all rung 2–4 words, at most this many rung 1 words (due and recent first). */
   promptRung1Max: 300,
   promptRung5Max: 40,

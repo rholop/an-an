@@ -239,3 +239,39 @@ describe('library helpers', () => {
     expect(rereadSuggestions([{ ...rec, readAt: new Date('2026-10-01') }], new Set(rec.wordIds), now)).toEqual([]);
   });
 });
+
+describe('Phase 25: the checker reads a story the way a learner would', () => {
+  // 做 / 工作 / 不 / 是 are known; 做工 and 不是 are lexicon words on no rung; 太太 is glossed.
+  const P = ['做', '工作', '做工', '不', '是', '不是', '太太', '公司', '學生', '家', '在'];
+  const words = P.map((h) => w(h, h === '做工' || h === '不是' || h === '太太' ? 'L3' : 'N1', h));
+  const lex = new Lexicon(words, []);
+  const known = new Set(words.filter((x) => x.level === 'N1').map((x) => x.id));
+  const lad = { rung: (wid: string): VocabRung => (known.has(wid) ? 1 : 6) };
+
+  it('做工作 is 做 + 工作, not 做工 + 作', () => {
+    const r = analyzeStory(['他在公司做工作。'.replace('他在', '')], { ladder: lad, lexicon: lex });
+    expect(r.paragraphs[0]!.map((t) => t.text)).toEqual(['公司', '做', '工作']);
+    expect(r.failed).not.toContain('rung6');
+  });
+
+  it('a compound of known words (不是) takes the rung of its parts', () => {
+    const r = analyzeStory(['學生不是。'], { ladder: lad, lexicon: lex });
+    expect(r.paragraphs[0]!.find((t) => t.text === '不是')?.rung).toBe(1);
+    expect(r.rung1Share).toBe(1);
+  });
+
+  it('a glossed word does not count against the share', () => {
+    const r = analyzeStory(['太太不是學生。太太在公司做工作。'], { ladder: lad, lexicon: lex, glossed: new Set(['太太']) });
+    expect(r.rung1Share).toBe(1);
+    expect(r.failed).toEqual([]);
+  });
+
+  it('a short story is shown (marked short); only a very short or too long one fails on length', () => {
+    const len = { min: 80, max: 150 };
+    const zh = (k: number) => ['公司'.repeat(k / 2)];
+    expect(analyzeStory(zh(40), { ladder: lad, lexicon: lex }, undefined, len)).toMatchObject({ pass: true, short: true });
+    expect(analyzeStory(zh(30), { ladder: lad, lexicon: lex }, undefined, len).failed).toContain('length');
+    expect(analyzeStory(zh(200), { ladder: lad, lexicon: lex }, undefined, len).failed).toContain('length');
+    expect(analyzeStory(zh(100), { ladder: lad, lexicon: lex }, undefined, len).short).toBeUndefined();
+  });
+});

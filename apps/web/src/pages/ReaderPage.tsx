@@ -21,7 +21,7 @@ import { db, learnerService } from '../db/instance.js';
 import { getSiteCode } from '../lib/api.js';
 import { defineUnlisted, type AiDefinition } from '../lib/gloss-reports.js';
 import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
-import { FetchTutorLLM, isQuotaError } from '../lib/tutor-llm.js';
+import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { annotate } from '../lib/annotate.js';
 import { ReaderService, type NextSentenceResult } from '../lib/reader-service.js';
@@ -34,7 +34,8 @@ import { useTextbookSentences } from '../lib/textbook-data.js';
 import { useSetting } from '../lib/useSetting.js';
 import { useReadingSettings } from '../lib/reading.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
-import { AI_QUOTA_USED, coverageLine, STORY_UNAVAILABLE } from '../lib/labels.js';
+import { coverageLine } from '../lib/labels.js';
+import { storyErrorText } from '../lib/story-errors.js';
 import { storyFakeOn, useStoryService } from '../lib/stories.js';
 import { showToast } from '../lib/toast.js';
 import { StoriesSection } from './StoriesSection.js';
@@ -131,7 +132,7 @@ function ReaderWithStories({ lexiconState }: { lexiconState: Extract<LexiconLoad
           void stories
             .write({ level, difficulty: s.difficulty, kind: 'continue', continueFrom: s })
             .then(setOpen)
-            .catch((err: unknown) => showToast(isQuotaError(err) ? AI_QUOTA_USED : STORY_UNAVAILABLE))
+            .catch((err: unknown) => showToast(storyErrorText(err)))
         }
       />
     );

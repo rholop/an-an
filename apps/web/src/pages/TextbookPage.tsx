@@ -47,9 +47,7 @@ import {
   NEXT,
   STUDY_THIS_LESSON,
   NEXT_STORY,
-  AI_QUOTA_USED,
   RETRY,
-  STORY_UNAVAILABLE,
   STORY_WRITING,
   TERM,
   UNDO,
@@ -85,7 +83,7 @@ import { ReviewPage } from './ReviewPage.js';
 import { StoryView } from './StoryView.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { canWriteStories, useStoryDifficulty, useStoryService } from '../lib/stories.js';
-import { isQuotaError } from '../lib/tutor-llm.js';
+import { storyErrorText } from '../lib/story-errors.js';
 import './TextbookPage.css';
 
 type View =
@@ -691,14 +689,14 @@ function StoryStep({ lexicon, onDone }: { lexicon: Lexicon; onDone: () => void }
   const [difficulty] = useStoryDifficulty();
   const [story, setStory] = useState<StoryRecord | null>(null);
   const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState<false | 'quota' | 'other'>(false);
+  const [failed, setFailed] = useState('');
   async function write() {
     setBusy(true);
-    setFailed(false);
+    setFailed('');
     try {
       setStory(await service.next(level, difficulty));
     } catch (err) {
-      setFailed(isQuotaError(err) ? 'quota' : 'other');
+      setFailed(storyErrorText(err));
     } finally {
       setBusy(false);
     }
@@ -713,7 +711,7 @@ function StoryStep({ lexicon, onDone }: { lexicon: Lexicon; onDone: () => void }
       </button>
       {failed && (
         <p role="status" data-testid="story-error">
-          {failed === 'quota' ? AI_QUOTA_USED : STORY_UNAVAILABLE}{' '}
+          {failed}{' '}
           <button type="button" data-testid="story-retry" disabled={busy} onClick={() => void write()}>
             {RETRY}
           </button>

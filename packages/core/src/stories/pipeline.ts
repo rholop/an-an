@@ -73,7 +73,8 @@ export async function runStoryPipeline(input: {
     const { story, servedBy } = await input.llm.writeStory({ ...input.req, ...(feedback ? { feedback } : {}) });
     const a = analyzeStoryResponse(story, input);
     attempts.push({ res: story, ...(servedBy ? { servedBy } : {}), ...a });
-    if (a.report.pass) break;
+    // Phase 25: a short story is asked for once more, then shown anyway.
+    if (a.report.pass && !a.report.short) break;
     feedback = [storyFeedback(a.report, budget, { ladder: input.ladder, lexicon: input.lexicon }), ...a.problems]
       .filter(Boolean)
       .join('\n')

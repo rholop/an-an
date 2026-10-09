@@ -133,6 +133,8 @@ export interface StoryReport {
   /** Distinct words per rung (word id, or the text for words outside the lexicon). */
   distinct: Record<VocabRung, string[]>;
   chars: number;
+  /** Phase 25: shorter than the target but long enough to show (regenerate once, then accept). */
+  short?: boolean;
   /** Sentences with simplified characters or mainland terms. */
   taiwanness: { sentence: string; result: TaiwannessResult }[];
 }
@@ -177,6 +179,112 @@ export function storyAllowedNames(names: readonly string[], characters: readonly
   return out;
 }
 
+type RungOf = (text: string) => { rung: VocabRung | 'allowed'; id?: string };
+
+/**
+ * Phase 25: the rung of a piece of story text. Names and particles are 'allowed'; a lexicon word
+ * takes its best ladder rung; a word on no rung that splits into ladder words takes the highest
+ * rung of its parts (不是 = 不 + 是, 好吃 = 好 + 吃), so a compound of known words is not "unknown".
+ */
+function storyRungOf(ctx: StoryContext): RungOf {
+  const memo = new Map<string, ReturnType<RungOf>>();
+  const of: RungOf = (text) => {
+    const hit = memo.get(text);
+    if (hit) return hit;
+    let res: ReturnType<RungOf>;
+    if (ctx.allowedTexts?.has(text)) res = { rung: 'allowed' };
+    else {
+      const cands = ctx.lexicon.lookup(text);
+      if (cands.some((w) => isOpenChatAllowedWord(w.tags))) res = { rung: 'allowed', id: cands[0]!.id };
+      else {
+        res = bestRung(ctx.ladder, cands.map((w) => w.id));
+        if (res.rung === 6 && [...text].length > 1) {
+          const split = splitRung(text, of);
+          if (split !== undefined && split < 6) res = { rung: split, ...(res.id ? { id: res.id } : {}) };
+        }
+      }
+    }
+    memo.set(text, res);
+    return res;
+  };
+  return of;
+}
+
+/** The lowest "highest rung" over the ways `text` splits into two or more ladder pieces. */
+function splitRung(text: string, of: RungOf): VocabRung | undefined {
+  const chars = [...text];
+  let best: VocabRung | undefined;
+  for (let i = 1; i < chars.length; i++) {
+    const head = of(chars.slice(0, i).join(''));
+    const tailText = chars.slice(i).join('');
+    const tail = of(tailText);
+    const hr = head.rung === 'allowed' ? 1 : head.rung;
+    const tr = tail.rung === 'allowed' ? 1 : tail.rung;
+    if (hr === 6 || tr === 6) continue;
+    const r = Math.max(hr, tr) as VocabRung;
+    if (best === undefined || r < best) best = r;
+  }
+  return best;
+}
+
+/**
+ * Phase 25: the segmenter's longest-match can split a story wrongly (做工作 → 做工 + 作). Each run of
+ * Chinese words is re-split to put as few words as possible on rung 6, then use as few words as possible.
+ */
+function resegmentStory(
+  tokens: Array<{ kind: string; text: string }>,
+  ctx: StoryContext,
+  of: RungOf,
+): Array<{ kind: string; text: string }> {
+  const out: Array<{ kind: string; text: string }> = [];
+  let run: string[] = [];
+  const flush = () => {
+    if (run.length) out.push(...bestSplit(run.join(''), ctx.lexicon, of));
+    run = [];
+  };
+  for (const t of tokens) {
+    const isRun = (t.kind === 'word' || t.kind === 'unknown') && !ctx.allowedTexts?.has(t.text) && /^\p{Script=Han}+$/u.test(t.text);
+    if (isRun) run.push(t.text);
+    else {
+      flush();
+      out.push(t);
+    }
+  }
+  flush();
+  return out;
+}
+
+function bestSplit(text: string, lexicon: Lexicon, of: RungOf): Array<{ kind: string; text: string }> {
+  const chars = [...text];
+  const n = chars.length;
+  const max = Math.max(1, lexicon.maxHeadwordLength);
+  // cost[i] = best [rung-6 words, words] for chars[i..]
+  const cost: Array<[number, number]> = new Array(n + 1);
+  const cut: number[] = new Array(n + 1);
+  cost[n] = [0, 0];
+  for (let i = n - 1; i >= 0; i--) {
+    let best: [number, number] | undefined;
+    for (let l = Math.min(max, n - i); l >= 1; l--) {
+      const piece = chars.slice(i, i + l).join('');
+      if (l > 1 && lexicon.lookup(piece).length === 0) continue;
+      const r = of(piece).rung;
+      const rest = cost[i + l]!;
+      const c: [number, number] = [rest[0] + (r === 6 ? 1 : 0), rest[1] + 1];
+      if (!best || c[0] < best[0] || (c[0] === best[0] && c[1] < best[1])) {
+        best = c;
+        cut[i] = l;
+      }
+    }
+    cost[i] = best!;
+  }
+  const res: Array<{ kind: string; text: string }> = [];
+  for (let i = 0; i < n; i += cut[i]!) {
+    const piece = chars.slice(i, i + cut[i]!).join('');
+    res.push({ kind: lexicon.lookup(piece).length > 0 ? 'word' : 'unknown', text: piece });
+  }
+  return res;
+}
+
 /** Classifies every token of the story and checks Part A's shares, Taiwan / traditional and length. */
 export function analyzeStory(
   paragraphs: readonly string[],
@@ -185,20 +293,16 @@ export function analyzeStory(
   length?: { min: number; max: number },
 ): StoryReport {
   const out: StoryToken[][] = [];
+  const rungOf = storyRungOf(ctx);
   for (const p of paragraphs) {
     const toks: StoryToken[] = [];
-    for (const t of segmentWithNames(p, ctx.lexicon, ctx.allowedTexts)) {
+    for (const t of resegmentStory(segmentWithNames(p, ctx.lexicon, ctx.allowedTexts), ctx, rungOf)) {
       if (t.kind !== 'word' && t.kind !== 'unknown') continue; // numbers, latin, punctuation
-      if (ctx.allowedTexts?.has(t.text)) {
-        toks.push({ text: t.text, rung: 'allowed' });
+      const best = rungOf(t.text);
+      if (best.rung === 'allowed') {
+        toks.push({ text: t.text, rung: 'allowed', ...(best.id ? { wordId: best.id } : {}) });
         continue;
       }
-      const cands = t.kind === 'word' ? ctx.lexicon.lookup(t.text) : [];
-      if (cands.some((w) => isOpenChatAllowedWord(w.tags))) {
-        toks.push({ text: t.text, rung: 'allowed', wordId: cands[0]!.id });
-        continue;
-      }
-      const best = bestRung(ctx.ladder, cands.map((w) => w.id));
       const tok: StoryToken = { text: t.text, rung: best.rung, ...(best.id ? { wordId: best.id } : {}) };
       if (best.rung === 6 && ctx.glossed?.has(t.text)) tok.glossed = true;
       toks.push(tok);
@@ -215,7 +319,11 @@ export function analyzeStory(
   }
   const distinct = Object.fromEntries(RUNGS.map((r) => [r, [...distinctSets[r]]])) as Record<VocabRung, string[]>;
   const contentTokens = RUNGS.reduce((n, r) => n + counts[r], 0);
-  const rung1Share = contentTokens === 0 ? 1 : counts[1] / contentTokens;
+  // Phase 25: a glossed word is explained where it stands, so it does not count against the share
+  // (the rung 6 limit still caps how many there are).
+  const glossedTokens = all.filter((t) => t.glossed).length;
+  const shareBase = contentTokens - glossedTokens;
+  const rung1Share = shareBase <= 0 ? 1 : counts[1] / shareBase;
   const chars = paragraphs.reduce((n, p) => n + hanCount(p), 0);
 
   const taiwanness = paragraphs
@@ -224,6 +332,7 @@ export function analyzeStory(
     .filter((x) => !x.result.isClean);
 
   const failed: StoryFailure[] = [];
+  let short = false;
   if (rung1Share < budget.minRung1Share) failed.push('rung1');
   if (distinct[3].length > budget.maxRung3Words) failed.push('rung3');
   if (distinct[4].length > budget.maxRung4Words) failed.push('rung4');
@@ -233,9 +342,21 @@ export function analyzeStory(
   if (taiwanness.length > 0) failed.push('taiwanness');
   if (length) {
     const slack = STORY_CONFIG.lengthSlack;
-    if (chars < length.min * (1 - slack) || chars > length.max * (1 + slack)) failed.push('length');
+    if (chars < length.min * STORY_CONFIG.minLengthShare || chars > length.max * (1 + slack)) failed.push('length');
+    else if (chars < length.min * (1 - slack)) short = true;
   }
-  return { pass: failed.length === 0, failed, paragraphs: out, contentTokens, rung1Share, counts, distinct, chars, taiwanness };
+  return {
+    pass: failed.length === 0,
+    failed,
+    paragraphs: out,
+    contentTokens,
+    rung1Share,
+    counts,
+    distinct,
+    chars,
+    ...(short ? { short } : {}),
+    taiwanness,
+  };
 }
 
 /** Rung 1 words that could stand in for an over-budget word (a shared English gloss word). */
@@ -296,6 +417,7 @@ export function storyFeedback(
         .slice(0, 8)
         .join('、')}.`,
     );
+  if (report.short) parts.push(`The story has only ${report.chars} characters; write a little more, up to the target length.`);
   if (report.failed.includes('length')) parts.push(`The story has ${report.chars} characters; keep to the target length.`);
   parts.push('Write the story again with simpler words from rung 1. Keep the same characters and topic.');
   return parts.join(' ');
@@ -304,7 +426,11 @@ export function storyFeedback(
 /** Of several attempts, the one that breaks the fewest limits (then the highest rung 1 share). */
 export function pickBestStoryAttempt<T extends { report: StoryReport }>(attempts: readonly T[]): T {
   return [...attempts].sort(
-    (x, y) => Number(y.report.pass) - Number(x.report.pass) || x.report.failed.length - y.report.failed.length || y.report.rung1Share - x.report.rung1Share,
+    (x, y) =>
+      Number(y.report.pass) - Number(x.report.pass) ||
+      x.report.failed.length - y.report.failed.length ||
+      Number(!!x.report.short) - Number(!!y.report.short) ||
+      y.report.rung1Share - x.report.rung1Share,
   )[0]!;
 }
 

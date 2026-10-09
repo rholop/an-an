@@ -196,3 +196,46 @@ export const storyReadLine = (chars: number, knownShare: number): string =>
 export const storyWeekLine = (chars: number, finished: number): string =>
   `Characters read this week: ${chars} · ${finished} ${finished === 1 ? 'story' : 'stories'} finished`;
 export const storyScoreLine = (right: number, of: number): string => `${right} of ${of} right`;
+
+// Phase 25: the lesson grammar step and grammar progress dots.
+/** ●●○ = 2 of 3 correct uses. */
+export const grammarDotsText = (dots: number, need: number): string =>
+  '●'.repeat(Math.min(dots, need)) + '○'.repeat(Math.max(0, need - dots));
+export const grammarDotsLabel = (dots: number, need: number): string => `${Math.min(dots, need)} of ${need} correct uses`;
+/** "7 of 9 · +1 extra" */
+export const grammarStepPosition = (i: number, base: number, extras: number): string =>
+  `${Math.min(i, base)} of ${base}${extras > 0 ? ` · +${extras} extra` : ''}`;
+/** After the step: "了 (new situation): 2 of 3. Come back tomorrow to master it." */
+export const grammarPointOutcome = (
+  name: string,
+  dots: number,
+  need: number,
+  state: 'mastered' | 'tomorrow' | 'more',
+): string =>
+  state === 'mastered'
+    ? `${name}: mastered.`
+    : `${name}: ${dots} of ${need}.${state === 'tomorrow' ? ' Come back tomorrow to master it.' : ' Keep practising it.'}`;
+/** The lesson counter in the shared terms: "Grammar: 3 practised · 0 mastered". */
+export const grammarCounter = (practised: number, mastered: number): string =>
+  `Grammar: ${practised} practised · ${mastered} ${TERM.mastered.toLowerCase()}`;
+export const GRAMMAR_PICK_PROMPT = 'Which sentence is right?';
+export const GRAMMAR_REORDER_PROMPT = 'Put the words in the correct order.';
+export const GRAMMAR_BUILD_PROMPT = 'Build this sentence. One tile is not needed.';
+export const CHECK = 'Check';
+
+/** Phase 25: why a story was not shown, in plain words (the checker's reason keys). */
+const STORY_REASON: Record<string, string> = {
+  rung1: "it used too many words you haven't learned yet",
+  rung3: 'it used too many words from coming lessons',
+  rung4: 'it used too many words from coming lessons',
+  rung5: 'it used too many words from coming lessons',
+  rung6: 'it used words outside your lessons without explaining them',
+  taiwanness: 'it used simplified characters or mainland wording',
+  length: 'it came out much too short or too long',
+  questions: "its questions didn't check out",
+  'independent check': 'a second read-through found a problem',
+};
+export const storyReasonsLine = (reasons: readonly string[]): string => {
+  const parts = [...new Set(reasons.flatMap((r) => STORY_REASON[r] ?? []))];
+  return parts.length === 0 ? '' : `(Not shown because ${parts.join(', and ')}.)`;
+};
