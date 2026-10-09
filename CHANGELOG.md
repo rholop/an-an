@@ -3,6 +3,11 @@
 Notable changes that affect how An'an is run. Phase-by-phase features are in the
 `CLAUDE.md` phase table.
 
+## Hotfix: keep every saved version (2026-10-09)
+
+- The sync store no longer deletes old versions. Every save stays in `SYNC_DIR` until a later
+  retention step (Phase 28 Part C.3) is run on purpose. Nothing existing is deleted or rewritten.
+
 ## Phase 28 (2026-10-09)
 
 - **Required on the server:** nginx must accept large saves. Add `client_max_body_size 40m;`
@@ -16,7 +21,7 @@ Notable changes that affect how An'an is run. Phase-by-phase features are in the
 - Every failure has its own words in the header cloud ("Not saved for 2 h", tap for the reason
   and **Save now**). Settings → Your progress shows what the server and this browser hold, and
   lists the saved versions (Restore merges one in; Replace, confirmed, overwrites).
-- The server keeps the last 10 versions plus one per day for 30 days, and refuses (409) a push
+- The server keeps saved versions (see the hotfix above: now every one), and refuses (409) a push
   that would drop more than 20% of the cards or evidence unless it is a confirmed Replace.
 - A fresh browser says what it found ("Restoring 羅恩's progress… found 1,240 cards") and never
   opens empty silently: no copy on the server or no server gives Try again / Start fresh.

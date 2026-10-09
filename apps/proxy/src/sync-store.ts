@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 /** One saved copy of a profile's data: the per-profile export JSON, gzipped. */
@@ -25,9 +25,10 @@ export interface SyncVersion {
  * process on a small server), `MemorySyncStore` is for tests.
  *
  * Contract: `put` only succeeds when `baseRev` equals the stored rev (0 when
- * nothing is stored yet), and each success creates rev + 1. The last
- * `KEEP_VERSIONS` revs per profile, plus one per day for `KEEP_DAILY_DAYS` days (Phase 28), are
- * kept so a bad save can be rolled back.
+ * nothing is stored yet), and each success creates rev + 1. Every revision is
+ * kept, none is ever deleted (hotfix after Phase 28: a push from a restored old
+ * browser must not rotate good copies out). A retention policy built on
+ * `revisionsToKeep` comes back later as a separate, owner-run step.
  */
 export interface SyncStore {
   get(profileId: string): Promise<SyncRecord | null>;
@@ -42,7 +43,8 @@ export const KEEP_VERSIONS = 10;
 export const KEEP_DAILY_DAYS = 30;
 
 /**
- * Which revisions to keep (Phase 28): the last `keep` revisions, plus the newest revision of each
+ * Which revisions a future retention policy would keep (Phase 28 Part C.3). Not used by `put`:
+ * for now no version is ever deleted.  the last `keep` revisions, plus the newest revision of each
  * (UTC) day within the last `dailyDays` days. `entries` in any order; `at` is epoch ms.
  */
 export function revisionsToKeep(
@@ -98,11 +100,7 @@ export class MemorySyncStore implements SyncStore {
       if ((current?.rev ?? 0) !== baseRev) return { ok: false as const, current: current! };
       const rec: SyncRecord = { rev: baseRev + 1, updatedAt: this.now().toISOString(), blob };
       list.push(rec);
-      const keep = revisionsToKeep(
-        list.map((r) => ({ rev: r.rev, at: Date.parse(r.updatedAt) })),
-        this.now(),
-      );
-      this.data.set(profileId, list.filter((r) => keep.has(r.rev)));
+      this.data.set(profileId, list); // every version is kept
       return { ok: true as const, rev: rec.rev, updatedAt: rec.updatedAt };
     });
   }
@@ -180,10 +178,7 @@ export class FileSyncStore implements SyncStore {
       const tmp = `${final}.tmp`;
       await writeFile(tmp, blob);
       await rename(tmp, final);
-      const keep = revisionsToKeep([...entries, { rev, at }], this.now());
-      for (const old of entries) {
-        if (!keep.has(old.rev)) await rm(path.join(dir, old.file), { force: true });
-      }
+      // Never deletes an older version: every saved copy stays on disk.
       return { ok: true as const, rev, updatedAt: new Date(at).toISOString() };
     });
   }

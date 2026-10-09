@@ -1,8 +1,8 @@
-import { mkdtempSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { FileSyncStore, KEEP_VERSIONS, MemorySyncStore, revisionsToKeep, type SyncStore } from './sync-store.js';
+import { FileSyncStore, MemorySyncStore, revisionsToKeep, type SyncStore } from './sync-store.js';
 
 const blob = (s: string) => Buffer.from(s);
 
@@ -40,15 +40,14 @@ function contract(name: string, make: () => { store: SyncStore; dir?: string }) 
       expect((await store.get('ron'))?.rev).toBe(1);
     });
 
-    it('keeps only the last 10 versions per profile, and keeps profiles apart', async () => {
+    it('keeps every version per profile (none is ever deleted), and keeps profiles apart', async () => {
       const { store } = make();
-      for (let i = 0; i < 13; i++) await store.put('ron', blob(`v${i}`), i);
+      for (let i = 0; i < 25; i++) await store.put('ron', blob(`v${i}`), i);
       await store.put('guanyu', blob('g'), 0);
       const versions = await store.versions('ron');
-      expect(versions).toHaveLength(KEEP_VERSIONS);
-      expect(versions.map((v) => v.rev)).toEqual([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
-      expect(await store.getVersion('ron', 3)).toBeNull();
-      expect((await store.getVersion('ron', 4))?.blob.toString()).toBe('v3');
+      expect(versions.map((v) => v.rev)).toEqual(Array.from({ length: 25 }, (_, i) => i + 1));
+      expect((await store.getVersion('ron', 1))?.blob.toString()).toBe('v0');
+      expect((await store.getVersion('ron', 25))?.blob.toString()).toBe('v24');
       expect((await store.get('guanyu'))?.blob.toString()).toBe('g');
       expect(await store.versions('guanyu')).toHaveLength(1);
     });
@@ -74,7 +73,7 @@ describe('FileSyncStore on disk', () => {
   });
 });
 
-describe('revisionsToKeep (phase 28): the last 10 plus one per day for 30 days', () => {
+describe('revisionsToKeep (Phase 28 Part C.3, not applied yet) and keeping every version', () => {
   const DAY = 86_400_000;
   const now = new Date('2026-10-09T15:00:00Z');
   it('keeps the newest of each day within 30 days, besides the last 10', () => {
@@ -91,15 +90,19 @@ describe('revisionsToKeep (phase 28): the last 10 plus one per day for 30 days',
     expect(keep.has(1)).toBe(false); // 39 days old
   });
 
-  it('the file store keeps yesterday\'s copy through a burst of saves today', async () => {
-    let t = new Date('2026-10-08T20:00:00Z');
-    const store = new FileSyncStore(mkdtempSync(path.join(os.tmpdir(), 'sync-daily-')), () => t);
-    await store.put('ron', blob('yesterday'), 0);
+  it('the file store never deletes or rewrites an existing file, even one older than 30 days', async () => {
+    let t = new Date('2026-08-01T20:00:00Z');
+    const dir = mkdtempSync(path.join(os.tmpdir(), 'sync-keep-'));
+    const store = new FileSyncStore(dir, () => t);
+    await store.put('ron', blob('old'), 0);
+    const [first] = readdirSync(path.join(dir, 'ron'));
+    const before = readFileSync(path.join(dir, 'ron', first!));
     t = new Date('2026-10-09T09:00:00Z');
-    for (let i = 1; i <= 15; i++) await store.put('ron', blob(`today ${i}`), i);
-    const revs = (await store.versions('ron')).map((v) => v.rev);
-    expect(revs).toContain(1);
-    expect(revs).toHaveLength(KEEP_VERSIONS + 1);
-    expect((await store.getVersion('ron', 1))?.blob.toString()).toBe('yesterday');
+    for (let i = 1; i <= 40; i++) await store.put('ron', blob(`today ${i}`), i);
+    const files = readdirSync(path.join(dir, 'ron'));
+    expect(files).toHaveLength(41);
+    expect(files).toContain(first);
+    expect(readFileSync(path.join(dir, 'ron', first!)).equals(before)).toBe(true);
+    expect((await store.getVersion('ron', 1))?.blob.toString()).toBe('old');
   });
 });

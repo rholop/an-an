@@ -1,6 +1,6 @@
 /**
- * Roll a profile back to one of its saved versions (phase 8; Phase 28 keeps the last 10 plus one a
- * day for 30 days). Not an
+ * Roll a profile back to one of its saved versions (phase 8; every version is kept,
+ * none is deleted). Not an
  * HTTP endpoint on purpose: a rollback is an owner action on the server.
  *
  *   pnpm --filter @anan/proxy sync-rollback ron            # list versions
