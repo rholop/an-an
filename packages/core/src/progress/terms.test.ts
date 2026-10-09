@@ -4,6 +4,9 @@ import { applyEvidence } from '../learner/apply-evidence.js';
 import type { SkillCard } from '../learner/types.js';
 import type { Evidence, ItemRef } from '../types.js';
 import {
+  grammarDots,
+  grammarOutcome,
+  grammarUsesFromEvidence,
   inAppAnswers,
   isDueCard,
   isImportedOnly,
@@ -116,9 +119,55 @@ describe('Phase 21 shared terms: items, lessons, levels', () => {
 
   it('grammar: 3 correct uses with the last correct (Review Good/Easy count too)', () => {
     const g: ItemRef = { kind: 'grammar', id: 'g1' };
-    const idx = new ProgressIndex({ cards: [], grammarUses: new Map([['g1', { correct: 3, lastCorrect: true }]]) });
+    const idx = new ProgressIndex({ cards: [], grammarUses: new Map([['g1', { correct: 3, lastCorrect: true, firstCorrectDay: '2026-10-01', lastCorrectDay: '2026-10-02' }]]) });
     expect(idx.mastered(g)).toBe(true);
     expect(new ProgressIndex({ cards: [], grammarUses: new Map([['g1', { correct: 1, lastCorrect: true }]]) }).status(g)).toBe('learned');
+  });
+
+  it('Phase 25: the third correct use only counts on a later day than the first (profile time zone)', () => {
+    const g: ItemRef = { kind: 'grammar', id: 'g' };
+    const ev = (kind: string, iso: string) => ({ item: g, kind: kind as never, at: new Date(iso) });
+    const tz = 'America/New_York';
+    const index = (evidence: ReturnType<typeof ev>[]) => {
+      const grammarUses = grammarUsesFromEvidence(evidence, undefined, tz);
+      return { idx: new ProgressIndex({ cards: [], grammarUses }), dots: grammarDots(grammarUses.get('g')) };
+    };
+    // Three right in one sitting: 2 of 3, not mastered.
+    const sameDay = index([
+      ev('cloze_correct_nohint', '2026-10-08T14:00:00Z'),
+      ev('cloze_correct_nohint', '2026-10-08T14:01:00Z'),
+      ev('cloze_correct_nohint', '2026-10-08T14:02:00Z'),
+    ]);
+    expect(sameDay.dots).toBe(2);
+    expect(sameDay.idx.mastered(g)).toBe(false);
+    expect(sameDay.idx.learned(g)).toBe(true);
+    // 01:00 UTC on the 9th is still the 8th in New York: still the same day.
+    expect(index([ev('cloze_correct_nohint', '2026-10-08T14:00:00Z'), ev('cloze_correct_nohint', '2026-10-08T15:00:00Z'), ev('review_good', '2026-10-09T01:00:00Z')]).dots).toBe(2);
+    // The next day: mastered.
+    const nextDay = index([
+      ev('cloze_correct_nohint', '2026-10-08T14:00:00Z'),
+      ev('cloze_correct_nohint', '2026-10-08T14:01:00Z'),
+      ev('review_good', '2026-10-09T13:00:00Z'),
+    ]);
+    expect(nextDay.dots).toBe(3);
+    expect(nextDay.idx.mastered(g)).toBe(true);
+    // A miss after that: not mastered until a correct use again.
+    expect(index([
+      ev('cloze_correct_nohint', '2026-10-08T14:00:00Z'),
+      ev('cloze_correct_nohint', '2026-10-08T14:01:00Z'),
+      ev('review_good', '2026-10-09T13:00:00Z'),
+      ev('cloze_wrong', '2026-10-09T13:05:00Z'),
+    ]).idx.mastered(g)).toBe(false);
+    expect(grammarDots(undefined)).toBe(0);
+    // What the step says afterwards.
+    const u = (correct: number, first: string, last: string, lastCorrect = true) => ({ correct, lastCorrect, firstCorrectDay: first, lastCorrectDay: last });
+    expect(grammarOutcome(u(3, '2026-10-08', '2026-10-08'), '2026-10-08')).toBe('tomorrow');
+    expect(grammarOutcome(u(2, '2026-10-08', '2026-10-08'), '2026-10-08')).toBe('tomorrow');
+    expect(grammarOutcome(u(1, '2026-10-08', '2026-10-08'), '2026-10-08')).toBe('more');
+    expect(grammarOutcome(u(3, '2026-10-07', '2026-10-08'), '2026-10-08')).toBe('mastered');
+    expect(grammarOutcome(u(2, '2026-10-07', '2026-10-07'), '2026-10-08')).toBe('more');
+    expect(grammarOutcome(undefined, '2026-10-08')).toBe('more');
+    expect(grammarDots({ correct: 1, lastCorrect: true, firstCorrectDay: '2026-10-08', lastCorrectDay: '2026-10-08' })).toBe(1);
   });
 
   it('one lesson item set: vocab + grammar words − proper nouns, then grammar, de-duplicated', () => {

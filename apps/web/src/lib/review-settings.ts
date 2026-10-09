@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { DEFAULT_SESSION_SETTINGS, isValidTimeZone, sanitizeSessionSettings, type SessionSettings } from '@anan/core';
 import { currentSession, db, onSessionChange } from '../db/instance.js';
 import { setBulkCapSource } from './learner-service.js';
+import { markStudyDirty } from './study-dirty.js';
 
 /** Phase 20: Settings → Review. Per profile (the `settings` table syncs with the profile).
  * Phase 23: the two review sessions (time zone, times) and the cap per session. */
@@ -64,9 +65,12 @@ export async function getReviewSettings(): Promise<ReviewSettings> {
 }
 
 export async function updateReviewSettings(patch: Partial<ReviewSettings>): Promise<void> {
+  const zoneChanged = patch.timeZone !== undefined && patch.timeZone !== settings.timeZone;
   settings = sanitizeReviewSettings({ ...settings, ...patch });
   loaded = true;
   notify();
+  // Phase 25: grammar days are counted in this zone, so progress is recomputed.
+  if (zoneChanged) markStudyDirty();
   await db.settings.put({ key: KEY, value: settings });
 }
 

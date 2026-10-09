@@ -138,8 +138,11 @@ export function reorderTiles(zh: string, lexicon: Lexicon, allowed?: (headword: 
 
 const UNITS_LONGEST_FIRST = [...NUMBER_UNITS].sort((a, b) => b.length - a.length);
 
+/** A sentence-final particle is always its own tile (您呢 is two tiles, so 呢 can be practised). */
+const FINAL_PARTICLE = /^.+[呢嗎吧啊]$/u;
+
 function segmentChunk(chars: string[], lexicon: Lexicon, allowed?: (h: string) => boolean): string[] {
-  const ok = (w: string) => lexicon.lookup(w).length > 0 && (!allowed || allowed(w));
+  const ok = (w: string) => !FINAL_PARTICLE.test(w) && lexicon.lookup(w).length > 0 && (!allowed || allowed(w));
   const max = Math.min(lexicon.maxHeadwordLength, chars.length);
   const fmm: string[] = [];
   for (let i = 0; i < chars.length; ) {

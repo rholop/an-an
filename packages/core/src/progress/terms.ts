@@ -9,6 +9,7 @@ import type { Level } from '../levels.config.js';
 import type { Lesson } from '../textbook/types.js';
 import type { Evidence, ItemRef, Skill, Word } from '../types.js';
 import { PROGRESS_CONFIG, type ProgressConfig } from './progress.config.js';
+import { DEFAULT_SESSION_SETTINGS, zonedDay } from './review-sessions.js';
 
 export const itemKeyOf = (i: ItemRef): string => `${i.kind}:${i.id}`;
 
@@ -170,12 +171,31 @@ export function levelItems(level: Level, words: readonly Pick<Word, 'id' | 'sour
 export interface GrammarUse {
   correct: number;
   lastCorrect: boolean;
+  /** Phase 25: the profile-zone days (YYYY-MM-DD) of the first and the latest correct use. */
+  firstCorrectDay?: string;
+  lastCorrectDay?: string;
 }
 
-/** Correct-use tallies per grammar point from the evidence log (cloze, journal, review). */
+/**
+ * Phase 25: the correct uses that count toward Mastered (the progress dots, 0–3). The last one only
+ * counts on a later day than the first, so mastery means remembering, not cramming one sitting.
+ */
+export function grammarDots(
+  u: GrammarUse | undefined,
+  cfg: Pick<ProgressConfig, 'mastered'> = PROGRESS_CONFIG,
+): number {
+  if (!u) return 0;
+  const need = cfg.mastered.grammarCorrectUses;
+  const laterDay = !!u.firstCorrectDay && !!u.lastCorrectDay && u.lastCorrectDay > u.firstCorrectDay;
+  return Math.min(u.correct, laterDay ? need : need - 1);
+}
+
+/** Correct-use tallies per grammar point from the evidence log (cloze, journal, review). Days are
+ * counted in `timeZone` (the profile's review time zone). */
 export function grammarUsesFromEvidence(
   evidence: readonly Pick<Evidence, 'item' | 'kind' | 'at'>[],
   cfg: Pick<ProgressConfig, 'grammarCorrectKinds' | 'grammarWrongKinds'> = PROGRESS_CONFIG,
+  timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone,
 ): Map<string, GrammarUse> {
   const ok = new Set<string>(cfg.grammarCorrectKinds);
   const bad = new Set<string>(cfg.grammarWrongKinds);
@@ -186,9 +206,32 @@ export function grammarUsesFromEvidence(
   for (const e of sorted) {
     const cur = out.get(e.item.id) ?? { correct: 0, lastCorrect: false };
     const correct = ok.has(e.kind);
-    out.set(e.item.id, { correct: cur.correct + (correct ? 1 : 0), lastCorrect: correct });
+    if (!correct) {
+      out.set(e.item.id, { ...cur, lastCorrect: false });
+      continue;
+    }
+    const day = zonedDay(e.at, timeZone);
+    out.set(e.item.id, {
+      correct: cur.correct + 1,
+      lastCorrect: true,
+      firstCorrectDay: cur.firstCorrectDay ?? day,
+      lastCorrectDay: day,
+    });
   }
   return out;
+}
+
+/** Phase 25: what to tell the learner about a point after practice (`today` = the profile-zone day). */
+export function grammarOutcome(
+  u: GrammarUse | undefined,
+  today: string,
+  cfg: Pick<ProgressConfig, 'mastered'> = PROGRESS_CONFIG,
+): 'mastered' | 'tomorrow' | 'more' {
+  const need = cfg.mastered.grammarCorrectUses;
+  if (u?.lastCorrect && grammarDots(u, cfg) >= need) return 'mastered';
+  // Enough right answers, but all since today: only a later day can finish it.
+  if (u?.lastCorrect && u.correct >= need - 1 && u.firstCorrectDay === today) return 'tomorrow';
+  return 'more';
 }
 
 export interface ProgressIndexInputs {
@@ -233,6 +276,11 @@ export class ProgressIndex {
     this.known = new Set(inputs.knownItems ?? []);
     this.cfg = inputs.config ?? PROGRESS_CONFIG;
     this.grammarUses = inputs.grammarUses ?? new Map();
+  }
+
+  /** Phase 25: a grammar point's correct-use tally (the progress dots). */
+  grammarUse(id: string): GrammarUse | undefined {
+    return this.grammarUses.get(id);
   }
 
   card(i: ItemRef, skill: 'recognition' | 'production'): SkillCard | undefined {
@@ -293,11 +341,11 @@ export class ProgressIndex {
   }
 
   /** **Mastered**: recognition ≥ 21 d and production ≥ 7 d, not a leech; or passed the check and not
-   * contradicted since. Grammar: 3 correct uses, the last one correct. */
+   * contradicted since. Grammar: 3 correct uses, the last one correct and on a later day than the first (Phase 25). */
   mastered(i: ItemRef): boolean {
     if (i.kind === 'grammar') {
       const u = this.grammarUses.get(i.id);
-      if (u && u.correct >= this.cfg.mastered.grammarCorrectUses && u.lastCorrect) return true;
+      if (u && u.lastCorrect && grammarDots(u, this.cfg) >= this.cfg.mastered.grammarCorrectUses) return true;
       if (this.checkedKnown(this.card(i, 'recognition')) && !(u && !u.lastCorrect)) return true;
       return this.legacyKnown(i);
     }

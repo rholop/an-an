@@ -8,6 +8,8 @@ export interface LessonProgress extends LearnedMastered {
   lessonId: string;
   grammarTotal: number;
   grammarMastered: number;
+  /** Phase 25: points with at least one answer (right or wrong). */
+  grammarPractised: number;
   scenariosTotal: number;
   scenariosDone: number;
   promptsTotal: number;
@@ -34,6 +36,7 @@ export function lessonProgress(lesson: Lesson, inputs: LessonProgressInputs): Le
     lessonId: lesson.id,
     grammarTotal: grammar.length,
     grammarMastered: grammar.filter((g) => inputs.index.mastered(g)).length,
+    grammarPractised: grammar.filter((g) => !!inputs.index.grammarUse(g.id) || inputs.index.learned(g)).length,
     scenariosTotal: lesson.scenarios.length,
     scenariosDone: lesson.scenarios.filter((s) => inputs.completedScenarioIds?.has(s)).length,
     promptsTotal: lesson.journalPrompts.length,

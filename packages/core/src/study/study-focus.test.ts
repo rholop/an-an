@@ -86,7 +86,7 @@ const card = (id: string, skill: 'recognition' | 'production', stability: number
 const masteredWord = (id: string) => [card(id, 'recognition', 30), card(id, 'production', 10)];
 const masteredCards = (ids: string[]) => ids.flatMap(masteredWord);
 const coreOf = (b: Textbook) => b.lessons.flatMap((l) => l.vocab.filter((id) => !l.properNouns.includes(id)));
-const grammarDone = (ids: string[]): Map<string, GrammarUse> => new Map(ids.map((g) => [g, { correct: 3, lastCorrect: true }]));
+const grammarDone = (ids: string[]): Map<string, GrammarUse> => new Map(ids.map((g) => [g, { correct: 3, lastCorrect: true, firstCorrectDay: '2026-10-01', lastCorrectDay: '2026-10-02' }]));
 const levelIds = (lv: Level) => Array.from({ length: 10 }, (_, i) => `${lv}-${i}`);
 const lessonItems = (bookId: string) => {
   const b = books.find((x) => x.id === bookId)!;
@@ -166,7 +166,7 @@ describe('getStudyFocus', () => {
     expect(base([card('laixue-1-w1a', 'recognition', 30), card('laixue-1-w1a', 'production', 10, { leech: true })])).toBe(0);
     expect(base([], new Map([['g-laixue-1-1', { correct: 2, lastCorrect: true }]]))).toBe(0);
     expect(base([], new Map([['g-laixue-1-1', { correct: 5, lastCorrect: false }]]))).toBe(0);
-    expect(base([], new Map([['g-laixue-1-1', { correct: 3, lastCorrect: true }]]))).toBe(1);
+    expect(base([], new Map([['g-laixue-1-1', { correct: 3, lastCorrect: true, firstCorrectDay: '2026-10-01', lastCorrectDay: '2026-10-02' }]]))).toBe(1);
   });
 
   it('after a tier’s lessons the rest of that TOCFL level comes next (frontier order), then the next level', () => {
@@ -312,7 +312,7 @@ describe('due-review ordering and grammar evidence', () => {
   it('grammar tallies come from the evidence log, in time order', () => {
     const e = (kind: string, d: number) => ({ item: { kind: 'grammar' as const, id: 'g' }, kind: kind as never, at: new Date(2026, 0, d) });
     const u = grammarUsesFromEvidence([e('cloze_correct_nohint', 1), e('journal_correct_use', 2), e('cloze_wrong', 4), e('cloze_correct_nohint', 3)]);
-    expect(u.get('g')).toEqual({ correct: 3, lastCorrect: false });
+    expect(u.get('g')).toMatchObject({ correct: 3, lastCorrect: false });
     expect(stepKey({ kind: 'level', level: 'N1' })).toBe('level:N1');
   });
 });

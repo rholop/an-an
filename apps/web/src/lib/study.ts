@@ -21,6 +21,7 @@ import { allTouchedCards } from '../db/queries.js';
 import { setKnownItemsSource } from './learner-service.js';
 import { catchUpClassCoverage, peekMyClass, useMyClass } from './my-class.js';
 import { registerAfterMerge } from './profile-controller.js';
+import { getReviewSettings } from './review-settings.js';
 import { markStudyDirty, onStudyDirty, studyVersion } from './study-dirty.js';
 import { useLexicon } from './useLexicon.js';
 import { useTextbook } from './textbook-data.js';
@@ -166,15 +167,17 @@ export function getProgressNow(): Promise<ProgressData> {
   const version = studyVersion();
   const data = (async () => {
     await load();
-    const [cards, evidence] = await Promise.all([
+    const [cards, evidence, review] = await Promise.all([
       allTouchedCards(db),
       db.evidence
         .where('kind')
         .anyOf([...PROGRESS_CONFIG.grammarCorrectKinds, ...PROGRESS_CONFIG.grammarWrongKinds, 'evidence_undone'])
         .toArray()
         .catch(() => db.evidence.toArray()),
+      getReviewSettings(),
     ]);
-    const grammarUses = grammarUsesFromEvidence(activeEvidence(evidence));
+    // Phase 25: a grammar point's days are the profile's review time-zone days.
+    const grammarUses = grammarUsesFromEvidence(activeEvidence(evidence), undefined, review.timeZone);
     return { cards, grammarUses, index: new ProgressIndex({ cards, grammarUses, knownItems: settings.knownItems }) };
   })();
   dataCache = { version, data };

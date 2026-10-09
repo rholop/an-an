@@ -49,6 +49,11 @@ describe('reorderTiles (Phase 25: number + measure word, scope-aware)', () => {
     expect(reorderTiles('我每天才睡覺。', lexicon, allowed)).toEqual(['我', '每天', '才', '睡覺', '。']);
   });
 
+  it('a sentence-final particle is its own tile', () => {
+    const lex = new Lexicon(['我', '叫', '家文', '您', '您呢'].map(w), []);
+    expect(reorderTiles('我叫家文，您呢？', lex)).toEqual(['我', '叫', '家文', '，', '您', '呢', '？']);
+  });
+
   it('a tie on tile count goes to backward matching (請/進來)', () => {
     expect(reorderTiles('請進來。', lexicon, (h) => h !== '進來' || true)).toEqual(['請', '進來', '。']);
   });

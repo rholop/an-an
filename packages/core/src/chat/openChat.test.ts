@@ -166,7 +166,7 @@ function focusFor(masteredWordIds: string[] = [], myClass?: { enabled: boolean; 
         { ...card(x, 'review', 30) },
         { ...card(x, 'review', 30), skill: 'production' as const },
       ]),
-      grammarUses: new Map([['gram-le', { correct: 3, lastCorrect: true }]]),
+      grammarUses: new Map([['gram-le', { correct: 3, lastCorrect: true, firstCorrectDay: '2026-10-01', lastCorrectDay: '2026-10-02' }]]),
       settings: { ...DEFAULT_STUDY_SETTINGS },
       ...(myClass ? { myClass } : {}),
     },

@@ -219,6 +219,7 @@ describe('lessonProgress', () => {
     expect(p.learned).toBe(3); // a, c, gram-1 (one correct use)
     expect(p.mastered).toBe(1); // c
     expect(p.grammarMastered).toBe(0);
+    expect(p.grammarPractised).toBe(1);
     expect(lessonDone(p)).toBe(false);
   });
 });
