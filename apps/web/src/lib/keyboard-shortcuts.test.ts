@@ -89,13 +89,16 @@ describe('keyboard shortcuts', () => {
   describe('global keyboard listener', () => {
     const bodyTarget = { tagName: 'BODY' } as unknown as EventTarget;
     const inputTarget = { tagName: 'INPUT', type: 'text' } as unknown as EventTarget;
+    const dispatchKey = (event: object) => {
+      (window as unknown as { dispatchEvent: (event: unknown) => boolean }).dispatchEvent(event);
+    };
 
     it('triggers next on Space', () => {
       const cleanup = initKeyboardShortcuts();
       const nextSpy = vi.fn();
       const unbind = registerShortcut('next', nextSpy);
 
-      window.dispatchEvent({
+      dispatchKey({
         type: 'keydown',
         key: ' ',
         code: 'Space',
@@ -112,7 +115,7 @@ describe('keyboard shortcuts', () => {
       const levelSpy = vi.fn();
       const unbind = registerShortcut('toggle-level', levelSpy);
 
-      window.dispatchEvent({
+      dispatchKey({
         type: 'keydown',
         key: 'l',
         preventDefault: vi.fn(),
@@ -129,7 +132,7 @@ describe('keyboard shortcuts', () => {
       const audioSpy = vi.fn();
       const unbind = registerShortcut('play-audio', audioSpy);
 
-      window.dispatchEvent({
+      dispatchKey({
         type: 'keydown',
         key: 'p',
         preventDefault: vi.fn(),
@@ -137,7 +140,7 @@ describe('keyboard shortcuts', () => {
       });
       expect(audioSpy).toHaveBeenCalledTimes(1);
 
-      window.dispatchEvent({
+      dispatchKey({
         type: 'keydown',
         key: 'r',
         preventDefault: vi.fn(),
@@ -157,7 +160,7 @@ describe('keyboard shortcuts', () => {
       const unbind1 = registerShortcut('choice-1', choice1Spy);
       const unbind4 = registerShortcut('choice-4', choice4Spy);
 
-      window.dispatchEvent({
+      dispatchKey({
         type: 'keydown',
         key: '1',
         preventDefault: vi.fn(),
@@ -165,7 +168,7 @@ describe('keyboard shortcuts', () => {
       });
       expect(choice1Spy).toHaveBeenCalledTimes(1);
 
-      window.dispatchEvent({
+      dispatchKey({
         type: 'keydown',
         key: '4',
         preventDefault: vi.fn(),
@@ -183,7 +186,7 @@ describe('keyboard shortcuts', () => {
       const audioSpy = vi.fn();
       const unbind = registerShortcut('play-audio', audioSpy);
 
-      window.dispatchEvent({
+      dispatchKey({
         type: 'keydown',
         key: 'p',
         preventDefault: vi.fn(),
@@ -200,7 +203,7 @@ describe('keyboard shortcuts', () => {
       const submitSpy = vi.fn();
       const unbind = registerShortcut('submit', submitSpy);
 
-      window.dispatchEvent({
+      dispatchKey({
         type: 'keydown',
         key: 'Enter',
         preventDefault: vi.fn(),
