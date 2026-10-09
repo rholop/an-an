@@ -18,6 +18,8 @@ import { useMyClass } from './lib/my-class.js';
 import { useStudyContextRegistration } from './lib/study.js';
 import { ToastHost } from './components/ToastHost.js';
 import { useLedger } from './lib/ledger.js';
+import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal.js';
+import { initKeyboardShortcuts } from './lib/keyboard-shortcuts.js';
 import { currentSession } from './db/instance.js';
 import { LEVEL, levelLabel, levelShort, navTextbookLabel, pct, UNSAVED_WARNING } from './lib/labels.js';
 // Phase 21: the stored target retention is applied at start, on profile switch and after a sync.
@@ -96,7 +98,7 @@ export type Route =
 
 /** Phase 7 §2: the header level picker (visible on every screen) plus the
  * "Ready to try L3?" prompt — a suggestion only, never an automatic switch. */
-function LevelHeader({ route }: { route: Route }) {
+function LevelHeader({ route, onOpenShortcuts }: { route: Route; onOpenShortcuts: () => void }) {
   const lexiconState = useLexicon();
   const { level, setLevel } = useCurrentLevel();
   // Phase 13: while "My class" is on, show which level the current book matches (a hint; never changes the choice).
@@ -122,7 +124,17 @@ function LevelHeader({ route }: { route: Route }) {
       <ProfileChip />
       <LevelPicker value={level} onChange={(l) => void setLevel(l)} shownLabel={LEVEL} />
       {classOn && <ClassLevelHint text={classLevelHint(classBook, classLesson) ?? ""} />}
-      <div className="header-theme">
+      <div className="header-actions">
+        <button
+          type="button"
+          className="header-shortcuts-btn"
+          title="Keyboard shortcuts (?)"
+          aria-label="Keyboard shortcuts"
+          onClick={onOpenShortcuts}
+          data-testid="header-shortcuts-btn"
+        >
+          ⌨️
+        </button>
         <ThemeToggle />
       </div>
       {suggestion && dismissed !== suggestion && (
@@ -233,6 +245,18 @@ export function App() {
   useStudyContextRegistration();
   useLookupGateRegistration();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  useEffect(() => {
+    const unbind = initKeyboardShortcuts();
+    const handleToggle = () => setShortcutsOpen((o) => !o);
+    window.addEventListener('anan:toggle-shortcuts-help', handleToggle);
+    return () => {
+      unbind();
+      window.removeEventListener('anan:toggle-shortcuts-help', handleToggle);
+    };
+  }, []);
+
   // Phase 22: the nav's due badge is the same number as Home and Review.
   const ledger = useLedger();
   // The tab bar only exists on a phone-width screen (the CSS hides it above 640px too,
@@ -247,7 +271,7 @@ export function App() {
 
   return (
     <div className="app">
-      <LevelHeader route={route} />
+      <LevelHeader route={route} onOpenShortcuts={() => setShortcutsOpen(true)} />
       <TopNav
         route={route}
         onGo={go}
@@ -276,6 +300,7 @@ export function App() {
         </Suspense>
       </main>
       <ToastHost />
+      <KeyboardShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       {isPhoneWidth && (
         <TabBar
           route={route}

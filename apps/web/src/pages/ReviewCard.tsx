@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { GrammarItem, Lexicon, ReviewFace, SkillCard, Word } from '@anan/core';
+import { useKeyboardShortcut } from '../lib/keyboard-shortcuts.js';
 import {
   charsInWord,
   glossFor,
@@ -175,6 +176,14 @@ function FlipFace({
       ? [word.headword, ...word.variants].map(normaliseAnswer).includes(normaliseAnswer(typed))
       : undefined;
   const notes = face === 'say' && word ? sandhiNotes(word) : [];
+
+  useKeyboardShortcut('next', () => onReveal(), !revealed);
+  useKeyboardShortcut('choice-1', () => onRate('again', { face }), revealed);
+  useKeyboardShortcut('choice-2', () => onRate('hard', { face }), revealed);
+  useKeyboardShortcut('choice-3', () => onRate('good', { face }), revealed);
+  useKeyboardShortcut('choice-4', () => onRate('easy', { face }), revealed);
+  useKeyboardShortcut('next', () => onRate('good', { face }), revealed);
+
   return (
     <>
       <div className="review-card-front" lang={grammar || zhFront ? 'zh-Hant' : undefined}>
@@ -280,6 +289,20 @@ function PickFace({
 }) {
   const [picked, setPicked] = useState<Word | null>(null);
   const right = picked?.id === word.id;
+
+  useKeyboardShortcut('choice-1', () => { if (!picked && options[0]) setPicked(options[0]); }, !picked);
+  useKeyboardShortcut('choice-2', () => { if (!picked && options[1]) setPicked(options[1]); }, !picked);
+  useKeyboardShortcut('choice-3', () => { if (!picked && options[2]) setPicked(options[2]); }, !picked);
+  useKeyboardShortcut('choice-4', () => { if (!picked && options[3]) setPicked(options[3]); }, !picked);
+
+  useKeyboardShortcut('choice-2', () => { if (picked && right) onRate('hard', { face: 'pick' }); }, Boolean(picked && right));
+  useKeyboardShortcut('choice-3', () => { if (picked && right) onRate('good', { face: 'pick' }); }, Boolean(picked && right));
+  useKeyboardShortcut('next', () => {
+    if (!picked) return;
+    if (right) onRate('good', { face: 'pick' });
+    else onRate('again', { face: 'pick', pickedId: picked.id });
+  }, Boolean(picked));
+
   return (
     <>
       <div className="review-card-front">{gloss}</div>
