@@ -46,6 +46,7 @@ export function ReviewPage({
   onExit,
   exitLabel = '← Back to garden',
   title,
+  lesson,
   reviewAll = false,
   keepEvery = reviewAll,
 }: {
@@ -54,6 +55,8 @@ export function ReviewPage({
   onExit?: () => void;
   exitLabel?: string;
   title?: string;
+  /** Phase 25: the lesson these cards are studied in (its meaning of a word is shown). */
+  lesson?: { bookId: string; n: number };
   reviewAll?: boolean;
   keepEvery?: boolean;
 } = {}) {
@@ -380,6 +383,7 @@ export function ReviewPage({
           onRate={rate}
           onNope={() => void sayNope()}
           confusables={confusables}
+          {...(lesson ? { glossLesson: lesson } : {})}
           devPosition={import.meta.env.DEV ? `#${index + 1} of ${queue.length} · seed ${seed}` : undefined}
         />
       )}

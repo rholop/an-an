@@ -54,4 +54,4 @@ scenarios:
 journalPrompts:
   - { en: "Write a paragraph about a vacation: where you went and how you got there (是……的, 怎麼).", zh: 我是搭飛機去海邊的。, words: [海邊, 搭, 飛機, 船], grammar: [gram-shi-de-focus, gram-zenme-how] }
   - { en: "Describe the scenery and how things felt, while doing two things at once (……起來, 一邊……一邊……).", words: [風景, 美, 輕鬆, 心情], grammar: [gram-qilai-judgement, gram-yibian-yibian] }
-  - { en: "Write a paragraph about what you did at the beach and how the holiday made you feel (一邊……一邊……, ……起來).", words: [潛水, 教練, 容易, 到處], grammar: [gram-yibian-yibian, gram-qilai-judgement] }
+  - { en: "Write about learning something new on a holiday, like diving: who taught you, how you did it and how easy it was (是……的, 怎麼).", words: [潛水, 教練, 容易, 到處], grammar: [gram-shi-de-focus, gram-zenme-how] }

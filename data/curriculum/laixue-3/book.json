@@ -210,7 +210,7 @@
           {
             "id": "laixue-3-L02-jp3",
             "lessonId": "laixue-3-L02",
-            "promptEn": "Write a paragraph about what you did at the beach and how the holiday made you feel (一邊……一邊……, ……起來).",
+            "promptEn": "Write about learning something new on a holiday, like diving: who taught you, how you did it and how easy it was (是……的, 怎麼).",
             "useWords": [
               "tb-56f1526e62",
               "tocfl-82af27379c",
@@ -218,8 +218,8 @@
               "tocfl-d9830c4fd8"
             ],
             "useGrammar": [
-              "gram-yibian-yibian",
-              "gram-qilai-judgement"
+              "gram-shi-de-focus",
+              "gram-zenme-how"
             ],
             "level": "L2"
           }
@@ -540,7 +540,7 @@
             ],
             "useGrammar": [
               "gram-meiyou-nameme",
-              "gram-separable-verbs"
+              "gram-vv-kan"
             ],
             "level": "L2"
           }
@@ -784,7 +784,6 @@
         ],
         "vocab": [
           "tocfl-8abea085c6",
-          "tocfl-011f6bb56c",
           "tocfl-9cb986e3f0",
           "tocfl-2e68729384",
           "tocfl-059bef5d9b",
@@ -858,8 +857,7 @@
               "tocfl-059bef5d9b",
               "tocfl-53b04d894c",
               "tocfl-6165f2568c",
-              "tocfl-2e5c8f05a2",
-              "tocfl-011f6bb56c"
+              "tocfl-2e5c8f05a2"
             ],
             "useGrammar": [
               "gram-bei-passive",

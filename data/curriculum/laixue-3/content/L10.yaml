@@ -11,7 +11,7 @@ sentences:
   - { zh: 我不知道怎麼去。, en: "I don't know how to get there.", grammar: [gram-buzhidao-clause] }
   - { zh: 他不知道這個字怎麼寫。, en: "He doesn't know how to write this character.", grammar: [gram-buzhidao-clause] }
   - { zh: 我不知道老師什麼時候回來。, en: "I don't know when the teacher will be back.", grammar: [gram-buzhidao-clause] }
-  - { zh: 我不知道考試的成績。, en: "I don't know the exam results.", grammar: [gram-buzhidao-clause] }
+  - { zh: 我不知道考試的成績怎麼樣。, en: "I don't know how my exam results turned out.", grammar: [gram-buzhidao-clause] }
   - { zh: 我不知道你是不是同意。, en: "I don't know whether you agree.", grammar: [gram-buzhidao-clause] }
   - { zh: 他的中文比我更流利。, en: "His Chinese is even more fluent than mine.", grammar: [gram-geng-more] }
   - { zh: 這個句子更難。, en: "This sentence is even harder.", grammar: [gram-geng-more] }

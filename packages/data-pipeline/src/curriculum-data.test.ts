@@ -9,7 +9,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
+  buildLessonGrammarStep,
   checkTaiwanness,
+  glossFor,
+  lessonTileWords,
+  sentenceTiles,
   courseLessonLevel,
   courseOrdinal,
   LAIXUE_COURSE,
@@ -332,5 +336,66 @@ describe('textbook copyright handling', () => {
         } else expect(ids.has(g.id), `${g.id} re-teaches an unknown point`).toBe(true);
       }
     }
+  });
+});
+
+describe.skipIf(!base || builtIds.length < 4)('Phase 25: lesson content fixes (spot checks)', () => {
+  const sentencesOf = (id: string) =>
+    (JSON.parse(readFileSync(sentFile(id), 'utf8')) as { sentences: SentenceBankEntry[] }).sentences;
+  const allSentences = builtIds.flatMap(sentencesOf);
+  const grammarItems = builtIds.flatMap((id) => loadBook(id).grammarItems);
+
+  it('every grammar point of every lesson in all 4 books gets 3 exercises of at least 2 types', () => {
+    for (const bookId of builtIds) {
+      const own = sentencesOf(bookId);
+      for (const lesson of loadBook(bookId).textbook.lessons)
+        for (const seed of ['a', 'b', 'c']) {
+          const { plan } = buildLessonGrammarStep(lesson, grammarItems, own, { lexicon, bookId, books: courseBooks, seed });
+          for (const gid of lesson.grammar) {
+            const ex = plan.exercises.filter((e) => e.grammarId === gid);
+            expect(ex.length, `${bookId} L${lesson.n} ${gid}`).toBeGreaterThanOrEqual(3);
+            expect(new Set(ex.map((e) => e.type)).size, `${bookId} L${lesson.n} ${gid}`).toBeGreaterThanOrEqual(2);
+          }
+          expect(plan.exercises.length).toBe(lesson.grammar.length * 3);
+        }
+    }
+  });
+
+  it('readings: 南區 nán qū, 怎麼了 zěn me le, 三明治 keeps its -n, 噢 òu, 姊姊 jiě jie', () => {
+    const reading = (h: string) => lexicon.lookup(h).filter((w) => w.headword === h).map((w) => w.pinyin);
+    expect(reading('南區')).toEqual(['nán qū']);
+    expect(reading('怎麼了')).toEqual(['zěn me le']);
+    expect(reading('雞肉三明治')).toEqual(['jī ròu sān míng zhì']);
+    expect(new Set(reading('噢'))).toEqual(new Set(['òu']));
+    expect(new Set(reading('姊姊'))).toEqual(new Set(['jiě jie']));
+    expect(lexicon.allWords().filter((w) => /\s/.test(w.headword))).toEqual([]);
+  });
+
+  it('分 is "minute" in book 1 lesson 9, and book 1 teaches 姊姊 as the book writes it', () => {
+    const fen = loadBook('laixue-1').wordNotes.find((n) => n.headword === '分' && n.lesson === 9)!;
+    expect(glossFor(lexicon.byId(fen.wordId)!, { textbook: true, lesson: { bookId: 'laixue-1', n: 9 } })).toMatch(/minute/);
+    const l2 = loadBook('laixue-1').textbook.lessons[1]!;
+    expect(l2.vocab.map((id) => lexicon.byId(id)?.headword)).toContain('姊姊');
+    expect(sentencesOf('laixue-1').filter((s) => s.zh.includes('姐姐'))).toEqual([]);
+  });
+
+  it('十一點 is one reorder tile', () => {
+    const s = sentencesOf('laixue-1').find((x) => x.zh.includes('十一點'))!;
+    expect(sentenceTiles(s, lexicon, lessonTileWords(lexicon, courseBooks, s.lesson!, 'laixue-1'))).toContain('十一點');
+  });
+
+  it('Taiwan usage: no 自行車, no "Lisa" in Chinese, no 服務員 NPC, no names in study vocabulary', () => {
+    const zh = [
+      ...allSentences.map((s) => s.zh),
+      ...scenarios.flatMap((s) => [s.opener.zh, s.successLine.zh, s.npc.name, ...s.vocabExtras]),
+      ...builtIds.flatMap((id) => loadBook(id).textbook.lessons.flatMap((l) => l.journalPrompts.flatMap((p) => p.promptZh ?? []))),
+    ];
+    expect(zh.filter((z) => z.includes('自行車') || /Lisa/.test(z))).toEqual([]);
+    expect(scenarios.filter((s) => s.npc.name === '服務員').map((s) => s.id)).toEqual([]);
+    // the learner is never given a name (book 4 L1 called them 莉亞)
+    expect(scenarios.filter((s) => s.opener.zh.includes('莉亞')).map((s) => s.id)).toEqual([]);
+    for (const id of builtIds)
+      for (const l of loadBook(id).textbook.lessons)
+        expect(l.vocab.filter((v) => l.properNouns.includes(v) || lexicon.byId(v)?.tags.includes('name')), `${id} L${l.n}`).toEqual([]);
   });
 });

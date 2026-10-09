@@ -52,6 +52,6 @@ scenarios:
     opener: { zh: 您好！您要點什麼？熱咖啡還是冰咖啡？, en: "Hello! What would you like? Hot coffee or iced coffee?" }
     successLine: { zh: 好的，一杯熱咖啡，一個雞肉三明治，馬上來。, en: "Alright: one hot coffee and one chicken sandwich, coming right up." }
 journalPrompts:
-  - { en: "Write what you usually order at a coffee shop and whether you prefer hot or iced.", zh: 我喜歡喝熱的咖啡。, words: [咖啡店, 冰, 甜, 牛奶], grammar: [gram-de-omit-noun] }
+  - { en: "Write what you usually order at a coffee shop and whether you prefer hot or iced.", zh: 我不喝熱的，我要冰的。, words: [咖啡店, 冰, 甜, 牛奶], grammar: [gram-de-omit-noun] }
   - { en: "Say what you will do if the weather is hot or cold (如果……就……).", words: [如果, 就, 水, 飲料], grammar: [gram-ruguo-jiu] }
   - { en: "Compare two things that are the same (跟……一樣), for example two drinks or two friends.", words: [一樣, 紅茶, 蛋糕], grammar: [gram-gen-yiyang] }

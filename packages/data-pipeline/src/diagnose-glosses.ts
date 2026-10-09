@@ -5,7 +5,7 @@
  * 60 words and writes docs/gloss-diagnosis.md with a cause for each and the
  * counts per cause (sample and whole lexicon).
  *
- *   pnpm --filter @anan/data-pipeline diagnose:glosses [old.json] [new.json]
+ *   pnpm --filter @anan/data-pipeline diagnose:glosses <old.json> [new.json]
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -13,7 +13,12 @@ import { fileURLToPath } from 'node:url';
 import { LEVEL_IDS, Lexicon, ScenarioFileSchema, segment, type Level, type Word } from '@anan/core';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const oldPath = process.argv[2] ?? path.join(root, 'data/build/lexicon.v1.json');
+// Phase 25: the v1 lexicon is no longer shipped (it predates the textbook words); pass an old build.
+const oldPath = process.argv[2];
+if (!oldPath) {
+  console.error('Usage: diagnose:glosses <old lexicon.json> [new lexicon.json] (e.g. lexicon.v1.json from git history)');
+  process.exit(1);
+}
 const newPath = process.argv[3] ?? path.join(root, 'data/build/lexicon.v2.json');
 const load = (p: string) => JSON.parse(readFileSync(p, 'utf8')) as { words: Word[] };
 const oldWords = load(oldPath).words;

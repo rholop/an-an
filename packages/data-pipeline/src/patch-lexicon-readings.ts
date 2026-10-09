@@ -9,10 +9,11 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { toPinyinNumeric, type Word } from '@anan/core';
+import { lessonTag, textbookTag, toPinyinNumeric, type Word } from '@anan/core';
 import { MoeDictionary, resolveMoeReading } from './lib/moe.js';
 import { loadSupplementYaml } from './lib/supplement.js';
 import { applyLexiconOverrides, loadLexiconOverrides } from './lib/lexicon-overrides.js';
+import { addLessonSenses } from './lib/lesson-senses.js';
 import { normalizeRow } from './lib/normalize.js';
 import { readTocflWorkbook } from './lib/tocfl-source.js';
 
@@ -59,6 +60,23 @@ for (const id of overridden) {
   w.pinyinNumeric = toPinyinNumeric(w.pinyin || '?');
   changes.push(`${id}\t${w.headword}\toverride → ${w.pinyin}`);
 }
+const books = ['laixue-1', 'laixue-2', 'laixue-3', 'laixue-4'].map((id) => ({
+  id,
+  wordNotes: (JSON.parse(readFileSync(path.join(ROOT, `data/curriculum/${id}/book.json`), 'utf8')) as { wordNotes: Array<{ wordId: string; lesson: number; section?: string; glossEn: string }> }).wordNotes,
+}));
+// textbook tags for words a lesson added since the last full build (build-lexicon does the same)
+const byId = new Map(lex.words.map((w) => [w.id, w]));
+for (const { id: bookId, wordNotes } of books)
+  for (const note of wordNotes) {
+    const w = byId.get(note.wordId);
+    if (!w) continue;
+    for (const t of [textbookTag(bookId), lessonTag(note.lesson, bookId)])
+      if (!w.tags.includes(t)) {
+        w.tags.push(t);
+        changes.push(`${w.id}\t${w.headword}\ttag ${t}`);
+      }
+  }
+for (const id of addLessonSenses(lex.words, books)) changes.push(`${id}\tlesson sense`);
 console.log(changes.join('\n'));
 console.log(`${changes.length} changed, ${ambiguous} ambiguous`);
 if (process.argv.includes('--write')) {

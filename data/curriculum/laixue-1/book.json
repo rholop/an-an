@@ -343,7 +343,7 @@
             "id": "laixue-1-L04-jp1",
             "lessonId": "laixue-1-L04",
             "promptEn": "Describe your job (or studies) and say whether you like it.",
-            "promptZh": "我喜歡我的老師。",
+            "promptZh": "我是老師，我喜歡我的工作。",
             "useWords": [
               "tocfl-8cca6ed256",
               "tocfl-e6e5696c01",
@@ -879,7 +879,7 @@
           {
             "id": "laixue-1-L09-jp3",
             "lessonId": "laixue-1-L09",
-            "promptEn": "Describe a restaurant you like and what is delicious there.",
+            "promptEn": "Describe a restaurant you like, what is delicious there and which day of the week you go.",
             "useWords": [
               "tocfl-90c7688865",
               "moec-7d4eadc559",
@@ -966,7 +966,7 @@
           {
             "id": "laixue-1-L10-jp2",
             "lessonId": "laixue-1-L10",
-            "promptEn": "What do you practise, and who do you practise with?",
+            "promptEn": "What do you practise, and how well do you do it (說得很好, 寫得不錯)?",
             "useWords": [
               "tocfl-8607e5370f",
               "tocfl-7e76cc7921",
@@ -4464,7 +4464,7 @@
       "headword": "分",
       "pinyin": "fēn",
       "pos": [],
-      "glossEn": "0.01 yuan"
+      "glossEn": "minute (telling the time)"
     },
     {
       "wordId": "moec-ef2eb3bea9",

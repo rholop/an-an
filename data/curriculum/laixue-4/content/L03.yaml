@@ -22,7 +22,7 @@ sentences:
   - { zh: 等你有空，我們再去看房子。, en: "When you are free, we'll go look at houses.", grammar: [gram-deng-zai] }
   - { zh: 等電梯好了，我再搬進去。, en: "I'll move in once the elevator is fixed.", grammar: [gram-deng-zai] }
   - { zh: 等我吃完飯，再給你打電話。, en: "After I finish eating, I'll call you.", grammar: [gram-deng-zai] }
-  - { zh: 你等一下，我看完了再告訴你。, en: "Wait a moment; I'll tell you once I've finished reading.", grammar: [gram-deng-zai] }
+  - { zh: 等我看完了，再告訴你。, en: "I'll tell you once I've finished reading.", grammar: [gram-deng-zai] }
   - { zh: 等房租付完了，再說吧。, en: "Let's talk once the rent has been paid.", grammar: [gram-deng-zai] }
 scenarios:
   - slug: renting-apartment

@@ -14,7 +14,9 @@ const GrammarPointSchema = z.object({
   explanationEn: z.string().min(20),
   /** Regex source: which Chinese sentences exercise the pattern. */
   matcher: z.string(),
-  words: z.array(z.string()).optional(),
+  words: z
+    .array(z.union([z.string(), z.object({ headword: z.string(), glossEn: z.string(), id: z.string().optional() })]))
+    .optional(),
   focus: z.array(z.string()).default([]),
   /**
    * The book teaches this pattern again (or a second sense of it) after an

@@ -142,10 +142,10 @@
       "level": "L2",
       "tokens": [
         {
-          "text": "這"
+          "text": "這個"
         },
         {
-          "text": "個星期"
+          "text": "星期"
         },
         {
           "text": "是"
@@ -163,7 +163,10 @@
           "text": "二"
         },
         {
-          "text": "個星期"
+          "text": "個"
+        },
+        {
+          "text": "星期"
         }
       ],
       "source": "generated",
@@ -261,7 +264,7 @@
       "id": "tb-b3-L01-007",
       "zh": "他是第一個到公司的人。",
       "en": "He is the first person to arrive at the company.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-b4e24a4f77",
       "level": "L2",
       "tokens": [
         {
@@ -305,7 +308,7 @@
       "id": "tb-b3-L01-008",
       "zh": "我就是張家安。",
       "en": "I am Joann Zhang.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-e4fb6c1ab6",
       "level": "L2",
       "tokens": [
         {
@@ -866,7 +869,7 @@
       "id": "tb-b3-L01-023",
       "zh": "我學了兩年多中文。",
       "en": "I have studied Chinese for over two years.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-a6e36b0ec1",
       "level": "L2",
       "tokens": [
         {
@@ -907,7 +910,7 @@
       "id": "tb-b3-L01-024",
       "zh": "這件外套五百多塊。",
       "en": "This coat costs over five hundred dollars.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-2ab9d25b39",
       "level": "L2",
       "tokens": [
         {
@@ -989,7 +992,7 @@
       "id": "tb-b3-L01-026",
       "zh": "我等了二十多分鐘。",
       "en": "I waited more than twenty minutes.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-8ed2dbb53f",
       "level": "L2",
       "tokens": [
         {
@@ -1030,7 +1033,7 @@
       "id": "tb-b3-L01-027",
       "zh": "她在這裡住了三個多月。",
       "en": "She has lived here for over three months.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-87b2e4188b",
       "level": "L2",
       "tokens": [
         {
@@ -1147,7 +1150,7 @@
       "id": "tb-b3-L02-003",
       "zh": "這件外套穿起來很舒服。",
       "en": "This coat feels comfortable to wear.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-2ab9d25b39",
       "level": "L2",
       "tokens": [
         {
@@ -1188,7 +1191,7 @@
       "id": "tb-b3-L02-004",
       "zh": "這杯咖啡喝起來有點酸。",
       "en": "This cup of coffee tastes a little sour.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-7c491838af",
       "level": "L2",
       "tokens": [
         {
@@ -1899,7 +1902,7 @@
       "id": "tb-b3-L02-023",
       "zh": "你是跟誰一起去的？",
       "en": "Who did you go with?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-2d03bda470",
       "level": "L2",
       "tokens": [
         {
@@ -1984,7 +1987,7 @@
       "id": "tb-b3-L02-025",
       "zh": "她不是去年來的，她是今年來的。",
       "en": "She didn't come last year; she came this year.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-49b3a5dac4",
       "level": "L2",
       "tokens": [
         {
@@ -2034,7 +2037,7 @@
       "id": "tb-b3-L03-001",
       "zh": "從星期一到星期五，我都上班。",
       "en": "From Monday to Friday I work.",
-      "targetWordId": "tocfl-493bda239f",
+      "targetWordId": "tb-84b4437aca",
       "level": "L2",
       "tokens": [
         {
@@ -2119,7 +2122,7 @@
       "id": "tb-b3-L03-003",
       "zh": "從早上八點到下午五點，我在公司工作。",
       "en": "From eight in the morning to five in the afternoon I work at the company.",
-      "targetWordId": "tocfl-493bda239f",
+      "targetWordId": "tocfl-536228078b",
       "level": "L2",
       "tokens": [
         {
@@ -2225,7 +2228,7 @@
       "id": "tb-b3-L03-005",
       "zh": "從七月到九月，這裡的天氣都很熱。",
       "en": "From July to September the weather here is hot.",
-      "targetWordId": "tocfl-493bda239f",
+      "targetWordId": "moec-89d328370d",
       "level": "L2",
       "tokens": [
         {
@@ -2278,7 +2281,7 @@
       "id": "tb-b3-L03-006",
       "zh": "他從早上到晚上都在準備晚飯。",
       "en": "He is preparing dinner from morning till night.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-536228078b",
       "level": "L2",
       "tokens": [
         {
@@ -2325,7 +2328,7 @@
       "id": "tb-b3-L03-007",
       "zh": "從今天到下星期，我都有空。",
       "en": "From today until next week I am free.",
-      "targetWordId": "tocfl-493bda239f",
+      "targetWordId": "tb-11ebdba46e",
       "level": "L2",
       "tokens": [
         {
@@ -3481,7 +3484,7 @@
       "id": "tb-b3-L04-014",
       "zh": "他搬到東區了。",
       "en": "He has moved to the eastern district.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tb-233cb9724c",
       "level": "L2",
       "tokens": [
         {
@@ -3513,7 +3516,7 @@
       "id": "tb-b3-L04-015",
       "zh": "請你送到我的公司。",
       "en": "Please deliver it to my company.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-4bf2daaa1c",
       "level": "L2",
       "tokens": [
         {
@@ -3586,7 +3589,7 @@
       "id": "tb-b3-L04-017",
       "zh": "我走到公園，坐一下。",
       "en": "I walked to the park and sat for a bit.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-ffb21a1371",
       "level": "L2",
       "tokens": [
         {
@@ -3624,7 +3627,7 @@
       "id": "tb-b3-L04-018",
       "zh": "我們送到你家，好不好？",
       "en": "We'll deliver it to your home, okay?",
-      "targetWordId": "tocfl-1f6fbc0616",
+      "targetWordId": "moec-67f843d89c",
       "level": "L2",
       "tokens": [
         {
@@ -4057,7 +4060,7 @@
       "id": "tb-b3-L05-004",
       "zh": "我的中文沒有你那麼好。",
       "en": "My Chinese is not as good as yours.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-a6e36b0ec1",
       "level": "L2",
       "tokens": [
         {
@@ -4098,7 +4101,7 @@
       "id": "tb-b3-L05-005",
       "zh": "這家店的東西沒有那家那麼貴。",
       "en": "The things in this shop are not as expensive as at that one.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-f41f2a5f00",
       "level": "L2",
       "tokens": [
         {
@@ -4344,7 +4347,7 @@
       "id": "tb-b3-L05-011",
       "zh": "這件外套很好看，你穿穿看。",
       "en": "This coat looks nice; try it on.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-2ab9d25b39",
       "level": "L2",
       "tokens": [
         {
@@ -4438,7 +4441,7 @@
       "id": "tb-b3-L05-013",
       "zh": "我想學學看潛水。",
       "en": "I'd like to try learning to dive.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-56f1526e62",
       "level": "L2",
       "tokens": [
         {
@@ -4514,7 +4517,7 @@
       "id": "tb-b3-L05-015",
       "zh": "你問問看林老師吧。",
       "en": "Try asking Teacher Lin.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-e6e5696c01",
       "level": "L2",
       "tokens": [
         {
@@ -4553,28 +4556,31 @@
     },
     {
       "id": "tb-b3-L05-016",
-      "zh": "我喝了一杯茶。",
-      "en": "I drank a cup of tea.",
-      "targetWordId": "tocfl-df8a004869",
+      "zh": "我們唱了兩個小時歌。",
+      "en": "We sang for two hours.",
+      "targetWordId": "tocfl-1f6fbc0616",
       "level": "L2",
       "tokens": [
         {
-          "text": "我"
+          "text": "我們"
         },
         {
-          "text": "喝"
+          "text": "唱"
         },
         {
           "text": "了"
         },
         {
-          "text": "一"
+          "text": "兩"
         },
         {
-          "text": "杯"
+          "text": "個"
         },
         {
-          "text": "茶"
+          "text": "小時"
+        },
+        {
+          "text": "歌"
         }
       ],
       "source": "generated",
@@ -4593,7 +4599,7 @@
       "id": "tb-b3-L05-017",
       "zh": "我上了兩個鐘頭課。",
       "en": "I attended class for two hours.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-2bbec775ba",
       "level": "L2",
       "tokens": [
         {
@@ -4632,25 +4638,34 @@
     },
     {
       "id": "tb-b3-L05-018",
-      "zh": "他吃過臺灣菜。",
-      "en": "He has eaten Taiwanese food.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "zh": "他在海邊照了很多相。",
+      "en": "He took a lot of photos at the beach.",
+      "targetWordId": "moec-ffc3ae329c",
       "level": "L2",
       "tokens": [
         {
           "text": "他"
         },
         {
-          "text": "吃"
+          "text": "在"
         },
         {
-          "text": "過"
+          "text": "海邊"
         },
         {
-          "text": "臺灣"
+          "text": "照"
         },
         {
-          "text": "菜"
+          "text": "了"
+        },
+        {
+          "text": "很"
+        },
+        {
+          "text": "多"
+        },
+        {
+          "text": "相"
         }
       ],
       "source": "generated",
@@ -4669,7 +4684,7 @@
       "id": "tb-b3-L05-019",
       "zh": "我昨天跑了三十分鐘步。",
       "en": "Yesterday I jogged for thirty minutes.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-673b16280d",
       "level": "L2",
       "tokens": [
         {
@@ -4751,7 +4766,7 @@
       "id": "tb-b3-L05-021",
       "zh": "她唱了一個鐘頭歌。",
       "en": "She sang for an hour.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-f0cfbf0dc9",
       "level": "L2",
       "tokens": [
         {
@@ -4868,7 +4883,7 @@
       "id": "tb-b3-L05-024",
       "zh": "他看了兩個鐘頭電視。",
       "en": "He watched TV for two hours.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-2bbec775ba",
       "level": "L2",
       "tokens": [
         {
@@ -5070,7 +5085,7 @@
       "id": "tb-b3-L06-005",
       "zh": "我說完了，謝謝大家。",
       "en": "I have finished speaking; thank you, everyone.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-74372a9704",
       "level": "L2",
       "tokens": [
         {
@@ -5226,16 +5241,28 @@
     },
     {
       "id": "tb-b3-L06-009",
-      "zh": "我學懂了，謝謝老師。",
-      "en": "I've got it now; thank you, teacher.",
+      "zh": "老師說的我都聽懂了，謝謝老師。",
+      "en": "I understood everything you said. Thank you, teacher.",
       "targetWordId": "tocfl-ee30a1d90a",
       "level": "L2",
       "tokens": [
         {
+          "text": "老師"
+        },
+        {
+          "text": "說"
+        },
+        {
+          "text": "的"
+        },
+        {
           "text": "我"
         },
         {
-          "text": "學"
+          "text": "都"
+        },
+        {
+          "text": "聽"
         },
         {
           "text": "懂"
@@ -5779,7 +5806,7 @@
       "id": "tb-b3-L06-022",
       "zh": "請你慢慢地說。",
       "en": "Please speak slowly.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-08bd7ca439",
       "level": "L2",
       "tokens": [
         {
@@ -5844,9 +5871,9 @@
     },
     {
       "id": "tb-b3-L06-024",
-      "zh": "你慢慢地走，不要快。",
-      "en": "Walk slowly; don't rush.",
-      "targetWordId": "tocfl-c041cb3654",
+      "zh": "你慢慢地走，不要跑。",
+      "en": "Walk slowly; don't run.",
+      "targetWordId": "tocfl-08bd7ca439",
       "level": "L2",
       "tokens": [
         {
@@ -5865,7 +5892,7 @@
           "text": "不要"
         },
         {
-          "text": "快"
+          "text": "跑"
         }
       ],
       "source": "generated",
@@ -5926,7 +5953,7 @@
       "id": "tb-b3-L07-001",
       "zh": "我在公園看到了張家安。",
       "en": "I saw Joann Zhang in the park.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-e4fb6c1ab6",
       "level": "L2",
       "tokens": [
         {
@@ -5964,7 +5991,7 @@
       "id": "tb-b3-L07-002",
       "zh": "我找到了一個好旅館。",
       "en": "I found a good hotel.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-ed721d848c",
       "level": "L2",
       "tokens": [
         {
@@ -6002,7 +6029,7 @@
       "id": "tb-b3-L07-003",
       "zh": "我沒找到我的手機。",
       "en": "I didn't find my cell phone.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-ed721d848c",
       "level": "L2",
       "tokens": [
         {
@@ -6040,7 +6067,7 @@
       "id": "tb-b3-L07-004",
       "zh": "你買到想買的東西了嗎？",
       "en": "Did you manage to buy what you wanted?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-f41f2a5f00",
       "level": "L2",
       "tokens": [
         {
@@ -6087,7 +6114,7 @@
       "id": "tb-b3-L07-005",
       "zh": "這種東西在這裡買不到。",
       "en": "You can't buy this kind of thing here.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-f41f2a5f00",
       "level": "L2",
       "tokens": [
         {
@@ -6172,7 +6199,7 @@
       "id": "tb-b3-L07-007",
       "zh": "我想不到他會來。",
       "en": "I never thought he would come.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-7d7337da39",
       "level": "L2",
       "tokens": [
         {
@@ -6207,7 +6234,7 @@
       "id": "tb-b3-L07-008",
       "zh": "我已經準備好了。",
       "en": "I am already prepared.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-4b184214d5",
       "level": "L2",
       "tokens": [
         {
@@ -6239,7 +6266,7 @@
       "id": "tb-b3-L07-009",
       "zh": "你的論文寫好了嗎？",
       "en": "Have you finished writing your thesis?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-3a4ca9a0bd",
       "level": "L2",
       "tokens": [
         {
@@ -6309,7 +6336,7 @@
       "id": "tb-b3-L07-011",
       "zh": "菜做好了，大家來吃飯吧。",
       "en": "The food is ready; everyone come eat.",
-      "targetWordId": "tocfl-4ad14b75ea",
+      "targetWordId": "tocfl-8f3f370256",
       "level": "L2",
       "tokens": [
         {
@@ -6350,7 +6377,7 @@
       "id": "tb-b3-L07-012",
       "zh": "我還沒準備好去歐洲。",
       "en": "I'm not ready to go to Europe yet.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-70a8dc3890",
       "level": "L2",
       "tokens": [
         {
@@ -6391,7 +6418,7 @@
       "id": "tb-b3-L07-013",
       "zh": "他準備好了。",
       "en": "He is ready.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-70a8dc3890",
       "level": "L2",
       "tokens": [
         {
@@ -6668,7 +6695,7 @@
       "id": "tb-b3-L07-021",
       "zh": "我才學了三個月中文。",
       "en": "I have studied Chinese for only three months.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-96d0de2dac",
       "level": "L2",
       "tokens": [
         {
@@ -7234,9 +7261,9 @@
     },
     {
       "id": "tb-b3-L08-010",
-      "zh": "我的合約被他存在電腦裡了。",
-      "en": "My contract was saved by him on the computer.",
-      "targetWordId": "tocfl-814354e5a0",
+      "zh": "我的蛋糕被弟弟吃了。",
+      "en": "My cake was eaten by my younger brother.",
+      "targetWordId": "tocfl-9cb986e3f0",
       "level": "L2",
       "tokens": [
         {
@@ -7246,22 +7273,16 @@
           "text": "的"
         },
         {
-          "text": "合約"
+          "text": "蛋糕"
         },
         {
           "text": "被"
         },
         {
-          "text": "他"
+          "text": "弟弟"
         },
         {
-          "text": "存在"
-        },
-        {
-          "text": "電腦"
-        },
-        {
-          "text": "裡"
+          "text": "吃"
         },
         {
           "text": "了"
@@ -7707,7 +7728,7 @@
       "id": "tb-b3-L08-022",
       "zh": "請你用中文說一次。",
       "en": "Please say it once in Chinese.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-a6e36b0ec1",
       "level": "L2",
       "tokens": [
         {
@@ -7748,7 +7769,7 @@
       "id": "tb-b3-L08-023",
       "zh": "他用手機打電話。",
       "en": "He makes calls with his cell phone.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-d068a0edb6",
       "level": "L2",
       "tokens": [
         {
@@ -7815,7 +7836,7 @@
       "id": "tb-b3-L08-025",
       "zh": "你可以用信用卡買。",
       "en": "You can buy it with a credit card.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-c3953c91d1",
       "level": "L2",
       "tokens": [
         {
@@ -7970,7 +7991,7 @@
       "id": "tb-b3-L09-004",
       "zh": "我哥哥已經回來了。",
       "en": "My older brother has already come back.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-3fef802071",
       "level": "L2",
       "tokens": [
         {
@@ -8107,7 +8128,7 @@
       "id": "tb-b3-L09-008",
       "zh": "狗跑進來了。",
       "en": "The dog ran in.",
-      "targetWordId": "tocfl-abed89ec81",
+      "targetWordId": "moec-2ed29a86d2",
       "level": "L2",
       "tokens": [
         {
@@ -8241,7 +8262,7 @@
       "id": "tb-b3-L09-012",
       "zh": "她帶一些水果過來。",
       "en": "She brings some fruit over.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-a124bc2669",
       "level": "L2",
       "tokens": [
         {
@@ -8312,16 +8333,13 @@
     },
     {
       "id": "tb-b3-L09-014",
-      "zh": "那張桌子我們都不要。",
-      "en": "We don't want that table.",
-      "targetWordId": "tocfl-27b09c2861",
+      "zh": "那些桌子我們都不要。",
+      "en": "We don't want any of those tables.",
+      "targetWordId": "tocfl-7519a18970",
       "level": "L2",
       "tokens": [
         {
-          "text": "那"
-        },
-        {
-          "text": "張"
+          "text": "那些"
         },
         {
           "text": "桌子"
@@ -8844,7 +8862,7 @@
       "id": "tb-b3-L10-004",
       "zh": "她把書放在桌子上。",
       "en": "She puts the book on the table.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-2ab2866fb7",
       "level": "L2",
       "tokens": [
         {
@@ -8885,7 +8903,7 @@
       "id": "tb-b3-L10-005",
       "zh": "我把檔案存在電腦裡。",
       "en": "I save the file on the computer.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-e74427ab97",
       "level": "L2",
       "tokens": [
         {
@@ -8923,7 +8941,7 @@
       "id": "tb-b3-L10-006",
       "zh": "他把車開到公司。",
       "en": "He drives the car to the company.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-4bf2daaa1c",
       "level": "L2",
       "tokens": [
         {
@@ -8961,7 +8979,7 @@
       "id": "tb-b3-L10-007",
       "zh": "請把這份合約送到我的辦公室。",
       "en": "Please deliver this contract to my office.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-5dea7d1c8b",
       "level": "L2",
       "tokens": [
         {
@@ -9011,7 +9029,7 @@
       "id": "tb-b3-L10-008",
       "zh": "我不知道他是誰。",
       "en": "I don't know who he is.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-3e419641ea",
       "level": "L2",
       "tokens": [
         {
@@ -9049,7 +9067,7 @@
       "id": "tb-b3-L10-009",
       "zh": "我不知道怎麼去。",
       "en": "I don't know how to get there.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-3e419641ea",
       "level": "L2",
       "tokens": [
         {
@@ -9084,7 +9102,7 @@
       "id": "tb-b3-L10-010",
       "zh": "他不知道這個字怎麼寫。",
       "en": "He doesn't know how to write this character.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-3e419641ea",
       "level": "L2",
       "tokens": [
         {
@@ -9125,7 +9143,7 @@
       "id": "tb-b3-L10-011",
       "zh": "我不知道老師什麼時候回來。",
       "en": "I don't know when the teacher will be back.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-7d808eaf1f",
       "level": "L2",
       "tokens": [
         {
@@ -9161,8 +9179,8 @@
     },
     {
       "id": "tb-b3-L10-012",
-      "zh": "我不知道考試的成績。",
-      "en": "I don't know the exam results.",
+      "zh": "我不知道考試的成績怎麼樣。",
+      "en": "I don't know how my exam results turned out.",
       "targetWordId": "tocfl-cc96248dae",
       "level": "L2",
       "tokens": [
@@ -9183,6 +9201,9 @@
         },
         {
           "text": "成績"
+        },
+        {
+          "text": "怎麼樣"
         }
       ],
       "source": "generated",

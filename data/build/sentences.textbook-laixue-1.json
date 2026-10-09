@@ -1174,7 +1174,7 @@
       "id": "tb-L02-013",
       "zh": "他沒有妹妹。",
       "en": "He doesn't have a younger sister.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-ce16e29ac0",
       "level": "N1",
       "tokens": [
         {
@@ -1757,7 +1757,7 @@
       "id": "tb-L03-002",
       "zh": "我不是美國人。",
       "en": "I am not American.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-cff8c55db7",
       "level": "N1",
       "tokens": [
         {
@@ -1903,7 +1903,7 @@
       "id": "tb-L03-007",
       "zh": "我不是臺灣人，我是美國人。",
       "en": "I am not Taiwanese, I am American.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-0f7c542524",
       "level": "N1",
       "tokens": [
         {
@@ -2203,7 +2203,7 @@
       "id": "tb-L03-016",
       "zh": "她先生在大學工作。",
       "en": "Her husband works at a university.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-dbe16a6f7a",
       "level": "N1",
       "tokens": [
         {
@@ -2621,7 +2621,7 @@
       "id": "tb-L03-028",
       "zh": "她有兩個孩子，一個兒子，一個女兒。",
       "en": "She has two children, a son and a daughter.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-e210565179",
       "level": "N1",
       "tokens": [
         {
@@ -2667,7 +2667,7 @@
       "id": "tb-L03-029",
       "zh": "她結婚了，她先生在電腦公司工作。",
       "en": "She is married; her husband works at a computer company.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tb-67f28b0c26",
       "level": "N1",
       "tokens": [
         {
@@ -2837,7 +2837,7 @@
       "id": "tb-L04-004",
       "zh": "你有沒有哥哥？",
       "en": "Do you have an older brother?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-ce16e29ac0",
       "level": "N1",
       "tokens": [
         {
@@ -2868,7 +2868,7 @@
       "id": "tb-L04-005",
       "zh": "你有沒有孩子？",
       "en": "Do you have children?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-ce16e29ac0",
       "level": "N1",
       "tokens": [
         {
@@ -2998,7 +2998,7 @@
       "id": "tb-L04-009",
       "zh": "你在不在大學工作？",
       "en": "Do you work at a university?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "moec-79017c7fac",
       "level": "N1",
       "tokens": [
         {
@@ -3073,7 +3073,7 @@
       "id": "tb-L04-011",
       "zh": "我叫家文，您呢？",
       "en": "My name is Jiawen. And you?",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-ca5aef669e",
       "level": "N1",
       "tokens": [
         {
@@ -3104,7 +3104,7 @@
       "id": "tb-L04-012",
       "zh": "我姓張，您呢？",
       "en": "My surname is Zhang. And you?",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-64c10f2e29",
       "level": "N1",
       "tokens": [
         {
@@ -3135,7 +3135,7 @@
       "id": "tb-L04-013",
       "zh": "我有一個弟弟，你呢？",
       "en": "I have a younger brother. And you?",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-f0cfbf0dc9",
       "level": "N1",
       "tokens": [
         {
@@ -3172,7 +3172,7 @@
       "id": "tb-L04-014",
       "zh": "我在銀行工作，你呢？",
       "en": "I work at a bank. And you?",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-ea19127732",
       "level": "N1",
       "tokens": [
         {
@@ -3243,7 +3243,7 @@
       "id": "tb-L04-016",
       "zh": "我不是學生，您呢？",
       "en": "I am not a student. And you?",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-49b3a5dac4",
       "level": "N1",
       "tokens": [
         {
@@ -3274,7 +3274,7 @@
       "id": "tb-L04-017",
       "zh": "我的名字是小文。",
       "en": "My name is Xiaowen.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-8728ee4984",
       "level": "N1",
       "tokens": [
         {
@@ -4210,7 +4210,7 @@
       "id": "tb-L05-017",
       "zh": "他在哪裡念書？",
       "en": "Where does he study?",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-ada71020c3",
       "level": "N1",
       "tokens": [
         {
@@ -4242,7 +4242,7 @@
       "id": "tb-L05-018",
       "zh": "誰在銀行工作？",
       "en": "Who works at the bank?",
-      "targetWordId": "tocfl-8c7b2e0173",
+      "targetWordId": "tocfl-ea19127732",
       "level": "N1",
       "tokens": [
         {
@@ -4845,7 +4845,7 @@
       "id": "tb-L06-006",
       "zh": "我有一個姊姊，還有一個哥哥。",
       "en": "I have an older sister, and also an older brother.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-f0cfbf0dc9",
       "level": "N1",
       "tokens": [
         {
@@ -5036,7 +5036,7 @@
       "id": "tb-L06-011",
       "zh": "我每天在學校念書。",
       "en": "I study at school every day.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-fe09b2a21c",
       "level": "N1",
       "tokens": [
         {
@@ -5349,13 +5349,16 @@
     },
     {
       "id": "tb-L06-020",
-      "zh": "我媽媽也都喜歡聽音樂。",
-      "en": "My mother and the others all like listening to music too.",
+      "zh": "我爸爸、媽媽也都喜歡聽音樂。",
+      "en": "My dad and mom both like listening to music too.",
       "targetWordId": "tocfl-a56e4048ae",
       "level": "N1",
       "tokens": [
         {
           "text": "我"
+        },
+        {
+          "text": "爸爸"
         },
         {
           "text": "媽媽"
@@ -5790,7 +5793,7 @@
       "id": "tb-L07-006",
       "zh": "我有兩個姊姊。",
       "en": "I have two older sisters.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-b8a867198f",
       "level": "N1",
       "tokens": [
         {
@@ -5824,7 +5827,7 @@
       "id": "tb-L07-007",
       "zh": "他有十個學生。",
       "en": "He has ten students.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-df11d6ee67",
       "level": "N1",
       "tokens": [
         {
@@ -7095,7 +7098,7 @@
       "id": "tb-L08-014",
       "zh": "你弟弟今年幾歲？",
       "en": "How old is your younger brother this year?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-80c4c8a3da",
       "level": "N1",
       "tokens": [
         {
@@ -7126,7 +7129,7 @@
       "id": "tb-L08-015",
       "zh": "他今年幾歲？",
       "en": "How old is he this year?",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-38aa88f35a",
       "level": "N1",
       "tokens": [
         {
@@ -7154,7 +7157,7 @@
       "id": "tb-L08-016",
       "zh": "你哥哥今年幾歲？",
       "en": "How old is your older brother?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-3fef802071",
       "level": "N1",
       "tokens": [
         {
@@ -7541,7 +7544,7 @@
       "id": "tb-L08-026",
       "zh": "你還要什麼？",
       "en": "What else do you want?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-4ed22cdec8",
       "level": "N1",
       "tokens": [
         {
@@ -7866,7 +7869,7 @@
       "id": "tb-L09-009",
       "zh": "他星期一、星期二都在銀行工作。",
       "en": "He works at the bank on Monday and Tuesday.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-b2d18e1fd7",
       "level": "N1",
       "tokens": [
         {
@@ -7990,7 +7993,7 @@
       "id": "tb-L09-012",
       "zh": "我二〇二五年二月五號去臺灣。",
       "en": "I go to Taiwan on February 5th, 2025.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-1ced8f822f",
       "level": "N1",
       "tokens": [
         {
@@ -8042,7 +8045,7 @@
       "id": "tb-L09-013",
       "zh": "他二〇二四年八月去美國。",
       "en": "He went to the United States in August 2024.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tb-341493acd2",
       "level": "N1",
       "tokens": [
         {
@@ -8343,13 +8346,13 @@
     },
     {
       "id": "tb-L09-022",
-      "zh": "我星期五晚上六點半在餐廳見。",
-      "en": "I'll meet you at the restaurant at 6:30 on Friday evening.",
+      "zh": "我們星期五晚上六點半在餐廳見。",
+      "en": "Let's meet at the restaurant at 6:30 on Friday evening.",
       "targetWordId": "tb-84b4437aca",
       "level": "N1",
       "tokens": [
         {
-          "text": "我"
+          "text": "我們"
         },
         {
           "text": "星期五"
@@ -9232,7 +9235,7 @@
       "id": "tb-L10-015",
       "zh": "我今天有點忙。",
       "en": "I am a little busy today.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-74c7794307",
       "level": "N1",
       "tokens": [
         {
@@ -9402,7 +9405,7 @@
       "id": "tb-L10-020",
       "zh": "我不會打網球。",
       "en": "I can't play tennis.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-519db6c4be",
       "level": "N1",
       "tokens": [
         {
@@ -9641,7 +9644,7 @@
       "id": "tb-L10-027",
       "zh": "你有幾個孩子？",
       "en": "How many children do you have?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "moec-2612f94e2f",
       "level": "N1",
       "tokens": [
         {
@@ -9672,7 +9675,7 @@
       "id": "tb-L10-028",
       "zh": "你有幾個弟弟？",
       "en": "How many younger brothers do you have?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "moec-2612f94e2f",
       "level": "N1",
       "tokens": [
         {

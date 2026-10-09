@@ -222,11 +222,14 @@ function buildBook(bookId: string, lexicon: Lexicon, allBooks: Map<string, BookS
       const tokens = segment(s.zh, lexicon, { hints: scopeHints(s.zh) }).filter(
         (t) => t.kind === 'word' || t.kind === 'latin',
       );
+      // Phase 25: the target is a word of this lesson spelled as its headword, then one matched by a
+      // variant, then the longest word of the sentence (not the first pronoun: 他, 我, 這).
+      const exact = (t: { text: string }) => lexicon.lookup(t.text).filter((w) => w.headword === t.text);
+      const longest = [...tokens].sort((a, b) => [...b.text].length - [...a.text].length);
       const target =
-        tokens
-          .map((t) => lexicon.lookup(t.text).find((w) => lessonWordIds.has(w.id)))
-          .find((w): w is Word => !!w) ??
-        tokens.map((t) => lexicon.lookup(t.text)[0]).find((w): w is Word => !!w);
+        tokens.map((t) => exact(t).find((w) => lessonWordIds.has(w.id))).find((w): w is Word => !!w) ??
+        tokens.map((t) => lexicon.lookup(t.text).find((w) => lessonWordIds.has(w.id))).find((w): w is Word => !!w) ??
+        longest.map((t) => exact(t)[0] ?? lexicon.lookup(t.text)[0]).find((w): w is Word => !!w);
       if (!target) {
         fail(`${L} sentence "${s.zh}": no target word`);
         continue;

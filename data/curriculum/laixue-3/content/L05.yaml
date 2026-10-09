@@ -15,9 +15,9 @@ sentences:
   - { zh: 我想學學看潛水。, en: "I'd like to try learning to dive.", grammar: [gram-vv-kan] }
   - { zh: 這個字你寫寫看。, en: "Try writing this character.", grammar: [gram-vv-kan] }
   - { zh: 你問問看林老師吧。, en: "Try asking Teacher Lin.", grammar: [gram-vv-kan] }
-  - { zh: 我喝了一杯茶。, en: "I drank a cup of tea.", grammar: [gram-separable-verbs] }
+  - { zh: 我們唱了兩個小時歌。, en: "We sang for two hours.", grammar: [gram-separable-verbs] }
   - { zh: 我上了兩個鐘頭課。, en: "I attended class for two hours.", grammar: [gram-separable-verbs] }
-  - { zh: 他吃過臺灣菜。, en: "He has eaten Taiwanese food.", grammar: [gram-separable-verbs] }
+  - { zh: 他在海邊照了很多相。, en: "He took a lot of photos at the beach.", grammar: [gram-separable-verbs] }
   - { zh: 我昨天跑了三十分鐘步。, en: "Yesterday I jogged for thirty minutes.", grammar: [gram-separable-verbs] }
   - { zh: 我們見過一次面。, en: "We have met once.", grammar: [gram-separable-verbs] }
   - { zh: 她唱了一個鐘頭歌。, en: "She sang for an hour.", grammar: [gram-separable-verbs] }
@@ -53,4 +53,4 @@ scenarios:
 journalPrompts:
   - { en: "Describe a tea or drink you like: its smell, taste and how it differs from another (沒有……那麼……, 聞聞看).", zh: 烏龍茶沒有咖啡那麼濃。, words: [烏龍茶, 香, 味道, 濃, 淡], grammar: [gram-meiyou-nameme, gram-vv-kan] }
   - { en: "Write a paragraph about tea or coffee habits in your family or country, using verbs like 喝了、泡過 (verb–object verbs).", words: [華人, 習慣, 泡, 說明], grammar: [gram-separable-verbs, gram-vv-kan] }
-  - { en: "Write a paragraph comparing two drinks or foods and suggest trying one (……看, 沒有……那麼……).", words: [品質, 特別, 有趣, 苦, 甜], grammar: [gram-meiyou-nameme, gram-separable-verbs] }
+  - { en: "Write a paragraph comparing two drinks or foods and suggest trying one (……看, 沒有……那麼……).", words: [品質, 特別, 有趣, 苦, 甜], grammar: [gram-meiyou-nameme, gram-vv-kan] }

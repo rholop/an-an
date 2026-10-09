@@ -12,7 +12,7 @@ sentences:
   - { zh: 李小姐去日本了。, en: "Miss Li went to Japan.", grammar: [gram-le-completion] }
   - { zh: 我喝了三杯果汁。, en: "I drank three glasses of juice.", grammar: [gram-le-completion] }
   - { zh: 她買了兩件外套。, en: "She bought two coats.", grammar: [gram-le-completion] }
-  - { zh: 我們看了兩個鐘頭的電影。, en: "We watched a two-hour movie.", grammar: [gram-le-completion] }
+  - { zh: 我們看了兩個鐘頭的電影。, en: "We watched a movie for two hours.", grammar: [gram-le-completion] }
   - { zh: 昨天我洗了頭髮。, en: "Yesterday I washed my hair.", grammar: [gram-le-completion] }
   - { zh: 每天我吃了早飯，開車去上班。, en: "Every day after I eat breakfast, I drive to work.", grammar: [gram-le-completion] }
   - { zh: 我明天吃了飯，就去看電影。, en: "Tomorrow after I eat, I'll go to a movie.", grammar: [gram-le-completion] }

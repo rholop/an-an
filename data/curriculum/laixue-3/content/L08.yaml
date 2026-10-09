@@ -9,7 +9,7 @@ sentences:
   - { zh: 我打錯電話了。, en: "I dialed the wrong number.", grammar: [gram-v-cuo] }
   - { zh: 我被經理罵了。, en: "I was scolded by the manager.", grammar: [gram-bei-passive] }
   - { zh: 他被老闆罵了一頓。, en: "He got a scolding from the boss.", grammar: [gram-bei-passive] }
-  - { zh: 我的合約被他存在電腦裡了。, en: "My contract was saved by him on the computer.", grammar: [gram-bei-passive] }
+  - { zh: 我的蛋糕被弟弟吃了。, en: "My cake was eaten by my younger brother.", grammar: [gram-bei-passive] }
   - { zh: 我的錢被他用完了。, en: "My money was used up by him.", grammar: [gram-bei-passive] }
   - { zh: 這杯咖啡被弟弟喝完了。, en: "This cup of coffee was finished by my younger brother.", grammar: [gram-bei-passive] }
   - { zh: 他被大家罵，心情很難過。, en: "He was scolded by everyone and feels very sad.", grammar: [gram-bei-passive] }
@@ -53,5 +53,5 @@ scenarios:
     successLine: { zh: 好，下次小心一點，請你再檢查一下，然後交給我。, en: "Alright. Be more careful next time; check it again and then hand it to me." }
 journalPrompts:
   - { en: "Write a paragraph about a mistake you made at work or school and what you did wrong (V錯).", zh: 我做錯了一件事。, words: [錯, 發生, 價錢, 合約, 問題], grammar: [gram-v-cuo, gram-bei-passive] }
-  - { en: "Write a paragraph about something that happened to you and how it made you feel (被, 讓).", words: [罵, 生氣, 難過, 感覺, 心情], grammar: [gram-bei-passive, gram-rang-let] }
+  - { en: "Write a paragraph about something that happened to you and how it made you feel (被, 讓).", words: [罵, 生氣, 難過, 感覺], grammar: [gram-bei-passive, gram-rang-let] }
   - { en: "Write a paragraph about the tools you use to do your work, such as the computer or a language (用).", words: [翻譯, 檔案, 存, 檢查], grammar: [gram-yong-with, gram-rang-let] }

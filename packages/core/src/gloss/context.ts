@@ -112,6 +112,16 @@ export interface GlossContext extends SenseContext {
    * summary list): the book's sense when the word has one, since that is where it was learned.
    */
   textbook?: boolean;
+  /**
+   * Phase 25: the lesson the word is shown in. A word taught with different meanings in different
+   * lessons (分 minute / cent, 塊 slice / dollar) then shows that lesson's meaning.
+   */
+  lesson?: { bookId: string; n: number };
+}
+
+/** The sense id a lesson gives a word when it teaches a meaning other than the book's first one. */
+export function lessonSenseId(wordId: string, bookId: string, n: number): string {
+  return `${wordId}#tb-${bookId}-L${String(n).padStart(2, '0')}`;
 }
 
 /**
@@ -120,9 +130,13 @@ export interface GlossContext extends SenseContext {
  * resolved sense (model pick → context rules → primary).
  */
 export function senseFor(
-  word: Pick<Word, 'senses' | 'primarySenseId' | 'textbookSenseId'>,
+  word: Pick<Word, 'senses' | 'primarySenseId' | 'textbookSenseId'> & { id?: string },
   ctx: GlossContext = {},
 ): Sense | undefined {
+  if (ctx.lesson && ctx.textbook !== false && word.id) {
+    const own = word.senses?.find((s) => s.id === lessonSenseId(word.id!, ctx.lesson!.bookId, ctx.lesson!.n));
+    if (own) return own;
+  }
   const book = word.textbookSenseId ? word.senses?.find((s) => s.id === word.textbookSenseId) : undefined;
   if (book && (ctx.textbook === true || (ctx.textbook === undefined && !ctx.senseId && !ctx.prev && !ctx.next)))
     return book;
@@ -131,7 +145,7 @@ export function senseFor(
 
 /** `senseFor`'s English gloss (falls back to the entry's gloss). */
 export function glossFor(
-  word: Pick<Word, 'senses' | 'primarySenseId' | 'textbookSenseId' | 'glossEn'>,
+  word: Pick<Word, 'senses' | 'primarySenseId' | 'textbookSenseId' | 'glossEn'> & { id?: string },
   ctx: GlossContext = {},
 ): string {
   return senseFor(word, ctx)?.glossEn ?? word.glossEn;

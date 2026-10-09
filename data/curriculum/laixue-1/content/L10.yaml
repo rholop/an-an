@@ -57,5 +57,5 @@ scenarios:
     successLine: { zh: 你說得不錯！我們常常聊天，你的中文會很好。, en: "You speak well! If we chat often, your Mandarin will get very good." }
 journalPrompts:
   - { en: "Is Chinese hard for you? Say what is hard and what is easy.", zh: 寫字有一點難。, words: [難, 學, 覺得], grammar: [gram-youyidian] }
-  - { en: "What do you practise, and who do you practise with?", words: [練習, 說話, 聊天], grammar: [gram-de-complement] }
+  - { en: "What do you practise, and how well do you do it (說得很好, 寫得不錯)?", words: [練習, 說話, 聊天], grammar: [gram-de-complement] }
   - { en: "Write about something you can do well and something you can't do yet.", words: [會, 寫字, 不錯], grammar: [gram-hui-can] }

@@ -45,6 +45,11 @@ jobs:
       - name: Build scenarios (data-pipeline)
         run: pnpm --filter @anan/data-pipeline build:scenarios
 
+      # Phase 25: lexicon entries, sentences, tiles, prompts and grammar exercises of every lesson
+      # (writes docs/curriculum-audit.md; fails on any finding).
+      - name: Curriculum audit
+        run: pnpm audit:curriculum
+
       - name: Unit tests
         run: pnpm test
 

@@ -48,12 +48,14 @@ export function trimHeadword(s: string): string {
  * `臺灣/ 台灣` → ['臺灣','台灣']; `一/ 一/ 一` → ['一'] (tone variants collapse);
  * `哪裡（哪兒）` → ['哪裡','哪兒'].
  */
-export function splitVariants(raw: string): string[] {
+export function splitVariants(raw: string, pinyin = ''): string[] {
   const parts: string[] = [];
-  // Inline alternative for one character: 兄弟姊（姐）妹 → 兄弟姊妹 / 兄弟姐妹.
+  // Inline alternative for one character: 兄弟姊（姐）妹 → 兄弟姊妹 / 兄弟姐妹. When the reading has the
+  // same brackets the part is optional instead: 下(個)星期 (xià (ge) xīngqí) → 下星期 / 下個星期.
   const inline = raw.match(/^(.*?)(.)[（(]([^）)])[）)](.+)$/u);
   if (inline) {
     const [, a, b, c, d] = inline;
+    if (/[（(]/.test(pinyin)) return [`${a}${b}${d}`, `${a}${b}${c}${d}`].map(trimHeadword);
     return [`${a}${b}${d}`, `${a}${c}${d}`].map(trimHeadword);
   }
   const paren = raw.match(/^(.*?)[（(]([^）)]+)[）)]\s*$/u);

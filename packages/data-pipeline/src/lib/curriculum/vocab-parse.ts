@@ -242,8 +242,9 @@ export function entryToWord(
     const g = (cells[1] ?? '').match(/^(.*?)\s*\(([A-Za-z][^()]*)\)$/);
     if (g && !TONES.test(g[2]!) && /\s|[a-z]{5,}/.test(g[2]!)) cells = [cells[0]!, g[1]!, g[2]!];
   }
-  // A long headword wrapped onto a second line (東方美人 / 茶), and a reading wrapped over several lines.
-  if (cells[1] && CJK.test(cells[1]) && !/[A-Za-z]/.test(cells[1]) && [...cells[1]].length <= 2) {
+  // A long headword wrapped onto a second line (東方美人 / 茶, 臺灣原住民 / 族文化園區): a line of
+  // characters is never the reading. Then a reading wrapped over several lines.
+  if (cells[1] && CJK.test(cells[1]) && !/[A-Za-z]/.test(cells[1])) {
     cells = [cells[0] + cells[1], ...cells.slice(2)];
   }
   if (cells.length > 3 && !isPosCell(cells[2] ?? '')) {
@@ -254,7 +255,8 @@ export function entryToWord(
       }
     }
   }
-  const headRaw = cells[0] ?? '';
+  // no space inside a headword (臺北101 大樓)
+  const headRaw = (cells[0] ?? '').replace(/(?<=[\p{Script=Han}0-9])\s+(?=[\p{Script=Han}0-9])/gu, '');
   const pinyin = (cells[1] ?? '').trim().replace(/[.,;:]+$/, '');
   let idx = 2;
   const pos: string[] = [];
@@ -276,7 +278,7 @@ export function entryToWord(
   }
   // Phase 25: no stray punctuation left over from the PDF columns ("for example,")
   const glossEn = glossCells.join(' ').replace(/\s+/g, ' ').trim().replace(/[\s,;:]+$/, '');
-  const variantsAll = splitVariants(headRaw).map((v) =>
+  const variantsAll = splitVariants(headRaw, pinyin).map((v) =>
     CJK.test(v) ? v.replace(/^[A-Za-z]+\s+/, '') : v,
   );
   const syll = countPinyinSyllables(pinyin.split('/')[0] ?? pinyin);

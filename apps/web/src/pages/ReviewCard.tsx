@@ -52,6 +52,7 @@ export function ReviewCard({
   onNope,
   devPosition,
   confusables,
+  glossLesson,
 }: {
   card: SkillCard;
   isNew: boolean;
@@ -68,9 +69,13 @@ export function ReviewCard({
   devPosition?: string;
   /** Look-alike options for Pick the Mandarin (without them, production shows Recall). */
   confusables?: ConfusableContext | null;
+  /** Phase 25: the lesson the card is studied in; otherwise the word's own lesson gives its meaning. */
+  glossLesson?: { bookId: string; n: number };
 }) {
   const lesson = grammar ? homeLessonOfTags(grammar.tags ?? []) : word ? homeLessonOfTags(word.tags) : undefined;
-  const gloss = word ? glossFor(word) : '';
+  // Phase 25: the meaning the word's lesson teaches (分 = minute in book 1 L9)
+  const meaningLesson = glossLesson ?? (lesson ? { bookId: lesson.bookId, n: lesson.n } : undefined);
+  const gloss = word ? glossFor(word, meaningLesson ? { lesson: meaningLesson } : {}) : '';
   const reading = word ? readingText(word, script) : '';
   const options = useMemo(() => {
     if (!word || !confusables || card.skill !== 'production') return null;

@@ -33,6 +33,9 @@ detect:
 
 # Findings accepted on purpose. Each must match a finding (check + where) and say why.
 allow:
+  - check: lexicon-book-reading
+    where: laixue-2 note tb-39373942bd
+    reason: The book spells 為什麼 as wèishéme (the everyday Taiwan pronunciation of 什麼); the lexicon keeps MOE's wèi shén me.
   - check: sentence-later-word
     where: tb-b3-L05-017
     reason: 上課 split by the separable-verb point it practises (上了兩個鐘頭課); 課 is the object of 上課, not the later measure word.

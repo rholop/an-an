@@ -8,7 +8,7 @@ sentences:
   - { zh: 老師說的，我都聽懂了。, en: "I understood everything the teacher said.", grammar: [gram-v-dong] }
   - { zh: 我看懂這個字了。, en: "I understood this character.", grammar: [gram-v-dong] }
   - { zh: 你聽懂他說的嗎？, en: "Did you understand what he said?", grammar: [gram-v-dong] }
-  - { zh: 我學懂了，謝謝老師。, en: "I've got it now; thank you, teacher.", grammar: [gram-v-dong] }
+  - { zh: 老師說的我都聽懂了，謝謝老師。, en: "I understood everything you said. Thank you, teacher.", grammar: [gram-v-dong] }
   - { zh: 我聽不懂這個字。, en: "I can't make out this word.", grammar: [gram-potential-de-bu] }
   - { zh: 你看得懂這個資料嗎？, en: "Can you understand this material?", grammar: [gram-potential-de-bu] }
   - { zh: 這麼多菜，我一個人吃不完。, en: "With this many dishes, I can't finish them alone.", grammar: [gram-potential-de-bu] }
@@ -23,7 +23,7 @@ sentences:
   - { zh: 你要好好地照顧自己。, en: "You must take good care of yourself.", grammar: [gram-vsvs-de-adverb] }
   - { zh: 請你慢慢地說。, en: "Please speak slowly.", grammar: [gram-vsvs-de-adverb] }
   - { zh: 我們好好地聊天吧。, en: "Let's have a good chat.", grammar: [gram-vsvs-de-adverb] }
-  - { zh: 你慢慢地走，不要快。, en: "Walk slowly; don't rush.", grammar: [gram-vsvs-de-adverb] }
+  - { zh: 你慢慢地走，不要跑。, en: "Walk slowly; don't run.", grammar: [gram-vsvs-de-adverb] }
   - { zh: 他快快地吃完早飯。, en: "He quickly finishes breakfast.", grammar: [gram-vsvs-de-adverb, gram-v-wan] }
 scenarios:
   - slug: new-colleagues

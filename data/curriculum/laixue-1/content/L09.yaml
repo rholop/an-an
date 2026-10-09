@@ -21,7 +21,7 @@ sentences:
   - { zh: 我四點半下課。, en: "My class finishes at 4:30.", grammar: [gram-dian-clock] }
   - { zh: 他十一點下課。, en: "His class finishes at eleven.", grammar: [gram-dian-clock] }
   - { zh: 我六點半在餐廳吃飯。, en: "I eat at the restaurant at 6:30.", grammar: [gram-dian-clock] }
-  - { zh: 我星期五晚上六點半在餐廳見。, en: "I'll meet you at the restaurant at 6:30 on Friday evening.", grammar: [gram-xingqi, gram-dian-clock] }
+  - { zh: 我們星期五晚上六點半在餐廳見。, en: "Let's meet at the restaurant at 6:30 on Friday evening.", grammar: [gram-xingqi, gram-dian-clock] }
   - { zh: 我跟朋友一起吃飯。, en: "I eat together with a friend.", grammar: [gram-gen-yiqi] }
   - { zh: 我跟我同事一起去餐廳。, en: "I go to the restaurant together with my coworker.", grammar: [gram-gen-yiqi] }
   - { zh: 我星期五跟同事一起吃牛肉麵。, en: "On Friday I eat beef noodle soup with a coworker.", grammar: [gram-gen-yiqi, gram-xingqi] }
@@ -57,4 +57,4 @@ scenarios:
 journalPrompts:
   - { en: "Invite someone to go out for a meal and suggest a day.", zh: 你星期五有時間嗎？, words: [跟, 一起, 餐廳], grammar: [gram-gen-yiqi] }
   - { en: "Write your plans for this week: which day and what time.", words: [星期五, 點, 下課], grammar: [gram-dian-clock] }
-  - { en: "Describe a restaurant you like and what is delicious there.", words: [餐廳, 好吃, 最], grammar: [gram-xingqi] }
+  - { en: "Describe a restaurant you like, what is delicious there and which day of the week you go.", words: [餐廳, 好吃, 最], grammar: [gram-xingqi] }

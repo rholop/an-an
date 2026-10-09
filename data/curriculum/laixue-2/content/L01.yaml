@@ -51,6 +51,6 @@ scenarios:
     opener: { zh: 你好！今天天氣很好，你來跑步嗎？, en: "Hello! The weather is nice today. Are you here to run?" }
     successLine: { zh: 天氣預報說明天可能會下雨，我希望明天是晴天。, en: "The forecast says it may rain tomorrow; I hope it will be sunny." }
 journalPrompts:
-  - { en: "Describe the weather in each of the four seasons where you live.", zh: 我這裡的夏天太熱了。, words: [夏天, 冷, 熱, 春天], grammar: [gram-tai-le] }
+  - { en: "Describe the weather in each of the four seasons where you live.", zh: 這裡的夏天太熱了。, words: [夏天, 冷, 熱, 春天], grammar: [gram-tai-le] }
   - { en: "Compare the weather of two places you know (for example your home and Taiwan).", words: [天氣, 比, 舒服], grammar: [gram-bi-comparison] }
   - { en: "Say what you can and cannot do when it rains, and what you hope the weather will be tomorrow.", words: [下雨, 能, 希望, 晴天], grammar: [gram-neng-possibility, gram-hui-likelihood] }

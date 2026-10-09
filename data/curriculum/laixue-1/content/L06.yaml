@@ -19,7 +19,7 @@ sentences:
   - { zh: 他們都不喜歡跑步。, en: "None of them likes running.", grammar: [gram-ye-dou-order] }
   - { zh: 我也不喜歡跳舞。, en: "I don't like dancing either.", grammar: [gram-ye-dou-order] }
   - { zh: 我哥哥也不喜歡運動。, en: "My older brother doesn't like sports either.", grammar: [gram-ye-dou-order] }
-  - { zh: 我媽媽也都喜歡聽音樂。, en: "My mother and the others all like listening to music too.", grammar: [gram-ye-dou-order] }
+  - { zh: 我爸爸、媽媽也都喜歡聽音樂。, en: "My dad and mom both like listening to music too.", grammar: [gram-ye-dou-order] }
   - { zh: 他們都沒有哥哥。, en: "None of them has an older brother.", grammar: [gram-ye-dou-order] }
   - { zh: 他們也都有弟弟。, en: "They all have younger brothers too.", grammar: [gram-ye-dou-order] }
   - { zh: 我弟弟也不喜歡打網球。, en: "My younger brother does not like tennis either.", grammar: [gram-ye-dou-order] }

@@ -60,6 +60,20 @@ describe('reorderTiles (Phase 25: number + measure word, scope-aware)', () => {
     expect(sentenceTiles({ zh: '我每天才睡覺。', tiles: ['我', '睡覺'] }, lexicon)).toEqual(reorderTiles('我每天才睡覺。', lexicon));
   });
 
+  it('a day and a demonstrative + measure word are one tile (星期一, 這個/星期, 一百多個)', () => {
+    const lex = new Lexicon(['今天', '是', '星期', '一', '這個', '個星期', '有', '人', '個人', '公司', '每', '都', '很', '好', '星期一'].map(w), []);
+    expect(reorderTiles('今天是星期一。', lex)).toEqual(['今天', '是', '星期一', '。']);
+    expect(reorderTiles('這個星期很好。', lex)).toEqual(['這個', '星期', '很', '好', '。']);
+    expect(reorderTiles('公司有一百多個人。', lex)).toEqual(['公司', '有', '一百多個', '人', '。']);
+    expect(reorderTiles('每個人都很好。', lex)).toEqual(['每個', '人', '都', '很', '好', '。']);
+  });
+
+  it('a taught word is preferred over one that is only readable from its parts', () => {
+    const taught = (h: string) => h !== '從小' && h !== '完了';
+    expect(reorderTiles('從小時候', lexicon, { taught })).toEqual(['從', '小時候']);
+    expect(reorderTiles('看完了', lexicon, { allowed: (h) => h !== '完了', taught })).toEqual(['看', '完', '了']);
+  });
+
   it('a tie on tile count goes to backward matching (請/進來)', () => {
     expect(reorderTiles('請進來。', lexicon, (h) => h !== '進來' || true)).toEqual(['請', '進來', '。']);
   });

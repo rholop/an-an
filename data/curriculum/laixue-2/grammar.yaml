@@ -56,7 +56,7 @@
   explanationEn: "Relative time words: 上個, 這個, 下個 before 星期 or 月 give last, this and next; 去年, 今年, 明年 are last, this and next year. Time words come before the verb."
   matcher: "[上這下]個(星期|禮拜|月)|去年|今年|明年|上星期|下星期"
   focus: []
-  words: ["上", "下"]
+  words: [{ headword: "上", id: tocfl-65157ccc1c, glossEn: "last, previous (上個月)" }, { headword: "下", id: tocfl-caf6477636, glossEn: "next (下個月)" }]
 - id: gram-you-and-you
   lesson: 2
   n: 3
@@ -133,7 +133,7 @@
   pdfPage: 83
   pattern: "S + Vs + 了 ； S + 不 + V + 了"
   explanationEn: "Sentence-final 了 marks a change: a new situation compared with before (天氣熱了, 我不喝咖啡了 = I don't drink coffee any more)."
-  matcher: "了([，。！？]|$)"
+  matcher: "(?<!太[^，。！？]*)了([，。！？]|$)"
   focus: ["了"]
 - id: gram-suiran-keshi
   lesson: 5

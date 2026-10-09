@@ -394,8 +394,15 @@ export function importBook(bookId: string): void {
         });
     }
     for (const g of grammarPoints.filter((x) => x.lesson === n)) {
-      for (const h of g.words ?? []) {
-        const w = lexicon.lookup(h).find((x) => x.source !== 'textbook') ?? lexicon.lookup(h)[0];
+      for (const entry of g.words ?? []) {
+        const h = typeof entry === 'string' ? entry : entry.headword;
+        // an exact headword before a variant (下, not 下面 whose variant is 下); an id picks the sense
+        const exact = lexicon.lookup(h).filter((x) => x.headword === h);
+        const w =
+          (typeof entry !== 'string' && entry.id ? lexicon.byId(entry.id) : undefined) ??
+          exact.find((x) => x.source !== 'textbook') ??
+          lexicon.lookup(h).find((x) => x.source !== 'textbook') ??
+          lexicon.lookup(h)[0];
         if (!w) {
           stats.manual.push(`L${n}: grammar word ${h} (${g.id}) is not in the lexicon`);
           continue;
@@ -406,7 +413,7 @@ export function importBook(bookId: string): void {
           lesson: n,
           headword: w.headword,
           pinyin: w.pinyin,
-          glossEn: w.glossEn,
+          glossEn: typeof entry === 'string' ? w.glossEn : entry.glossEn,
         });
       }
     }
@@ -421,7 +428,14 @@ export function importBook(bookId: string): void {
       titleEn: front.titleEn,
       topic: front.topic,
       objectives: front.objectives,
-      vocab: [...new Set(vocabIds)],
+      // Phase 25: a word this book already taught with the same meaning is not taught twice (心情 b3 L2/L8)
+      vocab: [...new Set(vocabIds)].filter((id) => {
+        const note = words.find((x) => links.get(x)?.word?.id === id);
+        return !lessons.some((l) =>
+          l.vocab.includes(id) &&
+          allBookWords.some((x) => x.lesson === l.n && links.get(x)?.word?.id === id && x.glossEn === note?.glossEn),
+        );
+      }),
       supplementary: [...new Set(suppIds)].filter((id) => !vocabIds.includes(id)),
       grammarWords: [...new Set(grammarWordIds)].filter(
         (id) => !vocabIds.includes(id) && !suppIds.includes(id),

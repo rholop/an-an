@@ -306754,7 +306754,8 @@
         "compound:moe",
         "textbook:laixue-1",
         "textbook:laixue-1:L09"
-      ]
+      ],
+      "senses": []
     },
     {
       "id": "moec-ef3287dcf9",
@@ -330195,7 +330196,7 @@
       "id": "tb-11ebdba46e",
       "headword": "下星期",
       "variants": [
-        "個星期"
+        "下個星期"
       ],
       "pos": [],
       "level": "L1",
@@ -330301,6 +330302,13 @@
             "wiktionary"
           ],
           "id": "tb-135593900a#1"
+        },
+        {
+          "id": "tb-135593900a#tb-laixue-4-L01",
+          "glossEn": "if (clause-final marker)",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tb-135593900a#1",
@@ -334310,6 +334318,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tb-afdc0a7ceb#tb-laixue-3-L01",
+          "glossEn": "an example of a surname",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tb-afdc0a7ceb#tb",
@@ -335316,6 +335331,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tb-d93a192beb#tb-laixue-4-L03",
+          "glossEn": "television set",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tb-d93a192beb#tb",
@@ -335960,7 +335982,7 @@
       "id": "tb-f7256d23a5",
       "headword": "上星期",
       "variants": [
-        "個星期"
+        "上個星期"
       ],
       "pos": [],
       "level": "L1",
@@ -358267,6 +358289,13 @@
         },
         {
           "id": "tocfl-0d98acf663#tb-laixue-3",
+          "glossEn": "how",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-0d98acf663#tb-laixue-3-L02",
           "glossEn": "how",
           "basedOn": [
             "textbook"
@@ -387761,6 +387790,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-1fb98be339#tb-laixue-2-L10",
+          "glossEn": "progressive aspect verb, in the process of doing something",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-1fb98be339#1",
@@ -403617,6 +403653,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-28f89db477#tb-laixue-3-L08",
+          "glossEn": "hit, strike, beat",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-28f89db477#1",
@@ -417844,6 +417887,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-3109ec17ee#tb-laixue-4-L04",
+          "glossEn": "strip, long piece [of something]",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-3109ec17ee#1",
@@ -426516,6 +426566,13 @@
         },
         {
           "id": "tocfl-360e45880b#tb-laixue-3",
+          "glossEn": "put someone to the trouble of...",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-360e45880b#tb-laixue-3-L05",
           "glossEn": "put someone to the trouble of...",
           "basedOn": [
             "textbook"
@@ -437445,6 +437502,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-3c3d83d113#tb-laixue-4-L04",
+          "glossEn": "then, and only then…; only if…",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-3c3d83d113#1",
@@ -443170,6 +443234,13 @@
         {
           "id": "tocfl-3fa5298d8a#tb",
           "glossEn": "both…and (see grammar 2)",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-3fa5298d8a#tb-laixue-2-L09",
+          "glossEn": "again",
           "basedOn": [
             "textbook"
           ]
@@ -453953,7 +454024,8 @@
       "tags": [
         "gloss:heuristic",
         "textbook:laixue-2",
-        "textbook:laixue-2:L05"
+        "textbook:laixue-2:L05",
+        "textbook:laixue-2:L01"
       ],
       "senses": [
         {
@@ -485570,6 +485642,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-5751a000f5#tb-laixue-3-L01",
+          "glossEn": "really, quite",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-5751a000f5#1",
@@ -493109,7 +493188,9 @@
       "tags": [
         "gloss:heuristic",
         "textbook:laixue-4",
-        "textbook:laixue-4:L02"
+        "textbook:laixue-4:L02",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
       ],
       "senses": [
         {
@@ -508978,6 +509059,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-64e19ba0ac#tb-laixue-2-L05",
+          "glossEn": "measure word for monetary unit/ dollar",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-64e19ba0ac#1",
@@ -509409,7 +509497,9 @@
         "上"
       ],
       "tags": [
-        "gloss:override"
+        "gloss:override",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
       ],
       "senses": [
         {
@@ -509427,6 +509517,13 @@
             "override"
           ],
           "id": "tocfl-65157ccc1c#2"
+        },
+        {
+          "id": "tocfl-65157ccc1c#tb-laixue-2-L02",
+          "glossEn": "last, previous (上個月)",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-65157ccc1c#1",
@@ -523595,6 +523692,13 @@
         {
           "id": "tocfl-6d149bc49b#tb",
           "glossEn": "for example,",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-6d149bc49b#tb-laixue-4-L10",
+          "glossEn": "for example",
           "basedOn": [
             "textbook"
           ]
@@ -557632,7 +557736,9 @@
       "tags": [
         "gloss:heuristic",
         "textbook:laixue-2",
-        "textbook:laixue-2:L03"
+        "textbook:laixue-2:L03",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L05"
       ],
       "senses": [
         {
@@ -562797,6 +562903,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-843c0fdc73#tb-laixue-4-L07",
+          "glossEn": "shout, call [to project sound clearly]",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-843c0fdc73#1",
@@ -565464,6 +565577,13 @@
         },
         {
           "id": "tocfl-858bcd695a#tb-laixue-2",
+          "glossEn": "to see, to look",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-858bcd695a#tb-laixue-2-L05",
           "glossEn": "to see, to look",
           "basedOn": [
             "textbook"
@@ -584946,6 +585066,13 @@
         },
         {
           "id": "tocfl-9187a49d75#tb-laixue-4",
+          "glossEn": "have a holiday/time off/break",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-9187a49d75#tb-laixue-4-L09",
           "glossEn": "have a holiday/time off/break",
           "basedOn": [
             "textbook"
@@ -612933,6 +613060,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-a2cefdd5e9#tb-laixue-2-L09",
+          "glossEn": "later on, in the future",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-a2cefdd5e9#1",
@@ -627377,6 +627511,13 @@
         },
         {
           "id": "tocfl-ab6ef9a77d#tb-laixue-4",
+          "glossEn": "and the like, etc.",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-ab6ef9a77d#tb-laixue-4-L09",
           "glossEn": "and the like, etc.",
           "basedOn": [
             "textbook"
@@ -670451,6 +670592,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-c46f43970d#tb-laixue-3-L08",
+          "glossEn": "the number zero",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-c46f43970d#1",
@@ -677404,6 +677552,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-c8b02f2841#tb-laixue-1-L03",
+          "glossEn": "she, her / he, him",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-c8b02f2841#1",
@@ -680188,6 +680343,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-ca79e477b1#tb-laixue-1-L09",
+          "glossEn": "minute (telling the time)",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-ca79e477b1#1",
@@ -680907,7 +681069,9 @@
         "下"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
       ],
       "senses": [
         {
@@ -680943,6 +681107,13 @@
             "cedict"
           ],
           "id": "tocfl-caf6477636#4"
+        },
+        {
+          "id": "tocfl-caf6477636#tb-laixue-2-L02",
+          "glossEn": "next (下個月)",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-caf6477636#1",
@@ -691659,6 +691830,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-d19aea9325#tb-laixue-4-L10",
+          "glossEn": "pack",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-d19aea9325#1",
@@ -694326,6 +694504,13 @@
           "basedOn": [
             "textbook"
           ]
+        },
+        {
+          "id": "tocfl-d34556a566#tb-laixue-3-L01",
+          "glossEn": "indeed, in fact",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-d34556a566#1",
@@ -695327,6 +695512,13 @@
         },
         {
           "id": "tocfl-d3c7860a8f#tb-laixue-3",
+          "glossEn": "still",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-d3c7860a8f#tb-laixue-3-L04",
           "glossEn": "still",
           "basedOn": [
             "textbook"
@@ -696832,6 +697024,13 @@
         {
           "id": "tocfl-d488447fcc#tb",
           "glossEn": "like, in the manner of",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-d488447fcc#tb-laixue-4-L09",
+          "glossEn": "such as, like",
           "basedOn": [
             "textbook"
           ]
@@ -703825,6 +704024,13 @@
         },
         {
           "id": "tocfl-d87aa3eab7#tb-laixue-4",
+          "glossEn": "attend, take part in, participate in, join",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-d87aa3eab7#tb-laixue-4-L08",
           "glossEn": "attend, take part in, participate in, join",
           "basedOn": [
             "textbook"
@@ -729569,6 +729775,13 @@
         {
           "id": "tocfl-e69e12fa5a#tb",
           "glossEn": "generally speaking,",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-e69e12fa5a#tb-laixue-4-L10",
+          "glossEn": "generally speaking",
           "basedOn": [
             "textbook"
           ]

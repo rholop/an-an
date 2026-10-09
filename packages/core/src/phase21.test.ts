@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createEmptyCard } from 'ts-fsrs';
 import { isUsableSentence } from './cloze/report.js';
-import { glossFor } from './gloss/context.js';
+import { glossFor, lessonSenseId } from './gloss/context.js';
 import { charsInWord, readingMatchesDictionary } from './learner/leech.js';
 import type { SkillCard } from './learner/types.js';
 import { Lexicon } from './lexicon.js';
@@ -81,6 +81,21 @@ describe('glossFor (one meaning rule, #64)', () => {
   });
   it("a model's valid sense id wins over the book sense when not textbook content", () => {
     expect(glossFor(jiche, { senseId: 's1' })).toBe('scooter; motorcycle');
+  });
+  it('Phase 25: a lesson that teaches another meaning shows it (分 = minute in book 1 L9, cent elsewhere)', () => {
+    const fen = {
+      id: 'fen',
+      glossEn: '0.01 yuan',
+      primarySenseId: 'fen#1',
+      textbookSenseId: 'fen#tb',
+      senses: [sense('fen#1', '0.01 yuan', 'M'), sense('fen#tb', 'cent', 'M'), sense(lessonSenseId('fen', 'laixue-1', 9), 'minute (telling the time)', 'M')],
+    };
+    expect(lessonSenseId('fen', 'laixue-1', 9)).toBe('fen#tb-laixue-1-L09');
+    expect(glossFor(fen, { textbook: true, lesson: { bookId: 'laixue-1', n: 9 } })).toBe('minute (telling the time)');
+    expect(glossFor(fen, { lesson: { bookId: 'laixue-1', n: 9 } })).toBe('minute (telling the time)');
+    expect(glossFor(fen, { textbook: true, lesson: { bookId: 'laixue-2', n: 5 } })).toBe('cent');
+    expect(glossFor(fen)).toBe('cent');
+    expect(glossFor(fen, { textbook: false, lesson: { bookId: 'laixue-1', n: 9 } })).toBe('0.01 yuan');
   });
 });
 

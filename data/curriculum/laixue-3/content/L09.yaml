@@ -13,7 +13,7 @@ sentences:
   - { zh: 他從山上走下來。, en: "He walks down from the mountain.", grammar: [gram-action-directional] }
   - { zh: 她帶一些水果過來。, en: "She brings some fruit over.", grammar: [gram-action-directional] }
   - { zh: 這些椅子我都擦完了。, en: "I have wiped all these chairs.", grammar: [gram-topic-sentence] }
-  - { zh: 那張桌子我們都不要。, en: "We don't want that table.", grammar: [gram-topic-sentence] }
+  - { zh: 那些桌子我們都不要。, en: "We don't want any of those tables.", grammar: [gram-topic-sentence] }
   - { zh: 這個院子，我每天都打掃。, en: "This yard, I sweep every day.", grammar: [gram-topic-sentence] }
   - { zh: 這些垃圾他都拿出去了。, en: "He took all this trash out.", grammar: [gram-topic-sentence, gram-action-directional] }
   - { zh: 那些菜我都沒吃。, en: "I didn't eat any of those dishes.", grammar: [gram-topic-sentence] }

@@ -783,7 +783,7 @@
           {
             "id": "laixue-4-L07-jp3",
             "lessonId": "laixue-4-L07",
-            "promptEn": "Write a paragraph about how people differ in character, habits or work (在……上).",
+            "promptEn": "Write a paragraph about watching a game with friends: who won or lost, and how the fans differ in their habits (在……上, 只要……就……).",
             "useWords": [
               "tocfl-81ea74c11e",
               "tocfl-7b6d108356",
@@ -869,7 +869,7 @@
             "id": "laixue-4-L08-jp1",
             "lessonId": "laixue-4-L08",
             "promptEn": "Write a paragraph about a custom or celebration you know and when it starts (從……起 / 開始, 尤其).",
-            "promptZh": "從今天開始，我要參加典禮。",
+            "promptZh": "從古代起，華人就很重視這個典禮。",
             "useWords": [
               "moec-bce8bf6e63",
               "tocfl-3ded391235",
@@ -1395,7 +1395,7 @@
         "等",
         "再"
       ],
-      "matcher": "等.+再"
+      "matcher": "等(?!一下).+再"
     },
     {
       "id": "gram-cai-condition",
@@ -4184,7 +4184,7 @@
       "lesson": 6,
       "n": 34,
       "section": "proper",
-      "headword": "臺北101 大樓",
+      "headword": "臺北101大樓",
       "pinyin": "Táiběi 101 dàlóu",
       "pos": [],
       "glossEn": "Taipei 101 Building"
@@ -5423,11 +5423,11 @@
       "wordId": "tb-e154c43375",
       "lesson": 9,
       "n": 31,
-      "section": "phrase",
-      "headword": "臺灣原住民",
-      "pinyin": "族文化園區",
+      "section": "proper",
+      "headword": "臺灣原住民族文化園區",
+      "pinyin": "Táiwān Yuánzhùmínzú Wénhuà Yuánqū",
       "pos": [],
-      "glossEn": "Táiwān"
+      "glossEn": "Taiwan Indigenous Peoples Cultural Park"
     },
     {
       "wordId": "tb-3f39cd7be5",

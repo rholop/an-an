@@ -54,4 +54,4 @@ scenarios:
 journalPrompts:
   - { en: "Write a paragraph about something you never did before (從來沒……) and how your interest changed (本來……，後來……).", zh: 我從來沒去過KTV。, words: [本來, 後來, 迷, 球隊, 忘記], grammar: [gram-conglai, gram-benlai-houlai] }
   - { en: "Write a paragraph about what makes a leisure activity enjoyable if one condition is met (只要……就……).", words: [享受, 過癮, 暫時, 流行, 歌曲], grammar: [gram-zhiyao-jiu, gram-conglai] }
-  - { en: "Write a paragraph about how people differ in character, habits or work (在……上).", words: [贏, 輸, 加油, 可惜, 酒吧], grammar: [gram-zai-shang, gram-zhiyao-jiu] }
+  - { en: "Write a paragraph about watching a game with friends: who won or lost, and how the fans differ in their habits (在……上, 只要……就……).", words: [贏, 輸, 加油, 可惜, 酒吧], grammar: [gram-zai-shang, gram-zhiyao-jiu] }

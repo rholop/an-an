@@ -31,6 +31,7 @@ export type AuditCheck =
   | 'lexicon-headword'
   | 'lexicon-syllables'
   | 'lexicon-moe'
+  | 'lexicon-book-reading'
   | 'lexicon-gloss'
   | 'sentence-taiwan'
   | 'sentence-later-word'
@@ -48,6 +49,7 @@ export const AUDIT_CHECKS: Record<AuditCheck, string> = {
   'lexicon-headword': 'A headword with spaces or Latin letters',
   'lexicon-syllables': 'Pinyin whose syllable count does not match the headword',
   'lexicon-moe': 'Pinyin that disagrees with the MOE reading',
+  'lexicon-book-reading': "Pinyin that disagrees with the book's reading (a dropped final -n)",
   'lexicon-gloss': 'A gloss with stray punctuation',
   'sentence-taiwan': 'Simplified characters or a mainland term',
   'sentence-later-word': 'A word taught in a later lesson',
@@ -71,7 +73,7 @@ export interface AuditFinding {
 export interface AuditBook {
   textbook: Textbook;
   grammarItems: GrammarItem[];
-  wordNotes?: Array<{ wordId: string; glossEn?: string; pinyin?: string }>;
+  wordNotes?: Array<{ wordId: string; headword?: string; glossEn?: string; pinyin?: string }>;
 }
 
 /** Text in a lesson other than bank sentences (scenario lines, prompt models). */
@@ -118,6 +120,7 @@ const TONE_FREE = (s: string) =>
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase();
+const toneless = (s: string) => TONE_FREE(s).replace(/ü/g, 'v').replace(/[^a-zv]/g, '');
 const normPinyin = (s: string) => s.normalize('NFC').toLowerCase().replace(/[\s'’\-·]/g, '');
 
 const bookIdOf = (s: Pick<SentenceBankEntry, 'textbookId'>) => s.textbookId ?? 'laixue-1';
@@ -179,6 +182,13 @@ export function runCurriculumAudit(inputs: AuditInputs): AuditResult {
     {
       if (note.glossEn && badGloss(note.glossEn))
         add('lexicon-gloss', `${b.textbook.id} note ${note.wordId}`, `"${note.glossEn}"`);
+      const nw = lexicon.byId(note.wordId);
+      // The book's reading is the hint the MOE reading was chosen with, so a different syllable is an
+      // import error (南區 ná qū for the book's nán qū), not a second reading.
+      if (nw && note.pinyin && !/[(/0-9]/.test(note.pinyin) && toneless(note.pinyin) !== toneless(nw.pinyin))
+        add('lexicon-book-reading', `${b.textbook.id} note ${note.wordId}`, `${nw.headword}: book "${note.pinyin}", lexicon "${nw.pinyin}"`);
+      if (nw && note.headword && ![nw.headword, ...nw.variants].includes(note.headword))
+        add('lexicon-headword', `${b.textbook.id} note ${note.wordId}`, `the book's ${note.headword} is linked to ${nw.headword}`);
       if (note.pinyin && /[.,;:]$/.test(note.pinyin.trim()))
         add('lexicon-gloss', `${b.textbook.id} note ${note.wordId}`, `pinyin "${note.pinyin}"`);
     }
@@ -200,6 +210,16 @@ export function runCurriculumAudit(inputs: AuditInputs): AuditResult {
       }
       hit = { scope: makeScopeChecker(lexicon, upTo, n, bookId), scoped, later };
       scopeCache.set(key, hit);
+    }
+    return hit;
+  };
+  const tileCache = new Map<string, ReturnType<typeof lessonTileWords>>();
+  const tileWordsOf = (bookId: string, n: number) => {
+    const key = `${bookId}:${n}`;
+    let hit = tileCache.get(key);
+    if (!hit) {
+      hit = lessonTileWords(lexicon, textbooks.filter((t) => ordinal(t.id, 1) <= ordinal(bookId, 1)), n, bookId);
+      tileCache.set(key, hit);
     }
     return hit;
   };
@@ -242,7 +262,7 @@ export function runCurriculumAudit(inputs: AuditInputs): AuditResult {
     if (dup) add('sentence-duplicate', s.id, `"${s.zh}" is also ${dup}`);
     else seenZh.set(zhKey, s.id);
     checkText(bookId, n, s.id, s.zh);
-    const tileWords = lessonTileWords(lexicon, textbooks.filter((t) => ordinal(t.id, 1) <= ordinal(bookId, 1)), n, bookId);
+    const tileWords = tileWordsOf(bookId, n);
     for (const gid of s.grammarIds ?? []) {
       const g = grammarById.get(gid);
       if (!g) continue;

@@ -14,6 +14,7 @@
     "sync-rollback": "tsx scripts/sync-rollback.ts",
     "journal-cloze-eval": "tsx scripts/journal-cloze-eval.ts",
     "stories-eval": "tsx scripts/stories-eval.ts",
+    "naturalness": "tsx scripts/curriculum-naturalness.ts",
     "smoke": "tsx scripts/smoke-proxy.ts"
   },
   "dependencies": {

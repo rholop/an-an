@@ -81,7 +81,7 @@
   n: 4
   pattern: "等 + A + (以後)，再 + B"
   explanationEn: "等…再… means 'wait until A is done, then B': 等朋友都來了，我們再開始. The second action waits for the first."
-  matcher: "等.+再"
+  matcher: "等(?!一下).+再"
   focus: ["等", "再"]
 
 # ---- Lesson 4

@@ -35,6 +35,7 @@ import { MoeDictionary, resolveMoeReading } from './lib/moe.js';
 import { ReviewReport } from './lib/review-report.js';
 import { loadSupplementYaml } from './lib/supplement.js';
 import { applyLexiconOverrides, loadLexiconOverrides } from './lib/lexicon-overrides.js';
+import { addLessonSenses } from './lib/lesson-senses.js';
 import { MISSING_LEVELS, readTocflWorkbook } from './lib/tocfl-source.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -444,6 +445,9 @@ async function main(): Promise<void> {
     }
     for (const w of words) w.tags.sort((a, b) => (a.startsWith('textbook:') === b.startsWith('textbook:') ? 0 : a.startsWith('textbook:') ? 1 : -1));
     console.log(`Textbook: ${tagged} book word entries tagged across ${books.length} book(s).`);
+    // Phase 25: a lesson that teaches another meaning of a word gets that meaning as its own sense.
+    const lessonSenses = addLessonSenses(words, books.map(({ id, book }) => ({ id, wordNotes: book.wordNotes })));
+    console.log(`Lesson senses: ${lessonSenses.length}`);
   }
 
   const glossStats = computeStats(reviewRows);

@@ -538,7 +538,7 @@
       "id": "tb-b2-L01-015",
       "zh": "我今天不能打網球，我很忙。",
       "en": "I can't play tennis today; I'm busy.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-74c7794307",
       "level": "L1",
       "tokens": [
         {
@@ -1105,7 +1105,7 @@
       "id": "tb-b2-L02-004",
       "zh": "我想給弟弟買一雙運動鞋。",
       "en": "I want to buy a pair of sports shoes for my younger brother.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-aa78332299",
       "level": "L1",
       "tokens": [
         {
@@ -1228,7 +1228,7 @@
       "id": "tb-b2-L02-007",
       "zh": "我想給我父母做牛肉麵。",
       "en": "I want to make beef noodle soup for my parents.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-7b0b0ae000",
       "level": "L1",
       "tokens": [
         {
@@ -1474,17 +1474,14 @@
       "id": "tb-b2-L02-013",
       "zh": "這個星期天你有空嗎？",
       "en": "Are you free this Sunday?",
-      "targetWordId": "tb-11ebdba46e",
+      "targetWordId": "tocfl-79aa12d713",
       "level": "L1",
       "tokens": [
         {
-          "text": "這"
+          "text": "這個"
         },
         {
-          "text": "個星期"
-        },
-        {
-          "text": "天"
+          "text": "星期天"
         },
         {
           "text": "你"
@@ -1512,7 +1509,7 @@
       "id": "tb-b2-L02-014",
       "zh": "下個月五號是我的生日。",
       "en": "The fifth of next month is my birthday.",
-      "targetWordId": "tocfl-59b3c68a07",
+      "targetWordId": "tocfl-824d01acc6",
       "level": "L1",
       "tokens": [
         {
@@ -2138,7 +2135,7 @@
       "id": "tb-b2-L03-003",
       "zh": "我什麼都不想做。",
       "en": "I don't feel like doing anything.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-f1954edb18",
       "level": "L1",
       "tokens": [
         {
@@ -2173,7 +2170,7 @@
       "id": "tb-b2-L03-004",
       "zh": "誰都不想做飯。",
       "en": "Nobody feels like cooking.",
-      "targetWordId": "tocfl-8c7b2e0173",
+      "targetWordId": "moec-78e7cb5071",
       "level": "L1",
       "tokens": [
         {
@@ -2205,7 +2202,7 @@
       "id": "tb-b2-L03-005",
       "zh": "她什麼時候都有空。",
       "en": "She is free any time.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tb-7d808eaf1f",
       "level": "L1",
       "tokens": [
         {
@@ -2711,7 +2708,7 @@
       "id": "tb-b2-L03-018",
       "zh": "我們下午去吃牛肉麵吧！",
       "en": "Let's go eat beef noodle soup this afternoon!",
-      "targetWordId": "tocfl-1f6fbc0616",
+      "targetWordId": "tb-7b0b0ae000",
       "level": "L1",
       "tokens": [
         {
@@ -3209,7 +3206,7 @@
       "id": "tb-b2-L04-006",
       "zh": "我不要大的，我要小的。",
       "en": "I don't want the big one; I want the small one.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-8bdd8b8fa5",
       "level": "L1",
       "tokens": [
         {
@@ -4363,8 +4360,8 @@
     },
     {
       "id": "tb-b2-L05-007",
-      "zh": "這雙運動鞋太小了。",
-      "en": "These sports shoes are too small.",
+      "zh": "這雙運動鞋小了，我要再買一雙。",
+      "en": "These sports shoes have got too small; I need another pair.",
       "targetWordId": "tocfl-45f633b897",
       "level": "L1",
       "tokens": [
@@ -4378,13 +4375,28 @@
           "text": "運動鞋"
         },
         {
-          "text": "太"
-        },
-        {
           "text": "小"
         },
         {
           "text": "了"
+        },
+        {
+          "text": "我"
+        },
+        {
+          "text": "要"
+        },
+        {
+          "text": "再"
+        },
+        {
+          "text": "買"
+        },
+        {
+          "text": "一"
+        },
+        {
+          "text": "雙"
         }
       ],
       "source": "generated",
@@ -5900,7 +5912,7 @@
       "id": "tb-b2-L06-016",
       "zh": "他每天學中文，學兩個鐘頭。",
       "en": "He studies Chinese for two hours every day.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-fe09b2a21c",
       "level": "L1",
       "tokens": [
         {
@@ -5985,7 +5997,7 @@
       "id": "tb-b2-L06-018",
       "zh": "她每天看電視，看一個鐘頭。",
       "en": "She watches TV for an hour every day.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-fe09b2a21c",
       "level": "L1",
       "tokens": [
         {
@@ -6117,7 +6129,7 @@
       "id": "tb-b2-L06-021",
       "zh": "我想在臺灣住一年。",
       "en": "I want to live in Taiwan for a year.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-1ced8f822f",
       "level": "L1",
       "tokens": [
         {
@@ -6247,7 +6259,7 @@
       "id": "tb-b2-L06-024",
       "zh": "我太太做的蛋糕很好吃。",
       "en": "The cake my wife made is delicious.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-446d85bce3",
       "level": "L1",
       "tokens": [
         {
@@ -6364,7 +6376,7 @@
       "id": "tb-b2-L06-027",
       "zh": "這是我哥哥買的蘋果。",
       "en": "These are the apples my older brother bought.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-3fef802071",
       "level": "L1",
       "tokens": [
         {
@@ -6405,7 +6417,7 @@
       "id": "tb-b2-L06-028",
       "zh": "在銀行工作的人是我哥哥。",
       "en": "The person who works at the bank is my older brother.",
-      "targetWordId": "tocfl-1fb98be339",
+      "targetWordId": "tocfl-ea19127732",
       "level": "L1",
       "tokens": [
         {
@@ -7022,7 +7034,7 @@
       "id": "tb-b2-L07-016",
       "zh": "李老師的家在我家左邊。",
       "en": "Teacher Li's home is to the left of mine.",
-      "targetWordId": "tb-6317d59e8c",
+      "targetWordId": "tocfl-e6e5696c01",
       "level": "L1",
       "tokens": [
         {
@@ -7160,7 +7172,7 @@
       "id": "tb-b2-L07-019",
       "zh": "這家餐廳在百貨公司的下面。",
       "en": "This restaurant is below the department store.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-5c8b9eb82d",
       "level": "L1",
       "tokens": [
         {
@@ -7200,19 +7212,22 @@
     },
     {
       "id": "tb-b2-L07-020",
-      "zh": "我家有幾個房間？",
-      "en": "How many rooms does my home have?",
+      "zh": "他家有十幾個房間。",
+      "en": "His house has a dozen or so rooms.",
       "targetWordId": "tocfl-a28f141e7e",
       "level": "L1",
       "tokens": [
         {
-          "text": "我"
+          "text": "他"
         },
         {
           "text": "家"
         },
         {
           "text": "有"
+        },
+        {
+          "text": "十"
         },
         {
           "text": "幾個"
@@ -7278,7 +7293,7 @@
       "id": "tb-b2-L07-022",
       "zh": "請等幾分鐘。",
       "en": "Please wait a few minutes.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-8ed2dbb53f",
       "level": "L1",
       "tokens": [
         {
@@ -7310,7 +7325,7 @@
       "id": "tb-b2-L07-023",
       "zh": "這家餐廳有二十幾個人。",
       "en": "There are twenty-some people in this restaurant.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-90c7688865",
       "level": "L1",
       "tokens": [
         {
@@ -7352,19 +7367,19 @@
     },
     {
       "id": "tb-b2-L07-024",
-      "zh": "他住在這裡十幾年了。",
-      "en": "He has lived here for over ten years.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "zh": "他來臺灣十幾年了。",
+      "en": "He came to Taiwan more than ten years ago.",
+      "targetWordId": "tb-1ced8f822f",
       "level": "L1",
       "tokens": [
         {
           "text": "他"
         },
         {
-          "text": "住在"
+          "text": "來"
         },
         {
-          "text": "這裡"
+          "text": "臺灣"
         },
         {
           "text": "十"
@@ -7436,7 +7451,7 @@
       "id": "tb-b2-L07-026",
       "zh": "我想買幾個蘋果。",
       "en": "I want to buy a few apples.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-2612f94e2f",
       "level": "L1",
       "tokens": [
         {
@@ -7840,7 +7855,7 @@
       "id": "tb-b2-L08-010",
       "zh": "李小姐去日本了。",
       "en": "Miss Li went to Japan.",
-      "targetWordId": "tb-6317d59e8c",
+      "targetWordId": "tocfl-9b66c24d69",
       "level": "L1",
       "tokens": [
         {
@@ -7913,7 +7928,7 @@
       "id": "tb-b2-L08-012",
       "zh": "她買了兩件外套。",
       "en": "She bought two coats.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-2ab9d25b39",
       "level": "L1",
       "tokens": [
         {
@@ -7950,7 +7965,7 @@
     {
       "id": "tb-b2-L08-013",
       "zh": "我們看了兩個鐘頭的電影。",
-      "en": "We watched a two-hour movie.",
+      "en": "We watched a movie for two hours.",
       "targetWordId": "tocfl-7c16a21527",
       "level": "L1",
       "tokens": [
@@ -8200,7 +8215,7 @@
       "id": "tb-b2-L08-019",
       "zh": "他晚上喜歡在家聽聽音樂。",
       "en": "In the evening he likes to listen to some music at home.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-62d708404a",
       "level": "L1",
       "tokens": [
         {
@@ -8361,7 +8376,7 @@
       "id": "tb-b2-L08-023",
       "zh": "我想問問這個蛋糕多少錢。",
       "en": "I'd like to ask how much this cake is.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-258a0d1886",
       "level": "L1",
       "tokens": [
         {
@@ -8835,7 +8850,7 @@
       "id": "tb-b2-L09-011",
       "zh": "她今天沒來學校。",
       "en": "She didn't come to school today.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-74c7794307",
       "level": "L1",
       "tokens": [
         {
@@ -8870,7 +8885,7 @@
       "id": "tb-b2-L09-012",
       "zh": "我早上沒吃早飯。",
       "en": "I didn't eat breakfast this morning.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-536228078b",
       "level": "L1",
       "tokens": [
         {
@@ -9019,7 +9034,7 @@
       "id": "tb-b2-L09-016",
       "zh": "我昨天沒有去看醫生。",
       "en": "I didn't go to see a doctor yesterday.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-4260306516",
       "level": "L1",
       "tokens": [
         {
@@ -9650,7 +9665,7 @@
       "id": "tb-b2-L10-009",
       "zh": "我快要畢業了。",
       "en": "I am about to graduate.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-2d0ec7af64",
       "level": "L1",
       "tokens": [
         {
@@ -9679,7 +9694,7 @@
       "id": "tb-b2-L10-010",
       "zh": "他快要回臺灣了。",
       "en": "He is about to return to Taiwan.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-f16c476b47",
       "level": "L1",
       "tokens": [
         {
@@ -9848,7 +9863,7 @@
       "id": "tb-b2-L10-015",
       "zh": "我一下班就去運動。",
       "en": "As soon as I get off work, I go and exercise.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-1ab2c2cbc2",
       "level": "L1",
       "tokens": [
         {
@@ -9886,7 +9901,7 @@
       "id": "tb-b2-L10-016",
       "zh": "王先生一到家，王太太就去買東西了。",
       "en": "As soon as Mr. Wang got home, Mrs. Wang went out shopping.",
-      "targetWordId": "tb-f31eb37a1d",
+      "targetWordId": "moec-2063a9385c",
       "level": "L1",
       "tokens": [
         {
@@ -9936,7 +9951,7 @@
       "id": "tb-b2-L10-017",
       "zh": "他一有空就去游泳。",
       "en": "He goes swimming whenever he has time.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-79aa12d713",
       "level": "L1",
       "tokens": [
         {
@@ -9974,7 +9989,7 @@
       "id": "tb-b2-L10-018",
       "zh": "我一起床就洗澡。",
       "en": "I take a shower as soon as I get up.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-2d03bda470",
       "level": "L1",
       "tokens": [
         {
@@ -10047,7 +10062,7 @@
       "id": "tb-b2-L10-020",
       "zh": "她一看電視就想吃東西。",
       "en": "She wants to eat as soon as she watches TV.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tb-d93a192beb",
       "level": "L1",
       "tokens": [
         {

@@ -15,8 +15,11 @@ export interface BookGrammarPoint {
   /** Source regex (string) matching Chinese sentences that use the pattern. */
   matcher: string;
   pdfPage: number;
-  /** Function words the point itself introduces (not in the 生詞 lists). */
-  words?: string[];
+  /**
+   * Function words the point itself introduces (not in the 生詞 lists). An object gives the meaning
+   * this lesson teaches when the lexicon's own gloss is another sense (分 = minute, not cent).
+   */
+  words?: Array<string | { headword: string; glossEn: string; id?: string }>;
   /** Function words that signal the pattern (blanked by the grammar cloze). Empty: reorder only. */
   focus: string[];
 }
@@ -345,7 +348,7 @@ export const LAIXUE1_GRAMMAR: BookGrammarPoint[] = [
   {
     id: 'gram-dian-clock',
     focus: ['點'],
-    words: ['分', '點鐘'],
+    words: [{ headword: '分', glossEn: 'minute (telling the time)' }, '點鐘'],
     lesson: 9,
     n: 3,
     pdfPage: 141,

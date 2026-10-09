@@ -25,6 +25,9 @@ describe('cleaning extracted headwords (fixtures for the PDF quirks)', () => {
   });
   it('tone variants: 一/ 一/ 一 collapse to one form', () => {
     expect(splitVariants('一/ 一/ 一')).toEqual(['一']);
+    // Phase 25: an optional part (the reading has it in brackets too) is not an alternative character
+    expect(splitVariants('下(個)星期', 'xià (ge) xīngqí')).toEqual(['下星期', '下個星期']);
+    expect(splitVariants('兄弟姊（姐）妹', 'xiōngdì jiěmèi')).toEqual(['兄弟姊妹', '兄弟姐妹']);
     expect(splitVariants('不/ 不')).toEqual(['不']);
   });
   it('bracketed alternates and trailing punctuation', () => {

@@ -77,7 +77,7 @@
             "id": "laixue-2-L01-jp1",
             "lessonId": "laixue-2-L01",
             "promptEn": "Describe the weather in each of the four seasons where you live.",
-            "promptZh": "我這裡的夏天太熱了。",
+            "promptZh": "這裡的夏天太熱了。",
             "useWords": [
               "tocfl-d8fd5d76c1",
               "tocfl-38c83dc797",
@@ -167,8 +167,8 @@
           "tb-39373942bd"
         ],
         "grammarWords": [
-          "tocfl-b03f382540",
-          "tocfl-59b3c68a07"
+          "tocfl-65157ccc1c",
+          "tocfl-caf6477636"
         ],
         "properNouns": [],
         "grammar": [
@@ -388,7 +388,7 @@
             "id": "laixue-2-L04-jp1",
             "lessonId": "laixue-2-L04",
             "promptEn": "Write what you usually order at a coffee shop and whether you prefer hot or iced.",
-            "promptZh": "我喜歡喝熱的咖啡。",
+            "promptZh": "我不喝熱的，我要冰的。",
             "useWords": [
               "moec-309380becd",
               "tocfl-bce85e5a38",
@@ -728,7 +728,7 @@
           {
             "id": "laixue-2-L07-jp3",
             "lessonId": "laixue-2-L07",
-            "promptEn": "Write how many people or things there are in a place near you, using 幾.",
+            "promptEn": "Describe a walk in a pretty place near you and how many people or fruit stalls you saw, using 幾 (十幾個人).",
             "useWords": [
               "tocfl-bba1de9d8c",
               "tocfl-b4b37e0016",
@@ -1366,7 +1366,7 @@
       "focus": [
         "了"
       ],
-      "matcher": "了([，。！？]|$)"
+      "matcher": "(?<!太[^，。！？]*)了([，。！？]|$)"
     },
     {
       "id": "gram-suiran-keshi",
@@ -4979,24 +4979,24 @@
       "glossEn": "completed action marker"
     },
     {
-      "wordId": "tocfl-b03f382540",
+      "wordId": "tocfl-65157ccc1c",
       "lesson": 2,
       "n": 0,
       "section": "grammar",
-      "headword": "上面",
-      "pinyin": "shàng mian",
+      "headword": "上",
+      "pinyin": "shàng",
       "pos": [],
-      "glossEn": "up; upper; above; previous; first; above-mentioned"
+      "glossEn": "last, previous (上個月)"
     },
     {
-      "wordId": "tocfl-59b3c68a07",
+      "wordId": "tocfl-caf6477636",
       "lesson": 2,
       "n": 0,
       "section": "grammar",
-      "headword": "下面",
-      "pinyin": "xià miàn",
+      "headword": "下",
+      "pinyin": "xià",
       "pos": [],
-      "glossEn": "below; under; next; the following"
+      "glossEn": "next (下個月)"
     }
   ]
 }

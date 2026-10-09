@@ -19,11 +19,11 @@ sentences:
   - { zh: 你家在哪裡？我家在超級市場的後面。, en: "Where is your home? My home is behind the supermarket.", grammar: [gram-zai-location, gram-positional-words] }
   - { zh: 他的辦公室在公司的樓上。, en: "His office is upstairs in the company.", grammar: [gram-zai-location, gram-positional-words] }
   - { zh: 這家餐廳在百貨公司的下面。, en: "This restaurant is below the department store.", grammar: [gram-zai-location, gram-positional-words] }
-  - { zh: 我家有幾個房間？, en: "How many rooms does my home have?", grammar: [gram-ji-approximate] }
+  - { zh: 他家有十幾個房間。, en: "His house has a dozen or so rooms.", grammar: [gram-ji-approximate] }
   - { zh: 這個社區有十幾家商店。, en: "This neighborhood has a dozen or so shops.", grammar: [gram-ji-approximate] }
   - { zh: 請等幾分鐘。, en: "Please wait a few minutes.", grammar: [gram-ji-approximate] }
   - { zh: 這家餐廳有二十幾個人。, en: "There are twenty-some people in this restaurant.", grammar: [gram-ji-approximate] }
-  - { zh: 他住在這裡十幾年了。, en: "He has lived here for over ten years.", grammar: [gram-ji-approximate] }
+  - { zh: 他來臺灣十幾年了。, en: "He came to Taiwan more than ten years ago.", grammar: [gram-ji-approximate] }
   - { zh: 我們公司有三十幾個人。, en: "Our company has thirty-some people.", grammar: [gram-ji-approximate] }
   - { zh: 我想買幾個蘋果。, en: "I want to buy a few apples.", grammar: [gram-ji-approximate] }
 scenarios:
@@ -54,4 +54,4 @@ scenarios:
 journalPrompts:
   - { en: "Describe where things are near your home (超級市場在……).", zh: 超級市場在我家的對面。, words: [旁邊, 後面, 對面, 外面], grammar: [gram-zai-location] }
   - { en: "Describe your home: which room is where (in front of, behind, upstairs, downstairs).", words: [房子, 房間, 客廳, 廚房, 樓上], grammar: [gram-positional-words] }
-  - { en: "Write how many people or things there are in a place near you, using 幾.", words: [漂亮, 水果, 散步], grammar: [gram-ji-approximate] }
+  - { en: "Describe a walk in a pretty place near you and how many people or fruit stalls you saw, using 幾 (十幾個人).", words: [漂亮, 水果, 散步], grammar: [gram-ji-approximate] }

@@ -1,6 +1,6 @@
 lesson: 8
 sentences:
-  - { zh: 從下個月起，公司不用加班了。, en: "From next month on, the company doesn't need overtime.", grammar: [gram-cong-qi] }
+  - { zh: 從下個月起，我們不用加班了。, en: "Starting next month, we don't have to work overtime.", grammar: [gram-cong-qi] }
   - { zh: 從今天開始，我要多運動。, en: "Starting today, I'm going to exercise more.", grammar: [gram-cong-qi] }
   - { zh: 從小時候起，我就愛看書。, en: "Since I was little, I have loved reading.", grammar: [gram-cong-qi], tiles: [從, 小時候, 起, ，, 我, 就, 愛, 看書, 。] }
   - { zh: 從明年起，我們要搬到臺北。, en: "From next year, we will move to Taipei.", grammar: [gram-cong-qi] }
@@ -53,6 +53,6 @@ scenarios:
     opener: { zh: 你收到喜帖了嗎？你要參加我朋友的結婚典禮嗎？, en: "Did you receive the wedding invitation? Will you attend my friend's wedding?" }
     successLine: { zh: 謝謝你來參加，祝福新娘和新郎百年好合！, en: "Thank you for coming; we wish the bride and groom a happy life together!" }
 journalPrompts:
-  - { en: "Write a paragraph about a custom or celebration you know and when it starts (從……起 / 開始, 尤其).", zh: 從今天開始，我要參加典禮。, words: [習俗, 典禮, 重視, 古代, 時代], grammar: [gram-cong-qi, gram-youqi] }
+  - { en: "Write a paragraph about a custom or celebration you know and when it starts (從……起 / 開始, 尤其).", zh: 從古代起，華人就很重視這個典禮。, words: [習俗, 典禮, 重視, 古代, 時代], grammar: [gram-cong-qi, gram-youqi] }
   - { en: "Write a paragraph about what people care about at a wedding, using 連……都 / 也 for emphasis.", words: [禮服, 打扮, 在乎, 簡單, 正式], grammar: [gram-lian-dou, gram-youqi] }
   - { en: "Write a paragraph about something you can or cannot recognise or work out (V得 / 不出來).", words: [新娘, 新郎, 認, 帥, 隨便], grammar: [gram-v-chulai, gram-lian-dou] }

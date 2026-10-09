@@ -9,7 +9,7 @@
       "id": "tb-b4-L01-001",
       "zh": "你有空的話，我們一起去吃飯吧。",
       "en": "If you are free, let's go eat together.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-79aa12d713",
       "level": "L2",
       "tokens": [
         {
@@ -191,7 +191,7 @@
       "id": "tb-b4-L01-005",
       "zh": "你太累的話，就休息一下吧。",
       "en": "If you are too tired, take a short rest.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tb-135593900a",
       "level": "L2",
       "tokens": [
         {
@@ -235,7 +235,7 @@
       "id": "tb-b4-L01-006",
       "zh": "他願意的話，我們可以合作。",
       "en": "If he is willing, we can cooperate.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-49e35bda79",
       "level": "L2",
       "tokens": [
         {
@@ -704,7 +704,7 @@
       "id": "tb-b4-L01-017",
       "zh": "請你把房間整理整理。",
       "en": "Please tidy up the room.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-a28f141e7e",
       "level": "L2",
       "tokens": [
         {
@@ -742,7 +742,7 @@
       "id": "tb-b4-L01-018",
       "zh": "請你把這件衣服洗一洗。",
       "en": "Please wash this piece of clothing.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-559f38cd8e",
       "level": "L2",
       "tokens": [
         {
@@ -789,7 +789,7 @@
       "id": "tb-b4-L01-019",
       "zh": "請你把合約看一看。",
       "en": "Please take a look over the contract.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-814354e5a0",
       "level": "L2",
       "tokens": [
         {
@@ -868,7 +868,7 @@
       "id": "tb-b4-L01-021",
       "zh": "請你把資料檢查檢查。",
       "en": "Please check the materials.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-a95af267c2",
       "level": "L2",
       "tokens": [
         {
@@ -906,7 +906,7 @@
       "id": "tb-b4-L01-022",
       "zh": "請你把麵包烤一烤再吃。",
       "en": "Please toast the bread before you eat it.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-31a6254c82",
       "level": "L2",
       "tokens": [
         {
@@ -953,7 +953,7 @@
       "id": "tb-b4-L01-023",
       "zh": "你把這個計畫想想，好不好？",
       "en": "Think over this plan, okay?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "moec-67f843d89c",
       "level": "L2",
       "tokens": [
         {
@@ -994,7 +994,7 @@
       "id": "tb-b4-L01-024",
       "zh": "請你把院子打掃打掃。",
       "en": "Please tidy up the yard.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "tocfl-e6e8f2eca6",
       "level": "L2",
       "tokens": [
         {
@@ -1333,7 +1333,7 @@
       "id": "tb-b4-L02-009",
       "zh": "他先吃飯，再看電視。",
       "en": "He eats first and then watches TV.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-14c587ddf8",
       "level": "L2",
       "tokens": [
         {
@@ -1407,7 +1407,7 @@
       "id": "tb-b4-L02-011",
       "zh": "你先休息一下，再工作吧。",
       "en": "Rest a little first, then work.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-04bdc50299",
       "level": "L2",
       "tokens": [
         {
@@ -1448,7 +1448,7 @@
       "id": "tb-b4-L02-012",
       "zh": "我先給老闆打電話，再回家。",
       "en": "I'll call my boss first and then go home.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-d068a0edb6",
       "level": "L2",
       "tokens": [
         {
@@ -1524,7 +1524,7 @@
       "id": "tb-b4-L02-014",
       "zh": "他一點也不累。",
       "en": "He isn't tired at all.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-823b5cfee3",
       "level": "L2",
       "tokens": [
         {
@@ -1597,7 +1597,7 @@
       "id": "tb-b4-L02-016",
       "zh": "我一點時間也沒有。",
       "en": "I have no time at all.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-823b5cfee3",
       "level": "L2",
       "tokens": [
         {
@@ -1667,7 +1667,7 @@
       "id": "tb-b4-L02-018",
       "zh": "她一點都不緊張。",
       "en": "She isn't nervous at all.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-823b5cfee3",
       "level": "L2",
       "tokens": [
         {
@@ -1702,7 +1702,7 @@
       "id": "tb-b4-L02-019",
       "zh": "我一點也不想吃飯。",
       "en": "I don't feel like eating at all.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-823b5cfee3",
       "level": "L2",
       "tokens": [
         {
@@ -1737,7 +1737,7 @@
       "id": "tb-b4-L02-020",
       "zh": "從這裡往前走，就是機場。",
       "en": "Go straight ahead from here and you'll reach the airport.",
-      "targetWordId": "tocfl-493bda239f",
+      "targetWordId": "tocfl-87b2e4188b",
       "level": "L2",
       "tokens": [
         {
@@ -1845,7 +1845,7 @@
       "id": "tb-b4-L02-023",
       "zh": "請往前走，不要往後走。",
       "en": "Please go forward, not backward.",
-      "targetWordId": "tocfl-eefeda1588",
+      "targetWordId": "moec-ac8997d9c9",
       "level": "L2",
       "tokens": [
         {
@@ -2731,7 +2731,7 @@
       "id": "tb-b4-L03-019",
       "zh": "等朋友都來了，我們再開始吧。",
       "en": "Let's start once all our friends have arrived.",
-      "targetWordId": "tocfl-ab6ef9a77d",
+      "targetWordId": "tocfl-79b6361089",
       "level": "L2",
       "tokens": [
         {
@@ -2778,7 +2778,7 @@
       "id": "tb-b4-L03-020",
       "zh": "等你有空，我們再去看房子。",
       "en": "When you are free, we'll go look at houses.",
-      "targetWordId": "tocfl-ab6ef9a77d",
+      "targetWordId": "tocfl-79aa12d713",
       "level": "L2",
       "tokens": [
         {
@@ -2863,7 +2863,7 @@
       "id": "tb-b4-L03-022",
       "zh": "等我吃完飯，再給你打電話。",
       "en": "After I finish eating, I'll call you.",
-      "targetWordId": "tocfl-ab6ef9a77d",
+      "targetWordId": "tocfl-d068a0edb6",
       "level": "L2",
       "tokens": [
         {
@@ -2908,16 +2908,13 @@
     },
     {
       "id": "tb-b4-L03-023",
-      "zh": "你等一下，我看完了再告訴你。",
-      "en": "Wait a moment; I'll tell you once I've finished reading.",
-      "targetWordId": "tocfl-c041cb3654",
+      "zh": "等我看完了，再告訴你。",
+      "en": "I'll tell you once I've finished reading.",
+      "targetWordId": "moec-74372a9704",
       "level": "L2",
       "tokens": [
         {
-          "text": "你"
-        },
-        {
-          "text": "等一下"
+          "text": "等"
         },
         {
           "text": "我"
@@ -3734,7 +3731,7 @@
       "id": "tb-b4-L04-018",
       "zh": "你想吃什麼，就吃什麼。",
       "en": "Eat whatever you want.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-f1954edb18",
       "level": "L2",
       "tokens": [
         {
@@ -3775,7 +3772,7 @@
       "id": "tb-b4-L04-019",
       "zh": "他想去哪裡，就去哪裡。",
       "en": "He goes wherever he wants.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-ada71020c3",
       "level": "L2",
       "tokens": [
         {
@@ -3816,7 +3813,7 @@
       "id": "tb-b4-L04-020",
       "zh": "我想買什麼，就買什麼。",
       "en": "I buy whatever I want.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-f1954edb18",
       "level": "L2",
       "tokens": [
         {
@@ -3857,7 +3854,7 @@
       "id": "tb-b4-L04-021",
       "zh": "你想怎麼走，就怎麼走。",
       "en": "Go whichever way you like.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-0d98acf663",
       "level": "L2",
       "tokens": [
         {
@@ -3936,7 +3933,7 @@
       "id": "tb-b4-L04-023",
       "zh": "你喜歡哪一個，就選哪一個。",
       "en": "Choose whichever one you like.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-8cca6ed256",
       "level": "L2",
       "tokens": [
         {
@@ -3980,7 +3977,7 @@
       "id": "tb-b4-L04-024",
       "zh": "想喝什麼，就點什麼。",
       "en": "Order whatever you want to drink.",
-      "targetWordId": "tocfl-be4741f92b",
+      "targetWordId": "tocfl-f1954edb18",
       "level": "L2",
       "tokens": [
         {
@@ -4018,7 +4015,7 @@
       "id": "tb-b4-L04-025",
       "zh": "你要幾個，我就給你幾個。",
       "en": "However many you want, I'll give you that many.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "moec-2612f94e2f",
       "level": "L2",
       "tokens": [
         {
@@ -4141,7 +4138,7 @@
       "id": "tb-b4-L05-003",
       "zh": "他早就到了，你怎麼還沒來？",
       "en": "He arrived long ago; why haven't you come yet?",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-23c0531bab",
       "level": "L2",
       "tokens": [
         {
@@ -4226,7 +4223,7 @@
       "id": "tb-b4-L05-005",
       "zh": "我早就說過了，你不聽。",
       "en": "I said so long ago and you didn't listen.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-23c0531bab",
       "level": "L2",
       "tokens": [
         {
@@ -4270,7 +4267,7 @@
       "id": "tb-b4-L05-006",
       "zh": "他早就回家了。",
       "en": "He went home long ago.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-23c0531bab",
       "level": "L2",
       "tokens": [
         {
@@ -4343,7 +4340,7 @@
       "id": "tb-b4-L05-008",
       "zh": "你不用擔心，一切都會好的。",
       "en": "You don't need to worry; everything will be fine.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-07ca4c21fb",
       "level": "L2",
       "tokens": [
         {
@@ -4498,7 +4495,7 @@
       "id": "tb-b4-L05-012",
       "zh": "我會好好學的。",
       "en": "I will study properly.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-6af71bf980",
       "level": "L2",
       "tokens": [
         {
@@ -4618,7 +4615,7 @@
       "id": "tb-b4-L05-015",
       "zh": "對老闆來說，時間很重要。",
       "en": "For a boss, time is important.",
-      "targetWordId": "tocfl-4369509202",
+      "targetWordId": "tocfl-99dbbfef28",
       "level": "L2",
       "tokens": [
         {
@@ -4659,7 +4656,7 @@
       "id": "tb-b4-L05-016",
       "zh": "對外國人來說，漢字不容易。",
       "en": "For foreigners, Chinese characters are not easy.",
-      "targetWordId": "tocfl-4369509202",
+      "targetWordId": "moec-76f1efe892",
       "level": "L2",
       "tokens": [
         {
@@ -4700,7 +4697,7 @@
       "id": "tb-b4-L05-017",
       "zh": "對他來說，這個工作很容易。",
       "en": "For him, this job is easy.",
-      "targetWordId": "tocfl-4369509202",
+      "targetWordId": "moec-258a0d1886",
       "level": "L2",
       "tokens": [
         {
@@ -5184,7 +5181,7 @@
       "id": "tb-b4-L05-028",
       "zh": "他給我一杯冰冰的飲料。",
       "en": "He gave me an ice-cold drink.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-10ed1b504e",
       "level": "L2",
       "tokens": [
         {
@@ -5266,7 +5263,7 @@
       "id": "tb-b4-L06-001",
       "zh": "我在臺灣住了兩個月了。",
       "en": "I have lived in Taiwan for two months now.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tb-1ced8f822f",
       "level": "L3",
       "tokens": [
         {
@@ -5313,7 +5310,7 @@
       "id": "tb-b4-L06-002",
       "zh": "他已經學了一年中文了。",
       "en": "He has already been studying Chinese for a year.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-4b184214d5",
       "level": "L3",
       "tokens": [
         {
@@ -5357,7 +5354,7 @@
       "id": "tb-b4-L06-003",
       "zh": "我已經等了二十分鐘了。",
       "en": "I've already been waiting for twenty minutes.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-4b184214d5",
       "level": "L3",
       "tokens": [
         {
@@ -5401,7 +5398,7 @@
       "id": "tb-b4-L06-004",
       "zh": "她在這家公司工作了三年了。",
       "en": "She has worked at this company for three years now.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-4bf2daaa1c",
       "level": "L3",
       "tokens": [
         {
@@ -5498,7 +5495,7 @@
       "id": "tb-b4-L06-006",
       "zh": "我已經休息了三天了。",
       "en": "I have already rested for three days.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-4b184214d5",
       "level": "L3",
       "tokens": [
         {
@@ -5817,7 +5814,7 @@
       "id": "tb-b4-L06-014",
       "zh": "她穿著白色的外套。",
       "en": "She is wearing a white coat.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "moec-1a433f4f99",
       "level": "L3",
       "tokens": [
         {
@@ -6209,7 +6206,7 @@
       "id": "tb-b4-L06-024",
       "zh": "我等了半個鐘頭才上車。",
       "en": "I waited half an hour before I got on.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-346b458fde",
       "level": "L3",
       "tokens": [
         {
@@ -6253,7 +6250,7 @@
       "id": "tb-b4-L06-025",
       "zh": "他寫了三天才寫完。",
       "en": "It took him three days to finish writing.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-e3bf43bc82",
       "level": "L3",
       "tokens": [
         {
@@ -6338,7 +6335,7 @@
       "id": "tb-b4-L06-027",
       "zh": "他學了兩年才說得流利。",
       "en": "It took him two years to speak fluently.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-18399c4cb6",
       "level": "L3",
       "tokens": [
         {
@@ -6385,7 +6382,7 @@
       "id": "tb-b4-L06-028",
       "zh": "我找了很久才找到。",
       "en": "I searched for a long time before I found it.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-ed721d848c",
       "level": "L3",
       "tokens": [
         {
@@ -6499,7 +6496,7 @@
       "id": "tb-b4-L07-003",
       "zh": "他從來不遲到。",
       "en": "He is never late.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tocfl-3feafa3797",
       "level": "L3",
       "tokens": [
         {
@@ -7196,7 +7193,7 @@
       "id": "tb-b4-L07-019",
       "zh": "他們在個性上很不一樣。",
       "en": "They are very different in personality.",
-      "targetWordId": "tocfl-490e9adcc1",
+      "targetWordId": "moec-a4a1eb2fdf",
       "level": "L3",
       "tokens": [
         {
@@ -7234,7 +7231,7 @@
       "id": "tb-b4-L07-020",
       "zh": "在生活上，他沒有問題。",
       "en": "In daily life, he has no problems.",
-      "targetWordId": "tocfl-1fb98be339",
+      "targetWordId": "tocfl-f35eb62bd2",
       "level": "L3",
       "tokens": [
         {
@@ -7272,7 +7269,7 @@
       "id": "tb-b4-L07-021",
       "zh": "這兩家店在價錢上差不多。",
       "en": "These two shops are about the same in price.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-8fc5d6a21b",
       "level": "L3",
       "tokens": [
         {
@@ -7354,7 +7351,7 @@
       "id": "tb-b4-L07-023",
       "zh": "在學習上，她很認真。",
       "en": "As far as study goes, she is very earnest.",
-      "targetWordId": "tocfl-1fb98be339",
+      "targetWordId": "tocfl-1977419ec3",
       "level": "L3",
       "tokens": [
         {
@@ -7443,9 +7440,9 @@
     },
     {
       "id": "tb-b4-L08-001",
-      "zh": "從下個月起，公司不用加班了。",
-      "en": "From next month on, the company doesn't need overtime.",
-      "targetWordId": "tocfl-493bda239f",
+      "zh": "從下個月起，我們不用加班了。",
+      "en": "Starting next month, we don't have to work overtime.",
+      "targetWordId": "tocfl-1f6fbc0616",
       "level": "L3",
       "tokens": [
         {
@@ -7464,7 +7461,7 @@
           "text": "起"
         },
         {
-          "text": "公司"
+          "text": "我們"
         },
         {
           "text": "不用"
@@ -7492,7 +7489,7 @@
       "id": "tb-b4-L08-002",
       "zh": "從今天開始，我要多運動。",
       "en": "Starting today, I'm going to exercise more.",
-      "targetWordId": "tocfl-493bda239f",
+      "targetWordId": "tocfl-74c7794307",
       "level": "L3",
       "tokens": [
         {
@@ -7585,7 +7582,7 @@
       "id": "tb-b4-L08-004",
       "zh": "從明年起，我們要搬到臺北。",
       "en": "From next year, we will move to Taipei.",
-      "targetWordId": "tocfl-493bda239f",
+      "targetWordId": "tocfl-989ea1d693",
       "level": "L3",
       "tokens": [
         {
@@ -7626,7 +7623,7 @@
       "id": "tb-b4-L08-005",
       "zh": "從星期一開始，我每天早起。",
       "en": "From Monday on, I get up early every day.",
-      "targetWordId": "tocfl-493bda239f",
+      "targetWordId": "tocfl-b2d18e1fd7",
       "level": "L3",
       "tokens": [
         {
@@ -7667,7 +7664,7 @@
       "id": "tb-b4-L08-006",
       "zh": "從這個月起，房租要貴一點。",
       "en": "From this month on, the rent will be a bit higher.",
-      "targetWordId": "tocfl-493bda239f",
+      "targetWordId": "moec-258a0d1886",
       "level": "L3",
       "tokens": [
         {
@@ -8233,7 +8230,7 @@
       "id": "tb-b4-L08-019",
       "zh": "你看得出來他是誰嗎？",
       "en": "Can you tell who he is?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "moec-6613743eba",
       "level": "L3",
       "tokens": [
         {
@@ -8277,7 +8274,7 @@
       "id": "tb-b4-L08-020",
       "zh": "我聽不出來這是什麼歌。",
       "en": "I can't tell what song this is.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-6613743eba",
       "level": "L3",
       "tokens": [
         {
@@ -8321,7 +8318,7 @@
       "id": "tb-b4-L08-021",
       "zh": "我想不出來他的名字。",
       "en": "I can't think of his name.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-6613743eba",
       "level": "L3",
       "tokens": [
         {
@@ -8362,7 +8359,7 @@
       "id": "tb-b4-L08-022",
       "zh": "你認得出來嗎？",
       "en": "Can you recognize it?",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-47f014e9eb",
       "level": "L3",
       "tokens": [
         {
@@ -8441,7 +8438,7 @@
       "id": "tb-b4-L08-024",
       "zh": "我看得出來你很高興。",
       "en": "I can see that you are very happy.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-6613743eba",
       "level": "L3",
       "tokens": [
         {
@@ -8670,7 +8667,7 @@
       "id": "tb-b4-L09-004",
       "zh": "我跟哥哥生活習慣不同，所以各住各的。",
       "en": "My older brother and I have different living habits, so we each live on our own.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "tocfl-3fef802071",
       "level": "L3",
       "tokens": [
         {
@@ -8723,7 +8720,7 @@
       "id": "tb-b4-L09-005",
       "zh": "大家喜歡吃的不一樣，各吃各的。",
       "en": "Everyone likes different foods, so we each eat our own.",
-      "targetWordId": "tocfl-63466a482a",
+      "targetWordId": "moec-a4a1eb2fdf",
       "level": "L3",
       "tokens": [
         {
@@ -8858,7 +8855,7 @@
       "id": "tb-b4-L09-008",
       "zh": "兩個人的想法不同，各做各的。",
       "en": "The two have different ideas, so each does their own thing.",
-      "targetWordId": "tocfl-a844cb0bd2",
+      "targetWordId": "tocfl-059b1dc3fa",
       "level": "L3",
       "tokens": [
         {
@@ -9272,7 +9269,7 @@
       "id": "tb-b4-L09-017",
       "zh": "你生病了，非去醫院不可。",
       "en": "You are sick; you absolutely must go to the hospital.",
-      "targetWordId": "tocfl-c041cb3654",
+      "targetWordId": "tocfl-ff43217d36",
       "level": "L3",
       "tokens": [
         {
@@ -9357,7 +9354,7 @@
       "id": "tb-b4-L09-019",
       "zh": "要學好中文，非多練習不可。",
       "en": "To learn Chinese well, you must practise a lot.",
-      "targetWordId": "tocfl-0cf1ab2847",
+      "targetWordId": "moec-77cf255b1a",
       "level": "L3",
       "tokens": [
         {
@@ -9398,7 +9395,7 @@
       "id": "tb-b4-L09-020",
       "zh": "他非去花蓮不可。",
       "en": "He insists on going to Hualien.",
-      "targetWordId": "tocfl-c8b02f2841",
+      "targetWordId": "tb-555986b8fa",
       "level": "L3",
       "tokens": [
         {
@@ -9480,7 +9477,7 @@
       "id": "tb-b4-L09-022",
       "zh": "想要成績好，非用功不可。",
       "en": "To get good grades, you must work hard.",
-      "targetWordId": "tocfl-be4741f92b",
+      "targetWordId": "tocfl-7d8356b34a",
       "level": "L3",
       "tokens": [
         {
@@ -9521,7 +9518,7 @@
       "id": "tb-b4-L09-023",
       "zh": "這件事非告訴老闆不可。",
       "en": "We must tell the boss about this.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "tocfl-39a7b02ab0",
       "level": "L3",
       "tokens": [
         {
@@ -9562,7 +9559,7 @@
       "id": "tb-b4-L09-024",
       "zh": "來臺灣，非吃夜市的小吃不可。",
       "en": "If you come to Taiwan, you must eat night market snacks.",
-      "targetWordId": "tocfl-ec17004474",
+      "targetWordId": "tb-1ced8f822f",
       "level": "L3",
       "tokens": [
         {
@@ -9821,13 +9818,19 @@
     },
     {
       "id": "tb-b4-L10-006",
-      "zh": "臺灣的生活給我帶來深刻的印象。",
-      "en": "Life in Taiwan left a deep impression on me.",
+      "zh": "網路給我們的生活帶來很多方便。",
+      "en": "The internet has made our lives much more convenient.",
       "targetWordId": "tocfl-32eb2a5a95",
       "level": "L3",
       "tokens": [
         {
-          "text": "臺灣"
+          "text": "網路"
+        },
+        {
+          "text": "給"
+        },
+        {
+          "text": "我們"
         },
         {
           "text": "的"
@@ -9836,22 +9839,16 @@
           "text": "生活"
         },
         {
-          "text": "給"
-        },
-        {
-          "text": "我"
-        },
-        {
           "text": "帶來"
         },
         {
-          "text": "深刻"
+          "text": "很"
         },
         {
-          "text": "的"
+          "text": "多"
         },
         {
-          "text": "印象"
+          "text": "方便"
         }
       ],
       "source": "generated",
@@ -10031,7 +10028,7 @@
       "id": "tb-b4-L10-011",
       "zh": "我吃不下了，太飽了。",
       "en": "I can't eat any more; I'm too full.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-e000bc912d",
       "level": "L3",
       "tokens": [
         {
@@ -10148,7 +10145,7 @@
       "id": "tb-b4-L10-014",
       "zh": "這間公寓住得下一家人。",
       "en": "This apartment can hold a family.",
-      "targetWordId": "tocfl-89e707550c",
+      "targetWordId": "moec-bbd4d85c95",
       "level": "L3",
       "tokens": [
         {
@@ -10230,7 +10227,7 @@
       "id": "tb-b4-L10-016",
       "zh": "我今天吃不下早飯。",
       "en": "I can't eat breakfast today.",
-      "targetWordId": "tocfl-df8a004869",
+      "targetWordId": "moec-e000bc912d",
       "level": "L3",
       "tokens": [
         {

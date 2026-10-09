@@ -421,6 +421,9 @@ function LessonDetail({
     .filter((g): g is GrammarItem => Boolean(g));
   const words = [...new Set(lesson.vocab)].flatMap((id) => lexicon.byId(id) ?? []);
   const supp = [...new Set(lesson.supplementary)].flatMap((id) => lexicon.byId(id) ?? []);
+  // Phase 25: names are never study vocabulary; they are listed on their own.
+  const names = [...new Set(lesson.properNouns)].flatMap((id) => lexicon.byId(id) ?? []);
+  const here = { bookId, n: lesson.n };
   const exampleFor = (g: GrammarItem) =>
     g.examples.flatMap((id) => sentences.find((s) => s.id === id) ?? []).slice(0, 3);
 
@@ -470,10 +473,7 @@ function LessonDetail({
             <span lang="zh-Hant">
               <AnnotatedWord word={w} script={script} textbook />
             </span>{' '}
-            <span className="textbook-muted">{glossFor(w, { textbook: true })}</span>
-            {lesson.properNouns.includes(w.id) && (
-              <span className="textbook-muted" data-testid="proper-noun-note"> · name, not counted</span>
-            )}
+            <span className="textbook-muted">{glossFor(w, { textbook: true, lesson: here })}</span>
           </li>
         ))}
       </ul>
@@ -486,7 +486,22 @@ function LessonDetail({
                 <span lang="zh-Hant">
                   <AnnotatedWord word={w} script={script} textbook />
                 </span>{' '}
-                <span className="textbook-muted">{glossFor(w, { textbook: true })}</span>
+                <span className="textbook-muted">{glossFor(w, { textbook: true, lesson: here })}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {names.length > 0 && (
+        <>
+          <h3>Names</h3>
+          <ul className="textbook-words" data-testid="lesson-names">
+            {names.map((w) => (
+              <li key={w.id}>
+                <span lang="zh-Hant">
+                  <AnnotatedWord word={w} script={script} textbook />
+                </span>{' '}
+                <span className="textbook-muted">{glossFor(w, { textbook: true, lesson: here })}</span>
               </li>
             ))}
           </ul>
@@ -778,6 +793,7 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
       onExit={onDone}
       exitLabel="Done with vocabulary →"
       title={`${lessonLabel(lesson.n, bookId)} vocabulary`}
+      lesson={{ bookId, n: lesson.n }}
     />
   );
 }

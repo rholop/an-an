@@ -52,6 +52,6 @@ scenarios:
     opener: { zh: 你好。請問你爸爸、媽媽在哪裡工作？, en: "Hello. Where do your father and mother work?" }
     successLine: { zh: 你爸爸的工作很忙，你媽媽喜歡教書。我爸爸也是老師。, en: "Your father's job is busy and your mother likes teaching. My father is a teacher too." }
 journalPrompts:
-  - { en: "Describe your job (or studies) and say whether you like it.", zh: 我喜歡我的老師。, words: [喜歡, 老師, 很], grammar: [gram-de-possessive] }
+  - { en: "Describe your job (or studies) and say whether you like it.", zh: 我是老師，我喜歡我的工作。, words: [喜歡, 老師, 很], grammar: [gram-de-possessive] }
   - { en: "Write about a family member's job: where they work and whether it is busy.", words: [爸爸, 忙, 教書], grammar: [gram-a-not-a] }
   - { en: "Describe a busy day: are you tired? And what about your family?", words: [每天, 累, 忙], grammar: [gram-ne-followup] }
