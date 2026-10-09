@@ -174,6 +174,29 @@ function pickBestHeteronym(heteronyms: MoeHeteronym[], tocflPinyin: string): Moe
 }
 
 /**
+ * Phase 25: the candidate whose reading starts at `pos` in the word's pinyin, longest first (nán before
+ * ná). `toned` only when the tones match too.
+ */
+function positionalPick(
+  candidates: MoeHeteronym[],
+  tonedHay: string,
+  tonelessHay: string,
+  pos: number,
+): { toned?: MoeHeteronym; toneless?: MoeHeteronym } | undefined {
+  if (pos < 0) return undefined;
+  const scored = candidates
+    .filter((h) => h.pinyin)
+    .map((h) => ({ h, toned: normalizePinyinText(h.pinyin!).toLowerCase(), base: parseSyllableTone(h.pinyin!).base.toLowerCase() }))
+    .filter((x) => x.base && tonelessHay.startsWith(x.base, pos))
+    .sort((a, b) => b.base.length - a.base.length);
+  if (scored.length === 0) return undefined;
+  const longest = scored[0]!.base.length;
+  const best = scored.filter((x) => x.base.length === longest);
+  const toned = best.find((x) => tonedHay.startsWith(x.toned, pos));
+  return { ...(toned ? { toned: toned.h } : {}), toneless: best[0]!.h };
+}
+
+/**
  * Resolve pinyin+zhuyin for one (headword, TOCFL-pinyin) pair against MOE,
  * per phase doc §"Reading verification": prefer MOE's reading and record
  * any mismatch; derive zhuyin from MOE, not the converter, wherever MOE has
@@ -204,6 +227,11 @@ export function resolveMoeReading(moe: MoeDictionary, headword: string, tocflPin
   const zhuyinParts: string[] = [];
   let anyDerived = false;
   let anyUnavailable = false;
+  // Phase 25: walk the book's pinyin syllable by syllable. Matching a reading anywhere in the word
+  // picked a prefix of the right syllable (南 ná inside nán, 怎 zě inside zěn): the final -n bug.
+  const tonedHay = tocflPinyin.toLowerCase().replace(/\s+/g, '');
+  const tonelessHay = tonelessCompact(tocflPinyin);
+  let pos = tonedHay.length === tonelessHay.length ? 0 : -1;
 
   for (let i = 0; i < chars.length; i++) {
     const ch = chars[i]!;
@@ -226,13 +254,20 @@ export function resolveMoeReading(moe: MoeDictionary, headword: string, tocflPin
         ch === '兒' && i === chars.length - 1 && /r$/i.test(tonelessCompact(tocflPinyin));
       const erhua = isErhuaSuffix ? candidates.find((h) => h.pinyin && parseSyllableTone(h.pinyin).base === 'er') : undefined;
 
+      const atPos = positionalPick(candidates, tonedHay, tonelessHay, pos);
       const picked = pickHeteronymReading(
         ch,
         { before: chars[i - 1], after: chars[i + 1] },
         candidates.map((h) => ({ pinyinBaseNumeric: toPinyinNumeric(h.pinyin!).split(' ')[0] ?? '', h })),
       );
       chosen =
-        erhua ?? (picked && picked.confidence !== 'low' ? picked.candidate.h : (pickBySubstring(candidates, tocflPinyin) ?? chosen));
+        erhua ??
+        atPos?.toned ??
+        (picked && picked.confidence !== 'low' ? picked.candidate.h : (atPos?.toneless ?? pickBySubstring(candidates, tocflPinyin) ?? chosen));
+    }
+    if (pos >= 0) {
+      const base = parseSyllableTone(chosen.pinyin ?? '').base.toLowerCase();
+      pos = base && tonelessHay.startsWith(base, pos) ? pos + base.length : -1;
     }
     pinyinParts.push(normalizePinyinText(chosen.pinyin ?? '?'));
     if (chosen.bopomofo) {

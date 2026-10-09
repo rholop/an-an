@@ -113,3 +113,36 @@ describe('MoeDictionary.gloss', () => {
     expect(moe.gloss('不存在')).toBeUndefined();
   });
 });
+
+describe('resolveMoeReading: composed readings keep the final -n (Phase 25)', () => {
+  const moe = MoeDictionary.fromEntries([
+    entry('南', [
+      { pinyin: 'ná', bopomofo: 'ㄋㄚˊ' },
+      { pinyin: 'nán', bopomofo: 'ㄋㄢˊ' },
+    ]),
+    entry('區', [{ pinyin: 'qū', bopomofo: 'ㄑㄩ' }]),
+    entry('怎', [
+      { pinyin: 'zě', bopomofo: 'ㄗㄜˇ' },
+      { pinyin: 'zěn', bopomofo: 'ㄗㄣˇ' },
+    ]),
+    entry('麼', [{ pinyin: 'me', bopomofo: '˙ㄇㄜ' }]),
+    entry('了', [
+      { pinyin: 'liǎo', bopomofo: 'ㄌㄧㄠˇ' },
+      { pinyin: 'le', bopomofo: '˙ㄌㄜ' },
+    ]),
+    entry('三', [
+      { pinyin: 'sā', bopomofo: 'ㄙㄚ' },
+      { pinyin: 'sān', bopomofo: 'ㄙㄢ' },
+    ]),
+    entry('明', [{ pinyin: 'míng', bopomofo: 'ㄇㄧㄥˊ' }]),
+    entry('治', [{ pinyin: 'zhì', bopomofo: 'ㄓˋ' }]),
+  ]);
+
+  it.each([
+    ['南區', 'nánqū', 'nán qū', 'ㄋㄢˊ ㄑㄩ'],
+    ['怎麼了', 'zěnme le', 'zěn me le', 'ㄗㄣˇ ˙ㄇㄜ ˙ㄌㄜ'],
+    ['三明治', 'sānmíngzhì', 'sān míng zhì', 'ㄙㄢ ㄇㄧㄥˊ ㄓˋ'],
+  ])('%s (%s) → %s', (hw, book, pinyin, zhuyin) => {
+    expect(resolveMoeReading(moe, hw, book)).toMatchObject({ pinyin, zhuyin, source: 'moe-composed' });
+  });
+});
