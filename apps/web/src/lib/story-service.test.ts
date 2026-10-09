@@ -187,11 +187,13 @@ describe('StoryService (Phase 24)', () => {
     expect(story.paragraphs[0]!.zh).toBe(GOOD);
   });
 
-  it('Easier refuses a story with a rung 4 word that Middle accepts', async () => {
+  it('Easier shows a story with a rung 4 word only as a mini lesson, the word explained (Phase 25/26)', async () => {
     await seedKnown();
     const withMrt = `${GOOD}他去捷運。`;
-    await expect(service(new FakeStoryLLM(scripted(withMrt))).write({ level: 'N1', difficulty: 'middle', kind: 'lesson' }, NOW)).resolves.toBeTruthy();
-    await expect(service(new FakeStoryLLM(scripted(withMrt))).write({ level: 'N1', difficulty: 'easier', kind: 'typed', text: 'tea' }, NOW)).rejects.toBeInstanceOf(StoryUnavailableError);
+    const mid = await service(new FakeStoryLLM(scripted(withMrt))).write({ level: 'N1', difficulty: 'middle', kind: 'lesson' }, NOW);
+    expect(mid).toBeTruthy();
+    const easy = await service(new FakeStoryLLM(scripted(withMrt))).write({ level: 'N1', difficulty: 'easier', kind: 'typed', text: 'tea' }, NOW);
+    expect(easy.glosses.map((g) => g.zh)).toContain('捷運');
   });
 
   it('the independent reader can veto: unnatural, a wrong summary, or answers it disagrees with', async () => {

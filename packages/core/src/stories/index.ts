@@ -128,6 +128,8 @@ export interface StoryReport {
   paragraphs: StoryToken[][];
   contentTokens: number;
   rung1Share: number;
+  /** Phase 25/26: known or this lesson (rungs 1–2), the share the mini-lesson floor uses. */
+  knownShare: number;
   /** Content tokens per rung. */
   counts: Record<VocabRung, number>;
   /** Distinct words per rung (word id, or the text for words outside the lexicon). */
@@ -324,6 +326,7 @@ export function analyzeStory(
   const glossedTokens = all.filter((t) => t.glossed).length;
   const shareBase = contentTokens - glossedTokens;
   const rung1Share = shareBase <= 0 ? 1 : counts[1] / shareBase;
+  const knownShare = shareBase <= 0 ? 1 : (counts[1] + counts[2]) / shareBase;
   const chars = paragraphs.reduce((n, p) => n + hanCount(p), 0);
 
   const taiwanness = paragraphs
@@ -333,7 +336,8 @@ export function analyzeStory(
 
   const failed: StoryFailure[] = [];
   let short = false;
-  if (rung1Share < budget.minRung1Share) failed.push('rung1');
+  // Phase 26 A1: this lesson's words (rung 2) count as known: the prompt asks for them by name.
+  if (knownShare < budget.minRung1Share) failed.push('rung1');
   if (distinct[3].length > budget.maxRung3Words) failed.push('rung3');
   if (distinct[4].length > budget.maxRung4Words) failed.push('rung4');
   if (distinct[5].length > budget.maxRung5Words) failed.push('rung5');
@@ -351,6 +355,7 @@ export function analyzeStory(
     paragraphs: out,
     contentTokens,
     rung1Share,
+    knownShare,
     counts,
     distinct,
     chars,

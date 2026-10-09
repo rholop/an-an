@@ -102,8 +102,8 @@ describe('graded story validation (Phase 24)', () => {
     expect(two4.failed).toContain('rung4');
   });
 
-  it('rung 1 below 90% fails, and the feedback names the words with rung 1 swaps', () => {
-    const r = analyzeStory(['我喝咖啡。咖啡很好。你喝咖啡。'], ctx);
+  it('known-or-this-lesson below 90% fails (rung 3 words), and the feedback names the words with rung 1 swaps', () => {
+    const r = analyzeStory(['我去便利商店。便利商店很好。你去便利商店。'], ctx);
     expect(r.failed).toContain('rung1');
     const fb = storyFeedback(r, storyBudget('middle'), { ladder, lexicon });
     expect(fb).toMatch(/rung 1/);
@@ -258,6 +258,13 @@ describe('Phase 25: the checker reads a story the way a learner would', () => {
     const r = analyzeStory(['學生不是。'], { ladder: lad, lexicon: lex });
     expect(r.paragraphs[0]!.find((t) => t.text === '不是')?.rung).toBe(1);
     expect(r.rung1Share).toBe(1);
+  });
+
+  it('Phase 26: lesson words (rung 2) used twice each count as known', () => {
+    const lessonLad = { rung: (wid: string): VocabRung => (wid === words.find((x) => x.headword === '公司')!.id ? 2 : known.has(wid) ? 1 : 6) };
+    const r = analyzeStory(['學生在公司工作。學生不在公司。'], { ladder: lessonLad, lexicon: lex });
+    expect(r.knownShare).toBe(1);
+    expect(r.failed).not.toContain('rung1');
   });
 
   it('a glossed word does not count against the share', () => {

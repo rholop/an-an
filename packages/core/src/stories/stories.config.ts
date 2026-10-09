@@ -47,9 +47,13 @@ export const STORY_CONFIG = {
   /** Regenerations after the first attempt when the shares fail. */
   maxRegenerations: 1,
   questions: { min: 2, max: 4, optionsMin: 3, optionsMax: 4 },
-  /** Phase 25: a story that misses only the word budgets is still shown as a mini lesson, every
-   * unknown word explained, when at least this share is known and it has at most this many new words. */
-  miniLesson: { minRung1Share: 0.6, maxNewWords: 10 },
+  /** Phase 25/26: a story that misses only the word targets is still shown as a mini lesson (every
+   * new word explained) when its known-or-this-lesson share is at least the floor and it has at most
+   * this many new words. Only the floors refuse; the targets above drive the prompt. */
+  miniLesson: {
+    floor: { middle: 0.8, easier: 0.88, harder: 0.72 } satisfies Record<StoryDifficulty, number>,
+    maxWords: { middle: 6, easier: 3, harder: 10 } satisfies Record<StoryDifficulty, number>,
+  },
   /** Stories kept ready in the background for the current lesson. */
   readyAhead: 2,
   /** "You'll find this one easier now": older than this, and this share of its words now learned. */

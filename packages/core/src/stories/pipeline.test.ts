@@ -59,20 +59,26 @@ describe('Phase 25: a story that misses only the word budgets is a mini lesson',
     expect(out.story.glosses).toEqual(expect.arrayContaining([{ zh: '太太', en: 'wife; Mrs.' }, { zh: '公司', en: 'company' }]));
   });
 
+  it('the floor depends on the difficulty (Middle 80%, Easier 88%)', () => {
+    const a = { res: story(['x']), report: { failed: ['rung1'], rung1Share: 0.85, knownShare: 0.85, paragraphs: [] } } as never;
+    expect(miniLessonGlosses(a, lexicon, 'middle')).toEqual([]);
+    expect(miniLessonGlosses(a, lexicon, 'easier')).toBeUndefined();
+  });
+
   it('mostly unknown words: still refused', () => {
-    const a = { res: story(['x']), report: { failed: ['rung1', 'rung6'], rung1Share: 0.4, paragraphs: [] } } as never;
+    const a = { res: story(['x']), report: { failed: ['rung1', 'rung6'], rung1Share: 0.4, knownShare: 0.4, paragraphs: [] } } as never;
     expect(miniLessonGlosses(a, lexicon)).toBeUndefined();
   });
 
   it('a Taiwan-usage or question problem is never waved through', () => {
-    const a = { res: story(['x']), report: { failed: ['rung6', 'taiwanness'], rung1Share: 0.9, paragraphs: [] } } as never;
+    const a = { res: story(['x']), report: { failed: ['rung6', 'taiwanness'], rung1Share: 0.9, knownShare: 0.9, paragraphs: [] } } as never;
     expect(miniLessonGlosses(a, lexicon)).toBeUndefined();
   });
 
   it('a word nobody can explain: refused', () => {
     const a = {
       res: story(['x']),
-      report: { failed: ['rung6'], rung1Share: 0.9, paragraphs: [[{ text: '嘰咕', rung: 6 }]] },
+      report: { failed: ['rung6'], rung1Share: 0.9, knownShare: 0.9, paragraphs: [[{ text: '嘰咕', rung: 6 }]] },
     } as never;
     expect(miniLessonGlosses(a, lexicon)).toBeUndefined();
   });

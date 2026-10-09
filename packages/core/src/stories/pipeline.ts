@@ -91,7 +91,7 @@ export async function runStoryPipeline(input: {
       .slice(0, 1500);
   }
   const best = pickBestStoryAttempt(attempts);
-  const lesson = best.report.pass ? undefined : miniLessonGlosses(best, input.lexicon);
+  const lesson = best.report.pass ? undefined : miniLessonGlosses(best, input.lexicon, input.difficulty);
   if (!best.report.pass && !lesson) return { ok: false, reasons: best.report.failed, attempts };
 
   // The independent reader: a fresh call on the checker model, shown only the story, its summary and questions.
@@ -113,10 +113,11 @@ const VOCAB_FAILURES = new Set(['rung1', 'rung3', 'rung4', 'rung5', 'rung6']);
 export function miniLessonGlosses(
   a: Pick<StoryAttempt, 'res' | 'report'>,
   lexicon: Pick<Lexicon, 'byId'>,
+  difficulty: StoryDifficulty = 'middle',
 ): StoryResponse['glosses'] | undefined {
   const cfg = STORY_CONFIG.miniLesson;
   if (!a.report.failed.every((f) => VOCAB_FAILURES.has(f))) return undefined;
-  if (a.report.rung1Share < cfg.minRung1Share) return undefined;
+  if (a.report.knownShare < cfg.floor[difficulty]) return undefined;
   const glosses = [...a.res.glosses];
   const have = new Set(glosses.map((g) => g.zh));
   let fresh = 0;
@@ -133,6 +134,6 @@ export function miniLessonGlosses(
     glosses.push({ zh: t.text, en: en.slice(0, 80) });
     have.add(t.text);
   }
-  if (fresh > cfg.maxNewWords) return undefined;
+  if (fresh > cfg.maxWords[difficulty]) return undefined;
   return glosses;
 }
