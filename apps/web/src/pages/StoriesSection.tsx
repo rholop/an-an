@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { storyMinutes, type Level, type Lexicon, type StoryDifficulty, type StoryRecord, type StoryStage } from '@anan/core';
 import {
-  lessonLabel,
+  storyLessonBadge,
   EASIER_NOW,
   NEXT_STORY,
   NO_LESSON_STORY,
@@ -39,6 +39,7 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
   const [ready, setReady] = useState<StoryRecord[]>([]);
   const [easier, setEasier] = useState<StoryRecord[]>([]);
   const [lessonTopic, setLessonTopic] = useState('');
+  const [catchUp, setCatchUp] = useState<ReadonlySet<string>>(new Set());
   const [pick, setPick] = useState<TopicPick>({ kind: 'lesson' });
   const [typed, setTyped] = useState('');
   const [busy, setBusy] = useState(false);
@@ -62,10 +63,12 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
         service.rereads(now),
         service.ladderFor(level, now),
       ]);
+      const catchUpIds = await service.catchUpLessonIds(level, now).catch(() => new Set<string>());
       if (cancelled) return;
       setLibrary(lib);
       setReady(rdy);
       setEasier(again);
+      setCatchUp(catchUpIds);
       setLessonTopic(service.lessonTopic(ladder));
       prepareStories(service, level, difficulty, ladder.lessons.active?.lessonId ?? '-');
     })();
@@ -223,7 +226,7 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
               <li key={s.id}>
                 <button type="button" className="stories-item" data-testid="story-item" data-read={s.readAt ? '1' : '0'} onClick={() => onOpen(s)}>
                   <span lang="zh-Hant" className="stories-item-title">{s.titleZh}</span>
-                  {l && <span className="stories-badge">{lessonLabel(l.n, l.bookId)}</span>}
+                  {l && <span className="stories-badge" data-testid="story-lesson-badge">{storyLessonBadge(l.n, l.bookId, catchUp.has(s.lessonId ?? ''))}</span>}
                   {s.readAt ? <span className="stories-badge">✓ read</span> : <span className="stories-unread">Unread</span>}
                 </button>
               </li>

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
+import { createHash } from 'node:crypto';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { AudioKindSchema, isProfileId, summarizeSavedCopy, type SavedCopySummary } from '@anan/core';
 import { z } from 'zod';
@@ -371,7 +372,13 @@ export function createApp(deps: AppDeps): Hono {
       return c.json({ error: 'unknown resource' }, 404);
     const data = await deps.textbook?.get(c.req.param('bookId'), kind as TextbookPrivateKind);
     if (data === undefined) return c.json({ error: 'textbook text not installed' }, 404);
-    return c.json(data, 200, { 'cache-control': 'private, max-age=3600' });
+    // Phase 30 Part B.2: revalidated every time (a 304 is cheap), so lesson stories written while
+    // the app is open show up on the next Stories open.
+    const body = JSON.stringify(data);
+    const etag = `"${createHash('sha1').update(body).digest('base64url')}"`;
+    const headers = { 'cache-control': 'private, no-cache', etag };
+    if (c.req.header('if-none-match') === etag) return c.body(null, 304, headers);
+    return c.body(body, 200, { ...headers, 'content-type': 'application/json; charset=utf-8' });
   });
 
   app.post('/v1/turn', async (c) => {

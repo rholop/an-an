@@ -1035,6 +1035,18 @@ describe('textbook text (phase 12)', () => {
     expect((await app.request('/v1/textbook/laixue-1/pages')).status).toBe(404);
     expect((await app.request('/v1/textbook/..%2F..%2Fetc/dialogues')).status).toBe(404);
   });
+
+  it('is revalidated every time (Phase 30 Part B.2): no-cache with an ETag, 304 when unchanged', async () => {
+    const app = buildApp();
+    const res = await app.request('/v1/textbook/laixue-1/dialogues');
+    expect(res.headers.get('cache-control')).toBe('private, no-cache');
+    const etag = res.headers.get('etag')!;
+    expect(etag).toMatch(/^".+"$/);
+    const again = await app.request('/v1/textbook/laixue-1/dialogues', { headers: { 'if-none-match': etag } });
+    expect(again.status).toBe(304);
+    const other = await app.request('/v1/textbook/laixue-1/dialogues', { headers: { 'if-none-match': '"old"' } });
+    expect(other.status).toBe(200);
+  });
 });
 
 describe('Phase 24 graded stories', () => {

@@ -228,6 +228,8 @@ export const READ_AGAIN = 'Read again';
 export const EASIER_NOW = "You'll find this one easier now";
 export const STORY_DIFFICULTY = { easier: 'Easier', middle: 'Just right', harder: 'Harder' } as const;
 /** "A 2-minute story using Lesson 3 words" (Home and the Stories section). */
+/** Phase 30: a story's lesson badge, "來學華語 1 · Lesson 2 · catch-up" for an earlier lesson not yet Mastered. */
+export const storyLessonBadge = (n: number, bookId: string, catchUp = false): string => `${lessonLabel(n, bookId)}${catchUp ? ' · catch-up' : ''}`;
 export const storyPitch = (minutes: number, lesson?: { n: number; bookId: string }): string =>
   `A ${minutes}-minute story${lesson ? ` using ${lessonShort(lesson.n)} words` : ''}`;
 /** After reading: "You read 214 characters · 96% words you know". */
