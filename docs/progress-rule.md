@@ -5,7 +5,7 @@ The rule: **every progress number or decision comes from one object, the progres
 `apps/web/src/lib/ledger.ts`). See CLAUDE.md "Progress rule (Phase 29)".
 
 The findings are those of `phase-briefs/29-audit-findings.md` (main at `91a65be`). Every one was
-closed in commit **`@COMMIT@`** ("Phase 29: one progress rule"), the single change that moved
+closed in commit **`f36f5c3`** ("Phase 29: one progress rule"), the single change that moved
 every screen onto the ledger. "Deleted" means the code is gone.
 
 ## A. Due / needs water
