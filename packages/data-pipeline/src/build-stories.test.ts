@@ -26,10 +26,14 @@ describe('Phase 26 Part E: lesson stories use only this lesson, the lessons befo
 // ---- Phase 30 Part B.1: safe to rerun, steerable, stops cleanly on the free quota ----
 
 /** A stand-in proxy: the offline writer's answers, or 429s once `limitAfter` calls are spent. */
-function fakeProxy(opts: { limitAfter?: number; retryAfter?: string } = {}) {
+function fakeProxy(opts: { limitAfter?: number; retryAfter?: string; quotaAfter?: number } = {}) {
   const calls: string[] = [];
-  const fetchFn = (async (url: string, init: { body: string }) => {
+  const headers: Array<Record<string, string>> = [];
+  const fetchFn = (async (url: string, init: { body: string; headers: Record<string, string> }) => {
     calls.push(url);
+    headers.push(init.headers);
+    if (opts.quotaAfter !== undefined && calls.length > opts.quotaAfter)
+      return new Response(JSON.stringify({ error: 'quota_exhausted', resetsAt: '2026-10-10T07:00:00.000Z' }), { status: 503 });
     if (opts.limitAfter !== undefined && calls.length > opts.limitAfter)
       return new Response(JSON.stringify({ error: 'rate limited, please retry shortly' }), {
         status: 429,
@@ -41,7 +45,7 @@ function fakeProxy(opts: { limitAfter?: number; retryAfter?: string } = {}) {
       route === 'story' ? dryStory(body) : route === 'story-check' ? dryStoryCheck(body as never) : dryStoryRepair(body as never);
     return new Response(JSON.stringify(out), { status: 200 });
   }) as unknown as typeof fetch;
-  return { calls, fetchFn };
+  return { calls, headers, fetchFn };
 }
 
 function deps(root: string, fetchFn: typeof fetch, sleeps: number[] = []): BuildDeps & { lines: string[] } {
@@ -102,6 +106,22 @@ describe('Phase 30 Part B.1: stories:build is safe to rerun', { timeout: 120_000
     // everything saved before is still there, unchanged, and the new story is for the lesson it stopped at
     expect(after.slice(0, saved.length)).toEqual(saved);
     expect(after.slice(saved.length).every((s) => s.lessonId === r1.resumeAt)).toBe(true);
+  });
+
+  it('Phase 33: the proxy\'s quota_exhausted stops at once with when it resets; requests are batch priority', async () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'stories-'));
+    const proxy = fakeProxy({ quotaAfter: 6 });
+    const sleeps: number[] = [];
+    const d = deps(root, proxy.fetchFn, sleeps);
+    const r = await buildStories(parseArgs(['--book', 'laixue-1', '--delay', '0', '--model', 'gemini-2.5-flash-lite']), d);
+    expect(r.stopped).toBe('quota');
+    expect(r.resetsAt?.toISOString()).toBe('2026-10-10T07:00:00.000Z');
+    expect(proxy.calls).toHaveLength(7); // the first quota_exhausted ends the run
+    expect(sleeps).toEqual([]);
+    expect(proxy.headers.every((h) => h['x-ai-priority'] === 'batch' && h['x-ai-model'] === 'gemini-2.5-flash-lite')).toBe(true);
+    // now 08:00 New York; the reset (midnight Pacific) is 03:00 New York
+    expect(d.lines.join('\n')).toMatch(/Free quota used up\. Wrote \d+ of \d+ stories; the rest resumes from here\. Quota resets at about 03:00 \(in 19 h\)\. Run the same command again then\. It continues from laixue-1-L0\d\./);
+    expect(r.failed).toBe(0);
   });
 
   it('--status makes no model calls; a rerun with nothing to do leaves the file byte-identical', async () => {

@@ -60,6 +60,7 @@ import {
 } from '@anan/core';
 
 export { getInstallId } from './api.js';
+import { noteQuotaExhausted, quotaResetFrom, quotaText } from './ai-quota.js';
 
 export class ProxyTurnError extends Error {
   constructor(
@@ -67,17 +68,30 @@ export class ProxyTurnError extends Error {
     public readonly status: number,
     /** Phase 25: the free Gemini quota (or the proxy's own budget) is used up for now. */
     public readonly quota = false,
+    /** Phase 33: every free model is out until then (the proxy's 503 quota_exhausted). */
+    public readonly resetsAt?: Date,
   ) {
     super(message);
     this.name = 'ProxyTurnError';
   }
 }
 
-const QUOTA_REASONS = new Set(['rate_limited', 'quota']);
+const QUOTA_REASONS = new Set(['rate_limited', 'quota', 'exhausted', 'reserved']);
 
 /** Phase 25: is this failure the free AI quota running out (show "Try again in a few minutes")? */
 export function isQuotaError(err: unknown): boolean {
   return err instanceof ProxyTurnError && err.quota;
+}
+
+/** Phase 33: the plain words for a quota failure ("…used up until about 3 am. Lessons, review and
+ * everything else still work."), or undefined for any other error. */
+export function aiQuotaErrorText(err: unknown, now: Date = new Date()): string | undefined {
+  return isQuotaError(err) ? quotaText((err as ProxyTurnError).resetsAt, now) : undefined;
+}
+
+/** What a failed AI call shows: the quota text, else the error's message. */
+export function aiErrorText(err: unknown): string {
+  return aiQuotaErrorText(err) ?? (err instanceof Error ? err.message : String(err));
 }
 
 /** apps/web's implementation of core's TutorLLM — fetch to apps/proxy. Never
@@ -113,6 +127,12 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM {
         if (res.status === 429 && wait !== undefined && wait <= 30_000 && attempt < 3) {
           await new Promise((r) => setTimeout(r, wait + 50));
           continue;
+        }
+        // Phase 33: every free model is out until `resetsAt`: background stories wait until then
+        const resetsAt = quotaResetFrom(res.status, errBody);
+        if (resetsAt) {
+          noteQuotaExhausted(resetsAt);
+          throw new ProxyTurnError('quota_exhausted', res.status, true, resetsAt);
         }
         const quota =
           res.status === 429 ||

@@ -39,6 +39,7 @@ import { useKeyboardOpen } from '../lib/viewport.js';
 import { useSetting } from '../lib/useSetting.js';
 import './ChatPage.css';
 import './OpenChat.css';
+import { aiErrorText } from '../lib/tutor-llm.js';
 
 type Scaffolding = 'high' | 'medium' | 'low';
 const SUGGESTED_REPLY_CAP: Record<Scaffolding, number> = { high: 2, medium: 1, low: 0 };
@@ -213,7 +214,7 @@ export function OpenChatView({
       await refresh(conversationId);
       await refreshCards();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(aiErrorText(err));
       await refresh(conversationId); // the learner's own message is already saved
     } finally {
       setSending(false);

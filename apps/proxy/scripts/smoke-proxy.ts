@@ -11,7 +11,7 @@
  * With no keys and no PROXY_URL it prints "skipped" and exits 0.
  */
 import { JSON_ROUTES } from '../src/json-routes.js';
-import { loadEnv } from '../src/env.js';
+import { loadEnv, resolveChains } from '../src/env.js';
 import { GeminiAdapter } from '../src/providers/gemini.js';
 import { ProviderRetryableError } from '../src/providers/types.js';
 import { applyZodLimits, trimToLimits } from '../src/zod-limits.js';
@@ -20,7 +20,7 @@ const env = loadEnv();
 const proxyUrl = process.env.PROXY_URL;
 const adapters: Array<{ name: string; adapter: GeminiAdapter }> = [];
 if (env.GEMINI_API_KEY)
-  for (const model of new Set([env.GEMINI_MODEL_JOURNAL, env.GEMINI_MODEL_TURN, env.GEMINI_MODEL_FALLBACK, env.GEMINI_MODEL_CHECK]))
+  for (const model of new Set(Object.values(resolveChains(env)).flat()))
     adapters.push({ name: model, adapter: new GeminiAdapter(env.GEMINI_API_KEY, model) });
 
 if (adapters.length === 0 && !proxyUrl) {

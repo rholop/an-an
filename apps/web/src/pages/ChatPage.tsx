@@ -24,7 +24,7 @@ import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
 import { LevelChips } from '../components/LevelPicker.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
-import { FetchTutorLLM } from '../lib/tutor-llm.js';
+import { aiErrorText, FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useKeyboardOpen } from '../lib/viewport.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useMyClass } from '../lib/my-class.js';
@@ -281,7 +281,7 @@ export function ChatPage({
       }
       await refreshCards();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(aiErrorText(err));
       await refresh(conversationId); // the learner's own message is already persisted even if the reply failed
     } finally {
       setSending(false);

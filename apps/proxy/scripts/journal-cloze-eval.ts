@@ -31,6 +31,8 @@ import {
   type JournalLLM,
   type Word,
 } from '@anan/core';
+import { exitOnQuotaStop, postAsBatch } from '../src/script-proxy.js';
+import { modelFlag } from '../src/script-gemini.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const proxyUrl = process.env.PROXY_URL ?? 'http://localhost:3002';
@@ -46,15 +48,10 @@ const lexFile = JSON.parse(readFileSync(path.join(root, 'data/build/lexicon.v2.j
 const lexicon = new Lexicon(lexFile.words, lexFile.grammar);
 
 async function post(route: string, body: unknown): Promise<{ json: unknown; servedBy?: string }> {
-  const res = await fetch(`${proxyUrl}${route}`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-install-id': 'journal-cloze-eval',
-      'x-site-code': process.env.SITE_CODE ?? '',
-    },
-    body: JSON.stringify(body),
-  });
+  // Phase 33: a batch request; the free quota running out ends the run (exit 0)
+  const res = await postAsBatch(`${proxyUrl}${route}`, body, { installId: 'journal-cloze-eval', model: modelFlag(process.argv) }).catch(
+    (err: unknown) => exitOnQuotaStop(err),
+  );
   if (!res.ok) throw new Error(`${route}: HTTP ${res.status}`);
   const served = ProviderNameSchema.safeParse(res.headers.get('x-served-by'));
   return { json: await res.json(), servedBy: served.success ? served.data : undefined };

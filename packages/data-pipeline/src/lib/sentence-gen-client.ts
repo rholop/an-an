@@ -26,6 +26,8 @@ export function createHttpSentenceGenClient(
       headers: {
         'content-type': 'application/json',
         'x-install-id': installId,
+        // Phase 33: an offline batch job leaves each model's free-quota reserve to the live app
+        'x-ai-priority': 'batch',
         'x-site-code': process.env.SITE_CODE ?? '',
       },
       body: JSON.stringify(req),

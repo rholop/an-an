@@ -29,6 +29,8 @@ export type ProviderFailureReason =
   | 'server_error'
   | 'request_error'
   | 'bad_request'
+  /** Phase 33: the model doesn't exist (or isn't offered) for this key: skipped until the reset. */
+  | 'not_found'
   | 'auth';
 
 /** Reasons worth one more try on the same model after a short wait. */
@@ -47,6 +49,8 @@ export class ProviderRetryableError extends Error {
     public readonly reason: ProviderFailureReason,
     /** From a 429's retry-after, when Gemini sends one. */
     public readonly retryAfterMs?: number,
+    /** Phase 33: a daily quota's request limit, from the 429's QuotaFailure details. */
+    public readonly quotaLimit?: number,
   ) {
     super(message);
     this.name = 'ProviderRetryableError';
@@ -55,7 +59,23 @@ export class ProviderRetryableError extends Error {
 
 export interface ModelAttempt {
   model: string;
-  reason: ProviderFailureReason | 'error';
+  /** Phase 33: `exhausted` / `reserved` = skipped without a call (out of free quota, or the live
+   * app's reserve and this was a batch request). */
+  reason: ProviderFailureReason | 'error' | 'exhausted' | 'reserved';
+}
+
+/** Phase 33: every model of the chain is out of free quota (or, for a batch request, down to the
+ * live app's reserve). The route answers 503 {"error":"quota_exhausted","resetsAt":…}. */
+export class QuotaExhaustedError extends Error {
+  constructor(
+    readonly resetsAt: Date,
+    readonly attempts: ModelAttempt[],
+    /** True when only the live reserve is left (a batch request). */
+    readonly reserved = false,
+  ) {
+    super(`free quota used up until ${resetsAt.toISOString()}: ${attempts.map((a) => `${a.model} ${a.reason}`).join(', ')}`);
+    this.name = 'QuotaExhaustedError';
+  }
 }
 
 /** Every model that was tried failed. The 502 body names each one and why (never a key or a prompt). */

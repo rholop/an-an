@@ -24,7 +24,8 @@
     "stories:build": "pnpm --filter @anan/data-pipeline stories:build",
     "eval:journal": "pnpm --filter @anan/proxy journal-cloze-eval",
     "eval:stories": "pnpm --filter @anan/proxy stories-eval",
-    "smoke:proxy": "pnpm --filter @anan/proxy smoke"
+    "smoke:proxy": "pnpm --filter @anan/proxy smoke",
+    "ai:quota": "pnpm --filter @anan/proxy ai:quota"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

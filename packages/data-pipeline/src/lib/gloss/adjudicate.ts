@@ -247,6 +247,8 @@ export function proxyCall(baseUrl: string, fetchImpl: typeof fetch = fetch): Adj
       headers: {
         'content-type': 'application/json',
         'x-install-id': 'data-pipeline',
+        // Phase 33: an offline batch job leaves each model's free-quota reserve to the live app
+        'x-ai-priority': 'batch',
         'x-site-code': process.env.SITE_CODE ?? '',
       },
       body: JSON.stringify(req),

@@ -16,6 +16,7 @@ import {
   lessonShort,
   levelLabel,
   levelShort,
+  quotaResetTime,
   stepName,
   tocflLabel,
   type Level,
@@ -235,6 +236,12 @@ export const STORY_UNAVAILABLE = "Couldn't write a story right now. Try again.";
 export const RETRY = 'Retry';
 /** Phase 25: when the free Gemini quota is used up. */
 export const AI_QUOTA_USED = 'The free AI quota is used up for now. Try again in a few minutes.';
+/** Phase 33: every free model is out until the daily reset (midnight Pacific, 3 am in New York). */
+export const aiQuotaUsedUntil = (resetsAt: Date, now: Date, timeZone: string): string =>
+  `The free AI quota is used up until about ${quotaResetTime(resetsAt, now, timeZone).spoken}. Lessons, review and everything else still work.`;
+/** Phase 33: Settings → AI usage. */
+export const AI_USAGE = 'AI usage';
+export const STORIES_WRITTEN_TODAY = 'Stories written today';
 export const STORY_WRITING = 'Writing a story…';
 /** Phase 26 Part F: what the button says while a story is written, checked and repaired. */
 export const STORY_STAGE = {

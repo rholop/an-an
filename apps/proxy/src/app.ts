@@ -110,7 +110,8 @@ import {
   type JournalPrompts,
 } from './prompt.js';
 import type { RateLimiter } from './rate-limit.js';
-import { ModelsFailedError } from './providers/types.js';
+import { ModelsFailedError, QuotaExhaustedError } from './providers/types.js';
+import type { QuotaTracker } from './quota.js';
 import { applyZodLimits, trimToLimits } from './zod-limits.js';
 
 /** Phase 25: '/v1/story-check' → {"error":"story_check_failed","attempts":[{"model":"gemini-…","reason":"rate_limited"}, …]}.
@@ -120,7 +121,15 @@ export const MODEL_FAILURE_STATUS = 503;
 export function failureBody(
   route: string,
   err: unknown,
-): { error: string; attempts?: ModelsFailedError['attempts'] } {
+): { error: string; attempts?: ModelsFailedError['attempts']; resetsAt?: string; reserved?: boolean } {
+  // Phase 33: every model of the chain is out of free quota: when the first one is back.
+  if (err instanceof QuotaExhaustedError)
+    return {
+      error: 'quota_exhausted',
+      resetsAt: err.resetsAt.toISOString(),
+      ...(err.reserved ? { reserved: true } : {}),
+      attempts: err.attempts,
+    };
   const error = `${route.replace(/^\/v1\//, '').replace(/[^a-z0-9]+/gi, '_')}_failed`;
   return err instanceof ModelsFailedError ? { error, attempts: err.attempts } : { error };
 }
@@ -181,6 +190,9 @@ export interface AppDeps {
   /** Phase 24: graded stories (writer + independent checker prompts). */
   story?: { prompts: { write: string; check: string; repair: string }; orchestrator?: JsonOrchestrator };
   rateLimiter: RateLimiter;
+  /** Phase 33: the shared free-quota tracker and each role's model chain (GET /v1/ai-usage). */
+  quota?: QuotaTracker;
+  chains?: Record<string, readonly string[]>;
   log?: (entry: Record<string, unknown>) => void;
 }
 
@@ -202,6 +214,22 @@ export function createApp(deps: AppDeps): Hono {
 
   /** The web app's once-per-browser "is this code right?" check. */
   app.get('/v1/auth/check', (c) => c.json({ ok: true }));
+
+  // ---- Phase 33: the free quota ----------------------------------------------------------
+  /** Settings → AI usage: each model's calls today, limit, reserve, whether it is out and until when. */
+  app.get('/v1/ai-usage', (c) => {
+    if (!deps.quota) return c.json({ error: 'quota tracking is not configured' }, 501);
+    return c.json(deps.quota.usage(deps.chains ?? {}));
+  });
+
+  const knownModels = new Set(Object.values(deps.chains ?? {}).flat());
+  /** `x-ai-priority: batch` (scripts leave the live reserve) and `x-ai-model` (a script's --model). */
+  const runPriority = (c: Context): { priority: 'live' | 'batch'; model?: string } | { bad: string } => {
+    const model = c.req.header('x-ai-model')?.trim();
+    if (model && deps.chains && !knownModels.has(model))
+      return { bad: `x-ai-model "${model}" is not in any chain (${[...knownModels].join(', ')})` };
+    return { priority: c.req.header('x-ai-priority') === 'batch' ? 'batch' : 'live', ...(model ? { model } : {}) };
+  };
 
   // ---- Phase 8 sync: GET/PUT one profile's saved copy --------------------
   // Phase 28: bodies may be gzipped (content-encoding: gzip; the cap applies to both the compressed
@@ -435,12 +463,15 @@ export function createApp(deps: AppDeps): Hono {
         buildOpenSystemPrompt(deps.openChat.promptTemplate, deps.openChat.persona, openRequest),
         openRequest.feedback,
       );
+      const pr = runPriority(c);
+      if ('bad' in pr) return c.json({ error: pr.bad }, 400);
       try {
         const { result, log: runLog } = await deps.orchestrator.run(
           openPrompt,
           openRequest.history,
           {
             alternate: openRequest.alternateModel === true,
+            ...pr,
           },
         );
         const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
@@ -471,11 +502,13 @@ export function createApp(deps: AppDeps): Hono {
       turnRequest.feedback,
     );
 
+    const pr = runPriority(c);
+    if ('bad' in pr) return c.json({ error: pr.bad }, 400);
     try {
       const { result, log: runLog } = await deps.orchestrator.run(
         effectiveSystemPrompt,
         turnRequest.history,
-        { alternate: turnRequest.alternateModel === true },
+        { alternate: turnRequest.alternateModel === true, ...pr },
       );
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
@@ -523,8 +556,10 @@ export function createApp(deps: AppDeps): Hono {
 
     const prompt = buildSentenceGenPrompt(deps.sentencePromptTemplate, sentenceRequest);
 
+    const pr = runPriority(c);
+    if ('bad' in pr) return c.json({ error: pr.bad }, 400);
     try {
-      const { result, log: runLog } = await deps.sentenceOrchestrator.run(prompt);
+      const { result, log: runLog } = await deps.sentenceOrchestrator.run(prompt, pr);
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
       log({
@@ -592,6 +627,8 @@ export function createApp(deps: AppDeps): Hono {
       );
 
     const limited = applyZodLimits(jsonSchema, responseSchema);
+    const pr = runPriority(c);
+    if ('bad' in pr) return c.json({ error: pr.bad }, 400);
     try {
       const { result, log: runLog } = await orchestrator.run(
         {
@@ -601,8 +638,10 @@ export function createApp(deps: AppDeps): Hono {
           parse: (raw) => responseSchema.parse(trimToLimits(raw, limited)),
           ...build(parsed.data),
         },
-        { checker, noCache: noCache(parsed.data) },
+        { checker, noCache: noCache(parsed.data), ...pr },
       );
+      // Phase 33: Settings → AI usage shows the stories written today.
+      if (route === '/v1/story' && !runLog.cached) deps.quota?.bump('stories');
       const totalTokens = runLog.usage.inputTokens + runLog.usage.outputTokens;
       deps.rateLimiter.recordUsage(installId, totalTokens);
       log({ route, installId, totalTokens, ...runLog });

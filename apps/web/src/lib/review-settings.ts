@@ -84,3 +84,8 @@ export function useReviewSettings(): ReviewSettings {
   if (!loaded && currentSession()) void load();
   return useSyncExternalStore(subscribe, () => settings);
 }
+
+/** The profile's time zone now (for text outside React, e.g. "the AI quota is back at about 3 am"). */
+export function currentTimeZone(): string {
+  return settings.timeZone;
+}

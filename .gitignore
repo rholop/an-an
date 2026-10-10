@@ -51,3 +51,6 @@ data/curriculum/*/private/
 
 # Phase 12: copy of data/curriculum/*/book.json + lesson sentences (`pnpm sync:textbook`).
 apps/web/public/textbook/
+
+# Phase 33: the free-quota tracker (calls per model per day, models out of quota).
+apps/proxy/quota-data/

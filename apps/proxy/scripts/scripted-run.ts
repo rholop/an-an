@@ -27,7 +27,7 @@ import {
   type TurnHistoryEntry,
   type TurnResponse,
 } from '@anan/core';
-import { loadEnv } from '../src/env.js';
+import { loadEnv, resolveChains } from '../src/env.js';
 import {
   buildEffectiveSystemPrompt,
   createOrchestrator,
@@ -228,8 +228,9 @@ async function main(): Promise<void> {
       console.error('Set it in apps/proxy/.env, or run with --fake for a dry run of the harness itself.');
       process.exit(1);
     }
-    primary = new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_TURN);
-    fallback = new GeminiAdapter(env.GEMINI_API_KEY, env.GEMINI_MODEL_FALLBACK);
+    const [first, second] = resolveChains(env).turn;
+    primary = new GeminiAdapter(env.GEMINI_API_KEY, first!);
+    fallback = new GeminiAdapter(env.GEMINI_API_KEY, second ?? first!);
   }
 
   for (const scenario of scenarioStore.all()) {

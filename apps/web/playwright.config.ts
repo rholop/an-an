@@ -29,6 +29,8 @@ export default defineConfig({
         PORT: '3002',
         CORS_ORIGIN: 'http://localhost:5183',
         SYNC_DIR: syncDir(),
+        // Phase 33: the free-quota tracker's state, kept out of the repo's apps/proxy/quota-data
+        QUOTA_FILE: `${syncDir()}-quota.json`,
         RATE_LIMIT_PER_MINUTE: '1000',
       },
     },

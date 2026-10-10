@@ -3,7 +3,8 @@ import { fileURLToPath } from 'node:url';
 import { serve } from '@hono/node-server';
 import { createApp } from './app.js';
 import { PromptCache } from './cache.js';
-import { loadEnv } from './env.js';
+import { ignoredLegacyModels, loadEnv, resolveChains, type Role } from './env.js';
+import { DEFAULT_QUOTA_FILE, FileQuotaStore, QuotaTracker, parseLimits } from './quota.js';
 import {
   createJsonOrchestrator,
   createOrchestrator,
@@ -50,32 +51,46 @@ if (!env.SITE_CODE) {
 }
 
 const key = env.GEMINI_API_KEY;
-/** The task models, the fallback model (a different free-tier Gemini model) and the checker. */
-const gemini = new GeminiAdapter(key, env.GEMINI_MODEL_TURN);
-const geminiJournal = new GeminiAdapter(key, env.GEMINI_MODEL_JOURNAL);
-const geminiFallback = new GeminiAdapter(key, env.GEMINI_MODEL_FALLBACK);
-const geminiCheck = new GeminiAdapter(key, env.GEMINI_MODEL_CHECK);
-/** Phase 26: stories are written (and repaired) by the stronger free model. */
-const geminiStory = new GeminiAdapter(key, env.GEMINI_MODEL_STORY);
-const jsonOrchestrator = (ttlMs?: number) =>
-  createJsonOrchestrator(
-    geminiJournal,
-    geminiFallback,
-    new PromptCache<JsonTaskResult<unknown>>(ttlMs),
-    undefined,
-    { checker: geminiCheck },
+// Phase 33: one chain of free-tier Gemini models per role, sharing one quota tracker (also read by
+// the scripts and `pnpm ai:quota`). Models out of free quota are skipped without a call.
+const chains = resolveChains(env);
+const ignored = ignoredLegacyModels(env);
+if (ignored.length > 0)
+  console.warn(
+    `[an-an-proxy] ${ignored.join(', ')} ${ignored.length === 1 ? 'is' : 'are'} no longer read: each role uses a chain of models now (GEMINI_CHAIN_TURN/JOURNAL/STORY/CHECK, see apps/proxy/README.md). Chains: ${JSON.stringify(chains)}`,
   );
+const quota = new QuotaTracker({
+  store: new FileQuotaStore(env.QUOTA_FILE ?? DEFAULT_QUOTA_FILE),
+  limits: parseLimits(env.GEMINI_DAILY_LIMITS),
+  reserveShare: env.GEMINI_BATCH_RESERVE_SHARE,
+  reserveMin: env.GEMINI_BATCH_RESERVE_MIN,
+});
+const adapters = new Map<string, GeminiAdapter>();
+const adapter = (model: string) => {
+  let a = adapters.get(model);
+  if (!a) adapters.set(model, (a = new GeminiAdapter(key, model)));
+  return a;
+};
+const chain = (role: Role) => chains[role].map(adapter);
+const jsonOrchestrator = (ttlMs?: number) =>
+  createJsonOrchestrator(chain('journal'), undefined, new PromptCache<JsonTaskResult<unknown>>(ttlMs), undefined, {
+    checker: chain('check'),
+    quota,
+  });
 
 const app = createApp({
   env,
   scenarioStore: loadScenarioStore(),
   promptTemplate: loadPromptTemplate(env.PROMPT_VERSION),
-  orchestrator: createOrchestrator(gemini, geminiFallback, new PromptCache()),
+  orchestrator: createOrchestrator(chain('turn'), undefined, new PromptCache(), undefined, undefined, quota),
   sentencePromptTemplate: loadSentenceGenPromptTemplate(env.PROMPT_VERSION),
   sentenceOrchestrator: createSentenceOrchestrator(
-    gemini,
-    geminiFallback,
+    chain('turn'),
+    undefined,
     new PromptCache<SentenceProviderResult>(),
+    undefined,
+    undefined,
+    quota,
   ),
   gloss: {
     prompts: loadGlossPromptTemplates(env.PROMPT_VERSION),
@@ -98,15 +113,14 @@ const app = createApp({
   story: {
     prompts: loadStoryPromptTemplates(env.PROMPT_VERSION),
     // The checker stays a separate fresh call that never sees the prompt or the lists.
-    orchestrator: createJsonOrchestrator(
-      geminiStory,
-      geminiFallback.model === geminiStory.model ? geminiJournal : geminiFallback,
-      new PromptCache<JsonTaskResult<unknown>>(),
-      undefined,
-      { checker: geminiCheck },
-    ),
+    orchestrator: createJsonOrchestrator(chain('story'), undefined, new PromptCache<JsonTaskResult<unknown>>(), undefined, {
+      checker: chain('check'),
+      quota,
+    }),
   },
   siteCode: env.SITE_CODE,
+  quota,
+  chains,
   sync: new FileSyncStore(env.SYNC_DIR ?? fileURLToPath(new URL('../sync-data', import.meta.url))),
   audio: new FileAudioStore(env.AUDIO_DIR ?? fileURLToPath(new URL('../audio-data', import.meta.url))),
   textbook: new FileTextbookStore(

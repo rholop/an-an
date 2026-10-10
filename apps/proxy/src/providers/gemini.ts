@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { SentenceGenResponseSchema, TurnResponseSchema, type TurnHistoryEntry } from '@anan/core';
 import { SENTENCE_GEN_RESPONSE_JSON_SCHEMA, TURN_RESPONSE_JSON_SCHEMA } from '../json-schema.js';
 import { applyZodLimits, trimToLimits } from '../zod-limits.js';
+import { parseQuotaDetails } from '../quota.js';
 
 const TURN_SCHEMA = applyZodLimits(TURN_RESPONSE_JSON_SCHEMA, TurnResponseSchema);
 const SENTENCE_SCHEMA = applyZodLimits(
@@ -62,10 +63,16 @@ export function toProviderError(err: unknown): ProviderRetryableError {
   const short = message.slice(0, 300);
   if (status === 401 || status === 403 || /API key not valid|API_KEY_INVALID|PERMISSION_DENIED|UNAUTHENTICATED/i.test(message))
     return new ProviderRetryableError(`Gemini auth: ${short}`, 'auth');
-  if (/quota/i.test(message) && /per day|daily|PerDay/i.test(message))
-    return new ProviderRetryableError(`Gemini quota: ${short}`, 'quota', retryAfterMs(err));
-  if (status === 429 || /\b429\b|rate.?limit|RESOURCE_EXHAUSTED|quota/i.test(message))
-    return new ProviderRetryableError(`Gemini rate limited: ${short}`, 'rate_limited', retryAfterMs(err));
+  if (status === 429 || /\b429\b|rate.?limit|RESOURCE_EXHAUSTED|quota/i.test(message)) {
+    // Phase 33: a per-day free-tier quota (QuotaFailure GenerateRequestsPerDay…) marks the model
+    // out until the reset; anything else (per minute) is a short wait.
+    const q = parseQuotaDetails(err);
+    if (q.daily && !q.perMinute)
+      return new ProviderRetryableError(`Gemini quota: ${short}`, 'quota', q.retryAfterMs ?? retryAfterMs(err), q.limit);
+    return new ProviderRetryableError(`Gemini rate limited: ${short}`, 'rate_limited', q.retryAfterMs ?? retryAfterMs(err));
+  }
+  if (status === 404 || /\b404\b|is not found for API version|not supported for generateContent|NOT_FOUND/i.test(message))
+    return new ProviderRetryableError(`Gemini model not found: ${short}`, 'not_found');
   if ((err as { name?: string })?.name === 'AbortError' || /timed? ?out|deadline|ETIMEDOUT/i.test(message))
     return new ProviderRetryableError(`Gemini timeout: ${short}`, 'timeout');
   if ((status !== undefined && status >= 500) || /\b50[0-9]\b|INTERNAL|UNAVAILABLE|overloaded/i.test(message))

@@ -16,7 +16,8 @@
     "journal-cloze-eval": "tsx scripts/journal-cloze-eval.ts",
     "stories-eval": "tsx scripts/stories-eval.ts",
     "naturalness": "tsx scripts/curriculum-naturalness.ts",
-    "smoke": "tsx scripts/smoke-proxy.ts"
+    "smoke": "tsx scripts/smoke-proxy.ts",
+    "ai:quota": "tsx scripts/ai-quota.ts"
   },
   "dependencies": {
     "@anan/core": "workspace:*",

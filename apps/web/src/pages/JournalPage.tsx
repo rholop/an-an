@@ -34,7 +34,7 @@ import { useCurrentLevel } from '../lib/current-level.js';
 import type { JournalEntryRow, JournalReviewRow } from '../db/schema.js';
 import { FakeTutorLLM } from '../lib/fake-tutor-llm.js';
 import { JournalService, notPractised } from '../lib/journal-service.js';
-import { FetchTutorLLM } from '../lib/tutor-llm.js';
+import { aiErrorText, FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useMyClass } from '../lib/my-class.js';
 import { useTextbook } from '../lib/textbook-data.js';
@@ -430,7 +430,7 @@ function WriteStage({
       setIntendedEn('');
       onSubmitted(entry, review);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(aiErrorText(err));
     } finally {
       setBusy(false);
     }
@@ -703,7 +703,7 @@ function AskPanel({
       setQ('');
       onChange();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(aiErrorText(err));
     } finally {
       setBusy(false);
     }
@@ -792,7 +792,7 @@ function DisputeLine({
             await service.dispute(entryId, index);
             onChange();
           } catch (err) {
-            setError(err instanceof Error ? err.message : String(err));
+            setError(aiErrorText(err));
           } finally {
             setBusy(false);
           }
@@ -864,7 +864,7 @@ function MeaningLine({
                 setEditing(false);
                 onChange();
               } catch (err) {
-                setError(err instanceof Error ? err.message : String(err));
+                setError(aiErrorText(err));
               } finally {
                 setBusy(false);
               }
@@ -1146,7 +1146,7 @@ function RevealStage({
       await service.explainMore(entry.id, i);
       onChange();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setError(aiErrorText(err));
     } finally {
       setBusy(null);
     }

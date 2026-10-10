@@ -10,10 +10,11 @@ implements.
 - `POST /v1/turn` — the endpoint the chat UI calls. Builds the system
   prompt for the requested scenario (`data/build/scenarios.json`, compiled
   from `data/scenarios/*.yaml` — run `pnpm pipeline:build` first), calls
-  Gemini. A retryable failure (429, 5xx, timeout, invalid JSON) is retried
+  Gemini along the turn role's model chain (see "Free quota" below). A
+  retryable failure (per-minute 429, 5xx, timeout, invalid JSON) is retried
   once on the same model after a short wait (a 429's retry-after is
-  honoured), then once on `GEMINI_MODEL_FALLBACK`. Authentication errors
-  are never retried. Logs which model actually served the request.
+  honoured), then each next model of the chain is tried once. Authentication
+  errors are never retried. Logs which model actually served the request.
 - `POST /v1/sentences` — called by `packages/data-pipeline`'s offline batch
   sentence-bank build (phase doc 04 §1), never during a live review
   session. Same retry/fallback-model/cache/rate-limit machinery
@@ -39,9 +40,9 @@ implements.
   follow-up. All three journal routes share one generic
   `JsonTaskAdapter`/`createJsonOrchestrator` (task model, then the fallback
   Gemini model, cached by task + prompt + message). Prompts:
-  `data/prompts/journal-*.md`; model: `GEMINI_MODEL_JOURNAL`. The
+  `data/prompts/journal-*.md`; models: the journal chain (`GEMINI_CHAIN_JOURNAL`). The
   independent checkers (`/v1/journal-verify`, `/v1/story-check`) are a fresh
-  call on `GEMINI_MODEL_CHECK` that never sees the writer's prompt.
+  call on the checker chain (`GEMINI_CHAIN_CHECK`) that never sees the writer's prompt.
 - `POST /v1/gloss` (phase doc 07 §B2) — offline gloss adjudication, called by
   `packages/data-pipeline`'s `build:glosses` (never at runtime): given a word,
   its TOCFL POS, MOE definitions and candidate senses, the model CHOOSES and
@@ -129,17 +130,65 @@ most:
 | Var | Required | Notes |
 |---|---|---|
 | `GEMINI_API_KEY` | **yes** (server won't start without it) | Free tier. Get one at [aistudio.google.com](https://aistudio.google.com/apikey). |
-| `GEMINI_MODEL_TURN` / `GEMINI_MODEL_JOURNAL` | no | The model per task. |
-| `GEMINI_MODEL_FALLBACK` | no | A different free-tier Gemini model, tried once after the task model fails twice. |
-| `GEMINI_MODEL_CHECK` | no | The independent checker (journal verify, story check). |
-| `GEMINI_MODEL_STORY` | no | Phase 26: writes and repairs stories (default `gemini-2.5-flash`, the stronger free model). |
+| `GEMINI_CHAIN_TURN` / `_JOURNAL` / `_STORY` / `_CHECK` | no | Phase 33: comma lists of free-tier models per role (see "Free quota"). |
+| `GEMINI_MODEL_FALLBACK` | no | Added as the last link of every chain. |
+| `GEMINI_DAILY_LIMITS` | no | Known daily request limits, `gemini-2.5-flash=20,…` (learned from a 429 otherwise). |
+| `GEMINI_BATCH_RESERVE_SHARE` / `_MIN` | no | What batch scripts leave for the live app (default 30%, at least 5 calls). |
+| `QUOTA_FILE` | no | The quota tracker's state (default `apps/proxy/quota-data/quota.json`). |
 | `SITE_CODE` | **yes** (server won't start without it) | The household code; see below. |
 | `SYNC_DIR` | no | Where per-profile saved copies go (default `apps/proxy/sync-data`). |
 
-A 502 names each model that was tried and why, never a key or a prompt:
+A failure (503) names each model that was tried and why, never a key or a prompt:
 `{"error":"story_check_failed","attempts":[{"model":"gemini-…","reason":"rate_limited"}]}`.
 `pnpm smoke:proxy` (with `GEMINI_API_KEY` set) sends one tiny request per route
 to each configured model and fails if Gemini rejects one; it is skipped without a key.
+
+## Free quota (Phase 33)
+
+The Gemini free tier counts requests **per day, per project, per model** (on the owner's project
+`gemini-2.5-flash` allows 20 a day; see https://ai.dev/rate-limit). So:
+
+- **Each role has a chain of models** (`GEMINI_CHAIN_TURN`, `_JOURNAL`, `_STORY`, `_CHECK`, comma
+  lists; defaults in `src/env.ts`, chosen so the story writer and the checker never start on the
+  same model). A model out of quota is skipped with no call; the checker prefers a model other than
+  the one the writer would use, and uses it only when nothing else has quota.
+- **The quota tracker** (`src/quota.ts`) reads each 429's `QuotaFailure` and `RetryInfo`. A per-day
+  quota (`GenerateRequestsPerDay…`) marks that model out until its retry delay has passed or midnight
+  Pacific (when the free tier resets), whichever comes first; a per-minute one waits up to 8 s and
+  retries once. A model that doesn't exist (404) is skipped until the reset. It counts calls per
+  model per quota day, remembers limits it learns, and keeps it all in `QUOTA_FILE` so a restart
+  still skips an exhausted model.
+- **When a whole chain is out**, the route answers `503 {"error":"quota_exhausted","resetsAt":"…"}`.
+  The app says "The free AI quota is used up until about 3 am. Lessons, review and everything else
+  still work." and background stories wait until then.
+- **The live app comes first.** Scripts send `x-ai-priority: batch`; a batch request never uses the
+  last 30% (at least 5 calls) of a model's known daily limit. A script's `--model <name>` is sent as
+  `x-ai-model` (it must be a model in one of the chains).
+
+See it: `pnpm ai:quota` on the server prints each model, calls used today, whether it is out and
+when it resets (New York time); Settings → AI usage in the app shows the same, plus the stories
+written today (`GET /v1/ai-usage`, behind the household code).
+
+### Scripts stop cleanly and resume
+
+`pnpm --filter @anan/proxy naturalness`, `pnpm stories:build`, `pnpm eval:stories` and the journal
+evals share the chains and the tracker (`src/script-gemini.ts` for the naturalness pass, which calls
+Gemini directly with the same state file; the others go through the proxy). When the free quota is
+used up on every model they stop at once, save, and print e.g. "Free quota used up. Checked 300 of
+1,051 lines; the rest resumes from here. Quota resets at about 03:00 (in 14 h). Run the same command
+again then." (exit 0). Flags: `--model <name>`, `--max-calls N`, `--status` (counts, no calls). The
+naturalness pass packs 50 lines per request (`--batch N`) and only checks lines not in
+`data/curriculum/naturalness-cache.json`; the cache records which model checked each line.
+
+**To continue today on another model:**
+
+```sh
+GEMINI_MODEL_CHECK=<model with quota> pnpm --filter @anan/proxy naturalness
+# or
+pnpm --filter @anan/proxy naturalness --model <model with quota>
+```
+
+(A `GEMINI_MODEL_CHECK` line in `apps/proxy/.env` is not an override; only the command line is.)
 
 ## Local development
 

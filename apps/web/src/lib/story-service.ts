@@ -36,6 +36,7 @@ import {
 import { saveProgressNow } from './save-progress.js';
 import type { AnanDB } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
+import { aiPausedUntil } from './ai-quota.js';
 
 export class StoryUnavailableError extends Error {
   constructor(readonly reasons: string[] = []) {
@@ -436,6 +437,8 @@ export class StoryService {
     // Phase 30 Part B.3: no live story while a made-ahead one is waiting (saves the free quota).
     if (await this.nextLessonStory(level, now, { peek: true })) return ready;
     const pause = STORY_CONFIG.readyAheadPause;
+    // Phase 33: the free quota is used up on every model: no background story until it resets
+    if (aiPausedUntil(now)) return ready;
     while (ready < STORY_CONFIG.readyAhead && keepGoing() && now.getTime() >= this.readyPausedUntil) {
       try {
         await this.write({ level, difficulty, kind: 'lesson' }, now);

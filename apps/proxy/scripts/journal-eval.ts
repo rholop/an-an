@@ -20,6 +20,8 @@ import {
   type Word,
   type GrammarItem,
 } from '@anan/core';
+import { exitOnQuotaStop, postAsBatch } from '../src/script-proxy.js';
+import { modelFlag } from '../src/script-gemini.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const proxyUrl = process.env.PROXY_URL ?? 'http://localhost:3002';
@@ -53,21 +55,12 @@ const lines: string[] = [
 
 for (const f of fixtures.entries) {
   const gaps = extractBrackets(f.text);
-  const res = await fetch(`${proxyUrl}/v1/journal-review`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-install-id': 'journal-eval',
-      'x-site-code': process.env.SITE_CODE ?? '',
-    },
-    body: JSON.stringify({
-      text: f.text,
-      learnerLevel: fixtures.learnerLevel,
-      promptWords: [],
-      recurringPatterns: [],
-      maxIssues: 3,
-    }),
-  });
+  // Phase 33: a batch request; the free quota running out ends the run (exit 0)
+  const res = await postAsBatch(
+    `${proxyUrl}/v1/journal-review`,
+    { text: f.text, learnerLevel: fixtures.learnerLevel, promptWords: [], recurringPatterns: [], maxIssues: 3 },
+    { installId: 'journal-eval', model: modelFlag(process.argv) },
+  ).catch((err: unknown) => exitOnQuotaStop(err));
   lines.push(`## ${f.id}`, '', `> ${f.text}`, '', `Expected: ${f.expect}`, '');
   if (!res.ok) {
     lines.push(`Request failed: HTTP ${res.status}`, '');

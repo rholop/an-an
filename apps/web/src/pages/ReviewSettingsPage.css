@@ -72,3 +72,17 @@
   font-size: var(--zh-body);
   color: var(--text);
 }
+
+/* Phase 33: Settings → AI usage */
+.ai-usage-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5rem 0;
+}
+.ai-usage-table th,
+.ai-usage-table td {
+  text-align: left;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}

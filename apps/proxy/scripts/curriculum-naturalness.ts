@@ -1,11 +1,19 @@
 /**
  * Phase 25 Part D: one-time naturalness pass over the curriculum. Every textbook sentence
  * (grammar examples are sentence-bank ids, so they are included) and every journal prompt model
- * answer goes to the independent Gemini checker (GEMINI_MODEL_CHECK, a fresh call with no other
- * context) in batches. Results are cached in data/curriculum/naturalness-cache.json keyed by the
- * text, so a rerun only checks new or changed lines and an interrupted run resumes.
+ * answer goes to the independent Gemini checker (a fresh call with no other context), 50 lines per
+ * request. Results are cached in data/curriculum/naturalness-cache.json keyed by the text (with the
+ * model that checked each line), so a rerun only checks new or changed lines and a stopped run
+ * resumes.
  *
- *   GEMINI_API_KEY=… pnpm --filter @anan/proxy naturalness
+ *   pnpm --filter @anan/proxy naturalness                 # the checker chain (GEMINI_CHAIN_CHECK)
+ *   pnpm --filter @anan/proxy naturalness --status        # counts done and left, no calls
+ *   pnpm --filter @anan/proxy naturalness --model gemini-2.5-flash-lite --max-calls 5
+ *   GEMINI_MODEL_CHECK=<model with quota> pnpm --filter @anan/proxy naturalness
+ *
+ * Phase 33: the calls go through the proxy's model chain and quota tracker as batch requests (the
+ * live app keeps its reserve). When the free quota is used up on every model it stops at once,
+ * saves, prints when the quota resets, and exits 0.
  *
  * Writes docs/curriculum-naturalness.md: the flagged lines with the checker's reason and
  * suggested rewrite. Rewrites are applied by hand in data/curriculum/laixue-N/content, then the
@@ -14,31 +22,27 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { z } from 'zod';
+import {
+  NATURALNESS_BATCH,
+  naturalnessRequest,
+  naturalnessStatus,
+  runNaturalness,
+  type NatCache as Cache,
+  type NatLine as Line,
+} from '../src/naturalness.js';
+import { geminiForScript, modelFlag } from '../src/script-gemini.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const dry = process.argv.includes('--dry');
-const BATCH = 25;
+const argv = process.argv.slice(2);
+const dry = argv.includes('--dry');
+const num = (flag: string) => {
+  const at = argv.indexOf(flag);
+  const n = at >= 0 ? Number(argv[at + 1]) : NaN;
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
+};
+const BATCH = num('--batch') ?? NATURALNESS_BATCH;
 const cacheFile = path.join(root, 'data/curriculum/naturalness-cache.json');
 const docFile = path.join(root, 'docs/curriculum-naturalness.md');
-
-interface Line {
-  id: string;
-  zh: string;
-  en?: string;
-  kind: 'sentence' | 'prompt-model';
-}
-
-const Verdict = z.object({
-  id: z.string(),
-  natural: z.boolean(),
-  reason: z.string().default(''),
-  rewrite: z.string().default(''),
-});
-const Reply = z.object({ results: z.array(Verdict) });
-type VerdictT = z.infer<typeof Verdict>;
-type Cache = Record<string, Omit<VerdictT, 'id'>>;
 
 function collect(): Line[] {
   const out: Line[] = [];
@@ -57,24 +61,12 @@ function collect(): Line[] {
   return out;
 }
 
-const PROMPT = `You are a native speaker of Taiwan Mandarin checking sentences for a beginner textbook course.
-For each line, decide whether a Taiwanese speaker would naturally say or write it (traditional characters,
-Taiwan vocabulary and usage). Simple is fine; flag only lines that are ungrammatical, unidiomatic, mainland
-usage, or that do not mean the English given. For a flagged line give a short reason in English and a
-natural rewrite that keeps the same words where possible. Reply as JSON:
-{"results":[{"id":"…","natural":true|false,"reason":"…","rewrite":"…"}]} with one result per input id.`;
-
-async function checkBatch(model: ReturnType<GoogleGenerativeAI['getGenerativeModel']>, lines: Line[]) {
-  const input = lines.map((l) => ({ id: l.id, zh: l.zh, en: l.en ?? '' }));
-  const res = await model.generateContent(`${PROMPT}\n\nLines:\n${JSON.stringify(input)}`);
-  return Reply.parse(JSON.parse(res.response.text())).results;
-}
-
 function render(lines: Line[], cache: Cache, note: string): string {
   const flagged = lines.filter((l) => cache[l.zh] && !cache[l.zh]!.natural);
   const checked = lines.filter((l) => cache[l.zh]).length;
   const rows = flagged.map(
-    (l) => `| ${l.id} | ${l.zh} | ${cache[l.zh]!.reason.replace(/\|/g, '/')} | ${cache[l.zh]!.rewrite} |`,
+    (l) =>
+      `| ${l.id} | ${l.zh} | ${cache[l.zh]!.reason.replace(/\|/g, '/')} | ${cache[l.zh]!.rewrite} | ${cache[l.zh]!.model ?? ''} |`,
   );
   return [
     '## Naturalness pass',
@@ -83,7 +75,7 @@ function render(lines: Line[], cache: Cache, note: string): string {
     '',
     `Lines: ${lines.length} (sentences and grammar examples ${lines.filter((l) => l.kind === 'sentence').length}, prompt model answers ${lines.filter((l) => l.kind === 'prompt-model').length}). Checked: ${checked}. Flagged: ${flagged.length}.`,
     '',
-    ...(rows.length ? ['| id | line | reason | suggested rewrite |', '|---|---|---|---|', ...rows] : []),
+    ...(rows.length ? ['| id | line | reason | suggested rewrite | checked by |', '|---|---|---|---|---|', ...rows] : []),
     '',
   ].join('\n');
 }
@@ -104,31 +96,37 @@ async function main() {
     console.log(`dry run: ${lines.length} lines collected, doc written`);
     return;
   }
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error('GEMINI_API_KEY is not set (use --dry for a dry run)');
-  const modelName = process.env.GEMINI_MODEL_CHECK ?? 'gemini-2.5-flash';
-  const model = new GoogleGenerativeAI(key).getGenerativeModel({
-    model: modelName,
-    generationConfig: { responseMimeType: 'application/json', temperature: 0 },
-  });
-  const todo = [...new Map(lines.filter((l) => !cache[l.zh]).map((l) => [l.zh, l])).values()];
-  console.log(`${lines.length} lines, ${todo.length} to check with ${modelName}`);
-  for (let i = 0; i < todo.length; i += BATCH) {
-    const batch = todo.slice(i, i + BATCH);
-    try {
-      const results = await checkBatch(model, batch);
-      for (const r of results) {
-        const l = batch.find((x) => x.id === r.id);
-        if (l) cache[l.zh] = { natural: r.natural, reason: r.reason, rewrite: r.rewrite };
-      }
-      writeFileSync(cacheFile, JSON.stringify(cache, null, 1));
-      console.log(`  ${Math.min(i + BATCH, todo.length)}/${todo.length}`);
-    } catch (e) {
-      console.error(`  batch at ${i} failed, rerun to resume: ${(e as Error).message}`);
-      await new Promise((r) => setTimeout(r, 5000));
-    }
+  if (argv.includes('--status')) {
+    console.log(naturalnessStatus(lines, cache, BATCH));
+    return;
   }
-  writeFileSync(docFile, render(lines, cache, `Checked by \`${modelName}\` (independent call, no other context).`));
+  const gemini = geminiForScript({ role: 'check', ...(modelFlag(argv) ? { model: modelFlag(argv)! } : {}) });
+  console.log(`Checking with ${gemini.chain.join(' → ')} (models out of free quota are skipped)`);
+  const maxCalls = num('--max-calls');
+  const result = await runNaturalness(
+    lines,
+    cache,
+    {
+      check: async (batch) => {
+        const r = await gemini.run(naturalnessRequest(batch));
+        return { results: r.response.results, model: r.model };
+      },
+      saveCache: (c) => writeFileSync(cacheFile, JSON.stringify(c, null, 1)),
+      log: (line) => console.log(line),
+      now: () => new Date(),
+    },
+    { batch: BATCH, ...(maxCalls ? { maxCalls } : {}) },
+  );
+  const models = [...new Set(lines.flatMap((l) => cache[l.zh]?.model ?? []))];
+  writeFileSync(
+    docFile,
+    render(
+      lines,
+      cache,
+      `Checked by ${models.map((m) => `\`${m}\``).join(', ') || 'the checker'} (independent call, no other context; the model per line is in the table).` +
+        (result.checked < result.total ? ` **Not finished:** ${result.total - result.checked} lines still to check; run the same command again.` : ''),
+    ),
+  );
   console.log(`wrote ${path.relative(root, docFile)}`);
 }
 

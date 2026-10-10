@@ -17,9 +17,13 @@
  *   --max-calls N              stop cleanly after N model calls (free tier)
  *   --redo laixue-1-L04        replace that lesson's stories (asks first unless --yes; backs up)
  *   --delay ms                 pause between model calls (default 4000)
+ *   --model gemini-…           one model instead of the proxy's chains (must be in a chain)
  *   --dry                      the offline stand-in writer; writes nothing
  * A rate limit (429/503) is waited out (retry-after) and never counts as a refused attempt; after
  * 3 in a row, or when the proxy's daily budget is spent, the run stops cleanly (exit 0).
+ * Phase 33: requests are sent as `x-ai-priority: batch` (the live app keeps its reserve of each
+ * model's free quota). When the proxy says the free quota is used up on every model
+ * (503 quota_exhausted) the run stops at once and says when the quota resets (exit 0).
  * Output: data/curriculum/<book>/private/stories.json (served behind the household code).
  */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -28,6 +32,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   buildLedger,
+  scriptQuotaStopMessage,
   courseLessonLevel,
   DEFAULT_SESSION_SETTINGS,
   DEFAULT_STUDY_SETTINGS,
@@ -75,6 +80,8 @@ export interface BuildOptions {
   redo?: string;
   yes: boolean;
   delayMs: number;
+  /** Phase 33: one model instead of the chains (`x-ai-model`). */
+  model?: string;
 }
 
 export function parseArgs(argv: readonly string[]): BuildOptions {
@@ -106,6 +113,7 @@ export function parseArgs(argv: readonly string[]): BuildOptions {
     ...(redo ? { redo } : {}),
     yes: argv.includes('--yes'),
     delayMs: num('delay') ?? (dry ? 0 : 4000),
+    ...(arg('model') ? { model: arg('model')! } : {}),
   };
 }
 
@@ -134,8 +142,10 @@ export class RateLimited extends Error {
     readonly retryAfterMs: number | undefined,
     /** The proxy's daily token budget for this install is spent: no point waiting. */
     readonly daily: boolean,
+    /** Phase 33: the free Gemini quota is used up on every model until then (503 quota_exhausted). */
+    readonly resetsAt?: Date,
   ) {
-    super(daily ? 'daily budget used up' : 'rate limited');
+    super(resetsAt ? 'free quota used up' : daily ? 'daily budget used up' : 'rate limited');
   }
 }
 /** `--max-calls` reached. */
@@ -180,11 +190,22 @@ function storyLlm(opts: BuildOptions, deps: BuildDeps, counter: { calls: number 
     counter.calls++;
     const res = await deps.fetch(`${deps.proxyUrl}${route}`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-install-id': 'stories-build', 'x-site-code': deps.siteCode },
+      headers: {
+        'content-type': 'application/json',
+        'x-install-id': 'stories-build',
+        'x-site-code': deps.siteCode,
+        // Phase 33: a script: leave each model's reserve to the live app
+        'x-ai-priority': 'batch',
+        ...(opts.model ? { 'x-ai-model': opts.model } : {}),
+      },
       body: JSON.stringify(body),
     });
     if (res.status === 429 || res.status === 503) {
-      const data = (await res.json().catch(() => null)) as { error?: unknown } | null;
+      const data = (await res.json().catch(() => null)) as { error?: unknown; resetsAt?: unknown } | null;
+      if (data?.error === 'quota_exhausted' && typeof data.resetsAt === 'string' && !Number.isNaN(Date.parse(data.resetsAt))) {
+        counter.calls--; // no model was called
+        throw new RateLimited(undefined, true, new Date(data.resetsAt));
+      }
       const daily = res.status === 429 && /daily/i.test(String(data?.error ?? ''));
       throw new RateLimited(retryAfterMs(res.headers.get('retry-after'), data, deps.now().getTime()), daily);
     }
@@ -295,6 +316,8 @@ export interface BuildResult {
   calls: number;
   /** Why the run stopped early, if it did. */
   stopped?: 'quota' | 'daily' | 'max-calls';
+  /** Phase 33: when the free quota resets (the proxy's quota_exhausted). */
+  resetsAt?: Date;
   /** The lesson a rerun continues from. */
   resumeAt?: string;
   /** Lessons in scope still short of the full 3. */
@@ -425,6 +448,11 @@ export async function buildStories(opts: BuildOptions, deps: BuildDeps): Promise
         }
         if (err instanceof RateLimited) {
           limitedInARow++;
+          if (err.resetsAt) {
+            result.resetsAt = err.resetsAt;
+            stop('quota');
+            break;
+          }
           if (err.daily) {
             stop('daily');
             break;
@@ -454,7 +482,12 @@ export async function buildStories(opts: BuildOptions, deps: BuildDeps): Promise
   if (!result.stopped)
     result.short = scope.filter((o) => storiesOf(o.bookId).filter((s) => s.lessonId === o.lesson.id).length < full).map((o) => o.lesson.id);
   const total = [...files.values()].reduce((n, list) => n + list.length, 0);
-  if (result.stopped === 'quota' || result.stopped === 'daily')
+  if (result.resetsAt) {
+    const doneInScope = scope.reduce((n, o) => n + Math.min(target, storiesOf(o.bookId).filter((st) => st.lessonId === o.lesson.id).length), 0);
+    deps.log(
+      `${scriptQuotaStopMessage({ verb: 'Wrote', done: doneInScope, total: scope.length * target, unit: 'stories', resetsAt: result.resetsAt, now: deps.now() })} It continues from ${result.resumeAt}.`,
+    );
+  } else if (result.stopped === 'quota' || result.stopped === 'daily')
     deps.log(
       `${result.stopped === 'daily' ? "The proxy's daily budget for this build is used up (DAILY_TOKEN_BUDGET)" : 'Free quota used up for now'}. Saved so far: ${total} stories. Run the same command later to continue from ${result.resumeAt}.`,
     );

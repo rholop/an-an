@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Scenario, SentenceGenRequest, TurnRequest } from '@anan/core';
 import { createApp } from './app.js';
 import { MemoryAudioStore } from './audio-store.js';
+import { QuotaTracker } from './quota.js';
 import { MemoryTextbookStore } from './textbook-store.js';
 import { MemorySyncStore, type SyncStore } from './sync-store.js';
 import {
@@ -135,6 +136,8 @@ function buildApp(
     /** Send `x-site-code: tofu` automatically (default). Pass false to test 401s. */
     autoCode?: boolean;
     scenarioStore?: ScenarioStore;
+    quota?: QuotaTracker;
+    chains?: Record<string, string[]>;
   } = {},
 ) {
   const app = createApp({
@@ -168,6 +171,8 @@ function buildApp(
     rateLimiter:
       overrides.rateLimiter ??
       new RateLimiter({ requestsPerMinute: 100, dailyTokenBudget: 1_000_000 }),
+    ...(overrides.quota ? { quota: overrides.quota } : {}),
+    ...(overrides.chains ? { chains: overrides.chains } : {}),
     log: () => {}, // silence logs in tests
   });
   if (overrides.autoCode === false) return app;
@@ -1225,5 +1230,63 @@ describe('Phase 24 graded stories', () => {
       body: JSON.stringify(req),
     });
     expect(res.status).toBe(401);
+  });
+});
+
+describe('Phase 33: the free quota', () => {
+  const T0 = new Date('2026-10-10T16:00:00Z');
+  const define = (app: ReturnType<typeof buildApp>, headers: Record<string, string> = {}) =>
+    app.request('/v1/define', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-install-id': 'i1', ...headers },
+      body: JSON.stringify({ word: '機車', context: '他很機車' }),
+    });
+  const setup = () => {
+    const quota = new QuotaTracker({ now: () => T0 });
+    const a = new FakeJsonAdapter('gemini-a', { kind: 'success', respond: () => fakeDefine });
+    const b = new FakeJsonAdapter('gemini-b', { kind: 'success', respond: () => fakeDefine });
+    const orch = createJsonOrchestrator([a, b], undefined, new PromptCache<JsonTaskResult<unknown>>(), () => {}, { quota });
+    const app = buildApp({ glossOrchestrator: orch, quota, chains: { journal: ['gemini-a', 'gemini-b'] } });
+    return { quota, a, b, app };
+  };
+
+  it('every model out of quota: 503 {"error":"quota_exhausted","resetsAt":…} and no call', async () => {
+    const { quota, a, b, app } = setup();
+    quota.markExhausted('gemini-a', { retryAfterMs: 3_600_000 });
+    quota.markExhausted('gemini-b', { retryAfterMs: 7_200_000 });
+    const res = await define(app);
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({ error: 'quota_exhausted', resetsAt: new Date(T0.getTime() + 3_600_000).toISOString() });
+    expect(a.calls + b.calls).toBe(0);
+  });
+
+  it('GET /v1/ai-usage lists each model with its calls, and stories written today', async () => {
+    const { quota, app } = setup();
+    await define(app);
+    quota.bump('stories');
+    const res = await app.request('/v1/ai-usage');
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { models: Array<{ model: string; calls: number; roles: string[] }>; storiesToday: number };
+    expect(body.models.find((m) => m.model === 'gemini-a')).toMatchObject({ calls: 1, roles: ['journal'], exhausted: false });
+    expect(body.storiesToday).toBe(1);
+    expect((await buildApp({ autoCode: false, quota }).request('/v1/ai-usage')).status).toBe(401);
+  });
+
+  it('x-ai-model narrows to one known model; an unknown one is a 400', async () => {
+    const { a, b, app } = setup();
+    expect((await define(app, { 'x-ai-model': 'gemini-b' })).headers.get('x-served-by')).toBe('gemini-b');
+    expect([a.calls, b.calls]).toEqual([0, 1]);
+    expect((await define(app, { 'x-ai-model': 'gpt-4' })).status).toBe(400);
+  });
+
+  it('x-ai-priority: batch keeps out of the live reserve', async () => {
+    const quota = new QuotaTracker({ now: () => T0, limits: { 'gemini-a': 5 }, reserveMin: 5 });
+    const a = new FakeJsonAdapter('gemini-a', { kind: 'success', respond: () => fakeDefine });
+    const orch = createJsonOrchestrator([a], undefined, new PromptCache<JsonTaskResult<unknown>>(), () => {}, { quota });
+    const app = buildApp({ glossOrchestrator: orch, quota, chains: { journal: ['gemini-a'] } });
+    const batch = await define(app, { 'x-ai-priority': 'batch' });
+    expect(batch.status).toBe(503);
+    expect(await batch.json()).toMatchObject({ error: 'quota_exhausted', reserved: true });
+    expect((await define(app)).status).toBe(200);
   });
 });
