@@ -1,4 +1,6 @@
-/* Phase 32: one slim row under the Home buttons, at most 28 px tall, one line on phones. */
+/* Phase 32: one slim row under the Home buttons, at most 28 px tall, one line on phones.
+   On touch screens the tap target is 44 px (every tappable thing is), drawn over the margins
+   around the row so the row itself still looks 28 px tall. */
 .streak-bar {
   display: flex;
   align-items: center;
@@ -55,5 +57,13 @@
 @media (prefers-reduced-motion: reduce) {
   .streak-grow {
     animation: none;
+  }
+}
+
+@media (max-width: 639.98px), (pointer: coarse) {
+  .streak-bar {
+    max-height: none;
+    min-height: 44px;
+    margin: -0.1rem 0;
   }
 }

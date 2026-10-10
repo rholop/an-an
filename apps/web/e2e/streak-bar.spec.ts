@@ -44,8 +44,13 @@ for (const size of SIZES) {
     await expect(bar).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId('streak-bar-line')).toHaveText('🌱 12-day streak · best 12');
     await expect(bar).toHaveAttribute('aria-label', /12-day streak, best 12\. Water something today/);
+    // The row is at most 28 px tall; on phones the tap target around it is 44 px.
+    const row = (await bar.locator('.streak-bar-text').boundingBox())!;
+    const icons = (await bar.locator('.streak-bar-days').boundingBox())!;
+    expect(Math.max(row.height, icons.height)).toBeLessThanOrEqual(28);
     const box = (await bar.boundingBox())!;
-    expect(box.height).toBeLessThanOrEqual(28);
+    if (size.name === 'phone') expect(box.height).toBeGreaterThanOrEqual(44);
+    else expect(box.height).toBeLessThanOrEqual(28);
     expect(box.width).toBeLessThanOrEqual(size.viewport.width);
     await expect(bar.locator('svg')).toHaveCount(7);
 
