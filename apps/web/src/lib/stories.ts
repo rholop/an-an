@@ -48,22 +48,22 @@ export function useOptionalStoryService(lexicon: Lexicon | null, fake = storyFak
   );
 }
 
-/** Phase 26 Part E: the stories written ahead for a book's lessons (private lesson data, once per visit). */
-const lessonStoryFiles = new Map<string, Promise<readonly LessonStory[]>>();
+/** Phase 26 Part E: the stories written ahead for a book's lessons (private lesson data).
+ * Phase 30 Part B.2: fetched again on each Stories visit (the proxy answers 304 when nothing
+ * changed), so stories written while the app is open show up without a reload. One fetch serves a
+ * few seconds of calls (one "Next story" asks for several lessons). */
+const LESSON_STORIES_FRESH_MS = 5_000;
+const lessonStoryFiles = new Map<string, { at: number; stories: Promise<readonly LessonStory[]> }>();
 function lessonStories(bookId: string): Promise<readonly LessonStory[]> {
-  let p = lessonStoryFiles.get(bookId);
-  if (!p) {
-    p = fetchPrivateTextbook<unknown>('stories', bookId).then((r) => {
-      if (r.status !== 'ok') {
-        lessonStoryFiles.delete(bookId);
-        return [];
-      }
-      const parsed = LessonStoriesFileSchema.safeParse(r.data);
-      return parsed.success ? parsed.data.stories : [];
-    });
-    lessonStoryFiles.set(bookId, p);
-  }
-  return p;
+  const hit = lessonStoryFiles.get(bookId);
+  if (hit && Date.now() - hit.at < LESSON_STORIES_FRESH_MS) return hit.stories;
+  const stories = fetchPrivateTextbook<unknown>('stories', bookId).then((r) => {
+    if (r.status !== 'ok') return [];
+    const parsed = LessonStoriesFileSchema.safeParse(r.data);
+    return parsed.success ? parsed.data.stories : [];
+  });
+  lessonStoryFiles.set(bookId, { at: Date.now(), stories });
+  return stories;
 }
 
 /** Easier / Just right / Harder, remembered per profile. */

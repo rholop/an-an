@@ -477,6 +477,8 @@ export const BackupSchema = z.object({
   readerShown: z.array(ReaderShownRowSchema).default([]),
   // Phase 24 (schemaVersion 7): the story library.
   stories: z.array(StoryRowSchema).default([]),
+  // Phase 32: active days (the streak). Defaulted so older backups still import.
+  activeDays: z.array(z.object({ day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), at: z.coerce.date() })).default([]),
   // Phase 8 (schemaVersion 5): when each settings/meta key last changed, so
   // two devices can keep the later edit. Absent in older backups.
   settingsUpdatedAt: z.record(z.string(), z.coerce.date()).default({}),

@@ -1,5 +1,6 @@
 import type { JournalSentenceSource } from '../cloze/source.js';
 import { splitReviewSentences } from './sentences.js';
+import { ANY_GAP_BRACKET } from './bracket.js';
 import type { Span } from './types.js';
 
 /**
@@ -18,6 +19,6 @@ export function journalSentencesFromEntry(
   return splitReviewSentences(text)
     .filter(([s, e]) => !issueSpans.some(([a, b]) => a < e && s < b))
     .map(([s, e]) => text.slice(s, e).trim())
-    .filter((zh) => zh.length >= 4 && !/[[［\]］]/.test(zh))
+    .filter((zh) => zh.length >= 4 && !ANY_GAP_BRACKET.test(zh))
     .map((zh) => ({ zh, at }));
 }

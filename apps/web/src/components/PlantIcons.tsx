@@ -83,6 +83,13 @@ export const NextDropIcon = (p: IconProps) => (
   </Svg>
 );
 
+/** Phase 32: today on the streak bar before anything was watered: a dashed outline. */
+export const TodayIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <circle className="pi-today" cx="8" cy="8" r="5.6" />
+  </Svg>
+);
+
 /** The growth stage's icon (Garden tiles and legend). */
 export function StageIcon({ stage, label }: { stage: GrowthStage; label?: string }) {
   switch (stage) {

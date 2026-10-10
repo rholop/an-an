@@ -57,7 +57,14 @@ export const STORY_CONFIG = {
   readyAheadPause: { failures: 2, pauseMs: 60 * 60_000 },
   questions: { min: 2, max: 4, optionsMin: 3, optionsMax: 4 },
   /** Phase 26: lesson stories (`pnpm stories:build`): per lesson, and the attempts allowed per story. */
-  lessonStories: { perLesson: 3, maxAttemptsPerStory: 6 },
+  lessonStories: {
+    perLesson: 3,
+    maxAttemptsPerStory: 6,
+    /** Phase 30 Part B.4: a read story of a catch-up lesson (earlier, not yet Mastered) comes back
+     * "Read again" this many days after its first read, then at most once every `rereadEveryDays`. */
+    rereadAfterDays: 3,
+    rereadEveryDays: 7,
+  },
   /** Phase 25/26: a story that misses only the word targets is still shown as a mini lesson (every
    * new word explained) when its known-or-this-lesson share is at least the floor and it has at most
    * this many new words. Only the floors refuse; the targets above drive the prompt. */

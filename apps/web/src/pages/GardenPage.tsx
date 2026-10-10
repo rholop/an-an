@@ -28,6 +28,7 @@ import { NowStudying } from '../components/NowStudying.js';
 import { DueForecast, HomeReviewActions } from '../components/DueForecast.js';
 import { EmptySprout, NextDropIcon, PlantLegend, StageIcon } from '../components/PlantIcons.js';
 import { useLedger } from '../lib/ledger.js';
+import { StreakBar } from '../components/StreakBar.js';
 import { WaterAllPage } from './WaterAllPage.js';
 import { HomeStoryLine } from './StoriesSection.js';
 import { StoryView } from './StoryView.js';
@@ -154,6 +155,7 @@ export function GardenPage() {
         onReviewAll={() => setSession('review-all')}
         onReviewEarly={() => setSession('review-early')}
       />
+      <StreakBar ledger={ledger} />
       {stories && <HomeStoryLine service={stories} level={level} onOpen={(story) => setSession({ story })} />}
       <DueForecast ledger={ledger} />
       {snapshot.plants.length === 0 && <EmptySprout />}

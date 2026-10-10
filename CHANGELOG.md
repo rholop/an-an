@@ -3,6 +3,16 @@
 Notable changes that affect how An'an is run. Phase-by-phase features are in the
 `CLAUDE.md` phase table.
 
+## Phase 30 Part B (2026-10-09)
+
+- `pnpm stories:build` is safe to rerun and says so. It waits out rate limits and stops cleanly
+  (exit 0) when the free quota or the proxy's `DAILY_TOKEN_BUDGET` is spent. New options:
+  `--status`, `--from`, a comma list for `--book`, `--per-lesson`, `--max-calls`, and `--redo`
+  (with a backup). Examples are in `apps/proxy/README.md`.
+- Lesson stories reach the app on the next Stories visit: the proxy serves them with `no-cache`
+  and an ETag. Stories made ahead come before live ones. Catch-up lessons (earlier, not yet
+  Mastered) get their stories too, taking turns with the current lesson.
+
 ## Phase 29 (2026-10-09)
 
 - One progress rule: every count on every screen comes from the progress ledger, so Home,

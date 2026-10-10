@@ -124,6 +124,7 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
         <p className="story-sub">
           {story.titleEn} · {storyPitch(storyMinutes(story.chars), lesson)}
           {story.episode ? ` · Part ${story.episode}` : ''}
+          {initial.readAt ? <span data-testid="story-read-again"> · {READ_AGAIN}</span> : null}
         </p>
       </header>
 

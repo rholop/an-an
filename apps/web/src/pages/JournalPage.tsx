@@ -449,8 +449,8 @@ function WriteStage({
       />
       <p className="journal-muted">
         Don&apos;t know a word? Write it in English inside brackets, like{' '}
-        <code lang="zh-Hant">今天我去 [gym]</code>, and we&apos;ll translate it and add it to your
-        practice.
+        <code lang="zh-Hant">今天我去 [gym]</code> or{' '}
+        <code lang="zh-Hant">今天我去【gym】</code>, and we&apos;ll suggest words that fit.
       </p>
       {error && (
         <p role="alert" className="journal-error">

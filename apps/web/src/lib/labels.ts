@@ -177,6 +177,8 @@ export const UNDO = 'Undo';
 export const NEXT = 'Next';
 export const MINE_IS_RIGHT = 'I think mine is right too';
 export const HOME = 'Home';
+/** Phase 31 Part G: Settings → Your progress → Saved versions. */
+export const SAVED_VERSIONS_KEPT = 'The server keeps your last 10 saved versions.';
 
 // --- answer feedback ------------------------------------------------------------------------
 export const FEEDBACK_CORRECT = '✓ Correct';
@@ -226,6 +228,8 @@ export const READ_AGAIN = 'Read again';
 export const EASIER_NOW = "You'll find this one easier now";
 export const STORY_DIFFICULTY = { easier: 'Easier', middle: 'Just right', harder: 'Harder' } as const;
 /** "A 2-minute story using Lesson 3 words" (Home and the Stories section). */
+/** Phase 30: a story's lesson badge, "來學華語 1 · Lesson 2 · catch-up" for an earlier lesson not yet Mastered. */
+export const storyLessonBadge = (n: number, bookId: string, catchUp = false): string => `${lessonLabel(n, bookId)}${catchUp ? ' · catch-up' : ''}`;
 export const storyPitch = (minutes: number, lesson?: { n: number; bookId: string }): string =>
   `A ${minutes}-minute story${lesson ? ` using ${lessonShort(lesson.n)} words` : ''}`;
 /** After reading: "You read 214 characters · 96% words you know". */
@@ -324,3 +328,11 @@ export const UNSAVED_WARNING = "Some progress isn't on the server yet.";
 export const lastSavedLine = (s: { savedAt: string; cards: number; learned: number }, now: Date = new Date()): string =>
   `Last saved to the server: ${savedWhen(s.savedAt, now)} · ${copyCounts(s)}`;
 export const thisBrowserLine = (s: { cards: number; learned: number }): string => `This browser: ${copyCounts(s)}`;
+
+// Phase 32: the Home streak bar.
+export const streakLine = (current: number, best: number): string =>
+  `🌱 ${current}-day streak · best ${best}`;
+export const STREAK_KEEP_GROWING = 'Water something today to keep it growing';
+/** The bar's spoken label: the whole sentence, and where tapping goes. */
+export const streakAria = (current: number, best: number, activeToday: boolean): string =>
+  `${current}-day streak, best ${best}. ${activeToday ? 'Today counts already.' : `${STREAK_KEEP_GROWING}.`} Open Progress.`;

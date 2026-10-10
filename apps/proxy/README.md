@@ -100,8 +100,8 @@ pnpm --filter @anan/proxy sync:inspect         # every profile
 pnpm --filter @anan/proxy sync:inspect ron     # one
 ```
 
-**Versions:** every revision is kept; the server never deletes a saved copy (a retention policy
-comes later as its own step). To list them or roll a profile back on the server (the old version becomes
+**Versions:** the server keeps the last 10 revisions per profile (Phase 31; `KEEP_VERSIONS` in
+`src/sync-store.ts`). Each successful save prunes the older copies. To list them or roll a profile back on the server (the old version becomes
 the newest revision; devices merge it in like any update). In the app, Settings → Your progress
 → Saved versions does the same per profile (Restore merges; Replace overwrites, after a confirm):
 
@@ -168,6 +168,31 @@ pnpm --filter @anan/proxy scripted-run -- --fake   # no key needed; canned repli
 none is configured) — its pass rate is an artifact of the hand-picked canned
 replies (one bad reply in four, by design), not a signal about model
 quality. Only a real-key run's pass rate is evidence for the ≥90% threshold.
+
+## Lesson stories made ahead (`pnpm stories:build`)
+
+Writes 3 stories per textbook lesson into `data/curriculum/<book>/private/stories.json`, through a
+running proxy (`PROXY_URL`, default `http://localhost:3002`). It is safe to stop and rerun: lessons
+that already have their stories are skipped, each story is saved as soon as it passes, and existing
+stories are never overwritten.
+
+```sh
+SITE_CODE=… pnpm stories:build                       # continue where the last run stopped
+SITE_CODE=… pnpm stories:build --status              # every lesson's count (laixue-2-L02 0/3), no model calls
+SITE_CODE=… pnpm stories:build --book laixue-2,laixue-3
+SITE_CODE=… pnpm stories:build --from laixue-2-L02   # start there, continue in course order
+SITE_CODE=… pnpm stories:build --per-lesson 1        # quick first pass; a later run tops up to 3
+SITE_CODE=… pnpm stories:build --max-calls 40        # stop cleanly after 40 model calls
+SITE_CODE=… pnpm stories:build --redo laixue-1-L04   # replace one lesson (asks; backs up stories.YYYYMMDD-HHMM.bak.json)
+```
+
+A rate limit (HTTP 429 or 503) is waited out (`retry-after` is honoured) and never counts as a
+refused attempt. After 3 in a row it stops cleanly ("Free quota used up for now. Saved so far: 34
+stories. Run the same command later to continue from laixue-2-L02.") and exits with code 0. The
+proxy's own daily budget per client (`DAILY_TOKEN_BUDGET`, default 200,000 tokens; the build is one
+client) also stops the run straight away: raise it on the server for a long build, or continue the
+next day. The app sees new stories on the next Stories visit (the file is served with `no-cache`
+and an ETag).
 
 ## Known limitation: in-memory state
 

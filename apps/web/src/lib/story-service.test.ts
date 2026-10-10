@@ -383,6 +383,59 @@ describe('StoryService (Phase 26)', () => {
     expect(llm.writeCalls).toHaveLength(1);
   });
 
+  // ---- Phase 30 Part B.3–B.4: premade first; catch-up lessons until Mastered ----
+  const made = (lessonId: string, k: number): LessonStory => ({
+    id: `${lessonId}-s${k}`,
+    bookId: 'laixue-1',
+    lessonId,
+    level: 'N1',
+    topic: `${lessonId} story ${k}`,
+    story: {
+      ...FakeStoryLLM.defaultStory({ rungs: { r1: ['我'], r2: [], r3: [], r4: [], r5: [] }, budget: { rung1Share: 0.95, rung3: 0, rung4: 0, rung5: 0 }, length: { min: 10, max: 20 }, topic: 't' } as unknown as StoryRequest),
+      paragraphs: [{ zh: GOOD, en: 'x' }],
+    },
+  });
+  const POOL = [made('laixue-1-L02', 1), made('laixue-1-L02', 2), made('laixue-1-L03', 1), made('laixue-1-L03', 2)];
+  const l3 = { kind: 'lesson' as const, bookId: 'laixue-1', n: 3, lessonId: 'laixue-1-L03', level: 'N1' as const, ordinal: 3 };
+  const l2 = { ...l3, n: 2, lessonId: 'laixue-1-L02', ordinal: 2 };
+  /** On lesson 3, with lesson 2 not Mastered yet (a catch-up lesson) unless `mastered`. */
+  const onLesson3 = (mastered: { l2: boolean }): StudyFocus => ({ ...FOCUS, steps: [l2, l3], activeStep: l3, activeLesson: l3, reviewLessons: mastered.l2 ? [] : [l2] });
+
+  it('with unread stories made ahead, Next story opens one and no live story is written (now or in the background)', async () => {
+    await seedKnown();
+    const llm = new FakeStoryLLM(scripted(GOOD));
+    const s = new StoryService(db, lexicon, learnerService, llm, { ...env, studyFocus: async () => onLesson3({ l2: false }), lessonStories: async () => POOL }, () => 0.5);
+    expect(await s.ensureReady('N1', 'middle', NOW)).toBe(0);
+    const story = await s.next('N1', 'middle', NOW);
+    expect(story.id.startsWith('lesson-laixue-1-L0')).toBe(true);
+    expect(llm.writeCalls).toHaveLength(0);
+  });
+
+  it('a catch-up lesson takes turns with the active lesson, comes back to reread, and stops once Mastered', async () => {
+    await seedKnown();
+    const llm = new FakeStoryLLM(scripted(GOOD));
+    let focus = onLesson3({ l2: false });
+    const s = new StoryService(db, lexicon, learnerService, llm, { ...env, studyFocus: async () => focus, lessonStories: async () => POOL }, () => 0.5);
+    expect(await s.catchUpLessonIds('N1', NOW)).toEqual(new Set(['laixue-1-L02']));
+    const order: string[] = [];
+    let t = NOW.getTime();
+    for (let i = 0; i < 4; i++) {
+      const at = new Date((t += 60_000));
+      const story = await s.next('N1', 'middle', at);
+      order.push(story.id);
+      await s.finish(story, { lookedUp: new Set(), right: 0, of: 0 }, at);
+    }
+    expect(order).toEqual(['lesson-laixue-1-L02-s1', 'lesson-laixue-1-L03-s1', 'lesson-laixue-1-L02-s2', 'lesson-laixue-1-L03-s2']);
+    expect(llm.writeCalls).toHaveLength(0);
+    // three days later the catch-up lesson's first story comes back to read again
+    const later = new Date(NOW.getTime() + 3 * 86_400_000 + 3_600_000);
+    expect((await s.nextLessonStory('N1', later))?.id).toBe('lesson-laixue-1-L02-s1');
+    // once lesson 2 is Mastered its stories are no longer suggested (they stay in the library)
+    focus = onLesson3({ l2: true });
+    expect(await s.nextLessonStory('N1', later)).toBeUndefined();
+    expect((await s.library()).filter((x) => x.lessonId === 'laixue-1-L02')).toHaveLength(2);
+  });
+
   it('background "ready ahead" pauses for an hour after 2 failures in a row', async () => {
     await seedKnown();
     const llm = new FakeStoryLLM(scripted(HARD));

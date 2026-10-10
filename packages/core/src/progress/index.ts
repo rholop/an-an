@@ -81,4 +81,14 @@ export {
   type VocabRung,
 } from './vocabLadder.js';
 
+// Phase 32: the active days behind the streak (what counts, the one-time back-fill, the sync merge).
+export {
+  ACTIVITY_EVIDENCE_KINDS,
+  activeDaysFromHistory,
+  countsAsActivity,
+  mergeActiveDays,
+  type ActiveDay,
+  type ActivityHistory,
+} from './active-days.js';
+
 export { summarizeSavedCopy, type SavedCopySummary } from './saved-copy.js';

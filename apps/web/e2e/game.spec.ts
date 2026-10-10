@@ -59,7 +59,7 @@ test.describe('Game layer', () => {
     expect(errors, `console errors: ${errors.join('\n')}`).toEqual([]);
   });
 
-  test('progress shows learning-only points, real-world coverage and hides streaks by default', async ({
+  test('progress shows learning-only points, real-world coverage and the streak (on by default, Phase 32)', async ({
     page,
   }) => {
     await seedStaleWords(page);
@@ -69,13 +69,13 @@ test.describe('Game layer', () => {
     });
     await expect(page.getByText(/never from\s+time spent/)).toBeVisible();
     await expect(page.getByText(/Recalled a word/)).toBeVisible();
-    await expect(page.getByTestId('streak')).toHaveCount(0);
+    await expect(page.getByTestId('streak')).toContainText('Current run');
     await expect(page.getByText(/You know about \d+% of the words here/).first()).toBeVisible();
     await expect(page.getByTestId('retention')).toContainText('Review retention');
 
     await page.getByText('Streak settings').click();
-    await page.getByLabel(/Show a gentle streak/).check();
-    await expect(page.getByTestId('streak')).toContainText('Current run');
+    await page.getByLabel(/Show the streak/).uncheck();
+    await expect(page.getByTestId('streak')).toHaveCount(0);
   });
 
   test('the scenario map shows stars, locks and coverage', async ({ page }) => {

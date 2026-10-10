@@ -4,6 +4,7 @@ import type { Level } from '../types.js';
 import { analyzeText } from '../validate/turn.js';
 import type { ErrorItem } from './types.js';
 import { normalisePattern } from './error-bank.js';
+import { replaceGaps } from './bracket.js';
 import { LAST_LEVEL, LEVEL_IDS, levelLabel } from '../levels.config.js';
 
 const LEVEL_ORDER = LEVEL_IDS;
@@ -25,7 +26,7 @@ export function summarizeLevels(
   lexicon: Lexicon,
   currentLevel?: Level,
 ): LevelSummary {
-  const plain = text.replace(/[[［][^[\]［］]*[\]］]/g, ' ');
+  const plain = replaceGaps(text, () => ' ');
   const none = new Set<string>();
   const result = analyzeText(plain, {
     lexicon,
@@ -79,7 +80,7 @@ export function summarizeLevels(
 /** Characters the learner actually wrote in Chinese: everything except
  * whitespace and `[English gaps]`. */
 export function countWrittenChars(text: string): number {
-  return [...text.replace(/[[［][^[\]［］]*[\]］]/g, '').replace(/\s/g, '')].length;
+  return [...replaceGaps(text, () => '').replace(/\s/g, '')].length;
 }
 
 /** Phase 5 §8 metric (CLAUDE.md "journal errors per 100 characters over

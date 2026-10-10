@@ -1,12 +1,12 @@
 import type { Backup } from './backup-schema.js';
-import { splitGrammarEvidence } from '@anan/core';
+import { mergeActiveDays, splitGrammarEvidence } from '@anan/core';
 
 /**
  * Phase 8 merge: combine this device's copy of a profile with the server's.
  * Pure — two Backups in, one Backup out — so every rule is unit-tested.
  *
  *  - APPEND-ONLY tables (evidence, turns, reward events, gloss reports, AI
- *    glosses, live reader sentences) are unioned by their unique id and nothing is ever deleted.
+ *    glosses, live reader sentences, active days) are unioned by their unique id and nothing is ever deleted.
  *  - IN-PLACE tables (cards, settings, journal entries/reviews, error items,
  *    conversations, custom words) keep whichever copy has the later
  *    `updatedAt`; a tie keeps the local copy.
@@ -232,6 +232,8 @@ export function mergeBackups(local: Backup, remote: Backup): Backup {
       (s) => s.id,
       (s) => t(s.updatedAt),
     ),
+    // Phase 32: union by day; the earlier moment wins, so both devices end with the same rows
+    activeDays: mergeActiveDays(local.activeDays, remote.activeDays),
   };
 }
 
@@ -256,6 +258,7 @@ export function sameContent(a: Backup, b: Backup): boolean {
       x.liveSentences.map((s) => s.id).sort(),
       x.readerShown.map((r) => [r.sentenceId, t(r.at)]).sort(),
       x.stories.map((s) => [s.id, t(s.updatedAt)]).sort(),
+      x.activeDays.map((d) => [d.day, t(d.at)]).sort(),
     ]);
   return norm(a) === norm(b);
 }
