@@ -3,6 +3,8 @@ import path from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import {
   AUDIO_VOICES,
+  COURSE_BOOK_IDS,
+  isTextbookTagged,
   SentenceBankFileSchema,
   levelIndex,
   sentenceSsml,
@@ -31,12 +33,23 @@ export interface SkippedClip {
 
 export const DEFAULT_LEVELS: Level[] = ['N1', 'N2', 'L1', 'L2'];
 
-export function wordJobs(lexicon: Lexicon, levels: readonly Level[]): { jobs: AudioJob[]; skipped: SkippedClip[] } {
+/** Phase 35: a word in any textbook of the course (core, supplementary or extra lesson words). */
+const inAnyTextbook = (tags: readonly string[]): boolean => COURSE_BOOK_IDS.some((b) => isTextbookTagged(tags, b));
+
+/** Words in `levels`, plus every textbook word whatever its level (Phase 35).
+ * `textbook` counts the jobs that are textbook words. */
+export function wordJobs(
+  lexicon: Lexicon,
+  levels: readonly Level[],
+): { jobs: AudioJob[]; skipped: SkippedClip[]; textbook: number } {
   const jobs: AudioJob[] = [];
   const skipped: SkippedClip[] = [];
   const seen = new Set<string>();
+  let textbook = 0;
   for (const w of lexicon.allWords()) {
-    if (!w.level || !levels.includes(w.level) || seen.has(w.id)) continue;
+    if (seen.has(w.id)) continue;
+    const fromBook = inAnyTextbook(w.tags);
+    if (!fromBook && (!w.level || !levels.includes(w.level))) continue;
     seen.add(w.id);
     const build = (voice: string, explicit: boolean) =>
       explicit ? perSyllableSsml(w.headword, w.zhuyin, voice) : wordSsml(w.headword, w.zhuyin, voice);
@@ -45,8 +58,9 @@ export function wordJobs(lexicon: Lexicon, levels: readonly Level[]): { jobs: Au
       continue;
     }
     jobs.push({ kind: 'word', id: w.id, text: w.headword, zhuyin: w.zhuyin, buildSsml: build });
+    if (fromBook) textbook++;
   }
-  return { jobs, skipped };
+  return { jobs, skipped, textbook };
 }
 
 /** Fallback for a word whose whole-word tag didn't help: tag every character on its own. */

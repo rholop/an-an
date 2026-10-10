@@ -26,6 +26,14 @@ export const AudioManifestEntrySchema = z.object({
   heard: z.string().optional(),
   /** Regenerated after a flag with a different voice/SSML: a plain rebuild leaves it alone. */
   fixed: z.boolean().optional(),
+  /** Phase 35: which retry attempt made a fixed clip ("other voice", "explicit readings", …). */
+  fixedBy: z.string().optional(),
+  /** Phase 35: what speech-to-text heard before a suspect clip was fixed. */
+  suspectHeard: z.string().optional(),
+  /** Phase 35: when `--fix-suspect` last tried this suspect and nothing passed (ISO). */
+  fixTried: z.string().optional(),
+  /** Phase 35: each fix attempt and what it was heard as, for the review report. */
+  fixAttempts: z.array(z.object({ attempt: z.string(), heard: z.string() })).optional(),
 });
 export type AudioManifestEntry = z.infer<typeof AudioManifestEntrySchema>;
 

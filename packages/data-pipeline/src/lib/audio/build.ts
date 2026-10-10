@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import {
@@ -44,7 +44,7 @@ export interface BuildOptions {
   now: Date;
   /** Stop (cleanly) once this many billed characters have been used this run. */
   maxChars?: number;
-  /** Re-try clips that were `suspect` last time (same SSML). */
+  /** Re-roll clips that were `suspect` last time (same voice and SSML). See `fixSuspect`. */
   retrySuspect?: boolean;
   log?: (msg: string) => void;
 }
@@ -61,16 +61,18 @@ export interface BuildResult {
 const section = (m: AudioManifest, kind: AudioJob['kind']) => (kind === 'word' ? m.words : m.sentences);
 const fileFor = (job: AudioJob) => `${job.kind === 'word' ? 'words' : 'sentences'}/${job.id}.mp3`;
 
-/** Synthesize one clip, run the automatic check, write the file. */
+/** Synthesize one clip, run the automatic check, write the file (to `writeTo`
+ * under the audio root when given; the entry still names the real file). */
 async function makeClip(
   job: AudioJob,
   ssml: string,
   voice: string,
   opts: BuildOptions,
+  writeTo?: string,
 ): Promise<AudioManifestEntry> {
   const mp3 = await opts.client.synthesize(ssml);
   const file = fileFor(job);
-  const abs = path.join(opts.outDir, file);
+  const abs = path.join(opts.outDir, writeTo ?? file);
   mkdirSync(path.dirname(abs), { recursive: true });
   writeFileSync(abs, mp3);
   const heard = await opts.client.transcribe(ssml, mp3);
@@ -143,6 +145,76 @@ export async function buildAudio(jobs: readonly AudioJob[], opts: BuildOptions):
   return result;
 }
 
+/** The three ways to re-make a clip, in order (Phase 10 flags, Phase 35 suspects). */
+export const FIX_ATTEMPTS = [
+  { name: 'other voice', otherVoice: true, explicit: false },
+  { name: 'explicit readings', otherVoice: false, explicit: true },
+  { name: 'other voice + explicit readings', otherVoice: true, explicit: true },
+] as const;
+
+interface FixTry {
+  /** The first attempt that came back `auto_ok`. */
+  done?: AudioManifestEntry & { fixedBy: string };
+  /** The last attempt that made a clip but failed the check. */
+  lastBad?: AudioManifestEntry;
+  /** What each attempt that made a clip was heard as. */
+  attempts: { attempt: string; heard: string }[];
+  /** Set when the run must stop (fatal Azure error or the character budget). */
+  stop?: string;
+}
+
+/**
+ * Try the other voice, then explicit per-syllable readings with the original
+ * voice, then both. Each attempt is written to its own temporary file; the
+ * clip that is kept (`done`, or `lastBad` when `adoptBad`) is moved into place
+ * and the rest are deleted, so the current clip is untouched unless replaced.
+ */
+async function tryFixes(
+  job: AudioJob,
+  prev: AudioManifestEntry,
+  opts: BuildOptions,
+  adoptBad: boolean,
+): Promise<FixTry> {
+  const out: FixTry = { attempts: [] };
+  const file = fileFor(job);
+  const temps: string[] = [];
+  let keep: string | undefined;
+  try {
+    for (const [i, a] of FIX_ATTEMPTS.entries()) {
+      const voice = a.otherVoice ? otherVoice(prev.voice) : prev.voice;
+      const ssml = job.buildSsml(voice, a.explicit);
+      if (!ssml || ssmlHash(voice, ssml) === prev.hash) continue;
+      if (opts.maxChars !== undefined && opts.client.usage.billedChars >= opts.maxChars) {
+        out.stop = `character budget reached (${opts.client.usage.billedChars} billed this run)`;
+        return out;
+      }
+      const tmp = `${file}.try${i}`;
+      temps.push(tmp);
+      try {
+        const entry = await makeClip(job, ssml, voice, opts, tmp);
+        out.attempts.push({ attempt: a.name, heard: entry.status === 'auto_ok' ? job.text : (entry.heard ?? '') });
+        if (entry.status === 'auto_ok') {
+          out.done = { ...entry, fixedBy: a.name };
+          keep = tmp;
+          break;
+        }
+        out.lastBad = entry;
+        if (adoptBad) keep = tmp;
+      } catch (err) {
+        if (err instanceof SpeechError && err.fatal) {
+          out.stop = err.message;
+          return out;
+        }
+        opts.log?.(`failed retry for ${clipKey(job.kind, job.id)}: ${String(err)}`);
+      }
+    }
+    if (keep) renameSync(path.join(opts.outDir, keep), path.join(opts.outDir, file));
+    return out;
+  } finally {
+    for (const t of temps) if (t !== keep || out.stop) rmSync(path.join(opts.outDir, t), { force: true });
+  }
+}
+
 export interface FixResult {
   fixed: string[];
   stillBad: string[];
@@ -178,32 +250,12 @@ export async function fixFlagged(
         continue;
       }
       if (prev.hash !== mark.hash) continue; // already regenerated since the flag
-      const other = otherVoice(prev.voice);
-      const attempts: [string, boolean][] = [
-        [other, false],
-        [prev.voice, true],
-        [other, true],
-      ];
-      let done: AudioManifestEntry | undefined;
-      let lastBad: AudioManifestEntry | undefined;
-      for (const [voice, explicit] of attempts) {
-        const ssml = job.buildSsml(voice, explicit);
-        if (!ssml || ssmlHash(voice, ssml) === prev.hash) continue;
-        try {
-          const entry = await makeClip(job, ssml, voice, opts);
-          if (entry.status === 'auto_ok') {
-            done = entry;
-            break;
-          }
-          lastBad = entry;
-        } catch (err) {
-          if (err instanceof SpeechError && err.fatal) {
-            result.stoppedEarly = err.message;
-            return result;
-          }
-          opts.log?.(`failed retry for ${key}: ${String(err)}`);
-        }
+      const t = await tryFixes(job, prev, opts, true);
+      if (t.stop) {
+        result.stoppedEarly = t.stop;
+        return result;
       }
+      const { done, lastBad } = t;
       if (done) {
         section(manifest, job.kind)[job.id] = { ...done, fixed: true };
         result.fixed.push(key);
@@ -211,6 +263,77 @@ export async function fixFlagged(
         // never leave the flagged clip playable: replace with the last failed try (suspect) or mark the old one suspect
         section(manifest, job.kind)[job.id] = lastBad ?? { ...prev, status: 'suspect', heard: '(flagged; no regeneration passed)' };
         result.stillBad.push(key);
+      }
+    }
+  } finally {
+    saveManifest(manifestFile, manifest);
+  }
+  return result;
+}
+
+export interface SuspectFixResult {
+  /** Suspects tried this run. */
+  tried: string[];
+  fixed: string[];
+  stillSuspect: string[];
+  stoppedEarly: string | null;
+}
+
+/** Suspect clips `fixSuspect` would try: in the inputs and not yet tried (unless `again`). */
+export function suspectsToFix(
+  jobs: readonly AudioJob[],
+  manifest: AudioManifest,
+  again = false,
+): { job: AudioJob; prev: AudioManifestEntry }[] {
+  const out: { job: AudioJob; prev: AudioManifestEntry }[] = [];
+  for (const job of jobs) {
+    const prev = section(manifest, job.kind)[job.id];
+    if (prev?.status === 'suspect' && (again || !prev.fixTried)) out.push({ job, prev });
+  }
+  return out;
+}
+
+/**
+ * Phase 35, `audio:build --fix-suspect`: the same three attempts as
+ * `fixFlagged`, on every `suspect` clip. The first `auto_ok` attempt replaces
+ * the clip (`fixed: true`). If none passes, the current clip and status stay
+ * exactly as they were (suspect clips still play) and `fixTried` is recorded,
+ * so a later run skips it unless `again`.
+ */
+export async function fixSuspect(
+  jobs: readonly AudioJob[],
+  opts: BuildOptions & { again?: boolean },
+): Promise<SuspectFixResult> {
+  const manifestFile = path.join(opts.outDir, 'manifest.json');
+  const manifest = loadManifest(manifestFile, opts.now, opts.voice);
+  const result: SuspectFixResult = { tried: [], fixed: [], stillSuspect: [], stoppedEarly: null };
+  let sinceSave = 0;
+  try {
+    for (const { job, prev } of suspectsToFix(jobs, manifest, opts.again)) {
+      const key = clipKey(job.kind, job.id);
+      const t = await tryFixes(job, prev, opts, false);
+      if (t.stop) {
+        result.stoppedEarly = t.stop;
+        break;
+      }
+      result.tried.push(key);
+      if (t.done) {
+        section(manifest, job.kind)[job.id] = {
+          ...t.done,
+          fixed: true,
+          ...(prev.heard !== undefined ? { suspectHeard: prev.heard } : {}),
+          fixAttempts: t.attempts,
+        };
+        result.fixed.push(key);
+        opts.log?.(`fixed ${key} "${job.text}" with ${t.done.fixedBy}`);
+      } else {
+        section(manifest, job.kind)[job.id] = { ...prev, fixTried: opts.now.toISOString(), fixAttempts: t.attempts };
+        result.stillSuspect.push(key);
+        opts.log?.(`still suspect ${key} "${job.text}": heard ${t.attempts.map((a) => `"${a.heard}"`).join(', ') || '(no other reading to try)'}`);
+      }
+      if (++sinceSave >= 10) {
+        saveManifest(manifestFile, manifest);
+        sinceSave = 0;
       }
     }
   } finally {

@@ -28,9 +28,11 @@ Free tier: 0.5M neural characters/month, and Azure counts each Chinese character
 ## Building
 
 ```
-pnpm --filter @anan/data-pipeline audio:build                 # N1–L2 words + their sentences
+pnpm --filter @anan/data-pipeline audio:build                 # N1–L2 words + every textbook word + their sentences
 pnpm --filter @anan/data-pipeline audio:build --levels=L3     # more later
 ```
+
+- **Textbook words at any level (Phase 35):** every word tagged for a course book (`textbook:laixue-N`: core, supplementary and Phase 34 extra lesson words) gets a word clip whatever its level and whatever `--levels` says, so lesson words rated L3–L5 (e.g. 律師) have audio. No other words are added. `--dry-run` prints the textbook-word count separately.
 
 - Output: `data/build/audio/words/{wordId}.mp3`, `sentences/{sentenceId}.mp3` (mono, 48 kbps) and `manifest.json` (id → file, voice, SSML hash, status, text).
 - **Words** are synthesized alone, wrapped in `<phoneme alphabet="sapi">` with the lexicon's MOE zhuyin (neutral-tone `˙` moved after the syllable, which is how Azure writes it).
@@ -58,6 +60,28 @@ pnpm --filter @anan/data-pipeline audio:build --only-flagged
 ```
 
 For each flagged clip it tries (a) the other voice, then (b) explicit `<phoneme>` tags for the whole word (every syllable for words; every readable token for sentences) with the original voice, then (c) explicit tags with the other voice. A clip that passes the automatic check is `auto_ok` again (retest it on the review page); if none pass it stays out as `suspect`. Rewrites of `data/build/audio-review.md` include flags, suspects and skipped sentences.
+
+## Fixing suspect clips (Phase 35)
+
+`--fix-suspect` runs the same three attempts as `--only-flagged` (other voice, then explicit per-syllable MOE readings with the original voice, then both) on every clip whose status is `suspect`. Each attempt is a new clip plus the speech-to-text check.
+
+- The first attempt that passes replaces the clip: `auto_ok`, `fixed: true`, `fixedBy` names the attempt.
+- If none passes, the **current clip and status stay exactly as they were** (suspect clips still play, so a failed fix never makes things worse). The entry gets `fixTried: <date>` and what each attempt was heard as. A later `--fix-suspect` skips it so reruns don't re-bill; `--fix-suspect --again` retries those.
+- Works with `--max-chars=N` (stops cleanly, every finished fix saved), `--dry-run` (how many suspects would be tried and the most characters that could be billed) and `--levels`.
+- The run ends with `fixed X of Y suspects, Z still suspect`; `data/build/audio-review.md` lists suspects still suspect (with what each attempt was heard as) and "Suspects fixed by --fix-suspect" (with the attempt that worked).
+
+`--retry-suspect` is different: a plain re-roll with the **same voice and SSML**, so Azure usually returns the same audio. Prefer `--fix-suspect`.
+
+### The owner's run (on the owner's computer, key in `packages/data-pipeline/.env`)
+
+```
+pnpm --filter @anan/data-pipeline audio:build --dry-run                 # what it would do
+pnpm --filter @anan/data-pipeline audio:build                           # new words incl. textbook extras at any level
+pnpm --filter @anan/data-pipeline audio:build --fix-suspect --dry-run   # how many suspects, max characters
+pnpm --filter @anan/data-pipeline audio:build --fix-suspect             # 3 tries for each suspect
+```
+
+Then commit `data/build/audio` (mp3s plus `manifest.json`) and `data/build/audio-review.md`, and push; the push deploys the clips. Azure's free tier is 500,000 characters a month and every run prints its usage.
 
 ## In the app
 
