@@ -18,6 +18,7 @@ import {
   StoryRepairResponseSchema,
   TopicWordsResponseSchema,
   TurnResponseSchema,
+  ChatMeaningCheckResponseSchema,
 } from '@anan/core';
 import type { z } from 'zod';
 import {
@@ -40,6 +41,7 @@ import {
   STORY_JSON_SCHEMA,
   TOPIC_WORDS_JSON_SCHEMA,
   TURN_RESPONSE_JSON_SCHEMA,
+  CHAT_MEANING_CHECK_JSON_SCHEMA,
 } from './json-schema.js';
 
 /** Phase 25: every route that asks a model for JSON, with the zod check its answer must pass and
@@ -77,6 +79,11 @@ export const JSON_ROUTES: ReadonlyArray<{ route: string; zod: z.ZodTypeAny; json
   },
   { route: '/v1/journal-ask', zod: JournalAskResponseSchema, json: JOURNAL_ASK_JSON_SCHEMA },
   { route: '/v1/journal-gap', zod: JournalGapResponseSchema, json: JOURNAL_GAP_JSON_SCHEMA },
+  {
+    route: '/v1/chat-meaning-check',
+    zod: ChatMeaningCheckResponseSchema,
+    json: CHAT_MEANING_CHECK_JSON_SCHEMA,
+  },
   { route: '/v1/cloze-check', zod: ClozeCheckResponseSchema, json: CLOZE_CHECK_JSON_SCHEMA },
   { route: '/v1/topic-words', zod: TopicWordsResponseSchema, json: TOPIC_WORDS_JSON_SCHEMA },
   { route: '/v1/story', zod: StoryResponseSchema, json: STORY_JSON_SCHEMA },

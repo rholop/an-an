@@ -49,6 +49,7 @@ import { currentClassScope, getStudyFocusNow, useClassScope, useStudyFocus } fro
 import { OpenChatEntryCard, OpenChatView } from './OpenChat.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSetting } from '../lib/useSetting.js';
+import { ChatWordsButton, ChatWordsPanel, LearnerExtras, MisunderstoodNote, useChatWords } from '../components/ChatListen.js';
 import './ChatPage.css';
 import './OpenChat.css';
 
@@ -159,6 +160,11 @@ export function ChatPage({
   // Phase 8: per profile (stored in the profile's database).
   const [scaffolding, setScaffolding] = useSetting<Scaffolding>('chatScaffolding', 'high');
   const [englishFallback, setEnglishFallback] = useSetting('chatEnglishFallback', false);
+  // Phase 36: Settings → Chat → Show corrections (per profile, on by default)
+  const [showCorrections] = useSetting('chatShowCorrections', true);
+  const [wordsTick, setWordsTick] = useState(0);
+  const [wordsOpen, setWordsOpen] = useState(false);
+  const chatWords = useChatWords(chatService?.engine ?? null, conversationId, wordsTick);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -173,6 +179,7 @@ export function ChatPage({
       const [t, conv] = await Promise.all([chatService.getTurns(cid), db.conversations.get(cid)]);
       setTurns(t);
       setConversation(conv ?? null);
+      setWordsTick((n) => n + 1);
     },
     [chatService],
   );
@@ -249,6 +256,7 @@ export function ChatPage({
   }
 
   const lastNpcTurn = [...turns].reverse().find((t) => t.role === 'npc');
+  const lastLearnerTurn = [...turns].reverse().find((t) => t.role === 'learner');
   const suggestions = lastNpcTurn?.suggestedReplies ?? [];
   const visibleSuggestions = suggestions.slice(0, SUGGESTED_REPLY_CAP[scaffolding]);
 
@@ -266,12 +274,15 @@ export function ChatPage({
       }
       setInput('');
       setStuckLevel(0);
-      await chatService.sendLearnerTurn(conversationId, scenario, text, {
+      const result = await chatService.sendLearnerTurn(conversationId, scenario, text, {
         learnerLevel,
         scaffolding,
         englishFallback,
+        showCorrections,
       });
       await refresh(conversationId);
+      // the correction lands a moment later (it runs next to the reply)
+      void result.corrections?.then(() => refresh(conversationId));
 
       const completed = await chatService.maybeCompleteConversation(conversationId, scenario);
       if (completed) {
@@ -283,6 +294,38 @@ export function ChatPage({
     } catch (err) {
       setError(aiErrorText(err));
       await refresh(conversationId); // the learner's own message is already persisted even if the reply failed
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const turnOptions = () => ({ learnerLevel, scaffolding, englishFallback, showCorrections });
+
+  /** Phase 36: "Try again" on a reply that may have misunderstood, and "What did you mean?". */
+  async function tryAgain() {
+    if (!chatService || !scenario || conversationId === null) return;
+    setError(null);
+    try {
+      await chatService.tryAgain(conversationId, scenario, turnOptions());
+    } catch (err) {
+      setError(aiErrorText(err));
+    }
+    await refresh(conversationId);
+  }
+
+  async function fixMeaning(turnId: number, meaningEn: string) {
+    if (!chatService || !scenario || conversationId === null) return;
+    setSending(true);
+    try {
+      const out = await chatService.fixMeaning(conversationId, turnId, meaningEn, scenario, turnOptions());
+      await refresh(conversationId);
+      void out.corrections.then(() => refresh(conversationId));
+      const completed = await chatService.maybeCompleteConversation(conversationId, scenario);
+      if (completed) {
+        await refresh(conversationId);
+        setEnded(true);
+        setSummary(await chatService.getSummary(conversationId));
+      }
     } finally {
       setSending(false);
     }
@@ -492,10 +535,12 @@ export function ChatPage({
       <div className="chat-header">
         <button onClick={backToScenarios}>{BACK_TO_CHATS}</button>
         <h1>{scenario.title}</h1>
+        <ChatWordsButton count={chatWords.count} open={wordsOpen} onToggle={() => setWordsOpen((o) => !o)} />
       </div>
 
       <div className="chat-scroll" ref={scrollRef}>
         <GoalChecklist scenario={scenario} conversation={conversation} />
+        {wordsOpen && !ended && <ChatWordsPanel entries={chatWords.entries} onAdd={chatWords.add} />}
 
         <div className="chat-messages">
           {turns.map((turn) => {
@@ -540,6 +585,19 @@ export function ChatPage({
                   </div>
                 )}
                 {englishFallback && turn.en && <div className="chat-en">{turn.en}</div>}
+                {turn.role === 'learner' && chatService && (
+                  <LearnerExtras
+                    turn={turn}
+                    isLast={!ended && !sending && turn.id === lastLearnerTurn?.id}
+                    engine={chatService.engine}
+                    lexicon={lexiconState.lexicon}
+                    onFixMeaning={fixMeaning}
+                    onChange={() => void refresh(conversationId)}
+                  />
+                )}
+                {turn.role === 'npc' && turn.misunderstood && !ended && turn.id === lastNpcTurn?.id && (
+                  <MisunderstoodNote onTryAgain={tryAgain} />
+                )}
                 {import.meta.env.DEV && turn.validatorReport && (
                   <div className="chat-debug">
                     coverage {(turn.validatorReport.coverage * 100).toFixed(0)}% · max{' '}
@@ -560,12 +618,15 @@ export function ChatPage({
         )}
 
         {ended && summary && (
-          <ChatSummaryPanel
-            scenario={scenario}
-            summary={summary}
-            learnerTurns={turns.filter((t) => t.role === 'learner').length}
-            lexicon={lexiconState.lexicon}
-          />
+          <>
+            <ChatSummaryPanel
+              scenario={scenario}
+              summary={summary}
+              learnerTurns={turns.filter((t) => t.role === 'learner').length}
+              lexicon={lexiconState.lexicon}
+            />
+            <ChatWordsPanel entries={chatWords.entries} onAdd={chatWords.add} />
+          </>
         )}
       </div>
 

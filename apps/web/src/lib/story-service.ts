@@ -166,7 +166,8 @@ export class StoryService {
     if (ask.kind === 'continue' && ask.continueFrom) return ask.continueFrom.topic;
     if ((ask.kind === 'typed' || ask.kind === 'chip') && ask.text?.trim()) return ask.text.trim().slice(0, 200);
     if (ask.kind === 'journal') {
-      const last = await this.db.journalEntries.orderBy('createdAt').last();
+      // Phase 36: the journal's own entries, not chat messages
+      const last = (await this.db.journalEntries.orderBy('createdAt').reverse().filter((e) => e.source !== 'chat').limit(1).toArray())[0];
       const first = last?.text.split(/[。！？\n]/)[0]?.trim();
       if (first) return `what I wrote in my journal: ${first}`.slice(0, 200);
     }

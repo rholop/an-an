@@ -1,5 +1,8 @@
 import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
 import {
+  ChatMeaningCheckResponseSchema,
+  type ChatMeaningCheckRequest,
+  type ChatMeaningCheckResponse,
   ClozeCheckResponseSchema,
   DefineResponseSchema,
   JournalCheckResponseSchema,
@@ -223,6 +226,11 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM {
   /** Phase 31: an `[english]` gap translated in its sentence. */
   async fillJournalGap(req: JournalGapRequest): Promise<JournalGapResponse> {
     return JournalGapResponseSchema.parse(await this.post('/v1/journal-gap', req));
+  }
+
+  /** Phase 36: the chat meaning check's fallback (the proxy's checker chain). */
+  async checkChatMeaning(req: ChatMeaningCheckRequest): Promise<ChatMeaningCheckResponse> {
+    return ChatMeaningCheckResponseSchema.parse(await this.post('/v1/chat-meaning-check', req));
   }
 
   /** Phase 24: a graded story (Phase 25: Gemini only, a fallback Gemini model) and which model wrote it. */

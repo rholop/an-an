@@ -50,8 +50,26 @@ export const AiUsageSchema = z.object({
   nextReset: z.string(),
   models: z.array(AiModelUsageSchema),
   storiesToday: z.number().int().nonnegative(),
+  /** Phase 36: each role's model chain, in order (so the app can tell when a role is short). */
+  chains: z.record(z.string(), z.array(z.string())).optional(),
 });
 export type AiUsage = z.infer<typeof AiUsageSchema>;
+
+/**
+ * Phase 36: is a role's chain short of free quota? True when every model of the chain is used up
+ * or already into the live reserve (calls ≥ limit − reserve). Optional extras (chat corrections)
+ * pause then, so the reserve is left for the replies themselves. Unknown chains are never short.
+ */
+export function chainShort(usage: AiUsage, role: string): boolean {
+  const chain = usage.chains?.[role];
+  if (!chain || chain.length === 0) return false;
+  return chain.every((model) => {
+    const m = usage.models.find((x) => x.model === model);
+    if (!m) return false;
+    if (m.exhausted) return true;
+    return m.limit !== undefined && m.calls >= m.limit - (m.reserve ?? 0);
+  });
+}
 
 /** "03:00" and "3 am" for an instant in `timeZone`, and whole hours from `now` (at least 1). */
 export function quotaResetTime(

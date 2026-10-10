@@ -32,6 +32,8 @@ Your goal as {{npc_name}} is to move this scene forward, step by step:
 
 {{goal_steps}}
 
+{{listen_rules}}
+
 ## Language rules (never break these)
 
 1. **Taiwan Mandarin only.** Traditional characters, never simplified.
@@ -79,7 +81,10 @@ no markdown code fence:
   "targets_used": ["any target words from your budget that you actually used"],
   "suggested_replies": [{ "zh": "...", "en": "..." }],
   "goal_progress": [{ "step": "<goal step id>", "done": true }],
-  "recast_zh": "only when english_fallback is true and the learner wrote English"
+  "recast_zh": "only when english_fallback is true and the learner wrote English",
+  "learner_meaning_en": "one plain English line: what the learner's last message says",
+  "learner_facts": ["subject: fact, only new facts from the learner's last message"],
+  "kept_words": ["words outside your lists you kept to keep the meaning (at most 2)"]
 }
 ```
 

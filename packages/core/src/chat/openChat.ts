@@ -52,6 +52,9 @@ export const OpenTurnRequestSchema = z.object({
   learnerLevel: LevelSchema,
   scaffolding: z.enum(['high', 'medium', 'low']),
   englishFallback: z.boolean(),
+  /** Phase 36: the same facts list and meaning fix as scenario chat (`TurnRequest`). */
+  facts: z.array(z.string().max(300)).max(24).optional(),
+  learnerMeaningEn: z.string().max(300).optional(),
 });
 export type OpenTurnRequest = z.infer<typeof OpenTurnRequestSchema>;
 

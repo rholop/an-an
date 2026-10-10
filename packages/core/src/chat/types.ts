@@ -73,6 +73,11 @@ export const TurnRequestSchema = z.object({
   }),
   scaffolding: z.enum(['high', 'medium', 'low']),
   englishFallback: z.boolean(),
+  /** Phase 36: what the learner has said about themselves so far ("mother: doesn't work; likes
+   * gardening"), built in code from each turn's `learner_facts`. The reply must not contradict it. */
+  facts: z.array(z.string().max(300)).max(24).optional(),
+  /** Phase 36: "What did you mean?" on the learner's last message, in their own words. */
+  learnerMeaningEn: z.string().max(300).optional(),
 });
 export type TurnRequest = z.infer<typeof TurnRequestSchema>;
 
@@ -105,8 +110,34 @@ export const TurnResponseSchema = z.object({
   suggested_replies: z.array(SuggestedReplySchema),
   goal_progress: z.array(GoalProgressStepSchema),
   recast_zh: z.string().optional(),
+  /** Phase 36: a one-line English reading of the learner's last message ("My dad works at a school,
+   * and my mom doesn't work."), shown as "Read as: …" under it. */
+  learner_meaning_en: z.string().max(400).optional(),
+  /** Phase 36: facts the learner just stated about themselves or people they know, one per line as
+   * "subject: fact" ("mother: doesn't work"). Merged in code into the conversation's facts list. */
+  learner_facts: z.array(z.string().max(200)).max(12).optional(),
+  /** Phase 36: words outside the budget the reply kept so that it still says the same thing (at most
+   * 2, each shown with a gloss), instead of changing the meaning to fit the word lists. */
+  kept_words: z.array(z.string().max(20)).max(6).optional(),
 });
 export type TurnResponse = z.infer<typeof TurnResponseSchema>;
+
+/** Phase 36: the meaning check's fallback, a fresh call on the checker chain. */
+export const ChatMeaningCheckRequestSchema = z.object({
+  facts: z.array(z.string().max(300)).min(1).max(24),
+  learnerMessage: z.string().max(400),
+  replyZh: z.string().max(400),
+  replyEn: z.string().max(600),
+});
+export type ChatMeaningCheckRequest = z.infer<typeof ChatMeaningCheckRequestSchema>;
+
+export const ChatMeaningCheckResponseSchema = z.object({
+  contradicts: z.boolean(),
+  /** The learner's fact the reply goes against ('' when none). */
+  fact: z.string().max(300),
+  reasonEn: z.string().max(300),
+});
+export type ChatMeaningCheckResponse = z.infer<typeof ChatMeaningCheckResponseSchema>;
 
 /**
  * core's own LLM-agnostic contract — apps/web implements this via fetch to
@@ -149,4 +180,6 @@ export interface TutorLLM {
   askJournal?(req: JournalAskRequest): Promise<JournalAskResponse>;
   /** Phase 31: an `[english]` gap translated in its sentence. */
   fillJournalGap?(req: JournalGapRequest): Promise<JournalGapResponse>;
+  /** Phase 36: does this chat reply contradict what the learner said? (checker chain) */
+  checkChatMeaning?(req: ChatMeaningCheckRequest): Promise<ChatMeaningCheckResponse>;
 }

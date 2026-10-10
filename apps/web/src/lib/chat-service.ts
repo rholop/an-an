@@ -1,7 +1,7 @@
 import {
-  CHAT_LEAK_REF,
   analyzeText,
-  checkTaiwanness,
+  keptWords,
+  type ChatTurnValidation,
   derivedCompoundIds,
   lessonScopedWordIds,
   studyTargetWordIds,
@@ -24,6 +24,17 @@ import {
 } from '@anan/core';
 import type { AnanDB, ConversationRow, TurnRow } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
+import {
+  ChatEngine,
+  isCleanChinese,
+  UnreliableReplyError,
+  type ChatEngineDeps,
+  type ChatMode,
+  type ChatTurnOptions,
+  type ModeTurn,
+} from './chat-engine.js';
+
+export { isCleanChinese, UnreliableReplyError };
 
 /** The word ids a `ledger.pickNew` result introduces (New cards first, then items with no card). */
 export function newWordIds(picked: { cards: readonly { item: { kind: string; id: string } }[]; items: readonly { kind: string; id: string }[] }): string[] {
@@ -58,7 +69,16 @@ export interface SendTurnResult {
   npcTurn: TurnRow;
   report: AnalyzeResult;
   attempts: number;
+  /** Phase 36: the learner's stored message ("Read as", correction, gaps land on it). */
+  learnerTurn?: TurnRow;
+  /** Phase 36: settles when the message's correction and gap fills are stored. */
+  corrections?: Promise<void>;
+  /** Phase 36: the reply still contradicted the learner after one regeneration. */
+  misunderstood?: boolean;
 }
+
+/** Phase 36: a scenario reply's budget check, in the engine's shape. */
+type ScenarioReport = AnalyzeResult & ChatTurnValidation;
 
 export interface ChatSummary {
   /** Phase 21: messages the learner sent (both chat types say "N messages from you"). */
@@ -68,18 +88,6 @@ export interface ChatSummary {
   goalStepsDone: string[];
   wordsEncountered: string[];
 }
-
-/** Phase 21 Part J: a reply that still fails the Taiwan / traditional check after every retry. */
-export class UnreliableReplyError extends Error {
-  constructor() {
-    super("Couldn't get a reliable reply, try again");
-    this.name = 'UnreliableReplyError';
-  }
-}
-
-/** Phase 21 Part J: suggested replies, recasts and "Try:" lines are shown only when they pass the
- * Taiwan / traditional-characters check; failing ones are dropped. */
-export const isCleanChinese = (zh: string | undefined): zh is string => !!zh && checkTaiwanness(zh).isClean;
 
 function sample<T>(arr: T[], n: number, rng: () => number): T[] {
   const copy = [...arr];
@@ -112,7 +120,21 @@ export class ChatService {
     private readonly classContext?: () => ClassChatContext | undefined,
     /** Phase 14: the study order's focus, so ANY scenario's target words come from unmastered textbook items first. */
     private readonly studyFocus?: () => Promise<StudyFocus | undefined>,
-  ) {}
+    /** Phase 36: the shared engine's extras (journal corrector, quota check), for tests. */
+    listen: Partial<Pick<ChatEngineDeps, 'journal' | 'quotaShort'>> = {},
+  ) {
+    this.engine = new ChatEngine({
+      db,
+      lexicon,
+      learnerService,
+      tutorLLM,
+      maxRegenerations: config.maxRegenerations,
+      ...listen,
+    });
+  }
+
+  /** Phase 36: the one chat engine (shared with open chat). */
+  readonly engine: ChatEngine;
 
   /** Starts a conversation: the scenario's opener is authored data, not
    * LLM-generated, so this never calls the LLM. */
@@ -136,8 +158,9 @@ export class ChatService {
     return conversationId as number;
   }
 
+  /** The conversation as shown (Phase 36: replies replaced by "Try again" left out). */
   async getTurns(conversationId: number): Promise<TurnRow[]> {
-    return this.db.turns.where('conversationId').equals(conversationId).sortBy('id');
+    return this.engine.visibleTurns(conversationId);
   }
 
   /** phase doc §7: every due/learning token in the PREVIOUS npc message
@@ -240,14 +263,50 @@ export class ChatService {
       learnerLevel: TurnRequest['learnerLevel'];
       scaffolding: TurnRequest['scaffolding'];
       englishFallback: boolean;
+      showCorrections?: boolean;
     },
     now: Date = new Date(),
   ): Promise<SendTurnResult> {
-    await this.db.turns.add({ conversationId, role: 'learner', zh: learnerText, at: now });
-    if (options.englishFallback)
-      await this.db.conversations.update(conversationId, { englishFallbackUsed: true });
+    const out = await this.engine.send(conversationId, this.mode(scenario), learnerText, options, now);
+    return {
+      npcTurn: out.npcTurn,
+      report: out.report,
+      attempts: out.attempts,
+      learnerTurn: out.learnerTurn,
+      corrections: out.corrections,
+      misunderstood: out.misunderstood,
+    };
+  }
 
-    const priorTurns = await this.getTurns(conversationId);
+  /** Phase 36: "Try again" on a reply that may have misunderstood the learner. */
+  tryAgain(conversationId: number, scenario: Scenario, options: ChatTurnOptions, now: Date = new Date()) {
+    return this.engine.tryAgain(conversationId, this.mode(scenario), options, now);
+  }
+
+  /** Phase 36: "What did you mean?" on the learner's last message (the reply is regenerated). */
+  fixMeaning(
+    conversationId: number,
+    learnerTurnId: number,
+    meaningEn: string,
+    scenario: Scenario,
+    options: ChatTurnOptions,
+    now: Date = new Date(),
+  ) {
+    return this.engine.fixMeaning(conversationId, learnerTurnId, meaningEn, this.mode(scenario), options, now);
+  }
+
+  /** Phase 36: scenario chat as a mode of the one engine: the persona, scene and goal steps. */
+  mode(scenario: Scenario): ChatMode<ScenarioReport> {
+    return { prepare: (cid, turns, options, now) => this.prepareTurn(cid, scenario, turns, options, now) };
+  }
+
+  private async prepareTurn(
+    conversationId: number,
+    scenario: Scenario,
+    priorTurns: TurnRow[],
+    options: ChatTurnOptions,
+    now: Date,
+  ): Promise<ModeTurn<ScenarioReport>> {
     const history: TurnHistoryEntry[] = priorTurns.map((t) => ({
       role: t.role,
       zh: t.zh,
@@ -282,6 +341,12 @@ export class ChatService {
         ...new Set([...scenarioExtraIds, ...scoped, ...derivedCompoundIds(this.lexicon, scoped)]),
       ];
     }
+    // Phase 36: words the learner typed in this chat never count against the budget (as in open chat).
+    const typedIds = priorTurns
+      .filter((t) => t.role === 'learner')
+      .flatMap((t) => segment(t.zh, this.lexicon))
+      .filter((tok) => tok.kind === 'word')
+      .flatMap((tok) => this.lexicon.lookup(tok.text).map((w) => w.id));
     const dueWordIds = [...sets.dueIds];
     const want = this.config.newTargetsPerTurn;
     const focus = await this.studyFocus?.().catch(() => undefined);
@@ -320,90 +385,55 @@ export class ChatService {
     const analyzeCtx = await this.buildAnalyzeContext(
       options.learnerLevel,
       targetIds,
-      validatorExtraIds,
+      [...validatorExtraIds, ...typedIds],
     );
-
-    let attempts = 0;
-    let response: TurnResponse | undefined;
-    let report: AnalyzeResult | undefined;
-    let feedback: string | undefined;
-
-    while (attempts <= this.config.maxRegenerations) {
-      attempts++;
-      response = await this.tutorLLM.generateTurn({ ...req, feedback });
-      report = analyzeText(response.reply_zh, analyzeCtx, [], {
+    const validate = (response: TurnResponse): ScenarioReport => {
+      // Phase 36: up to 2 words kept to keep the meaning are allowed (and glossed)
+      const kept = keptWords(response).flatMap((t) => this.lexicon.lookup(t).map((w) => w.id));
+      const ctx = kept.length > 0 ? { ...analyzeCtx, allowedExtraIds: new Set([...analyzeCtx.allowedExtraIds, ...kept]) } : analyzeCtx;
+      const report = analyzeText(response.reply_zh, ctx, [], {
         coverageThreshold: 0.95,
         maxUnknownTokens: 4,
         ...this.config,
       });
-      if (report.pass) break;
-      feedback = buildFeedback(report);
-    }
+      return { ...report, taiwanClean: report.taiwanness.isClean, feedback: buildFeedback(report) };
+    };
 
-    // Phase 21 Part J: a reply that still fails the Taiwan / traditional check is never shown: one
-    // more try on the other provider, then an error ("Couldn't get a reliable reply, try again").
-    if (report && !report.taiwanness.isClean) {
-      attempts++;
-      response = await this.tutorLLM.generateTurn({ ...req, feedback: buildFeedback(report), alternateModel: true });
-      report = analyzeText(response.reply_zh, analyzeCtx, [], {
-        coverageThreshold: 0.95,
-        maxUnknownTokens: 4,
-        ...this.config,
-      });
-      if (!report.taiwanness.isClean) throw new UnreliableReplyError();
-    }
-
-    const finalResponse = response!;
-    const finalReport = report!;
-
-    if (!finalReport.pass) {
-      // Max attempts exhausted: accept the best attempt, mark the leaked
-      // unknown words as introduced (reusing chat_lookup_gloss's
-      // introduce-or-relapse effect — see applyEvidence) so they enter the
-      // learner model with a gloss the UI can show inline.
-      const introduceEvents: Evidence[] = finalReport.unknown
-        .filter((c) => c.wordId)
-        .map((c) => ({
-          item: { kind: 'word', id: c.wordId! },
-          skill: 'recognition',
-          kind: 'chat_lookup_gloss',
-          at: now,
-          context: { source: 'chat', refId: CHAT_LEAK_REF },
-        }));
-      if (introduceEvents.length > 0) await this.learnerService.recordBulk(introduceEvents, now);
-    }
-
-    const npcTurnId = await this.db.turns.add({
-      conversationId,
-      role: 'npc',
-      zh: finalResponse.reply_zh,
-      en: finalResponse.reply_en,
-      tokens: this.sanitizeSenseIds(finalResponse.tokens, req.vocab.senseOptions ?? []),
-      suggestedReplies: finalResponse.suggested_replies.filter((r) => isCleanChinese(r.zh)),
-      ...(isCleanChinese(finalResponse.recast_zh) ? { recastZh: finalResponse.recast_zh } : {}),
-      // Phase 21: the promised inline glosses for words past the learner's reach (as in open chat).
-      ...(finalReport.pass ? {} : { glosses: this.leakGlosses(finalReport.unknown) }),
-      validatorReport: {
-        coverage: finalReport.coverage,
-        maxLevel: finalReport.maxLevel,
-        unknownCount: finalReport.unknown.length,
-        attempts,
-        pass: finalReport.pass,
+    return {
+      generate: (x) =>
+        this.tutorLLM.generateTurn({
+          ...req,
+          ...(x.feedback ? { feedback: x.feedback } : {}),
+          ...(x.alternateModel ? { alternateModel: true } : {}),
+          ...(x.facts.length > 0 ? { facts: x.facts } : {}),
+          ...(x.learnerMeaningEn ? { learnerMeaningEn: x.learnerMeaningEn } : {}),
+        }),
+      validate,
+      leakedWordIds: (report) => (report.pass ? [] : report.unknown.flatMap((c) => (c.wordId ? [c.wordId] : []))),
+      npcFields: (response, report) => ({
+        tokens: this.sanitizeSenseIds(response.tokens, req.vocab.senseOptions ?? []),
+        // Phase 21: the promised inline glosses for words past the learner's reach (as in open chat).
+        ...(report.pass ? {} : { glosses: this.leakGlosses(report.unknown) }),
+        validatorReport: {
+          coverage: report.coverage,
+          maxLevel: report.maxLevel,
+          unknownCount: report.unknown.length,
+          attempts: 0,
+          pass: report.pass,
+        },
+      }),
+      after: async (npcTurn, response) => {
+        const doneSteps = response.goal_progress.filter((g) => g.done).map((g) => g.step);
+        if (doneSteps.length > 0) {
+          const conv = await this.db.conversations.get(conversationId);
+          if (conv) {
+            const merged = [...new Set([...conv.goalStepsDone, ...doneSteps])];
+            await this.db.conversations.update(conversationId, { goalStepsDone: merged });
+          }
+        }
+        void npcTurn;
       },
-      at: now,
-    });
-
-    const doneSteps = finalResponse.goal_progress.filter((g) => g.done).map((g) => g.step);
-    if (doneSteps.length > 0) {
-      const conv = await this.db.conversations.get(conversationId);
-      if (conv) {
-        const merged = [...new Set([...conv.goalStepsDone, ...doneSteps])];
-        await this.db.conversations.update(conversationId, { goalStepsDone: merged });
-      }
-    }
-
-    const npcTurn = await this.db.turns.get(npcTurnId as number);
-    return { npcTurn: npcTurn!, report: finalReport, attempts };
+    };
   }
 
   /** Phase 6: "I'm stuck" pressed (once per press, however many hint levels
@@ -430,6 +460,7 @@ export class ChatService {
 
   async endConversation(conversationId: number, now: Date = new Date()): Promise<void> {
     await this.db.conversations.update(conversationId, { endedAt: now });
+    await this.engine.finishCorrections(conversationId, now); // Phase 36: corrections reach the error bank
   }
 
   /** Once every goal step is done, appends the scenario's authored

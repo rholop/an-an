@@ -1290,3 +1290,95 @@ describe('Phase 33: the free quota', () => {
     expect((await define(app)).status).toBe(200);
   });
 });
+
+describe('Phase 36: chats that listen', () => {
+  const post = (app: ReturnType<typeof buildApp>, route: string, body: unknown) =>
+    app.request(route, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-install-id': 'c1' },
+      body: JSON.stringify(body),
+    });
+  const spy = (name: string, respond: () => unknown, seen: { name: string; system: string; user: string }[]) => {
+    const inner = new FakeJsonAdapter(name, { kind: 'success', respond });
+    return {
+      model: name,
+      generateJson: <T>(req: Parameters<typeof inner.generateJson<T>>[0]) => {
+        seen.push({ name, system: req.systemPrompt, user: req.userMessage });
+        return inner.generateJson(req);
+      },
+    };
+  };
+
+  it('/v1/chat-meaning-check is a fresh call on the checker model, with the chat as JSON data', async () => {
+    const seen: { name: string; system: string; user: string }[] = [];
+    const verdict = () => ({ contradicts: true, fact: "mother: doesn't work", reasonEn: 'It gives her a job.' });
+    const app = buildApp({
+      journalOrchestrator: createJsonOrchestrator(
+        spy('gemini', verdict, seen),
+        undefined,
+        new PromptCache<JsonTaskResult<unknown>>(),
+        undefined,
+        { checker: spy('gemini-check', verdict, seen) },
+      ),
+    });
+    const res = await post(app, '/v1/chat-meaning-check', {
+      facts: ["mother: doesn't work; likes gardening"],
+      learnerMessage: '我媽媽喜歡【gardening】。',
+      replyZh: '你媽媽喜歡教書。',
+      replyEn: 'Your mom likes teaching.',
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('x-served-by')).toBe('gemini-check');
+    expect(await res.json()).toMatchObject({ contradicts: true });
+    expect(seen[0]!.system).toContain('Does the reply contradict the learner?');
+    expect(JSON.parse(seen[0]!.user)).toMatchObject({ reply_zh: '你媽媽喜歡教書。' });
+    expect((await post(app, '/v1/chat-meaning-check', { facts: [] })).status).toBe(400);
+  });
+
+  it('a chat message sent to the corrector carries the conversation as context, never as text to correct', async () => {
+    const seen: { name: string; system: string; user: string }[] = [];
+    const app = buildApp({
+      journalOrchestrator: createJsonOrchestrator(
+        spy('gemini', () => fakeJournalReview, seen),
+        undefined,
+        new PromptCache<JsonTaskResult<unknown>>(),
+      ),
+    });
+    const res = await post(app, '/v1/journal-review', {
+      text: '我爸爸在學校工作含我媽媽不工作。',
+      learnerLevel: 'N2',
+      chatContext: [{ role: 'npc', zh: '你爸爸媽媽做什麼工作？' }],
+    });
+    expect(res.status).toBe(200);
+    expect(seen[0]!.user).toContain('one message the learner wrote in a chat');
+    expect(seen[0]!.user).toContain('Partner: 你爸爸媽媽做什麼工作？');
+  });
+
+  it('both chat prompts get the shared "Listen first" rules and the facts list', async () => {
+    const prompts: string[] = [];
+    const orchestrator: Orchestrator = {
+      async run(systemPrompt) {
+        prompts.push(systemPrompt);
+        return fakeOrchestrator().run(systemPrompt, [], {});
+      },
+    } as Orchestrator;
+    const app = buildApp({ orchestrator });
+    const res = await post(app, '/v1/turn', {
+      ...validTurnRequest,
+      facts: ["mother: doesn't work; likes gardening"],
+      learnerMeaningEn: 'My mom stays home.',
+    });
+    expect(res.status).toBe(200);
+    expect(prompts[0]).toContain('## Listen first');
+    expect(prompts[0]).toContain("- mother: doesn't work; likes gardening");
+    expect(prompts[0]).toContain('"My mom stays home."');
+    expect(prompts[0]).not.toMatch(/\{\{\w+\}\}/);
+  });
+
+  it('GET /v1/ai-usage includes each role\'s chain', async () => {
+    const quota = new QuotaTracker({ now: () => new Date('2026-10-10T16:00:00Z') });
+    const app = buildApp({ quota, chains: { journal: ['gemini-a', 'gemini-b'] } });
+    const body = (await (await app.request('/v1/ai-usage')).json()) as { chains: Record<string, string[]> };
+    expect(body.chains).toEqual({ journal: ['gemini-a', 'gemini-b'] });
+  });
+});

@@ -50,6 +50,10 @@ export const TURN_RESPONSE_JSON_SCHEMA = {
       },
     },
     recast_zh: { type: 'string' },
+    // Phase 36: what the learner said, their new facts, and words kept to keep the meaning
+    learner_meaning_en: { type: 'string' },
+    learner_facts: { type: 'array', items: { type: 'string' } },
+    kept_words: { type: 'array', items: { type: 'string' } },
   },
   required: [
     'reply_zh',
@@ -350,6 +354,17 @@ export const JOURNAL_VERIFY_JSON_SCHEMA = {
     meaningMatches: { type: 'boolean' },
   },
   required: ['ok', 'problem', 'meaningMatches'],
+} as const;
+
+/** Phase 36: POST /v1/chat-meaning-check (checker chain). */
+export const CHAT_MEANING_CHECK_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    contradicts: { type: 'boolean' },
+    fact: { type: 'string' },
+    reasonEn: { type: 'string' },
+  },
+  required: ['contradicts', 'fact', 'reasonEn'],
 } as const;
 
 /** Phase 17: POST /v1/journal-solve. */

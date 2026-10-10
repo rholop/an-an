@@ -207,6 +207,32 @@ export const JournalEntryRowSchema = z.object({
   status: z.enum(['self_correcting', 'revealed', 'finished']),
   finishedAt: z.coerce.date().optional(),
   intendedEn: z.string().optional(), // Phase 31
+  source: z.literal('chat').optional(), // Phase 36
+  conversationRef: z.string().optional(),
+});
+
+/** Phase 31 gap options (journal), Phase 36 chat gaps too. */
+const ResolvedBracketSchema = z.object({
+  en: z.string(),
+  zh: z.string(),
+  wordId: z.string().optional(),
+  source: z.enum(['lexicon', 'llm', 'unresolved']),
+  // Phase 31 Part D
+  options: z
+    .array(
+      z.object({
+        zh: z.string(),
+        pinyin: z.string(),
+        meaningEn: z.string(),
+        usageEn: z.string(),
+        corrected: z.string(),
+        wordId: z.string().optional(),
+        checked: z.boolean(),
+      }),
+    )
+    .optional(),
+  added: z.array(z.string()).optional(),
+  legacy: z.enum(['ask', 'flagged', 'kept', 'removed']).optional(),
 });
 
 export const JournalReviewRowSchema = z.object({
@@ -215,30 +241,7 @@ export const JournalReviewRowSchema = z.object({
   learnerLevel: LevelSchema,
   issues: z.array(JournalIssueSchema),
   naturalRewrite: z.string(),
-  brackets: z.array(
-    z.object({
-      en: z.string(),
-      zh: z.string(),
-      wordId: z.string().optional(),
-      source: z.enum(['lexicon', 'llm', 'unresolved']),
-      // Phase 31 Part D
-      options: z
-        .array(
-          z.object({
-            zh: z.string(),
-            pinyin: z.string(),
-            meaningEn: z.string(),
-            usageEn: z.string(),
-            corrected: z.string(),
-            wordId: z.string().optional(),
-            checked: z.boolean(),
-          }),
-        )
-        .optional(),
-      added: z.array(z.string()).optional(),
-      legacy: z.enum(['ask', 'flagged', 'kept', 'removed']).optional(),
-    }),
-  ),
+  brackets: z.array(ResolvedBracketSchema),
   usedWell: z.array(z.object({ itemRef: ItemRefSchema, span: SpanSchema })),
   rejectedCount: z.number(),
   // JSON-safe numeric keys: Dexie/structured clone keep them as strings.
@@ -400,6 +403,19 @@ export const TurnRowSchema = z.object({
     })
     .optional(),
   glosses: z.array(z.object({ text: z.string(), gloss: z.string() })).optional(),
+  // Phase 36
+  meaningEn: z.string().optional(),
+  meaningFixed: z.boolean().optional(),
+  facts: z.array(z.string()).optional(),
+  correction: z
+    .object({
+      status: z.enum(['pending', 'clean', 'issues', 'paused', 'off', 'failed']),
+      entryId: z.string().optional(),
+    })
+    .optional(),
+  gaps: z.array(ResolvedBracketSchema).optional(),
+  misunderstood: z.boolean().optional(),
+  replaced: z.boolean().optional(),
   at: z.coerce.date(),
 });
 

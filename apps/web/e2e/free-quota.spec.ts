@@ -79,7 +79,16 @@ test.describe('Free AI quota used up (phase 33)', () => {
       ]);
     });
     await page.reload();
-    await page.getByRole('button', { name: 'Show answer' }).first().click({ timeout: 20_000 });
+    // The session order is shuffled: a new grammar card (tiles) or a Pick face can come first and
+    // has no "Show answer". Nope those until a card with one is up.
+    const showAnswer = page.getByRole('button', { name: 'Show answer' }).first();
+    await expect(page.getByTestId('review-counts')).toContainText(/^[1-9]\d* due/, { timeout: 20_000 });
+    await expect(async () => {
+      if (await showAnswer.isVisible()) return;
+      await page.getByTestId('nope-btn').click({ timeout: 2000 });
+      await expect(showAnswer).toBeVisible({ timeout: 1000 });
+    }).toPass({ timeout: 30_000 });
+    await showAnswer.click();
     await page.getByRole('button', { name: 'Good' }).click();
 
     // Settings → AI usage: the server's count per model

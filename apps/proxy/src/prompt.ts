@@ -24,6 +24,7 @@ import type {
   SentenceGenRequest,
   TopicWordsRequest,
   TurnRequest,
+  ChatMeaningCheckRequest,
 } from '@anan/core';
 import { OPEN_CHAT_CONFIG, STORY_CONFIG } from '@anan/core';
 
@@ -58,6 +59,40 @@ function fillPlaceholders(template: string, replacements: Record<string, string>
   return result;
 }
 
+let listenTemplate: string | undefined;
+
+/** Phase 36: the shared "listen first" sections (data/prompts/chat-listen.v1.md) of both chat
+ * prompts, with the learner's facts so far and, after "What did you mean?", their own meaning. */
+export function buildListenRules(req: Pick<TurnRequest, 'facts' | 'learnerMeaningEn'>): string {
+  listenTemplate ??= loadPromptFile('chat-listen.v1.md');
+  const facts = (req.facts ?? []).filter((f) => f.trim());
+  return fillPlaceholders(listenTemplate, {
+    learner_facts: facts.length > 0 ? facts.map((f) => `- ${f}`).join('\n') : '(nothing yet)',
+    learner_meaning: req.learnerMeaningEn?.trim()
+      ? `The learner says their last message means: ${JSON.stringify(req.learnerMeaningEn.trim())}. Answer that meaning, and use it as \`learner_meaning_en\`.`
+      : '',
+  });
+}
+
+export function loadChatMeaningCheckPrompt(version = 'v1'): string {
+  return loadPromptFile(`chat-meaning-check.${version}.md`);
+}
+
+/** Phase 36: the meaning check's fallback (checker chain). The chat text is data in JSON. */
+export function chatMeaningCheckUserMessage(req: ChatMeaningCheckRequest): string {
+  return JSON.stringify({
+    learner_facts: req.facts,
+    learner_last_message: req.learnerMessage,
+    reply_zh: req.replyZh,
+    reply_en: req.replyEn,
+  });
+}
+
+/** The comment-stripping placeholder fill, for routes with a plain template. */
+export function fillPromptPlaceholders(template: string, replacements: Record<string, string>): string {
+  return fillPlaceholders(template, replacements);
+}
+
 /** Fills data/prompts/tutor-system.*.md's {{placeholders}} from the
  * scenario definition + this turn's request. */
 export function buildSystemPrompt(template: string, scenario: Scenario, req: TurnRequest): string {
@@ -66,6 +101,7 @@ export function buildSystemPrompt(template: string, scenario: Scenario, req: Tur
     .join('\n');
 
   return fillPlaceholders(template, {
+    listen_rules: buildListenRules(req),
     npc_name: scenario.npc.name,
     npc_personality: scenario.npc.personality,
     npc_speech_style: scenario.npc.speechStyle,
@@ -119,6 +155,8 @@ export interface JournalPrompts {
   why: string;
   ask: string;
   gap: string;
+  /** Phase 36: the chat meaning check (optional so older fixtures still build). */
+  chatMeaningCheck?: string;
 }
 
 export function loadJournalPromptTemplates(version: string): JournalPrompts {
@@ -134,6 +172,7 @@ export function loadJournalPromptTemplates(version: string): JournalPrompts {
     why: loadPromptFile(`journal-why.${version}.md`),
     ask: loadPromptFile(`journal-ask.${version}.md`),
     gap: loadPromptFile(`journal-gap.${version}.md`),
+    chatMeaningCheck: loadPromptFile(`chat-meaning-check.${version}.md`),
   };
 }
 
@@ -187,10 +226,13 @@ export function journalReviewUserMessage(req: JournalReviewRequest): string {
   const meant = req.intendedEn?.trim()
     ? `\n\nWhat the learner says they meant (correct towards this meaning): ${JSON.stringify(req.intendedEn.trim())}`
     : '';
+  const chat = req.chatContext?.length
+    ? `\n\nThis entry is one message the learner wrote in a chat. The conversation before it, for context only (never correct it):\n<<<CHAT\n${req.chatContext.map((t) => `${t.role === 'npc' ? 'Partner' : 'Learner'}: ${t.zh}`).join('\n')}\nCHAT>>>`
+    : '';
   const only = req.sentencesOnly
     ? '\n\nOnly the `sentences` list is wanted: return `issues`, `brackets` and `used_well` as empty lists and `natural_rewrite` as an empty string.'
     : '';
-  return `Review this journal entry. Offsets are JavaScript string indices (0-based, end exclusive) into the text between the markers.\n<<<ENTRY\n${req.text}\nENTRY>>>${list}${meant}${only}`;
+  return `Review this journal entry. Offsets are JavaScript string indices (0-based, end exclusive) into the text between the markers.\n<<<ENTRY\n${req.text}\nENTRY>>>${list}${chat}${meant}${only}`;
 }
 
 export function buildSentenceFixPrompt(template: string, req: JournalSentenceFixRequest): string {
@@ -271,6 +313,7 @@ export function buildOpenSystemPrompt(
 ): string {
   const compact = req.learnerLevel === 'N1' || req.learnerLevel === 'N2' || req.learnerLevel === 'L1';
   return fillPlaceholders(template, {
+    listen_rules: buildListenRules(req),
     npc_name: persona.name,
     npc_personality: persona.personality,
     npc_speech_style: persona.speechStyle,

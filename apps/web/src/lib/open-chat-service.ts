@@ -16,8 +16,8 @@ import {
   segment,
   summarizeOpenChat,
   validateOpenChatTurn,
-  type Evidence,
-  CHAT_LEAK_REF,
+  keptWords,
+  type ChatTurnValidation,
   type Lexicon,
   type Level,
   type OpenChatConfig,
@@ -33,7 +33,7 @@ import {
 } from '@anan/core';
 import type { AnanDB, ConversationRow, TurnRow } from '../db/schema.js';
 import type { LearnerService } from './learner-service.js';
-import { isCleanChinese, UnreliableReplyError } from './chat-service.js';
+import { ChatEngine, type ChatEngineDeps, type ChatMode, type ChatTurnOptions, type ModeTurn } from './chat-engine.js';
 
 export const OPEN_CHAT_SCENARIO_ID = 'open-chat';
 const TOPIC_CACHE_KEY = 'openChatTopicWords';
@@ -49,6 +49,8 @@ export interface OpenTurnOptions {
   learnerLevel: Level;
   scaffolding: OpenTurnRequest['scaffolding'];
   englishFallback: boolean;
+  /** Phase 36: Settings → Chat → Show corrections. */
+  showCorrections?: boolean;
 }
 
 export interface OpenTurnResult {
@@ -56,7 +58,14 @@ export interface OpenTurnResult {
   report: OpenChatReport;
   attempts: number;
   vocab: OpenChatVocab;
+  /** Phase 36: as in scenario chat (one engine). */
+  learnerTurn?: TurnRow;
+  corrections?: Promise<void>;
+  misunderstood?: boolean;
 }
+
+/** Phase 36: an open-chat reply's tier check, in the engine's shape. */
+type OpenReport = OpenChatReport & ChatTurnValidation;
 
 export interface OpenChatSummary {
   turnCount: number;
@@ -95,7 +104,21 @@ export class OpenChatService {
     private readonly env: OpenChatEnvironment,
     private readonly config: OpenChatConfig = OPEN_CHAT_CONFIG,
     private readonly rng: () => number = Math.random,
-  ) {}
+    /** Phase 36: the shared engine's extras (journal corrector, quota check), for tests. */
+    listen: Partial<Pick<ChatEngineDeps, 'journal' | 'quotaShort'>> = {},
+  ) {
+    this.engine = new ChatEngine({
+      db,
+      lexicon,
+      learnerService,
+      tutorLLM,
+      maxRegenerations: config.maxRegenerations,
+      ...listen,
+    });
+  }
+
+  /** Phase 36: the one chat engine (shared with scenario chat). */
+  readonly engine: ChatEngine;
 
   // ---- topic words (cached on the device: a second open of the same topic makes no call) ----
 
@@ -169,8 +192,9 @@ export class OpenChatService {
     await this.db.conversations.update(conversationId, { topic: topic.trim() });
   }
 
+  /** The conversation as shown (Phase 36: replies replaced by "Try again" left out). */
   async getTurns(conversationId: number): Promise<TurnRow[]> {
-    return this.db.turns.where('conversationId').equals(conversationId).sortBy('id');
+    return this.engine.visibleTurns(conversationId);
   }
 
   // ---- the learner's state as a profile ---------------------------------------------
@@ -209,15 +233,50 @@ export class OpenChatService {
     options: OpenTurnOptions,
     now: Date = new Date(),
   ): Promise<OpenTurnResult> {
-    const generate = this.tutorLLM.generateOpenTurn?.bind(this.tutorLLM);
-    if (!generate) throw new Error('This tutor cannot run open chat.');
+    if (!this.tutorLLM.generateOpenTurn) throw new Error('This tutor cannot run open chat.');
+    const mode = this.mode();
+    const out = await this.engine.send(conversationId, mode, learnerText, options, now);
+    return {
+      npcTurn: out.npcTurn,
+      report: out.report,
+      attempts: out.attempts,
+      vocab: mode.lastVocab!,
+      learnerTurn: out.learnerTurn,
+      corrections: out.corrections,
+      misunderstood: out.misunderstood,
+    };
+  }
 
-    await this.db.turns.add({ conversationId, role: 'learner', zh: learnerText, at: now });
-    await this.db.markActiveDay(now); // Phase 32: an open-chat turn keeps the streak growing
-    if (options.englishFallback)
-      await this.db.conversations.update(conversationId, { englishFallbackUsed: true });
+  /** Phase 36: "Try again" on a reply that may have misunderstood the learner. */
+  tryAgain(conversationId: number, options: ChatTurnOptions, now: Date = new Date()) {
+    return this.engine.tryAgain(conversationId, this.mode(), options, now);
+  }
 
-    const turns = await this.getTurns(conversationId);
+  /** Phase 36: "What did you mean?" on the learner's last message (the reply is regenerated). */
+  fixMeaning(conversationId: number, learnerTurnId: number, meaningEn: string, options: ChatTurnOptions, now: Date = new Date()) {
+    return this.engine.fixMeaning(conversationId, learnerTurnId, meaningEn, this.mode(), options, now);
+  }
+
+  /** Phase 36: open chat as a mode of the one engine: the persona 安安 and a topic. */
+  mode(): ChatMode<OpenReport> & { lastVocab?: OpenChatVocab } {
+    const mode: ChatMode<OpenReport> & { lastVocab?: OpenChatVocab } = {
+      onLearnerTurn: (now) => this.db.markActiveDay(now), // Phase 32: an open-chat turn keeps the streak growing
+      prepare: async (cid, turns, options, now) => {
+        const prepared = await this.prepareTurn(cid, turns, options, now);
+        mode.lastVocab = prepared.vocab;
+        return prepared.turn;
+      },
+    };
+    return mode;
+  }
+
+  private async prepareTurn(
+    conversationId: number,
+    turns: TurnRow[],
+    options: ChatTurnOptions,
+    now: Date,
+  ): Promise<{ turn: ModeTurn<OpenReport>; vocab: OpenChatVocab }> {
+    const generate = this.tutorLLM.generateOpenTurn!.bind(this.tutorLLM);
     let conv = (await this.db.conversations.get(conversationId))!;
     const topic = conv.topic ?? '';
 
@@ -258,92 +317,73 @@ export class OpenChatService {
       englishFallback: options.englishFallback,
     };
 
-    const attempts: Array<{ response: TurnResponse; report: OpenChatReport }> = [];
-    let feedback: string | undefined;
-    while (attempts.length <= this.config.maxRegenerations) {
-      const response = await generate({ ...base, ...(feedback ? { feedback } : {}) });
-      const report = validateOpenChatTurn(response, ctx, this.config.limits);
-      attempts.push({ response, report });
-      if (report.pass) break;
-      feedback = openChatFeedback(report, this.config.limits);
-    }
-
-    let best = pickBestOpenChatAttempt(attempts);
-    // Phase 21 Part J: a reply that still fails the Taiwan / traditional check is never shown: one
-    // more try on the other provider, then "Couldn't get a reliable reply, try again".
-    if (!best.report.taiwanness.isClean) {
-      const response = await generate({ ...base, feedback: openChatFeedback(best.report, this.config.limits), alternateModel: true });
-      const report = validateOpenChatTurn(response, ctx, this.config.limits);
-      attempts.push({ response, report });
-      if (!report.taiwanness.isClean) throw new UnreliableReplyError();
-      best = { response, report };
-    }
-    const { response, report } = best;
-
-    // Gloss tier C always (the topic needed it), and tier B too when the reply broke a limit.
-    const glosses = openChatGlosses(
-      { offendersB: report.pass ? [] : report.offendersB, offendersC: report.offendersC },
-      this.lexicon,
-    );
-    if (!report.pass) {
-      // Same as Phase 3: leaked words enter the learner model as introduced, with their gloss shown.
-      const introduce: Evidence[] = [...report.offendersB, ...report.offendersC]
-        .filter((t) => t.wordId)
-        .map((t) => ({
-          item: { kind: 'word' as const, id: t.wordId! },
-          skill: 'recognition' as const,
-          kind: 'chat_lookup_gloss' as const,
-          at: now,
-          context: { source: 'chat' as const, refId: CHAT_LEAK_REF },
-        }));
-      if (introduce.length > 0) await this.learnerService.recordBulk(introduce, now);
-    }
+    const validate = (response: TurnResponse): OpenReport => {
+      // Phase 36: up to 2 words kept to keep the meaning are allowed (and glossed)
+      const kept = keptWords(response);
+      const c = kept.length > 0 ? { ...ctx, typedTexts: new Set([...typedTexts, ...kept]) } : ctx;
+      const report = validateOpenChatTurn(response, c, this.config.limits);
+      return { ...report, taiwanClean: report.taiwanness.isClean, feedback: openChatFeedback(report, this.config.limits) };
+    };
 
     const ids = (ts: OpenChatReport['tokens'], tier: 'B' | 'C') => [
       ...new Set(ts.filter((t) => t.tier === tier && t.wordId).map((t) => t.wordId!)),
     ];
-    const upcomingIds = [
-      ...new Set(
-        report.tokens.filter((t) => t.wordId && vocab.upcomingIds.has(t.wordId)).map((t) => t.wordId!),
-      ),
-    ];
 
-    const npcTurnId = await this.db.turns.add({
-      conversationId,
-      role: 'npc',
-      zh: response.reply_zh,
-      en: response.reply_en,
-      // Phase 21: the sense the model picked is kept (like scenario chat) when it is a real sense of the word.
-      tokens: response.tokens.map(({ text, lemma, sense_id }) => {
-        const sense = sense_id ? this.lexicon.byId(sense_id) : undefined;
-        const ok = !!sense && [sense.headword, ...sense.variants].some((h) => h === (lemma ?? text) || h === text);
-        return { text, ...(lemma ? { lemma } : {}), ...(ok ? { sense_id } : {}) };
-      }),
-      suggestedReplies: response.suggested_replies.filter((r) => isCleanChinese(r.zh)),
-      ...(isCleanChinese(response.recast_zh) ? { recastZh: response.recast_zh } : {}),
-      validatorReport: {
-        coverage: report.shareA,
-        maxLevel: null,
-        unknownCount: report.counts.b + report.counts.c,
-        attempts: attempts.length,
-        pass: report.pass,
-        tiers: {
-          a: report.counts.a,
-          b: report.counts.b,
-          c: report.counts.c,
-          allowed: report.counts.allowed,
-          shareA: report.shareA,
-          usesUpcoming: report.usesUpcoming,
-          bIds: ids(report.tokens, 'B'),
-          cIds: ids(report.tokens, 'C'),
-          upcomingIds,
-        },
+    const turn: ModeTurn<OpenReport> = {
+      generate: (x) =>
+        generate({
+          ...base,
+          ...(x.feedback ? { feedback: x.feedback } : {}),
+          ...(x.alternateModel ? { alternateModel: true } : {}),
+          ...(x.facts.length > 0 ? { facts: x.facts } : {}),
+          ...(x.learnerMeaningEn ? { learnerMeaningEn: x.learnerMeaningEn } : {}),
+        }),
+      validate,
+      pickBest: (attempts) => pickBestOpenChatAttempt(attempts),
+      // Same as Phase 3: leaked words enter the learner model as introduced, with their gloss shown.
+      leakedWordIds: (report) =>
+        report.pass ? [] : [...report.offendersB, ...report.offendersC].flatMap((t) => (t.wordId ? [t.wordId] : [])),
+      npcFields: (response, report) => {
+        // Gloss tier C always (the topic needed it), and tier B too when the reply broke a limit.
+        const glosses = openChatGlosses(
+          { offendersB: report.pass ? [] : report.offendersB, offendersC: report.offendersC },
+          this.lexicon,
+        );
+        const upcomingIds = [
+          ...new Set(
+            report.tokens.filter((t) => t.wordId && vocab.upcomingIds.has(t.wordId)).map((t) => t.wordId!),
+          ),
+        ];
+        return {
+          // Phase 21: the sense the model picked is kept (like scenario chat) when it is a real sense of the word.
+          tokens: response.tokens.map(({ text, lemma, sense_id }) => {
+            const sense = sense_id ? this.lexicon.byId(sense_id) : undefined;
+            const ok = !!sense && [sense.headword, ...sense.variants].some((h) => h === (lemma ?? text) || h === text);
+            return { text, ...(lemma ? { lemma } : {}), ...(ok ? { sense_id } : {}) };
+          }),
+          validatorReport: {
+            coverage: report.shareA,
+            maxLevel: null,
+            unknownCount: report.counts.b + report.counts.c,
+            attempts: 0,
+            pass: report.pass,
+            tiers: {
+              a: report.counts.a,
+              b: report.counts.b,
+              c: report.counts.c,
+              allowed: report.counts.allowed,
+              shareA: report.shareA,
+              usesUpcoming: report.usesUpcoming,
+              bIds: ids(report.tokens, 'B'),
+              cIds: ids(report.tokens, 'C'),
+              upcomingIds,
+            },
+          },
+          ...(glosses.length > 0 ? { glosses } : {}),
+        };
       },
-      ...(glosses.length > 0 ? { glosses } : {}),
-      at: now,
-    });
-    const npcTurn = (await this.db.turns.get(npcTurnId as number))!;
-    return { npcTurn, report, attempts: attempts.length, vocab };
+    };
+    return { turn, vocab };
   }
 
   async recordStuck(conversationId: number): Promise<void> {
@@ -357,6 +397,7 @@ export class OpenChatService {
 
   async endConversation(conversationId: number, now: Date = new Date()): Promise<void> {
     await this.db.conversations.update(conversationId, { endedAt: now });
+    await this.engine.finishCorrections(conversationId, now); // Phase 36: corrections reach the error bank
   }
 
   // ---- end summary -------------------------------------------------------------

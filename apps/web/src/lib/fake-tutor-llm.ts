@@ -1,4 +1,6 @@
 import type {
+  ChatMeaningCheckRequest,
+  ChatMeaningCheckResponse,
   DefineRequest,
   DefineResponse,
   JournalCheckRequest,
@@ -52,6 +54,8 @@ export interface FakeJournalScript {
   why?: (req: JournalWhyRequest) => IssueExplanation;
   ask?: (req: JournalAskRequest) => JournalAskResponse;
   gap?: (req: JournalGapRequest) => JournalGapResponse;
+  /** Phase 36: the chat meaning check (absent: the fake never contradicts). */
+  meaning?: (req: ChatMeaningCheckRequest) => ChatMeaningCheckResponse;
 }
 
 /** No-network TutorLLM for dev (no API keys configured) and tests. A script
@@ -75,6 +79,14 @@ export class FakeTutorLLM implements TutorLLM {
     const response = this.openScript(req, this.openCalls.length);
     this.openCalls.push(req);
     return response;
+  }
+
+  /** Phase 36 calls, for "was the checker asked?" assertions. */
+  readonly meaningCalls: ChatMeaningCheckRequest[] = [];
+
+  async checkChatMeaning(req: ChatMeaningCheckRequest): Promise<ChatMeaningCheckResponse> {
+    this.meaningCalls.push(req);
+    return this.journal.meaning?.(req) ?? { contradicts: false, fact: '', reasonEn: '' };
   }
 
   async generateTopicWords(req: TopicWordsRequest): Promise<TopicWordsResponse> {

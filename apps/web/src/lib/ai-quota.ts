@@ -1,7 +1,7 @@
 // Phase 33: the free Gemini quota as the app sees it. When the proxy answers 503 quota_exhausted
 // (every model of a chain is out until `resetsAt`), the app says so in plain words and background
 // story writing waits until then. Settings → AI usage reads GET /v1/ai-usage.
-import { AiUsageSchema, QuotaExhaustedBodySchema, type AiUsage } from '@anan/core';
+import { AiUsageSchema, chainShort, QuotaExhaustedBodySchema, type AiUsage } from '@anan/core';
 import { authHeaders, proxyBase } from './api.js';
 import { AI_QUOTA_USED, aiQuotaUsedUntil } from './labels.js';
 import { currentTimeZone } from './review-settings.js';
@@ -56,4 +56,18 @@ export async function fetchAiUsage(): Promise<AiUsage | null> {
   } catch {
     return null;
   }
+}
+
+let usageCache: { at: number; usage: AiUsage | null } | undefined;
+
+/**
+ * Phase 36: is a role's chain short of free quota right now (every model used up or into the live
+ * reserve, or the proxy said everything is out)? Chat corrections pause then; the reply never
+ * does. GET /v1/ai-usage is asked at most once a minute.
+ */
+export async function chainShortNow(role: string, now: Date = new Date()): Promise<boolean> {
+  if (aiPausedUntil(now)) return true;
+  if (!usageCache || now.getTime() - usageCache.at > 60_000)
+    usageCache = { at: now.getTime(), usage: await fetchAiUsage() };
+  return usageCache.usage ? chainShort(usageCache.usage, role) : false;
 }
