@@ -117,6 +117,23 @@ export function loadBankSentences(buildDir: string, levels: readonly Level[]): S
   return out;
 }
 
+/**
+ * Phase 35: the lesson practice sentences, at any level. These are
+ * data/build/sentences.textbook-<book>.json, compiled by `curriculum:content`
+ * from data/curriculum/<book>/content/L*.yaml only (with the ids the app
+ * uses). Nothing under data/curriculum/<book>/private/ (dialogues, book
+ * examples: OCAC text) is read here, so it can never become a public clip.
+ */
+export function loadLessonSentences(buildDir: string): SentenceBankEntry[] {
+  if (!existsSync(buildDir)) return [];
+  const out: SentenceBankEntry[] = [];
+  for (const f of readdirSync(buildDir).sort()) {
+    if (!/^sentences\.textbook-[a-z0-9-]+\.json$/.test(f)) continue;
+    out.push(...SentenceBankFileSchema.parse(JSON.parse(readFileSync(path.join(buildDir, f), 'utf8'))).sentences);
+  }
+  return out;
+}
+
 /** Phase 9 live sentences, from the newest saved copy of each profile on the proxy's disk. */
 export function loadLiveSentences(syncDir: string, levels: readonly Level[]): SentenceBankEntry[] {
   if (!existsSync(syncDir)) return [];

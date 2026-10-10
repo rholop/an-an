@@ -32,7 +32,9 @@ pnpm --filter @anan/data-pipeline audio:build                 # N1–L2 words + 
 pnpm --filter @anan/data-pipeline audio:build --levels=L3     # more later
 ```
 
-- **Textbook words at any level (Phase 35):** every word tagged for a course book (`textbook:laixue-N`: core, supplementary and Phase 34 extra lesson words) gets a word clip whatever its level and whatever `--levels` says, so lesson words rated L3–L5 (e.g. 律師) have audio. No other words are added. `--dry-run` prints the textbook-word count separately.
+- **Textbook words at any level (Phase 35):** every word tagged for a course book (`textbook:laixue-N`: core, supplementary and Phase 34 extra lesson words) gets a word clip whatever its level and whatever `--levels` says, so lesson words rated L3–L5 (e.g. 律師) have audio. No other words are added.
+- **Lesson practice sentences at any level (Phase 35):** the `sentences:` of `data/curriculum/<book>/content/L*.yaml` (compiled by `curriculum:content` into `data/build/sentences.textbook-<book>.json`, with the ids lesson steps and Cloze use) are always built, whatever `--levels` says. Same reading rules as bank sentences: a heteronym below high confidence skips the sentence and lists it in `audio-review.md`. **Never anything under `data/curriculum/<book>/private/`** (dialogues and book examples are OCAC text and must not become public `/audio` files); the audio build doesn't read that folder.
+- `--dry-run` prints the textbook word and lesson sentence counts separately.
 
 - Output: `data/build/audio/words/{wordId}.mp3`, `sentences/{sentenceId}.mp3` (mono, 48 kbps) and `manifest.json` (id → file, voice, SSML hash, status, text).
 - **Words** are synthesized alone, wrapped in `<phoneme alphabet="sapi">` with the lexicon's MOE zhuyin (neutral-tone `˙` moved after the syllable, which is how Azure writes it).

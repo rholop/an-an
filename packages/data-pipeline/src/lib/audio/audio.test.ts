@@ -1,11 +1,11 @@
-import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AUDIO_VOICES, buildFixtureLexiconForTests } from './test-support.js';
 import { buildAudio, fixFlagged, fixSuspect, loadManifest, suspectsToFix } from './build.js';
 import { recognisedMatches } from './compare.js';
-import { sentenceJobs, wordJobs } from './inputs.js';
+import { loadLessonSentences, sentenceJobs, wordJobs } from './inputs.js';
 import { renderReviewReport } from './report.js';
 import type { SpeechClient } from './azure.js';
 import { Lexicon, type SentenceBankEntry, type Word } from '@anan/core';
@@ -262,6 +262,32 @@ describe('wordJobs and textbook words (Phase 35)', () => {
     const res = wordJobs(new Lexicon(words, []), ['N1', 'N2', 'L1', 'L2']);
     expect(res.jobs.map((j) => j.id).sort()).toEqual(['n1', 'tb-l4', 'tb3-l3']);
     expect(res.textbook).toBe(2);
+  });
+});
+
+describe('lesson practice sentences (Phase 35)', () => {
+  it('a lesson sentence at any level gets a sentence job; nothing under private/ is read', () => {
+    const file = (sentences: SentenceBankEntry[]) => JSON.stringify({ meta: { version: 'v1', buildDate: 'x', level: 'N1' }, sentences });
+    writeFileSync(path.join(dir, 'sentences.textbook-laixue-3.json'), file([{ ...sentence('tb3-L01-001', '你好'), level: 'L4' }]));
+    mkdirSync(path.join(dir, 'private'));
+    writeFileSync(path.join(dir, 'private', 'sentences.textbook-laixue-3.json'), file([sentence('dlg-1', '我們')]));
+    writeFileSync(path.join(dir, 'sentences.v1.N1.json'), file([sentence('bank-1', '我')]));
+    const loaded = loadLessonSentences(dir);
+    expect(loaded.map((s) => s.id)).toEqual(['tb3-L01-001']);
+    expect(sentenceJobs(lex, loaded).jobs.map((j) => j.id)).toEqual(['tb3-L01-001']);
+  });
+
+  it('the real lesson sentences come only from the compiled content/L*.yaml files', () => {
+    const src = readFileSync(new URL('./inputs.ts', import.meta.url), 'utf8');
+    const fn = src.slice(src.indexOf('export function loadLessonSentences'), src.indexOf('/** Phase 9 live sentences'));
+    expect(fn).not.toMatch(/curriculum|private/);
+    const curriculumRoot = path.resolve(new URL('.', import.meta.url).pathname, '../../../../../data/curriculum');
+    if (existsSync(path.join(curriculumRoot, 'laixue-1/content/L01.yaml'))) {
+      const first = readFileSync(path.join(curriculumRoot, 'laixue-1/content/L01.yaml'), 'utf8');
+      const built = loadLessonSentences(path.resolve(curriculumRoot, '../build'));
+      expect(built.length).toBeGreaterThan(0);
+      expect(first).toContain(built.find((s) => s.id === 'tb-L01-001')!.zh);
+    }
   });
 });
 

@@ -3,7 +3,7 @@
 //   pnpm --filter @anan/data-pipeline audio:build [--levels=N1,N2,L1,L2]
 //        [--voice=female|male] [--only-flagged] [--fix-suspect [--again]]
 //        [--retry-suspect] [--accept-medium] [--max-chars=N] [--sync-dir=DIR] [--dry-run]
-// Textbook words (any book) are always included, whatever their level.
+// Textbook words (any book) and lesson practice sentences are always included, whatever their level.
 // --fix-suspect: 3 different tries (other voice, explicit readings, both) per suspect clip;
 //   a failed fix keeps the current clip and is not retried unless --again.
 // --retry-suspect: a plain re-roll of suspect clips with the same voice and SSML
@@ -20,6 +20,7 @@ import { buildAudio, fixFlagged, fixSuspect, FIX_ATTEMPTS, loadManifest, suspect
 import {
   DEFAULT_LEVELS,
   loadBankSentences,
+  loadLessonSentences,
   loadLiveSentences,
   sentenceJobs,
   wordJobs,
@@ -47,11 +48,18 @@ const raw = JSON.parse(readFileSync(path.join(BUILD_DIR, 'lexicon.v2.json'), 'ut
 const lexicon = new Lexicon(raw.words, raw.grammar);
 
 const words = wordJobs(lexicon, levels);
-const sentences = sentenceJobs(
+// Phase 35: lesson practice sentences come first and at any level (never private/ text)
+const lessonSentences = sentenceJobs(lexicon, loadLessonSentences(BUILD_DIR), { acceptMedium: flag('accept-medium') });
+const lessonIds = new Set([...lessonSentences.jobs, ...lessonSentences.skipped].map((j) => j.id));
+const otherSentences = sentenceJobs(
   lexicon,
-  [...loadBankSentences(BUILD_DIR, levels), ...loadLiveSentences(syncDir, levels)],
+  [...loadBankSentences(BUILD_DIR, levels), ...loadLiveSentences(syncDir, levels)].filter((s) => !lessonIds.has(s.id)),
   { acceptMedium: flag('accept-medium') },
 );
+const sentences = {
+  jobs: [...lessonSentences.jobs, ...otherSentences.jobs],
+  skipped: [...lessonSentences.skipped, ...otherSentences.skipped],
+};
 const sampleN = arg('sample') ? Number(arg('sample')) : undefined;
 // --sample=N: N evenly spaced words only (the voice comparison); never combine with the real output dir
 const pick = <T,>(xs: T[]): T[] =>
@@ -59,7 +67,7 @@ const pick = <T,>(xs: T[]): T[] =>
 const jobs: AudioJob[] = sampleN ? pick(words.jobs) : [...words.jobs, ...sentences.jobs];
 const skipped = [...words.skipped, ...sentences.skipped];
 console.log(
-  `audio:build ${levels.join(',')}: ${words.jobs.length} words (${words.textbook} of them textbook words, any level), ${sentences.jobs.length} sentences, ${skipped.length} skipped (uncertain reading)`,
+  `audio:build ${levels.join(',')}: ${words.jobs.length} words (${words.textbook} of them textbook words, any level), ${sentences.jobs.length} sentences (${lessonSentences.jobs.length} of them lesson sentences, any level; ${lessonSentences.skipped.length} lesson sentences skipped), ${skipped.length} skipped (uncertain reading)`,
 );
 
 const fixingSuspects = flag('fix-suspect');
