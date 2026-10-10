@@ -1,14 +1,14 @@
 # Audio review
 
-Voice: zh-TW-HsiaoChenNeural · built 2026-10-04T15:58:28.352Z
+Voice: zh-TW-HsiaoChenNeural · built 2026-10-10T16:01:04.176Z
 
 ## Flagged by a person (0)
 
 _none_
 
-## Suspect: speech-to-text disagreed (261)
+## Suspect: speech-to-text disagreed (290)
 
-Not played in the app until someone marks them OK on the review page.
+The app currently plays these anyway (ALLOW_SUSPECT_AUDIO); mark them OK / Wrong on the review page.
 
 - word `supp-b01d72b0ef` “隨便” (ㄙㄨㄟˊ ㄅㄧㄢˋ) — heard “隨演。”
 - word `tocfl-0194e0fc01` “酸” (ㄙㄨㄢ) — heard “三。”
@@ -197,7 +197,6 @@ Not played in the app until someone marks them OK on the review page.
 - word `tocfl-ccda6ca4b5` “陪” (ㄆㄟˊ) — heard “賠。”
 - word `tocfl-cce40f42ef` “做” (ㄗㄨㄛˋ) — heard “作。”
 - word `tocfl-ce7bee99b8` “每” (ㄇㄟˇ) — heard “美。”
-- word `tocfl-d0ac821545` “姊姊” (ㄗˇ ˙ㄗ) — heard “子子。”
 - word `tocfl-d19aea9325` “裝” (ㄓㄨㄤ) — heard “莊。”
 - word `tocfl-d214b63617` “呀” (ㄧㄚ) — heard “鴉。”
 - word `tocfl-d34556a566` “就” (ㄐㄧㄡˋ) — heard “救。”
@@ -253,7 +252,6 @@ Not played in the app until someone marks them OK on the review page.
 - word `tocfl-fc42af28db` “餓” (ㄜˋ) — heard “呃。”
 - word `tocfl-ff470ddc58` “油” (ㄧㄡˊ) — heard “郵。”
 - word `tocfl-ffb21a1371` “公園” (ㄍㄨㄥ ㄩㄢˊ) — heard “公元。”
-- word `moec-b8a867198f` “姐姐” (ㄐㄧㄝˇ ˙ㄐㄧㄝ) — heard “姊姊。”
 - word `tb-0f7c542524` “臺灣人” (ㄊㄞˊ ㄨㄢ ㄖㄣˊ) — heard “台灣人。”
 - word `tb-1ced8f822f` “臺灣” (ㄊㄞˊ ㄨㄢ) — heard “台灣。”
 - word `tb-2e9db6e051` “美味餐廳” (ㄇㄟˇ ㄨㄟˋ ㄘㄢ ㄊㄧㄥ) — heard “每位餐廳。”
@@ -267,10 +265,41 @@ Not played in the app until someone marks them OK on the review page.
 - word `tb-afcab8df87` “台一銀行” (ㄊㄞˊ ㄧ ㄧㄣˊ ㄏㄤˊ) — heard “邰一銀行。”
 - word `tb-afdc0a7ceb` “林” (ㄌㄧㄣˊ) — heard “零。”
 - word `tb-b5912b1dd9` “美生” (ㄇㄟˇ ㄕㄥ) — heard “美聲。”
-- word `tb-c60e9ca34c` “噢” (ㄩˇ) — heard “與。”
+- word `tb-c60e9ca34c` “噢” (ㄡˋ) — heard “喔。”
 - word `tb-ca5aef669e` “家文” (ㄐㄧㄚ ㄨㄣˊ) — heard “佳文。”
 - word `tb-de30499b7f` “小生” (ㄒㄧㄠˇ ㄕㄥ) — heard “小聲。”
 - word `tocfl-4e56220e25` “吧” (˙ㄅㄚ) — heard “八。”
+- word `moec-0d74717c91` “留下” (ㄌㄧㄡˊ ˙ㄒㄧㄚ) — heard “劉蝦。”
+- word `moec-16385cdee4` “便當” (ㄅㄧㄢˋ ˙ㄉㄤ) — heard “便檔。”
+- word `moec-309380becd` “咖啡店” (ㄎㄚ ㄈㄟ ㄉㄧㄢˋ) — heard “咖啡宴。”
+- word `moec-42df9328c3` “姐妹” (ㄐㄧㄝˇ ㄇㄟˋ) — heard “姊妹。”
+- word `moec-5dc4704d1b` “運動衫” (ㄩㄣˋ ㄉㄨㄥˋ ㄕㄢ) — heard “運動山。”
+- word `moec-7db5aea0d0` “換錢” (ㄏㄨㄢˋ ㄑㄧㄢˊ) — heard “花錢。”
+- word `moec-9f01ca1faa` “農人” (ㄋㄨㄥˊ ㄖㄣˊ) — heard “弄人。”
+- word `moec-cb43069ecc` “一邊” (ㄧ ㄅㄧㄢ) — heard “伊甸。”
+- word `moec-d9e7b17f19` “酸辣湯” (ㄙㄨㄢ ㄌㄚˋ ㄊㄤ) — heard “三辣湯。”
+- word `moec-f797e45f28` “上去” (ㄕㄤˋ ˙ㄑㄩ) — heard “上區。”
+- word `tb-02d80acbb6` “外幣兌換” (ㄨㄞˋ ㄅㄧˋ ㄉㄨㄟˋ ㄏㄨㄢˋ) — heard “外筆兌換。”
+- word `tb-109f0094f9` “打籃球” (ㄉㄚˇ ㄌㄢˊ ㄑㄧㄡˊ) — heard “打球。”
+- word `tb-18268a9123` “瓶” (ㄆㄧㄥˊ) — heard “萍。”
+- word `tb-1918cf8ff8` “好好地” (ㄏㄠˇ ㄏㄠˇ ˙ㄉㄜ) — heard “好好的。”
+- word `tb-3c7f77e79b` “十二月” (ㄕˊ ㄦˋ ㄩㄝˋ) — heard “12月。”
+- word `tb-45ff8d3330` “脆” (ㄘㄨㄟˋ) — heard “翠。”
+- word `tb-542259b039` “十月” (ㄕˊ ㄩㄝˋ) — heard “10月。”
+- word `tb-56f1526e62` “潛水” (ㄑㄧㄢˊ ㄕㄨㄟˇ) — heard “淺水。”
+- word `tb-5941d06958` “太陽眼鏡” (ㄊㄞˋ ㄧㄤˊ ㄧㄢˇ ㄐㄧㄥˋ) — heard “太陽野鏡。”
+- word `tb-595611906a` “珍珠奶茶” (ㄓㄣ ㄓㄨ ㄋㄞˇ ㄔㄚˊ) — heard “真珠奶茶。”
+- word `tb-778c8fa37b` “桃園” (ㄊㄠˊ ㄩㄢˊ) — heard “討論。”
+- word `tb-7e3658e3b9` “莉亞” (ㄌㄧˋ ㄧㄚˇ) — heard “莉雅。”
+- word `tb-8c847a0d60` “酥” (ㄙㄨ) — heard “蘇。”
+- word `tb-926d0d10d5` “談好了” (ㄊㄢˊ ㄏㄠˇ ˙ㄌㄜ) — heard “討好了。”
+- word `tb-c1323e976a` “何希” (ㄏㄜˊ ㄒㄧ) — heard “河溪。”
+- word `tb-c6e8b8d056` “雞肉三明治” (ㄐㄧ ㄖㄡˋ ㄙㄢ ㄇㄧㄥˊ ㄓˋ) — heard “肌肉三明治。”
+- word `tb-d09b2c9cbc` “接機大廳” (ㄐㄧㄝ ㄐㄧ ㄉㄚˋ ㄊㄧㄥ) — heard “街機大廳。”
+- word `tb-da00f60daa` “聞到” (ㄨㄣˊ ㄉㄠˋ) — heard “聞道。”
+- word `tb-e4fb6c1ab6` “張家安” (ㄓㄤ ㄐㄧㄚ ㄢ) — heard “張佳安。”
+- word `tb-fe79be2f7c` “十一月” (ㄕˊ ㄧ ㄩㄝˋ) — heard “11月。”
+- word `tb-ffdb02ab2e` “高莉亞” (ㄍㄠ ㄌㄧˋ ㄧㄚˇ) — heard “高麗雅。”
 
 ## Skipped: no clip made (4)
 
