@@ -65,3 +65,10 @@
   flex-direction: column;
   gap: 0.4rem;
 }
+/* Phase 30: a sample line at the chosen Chinese size */
+.settings-zh-sample {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: var(--zh-body);
+  color: var(--text);
+}

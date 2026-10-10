@@ -2,6 +2,8 @@ import { THEME_CHOICES, useTheme, type ThemeChoice } from '../lib/theme.js';
 import './ThemeToggle.css';
 
 const LABEL: Record<ThemeChoice, string> = { light: 'Light', system: 'Auto', dark: 'Dark' };
+/** Phase 30: the laptop top bar shows only these (the word stays the button's name). */
+const ICON: Record<ThemeChoice, string> = { light: '☀', system: 'A', dark: '☾' };
 const TITLE: Record<ThemeChoice, string> = {
   light: 'Always light',
   system: 'Follow your device setting',
@@ -23,7 +25,10 @@ export function ThemeToggle() {
           title={TITLE[choice]}
           onClick={() => setTheme(choice)}
         >
-          {LABEL[choice]}
+          <span className="theme-toggle-icon" aria-hidden="true">
+            {ICON[choice]}
+          </span>
+          <span className="theme-toggle-text">{LABEL[choice]}</span>
         </button>
       ))}
     </div>

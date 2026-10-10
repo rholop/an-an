@@ -18,6 +18,7 @@ import { useMyClass } from './lib/my-class.js';
 import { useStudyContextRegistration } from './lib/study.js';
 import { ToastHost } from './components/ToastHost.js';
 import { useLedger } from './lib/ledger.js';
+import { useApplyZhTextSize } from './lib/zh-size.js';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal.js';
 import { initKeyboardShortcuts } from './lib/keyboard-shortcuts.js';
 import { currentSession } from './db/instance.js';
@@ -96,9 +97,9 @@ export type Route =
   | 'zhuyin-test'
   | 'review-settings';
 
-/** Phase 7 §2: the header level picker (visible on every screen) plus the
- * "Ready to try L3?" prompt — a suggestion only, never an automatic switch. */
-function LevelHeader({ route, onOpenShortcuts }: { route: Route; onOpenShortcuts: () => void }) {
+/** Phase 7 §2: the header level picker (visible on every screen). Phase 30: on a laptop it shares
+ * one 48 px row with the nav (`.app-topbar`); the level-up prompt sits below that row. */
+function LevelHeader({ onOpenShortcuts }: { onOpenShortcuts: () => void }) {
   const lexiconState = useLexicon();
   const { level, setLevel } = useCurrentLevel();
   // Phase 13: while "My class" is on, show which level the current book matches (a hint; never changes the choice).
@@ -106,18 +107,10 @@ function LevelHeader({ route, onOpenShortcuts }: { route: Route; onOpenShortcuts
   const classOn = myClassHint.enabled;
   const classBook = myClassHint.textbookId;
   const classLesson = myClassHint.currentLesson;
-  const [dismissed, setDismissed] = useState<Level | null>(null);
-  void route;
 
   useEffect(() => {
     if (lexiconState.status === 'ready') void initCurrentLevelIfUnset(lexiconState.lexicon);
   }, [lexiconState]);
-
-  // Phase 29: the level-up prompt is the ledger's (the same Learned share as Progress).
-  const ledger = useLedger();
-  const levelView = ledger?.level(level);
-  const learnedShare = levelView?.learnedShare ?? 0;
-  const suggestion: Level | null = levelView?.next ?? null;
 
   return (
     <header className="app-header">
@@ -137,16 +130,28 @@ function LevelHeader({ route, onOpenShortcuts }: { route: Route; onOpenShortcuts
         </button>
         <ThemeToggle />
       </div>
-      {suggestion && dismissed !== suggestion && (
-        <div className="level-up-prompt" role="status" data-testid="level-up-prompt">
-          <span>
-            You&apos;ve learned {pct(learnedShare)} of {levelShort(level)}. Ready to try {levelLabel(suggestion)}?
-          </span>
-          <button onClick={() => void setLevel(suggestion)}>Switch to {levelShort(suggestion)}</button>
-          <button onClick={() => setDismissed(suggestion)}>Not yet</button>
-        </div>
-      )}
     </header>
+  );
+}
+
+/** The "Ready to try L3?" prompt: a suggestion only, never an automatic switch. */
+function LevelUpPrompt() {
+  const { level, setLevel } = useCurrentLevel();
+  const [dismissed, setDismissed] = useState<Level | null>(null);
+  // Phase 29: the level-up prompt is the ledger's (the same Learned share as Progress).
+  const ledger = useLedger();
+  const levelView = ledger?.level(level);
+  const learnedShare = levelView?.learnedShare ?? 0;
+  const suggestion: Level | null = levelView?.next ?? null;
+  if (!suggestion || dismissed === suggestion) return null;
+  return (
+    <div className="level-up-prompt" role="status" data-testid="level-up-prompt">
+      <span>
+        You&apos;ve learned {pct(learnedShare)} of {levelShort(level)}. Ready to try {levelLabel(suggestion)}?
+      </span>
+      <button onClick={() => void setLevel(suggestion)}>Switch to {levelShort(suggestion)}</button>
+      <button onClick={() => setDismissed(suggestion)}>Not yet</button>
+    </div>
   );
 }
 
@@ -244,6 +249,7 @@ export function App() {
   const myClass = useMyClass();
   useStudyContextRegistration();
   useLookupGateRegistration();
+  useApplyZhTextSize();
   const [moreOpen, setMoreOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
@@ -268,16 +274,40 @@ export function App() {
     setRoute(r);
     window.scrollTo(0, 0);
   };
+  // Phase 32: a page can ask to open another one at a section (Home's streak bar → Progress).
+  useEffect(() => {
+    const onGo = (e: Event) => {
+      const { route: r, anchor } = (e as CustomEvent<{ route: Route; anchor?: string }>).detail ?? {};
+      if (!r) return;
+      setMoreOpen(false);
+      setRoute(r);
+      window.scrollTo(0, 0);
+      if (!anchor) return;
+      // The page loads lazily: look for the section for a little while, then give up.
+      let tries = 0;
+      const find = () => {
+        const el = document.getElementById(anchor);
+        if (el) el.scrollIntoView({ block: 'start' });
+        else if (tries++ < 40) setTimeout(find, 50);
+      };
+      setTimeout(find, 0);
+    };
+    window.addEventListener('anan:go', onGo);
+    return () => window.removeEventListener('anan:go', onGo);
+  }, []);
 
   return (
     <div className="app">
-      <LevelHeader route={route} onOpenShortcuts={() => setShortcutsOpen(true)} />
-      <TopNav
-        route={route}
-        onGo={go}
-        textbookLabel={myClass.enabled ? navTextbookLabel(myClass.currentLesson) : 'Textbook'}
-        dueNow={ledger?.status.dueNow ?? 0}
-      />
+      <div className="app-topbar">
+        <TopNav
+          route={route}
+          onGo={go}
+          textbookLabel={myClass.enabled ? navTextbookLabel(myClass.currentLesson) : 'Textbook'}
+          dueNow={ledger?.status.dueNow ?? 0}
+        />
+        <LevelHeader onOpenShortcuts={() => setShortcutsOpen(true)} />
+      </div>
+      <LevelUpPrompt />
       {/* reserved height: the tab bar and footer never jump when a screen finishes loading */}
       <main className="page-slot">
         <Suspense fallback={<div className="page-loading" aria-busy="true" />}>

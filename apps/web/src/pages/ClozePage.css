@@ -10,7 +10,7 @@
 .cloze-source-label { font-size: 0.8rem; opacity: 0.7; font-style: italic; margin-bottom: 0.75rem; }
 
 .cloze-exercise { margin-top: 0.5rem; }
-.cloze-sentence { font-size: 1.4rem; line-height: 2.2; }
+.cloze-sentence { font-size: var(--zh-body); line-height: 2.2; }
 .cloze-blank {
   display: inline-block;
   min-width: 2.5em;
@@ -33,7 +33,7 @@
   border: 1px solid var(--border);
   background: none;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: var(--zh-small);
 }
 .cloze-chip:disabled { cursor: default; }
 .cloze-chip--correct { border-color: var(--c-good); color: var(--c-good); font-weight: bold; }

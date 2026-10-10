@@ -19,3 +19,6 @@
   background: color-mix(in srgb, var(--text-muted) 28%, transparent);
   font-weight: 600;
 }
+.theme-toggle-icon {
+  display: none;
+}

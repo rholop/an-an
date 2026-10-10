@@ -93,7 +93,8 @@ export function ProgressPage() {
   }
   // Phase 29 Part B.12: days and weeks in the profile's time zone (weeks start Monday).
   const week = weeklySummary(snapshot.rewards, now, ledger.timeZone);
-  const streak = ledger.streak(new Set(snapshot.rewards.map((r) => ledger.dayKey(r.at))), streakConfig);
+  // Phase 32: the streak comes only from the active days (the same numbers as Home's bar).
+  const streak = ledger.streak(ledger.activeDays(), streakConfig);
   const sm = scenarioMetrics(snapshot.conversations);
 
   async function updateStreak(next: StreakConfig) {
@@ -139,13 +140,13 @@ export function ProgressPage() {
           </li>
         </ul>
         {streakConfig.enabled && (
-          <p data-testid="streak">
+          <p data-testid="streak" id="streak">
             Current run: {streak.current} {streak.current === 1 ? 'day' : 'days'} · best{' '}
             {streak.best}. Rest days are fine — up to {streakConfig.freezeDaysPerWeek} a week
             don&apos;t break it.
           </p>
         )}
-        <details>
+        <details {...(streakConfig.enabled ? {} : { id: 'streak' })}>
           <summary>Streak settings</summary>
           <label>
             <input
@@ -153,7 +154,7 @@ export function ProgressPage() {
               checked={streakConfig.enabled}
               onChange={(e) => updateStreak({ ...streakConfig, enabled: e.target.checked })}
             />{' '}
-            Show a gentle streak (off by default)
+            Show the streak (here and on Home)
           </label>
           {streakConfig.enabled && (
             <label>

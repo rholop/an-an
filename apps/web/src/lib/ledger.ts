@@ -57,10 +57,17 @@ export async function ledgerFrom(
   opts: { settings?: ReviewSettings; study?: LedgerStudyInputs; knownItems?: readonly string[]; masteryShare?: number } = {},
 ): Promise<Ledger> {
   const settings = opts.settings ?? (await getReviewSettings());
-  const [cards, evidence] = await Promise.all([allCards(database), ledgerEvidence(database, now, settings)]);
+  // Phase 32: a profile restored before any device back-filled its streak gets it once, here.
+  await database.ensureActiveDaysBackfill().catch(() => undefined);
+  const [cards, evidence, activeDays] = await Promise.all([
+    allCards(database),
+    ledgerEvidence(database, now, settings),
+    database.activeDays.toCollection().primaryKeys() as Promise<string[]>,
+  ]);
   return buildLedger({
     cards,
     evidence,
+    activeDays,
     knownItems: opts.knownItems ?? [],
     session: settings,
     masteryShare: opts.masteryShare ?? 0.8,
@@ -100,7 +107,7 @@ onSessionChange(() => {
 });
 
 /**
- * Any write to the cards or the evidence log (the learner service, a sync merge, an import, a
+ * Any write to the cards, the evidence log or the active days (the learner service, a sync merge, an import, a
  * restore, another module writing Dexie directly) makes the cached ledger stale: one dirty mark per
  * burst of writes, after they are queued.
  */
@@ -117,7 +124,7 @@ function watchWrites(database: AnanDB): void {
       markStudyDirty();
     }, 0);
   };
-  for (const table of [database.items, database.evidence]) {
+  for (const table of [database.items, database.evidence, database.activeDays]) {
     table.hook('creating', changed);
     table.hook('updating', changed);
     table.hook('deleting', changed);

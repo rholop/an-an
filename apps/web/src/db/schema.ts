@@ -1,5 +1,16 @@
 import Dexie, { type EntityTable } from 'dexie';
-import { cardSourceFor, isUnreviewedBulkCard, splitGrammarEvidence, spreadBulkDue } from '@anan/core';
+import {
+  activeDaysFromHistory,
+  cardSourceFor,
+  countsAsActivity,
+  dayKey,
+  DEFAULT_SESSION_SETTINGS,
+  isUnreviewedBulkCard,
+  isValidTimeZone,
+  splitGrammarEvidence,
+  spreadBulkDue,
+  type ActiveDay,
+} from '@anan/core';
 import type {
   ErrorItem,
   RawSentenceReview,
@@ -274,6 +285,13 @@ export interface ReaderShownRow {
   updatedAt?: Date;
 }
 
+/** Phase 32: one row per profile-zone day the learner did something meaningful (the streak's
+ * only input). Append-only, keyed by day; synced by union (the earlier moment wins). */
+export type ActiveDayRow = ActiveDay;
+
+/** The settings row that says the one-time streak back-fill has run for this profile. */
+export const STREAK_BACKFILL_KEY = 'streakBackfilledAt';
+
 export type CustomWordRow = Word & { updatedAt?: Date };
 export type ErrorItemRow = ErrorItem & { updatedAt?: Date };
 
@@ -321,9 +339,53 @@ const ALL_TABLES = [
   'liveSentences',
   'readerShown',
   'stories',
+  'activeDays',
 ] as const;
 
 const newUid = (): string => globalThis.crypto.randomUUID();
+
+/** lib/review-settings.ts's settings row (the profile's time zone lives there). */
+const REVIEW_SETTINGS_KEY = 'reviewSettings';
+/** The default zone a profile starts with on this device (lib/review-settings.ts). */
+const DEVICE_ZONE_KEY = 'anan.sessions.defaultZone';
+
+/** The profile's time zone, as lib/review-settings.ts reads it. */
+async function profileTimeZone(row: Promise<SettingsRow | undefined>): Promise<string> {
+  const zone = ((await row.catch(() => undefined))?.value as { timeZone?: unknown } | undefined)?.timeZone;
+  if (typeof zone === 'string' && isValidTimeZone(zone)) return zone;
+  try {
+    const device = globalThis.localStorage?.getItem(DEVICE_ZONE_KEY);
+    if (device && isValidTimeZone(device)) return device;
+  } catch {
+    // no storage: the default zone
+  }
+  return DEFAULT_SESSION_SETTINGS.timeZone;
+}
+
+/** Tables the back-fill reads. */
+const BACKFILL_SOURCES = ['evidence', 'rewardEvents', 'journalEntries', 'stories', 'conversations', 'turns'] as const;
+
+/** Phase 32: write a row for every past active day (keeping rows already there) and record that
+ * the back-fill ran. Used by the v12 upgrade and by `ensureActiveDaysBackfill`. */
+async function backfillActiveDays(db: { table: (name: string) => Dexie.Table }): Promise<void> {
+  const settings = db.table('settings');
+  const timeZone = await profileTimeZone(settings.get(REVIEW_SETTINGS_KEY));
+  const [evidence, rewards, journalEntries, stories, conversations, turns] = await Promise.all(
+    BACKFILL_SOURCES.map((n) => db.table(n).toArray()),
+  );
+  // Nothing to read yet (a fresh database waiting for its first sync): try again later.
+  if (evidence!.length === 0 && rewards!.length === 0) return;
+  const rows = activeDaysFromHistory(
+    { evidence, rewards, journalEntries, stories, conversations, turns } as Parameters<typeof activeDaysFromHistory>[0],
+    timeZone,
+  );
+  const days = db.table('activeDays');
+  const have = new Set((await days.toCollection().primaryKeys()) as string[]);
+  const fresh = rows.filter((r) => !have.has(r.day));
+  if (fresh.length > 0) await days.bulkAdd(fresh);
+  const now = new Date();
+  await settings.put({ key: STREAK_BACKFILL_KEY, value: now.toISOString(), updatedAt: now });
+}
 
 export class AnanDB extends Dexie {
   items!: EntityTable<ItemRow, 'pk'>;
@@ -350,6 +412,8 @@ export class AnanDB extends Dexie {
   readerShown!: EntityTable<ReaderShownRow, 'sentenceId'>;
   /** Phase 24: the story library. */
   stories!: EntityTable<StoryRow, 'id'>;
+  /** Phase 32: active days (the streak). */
+  activeDays!: EntityTable<ActiveDayRow, 'day'>;
 
   constructor(name = 'anan') {
     super(name);
@@ -517,8 +581,65 @@ export class AnanDB extends Dexie {
           });
       });
 
+    // v12 (Phase 32): active days, the streak's only input. The upgrade back-fills every past day
+    // that had a meaningful action (answers, finished journal entries and stories, completed
+    // scenarios, open-chat turns), once per profile, and records that it ran.
+    this.version(12)
+      .stores({ activeDays: 'day' })
+      .upgrade(async (tx) => {
+        await backfillActiveDays({
+          table: (name) => tx.table(name),
+        });
+      });
+
     this.installHooks();
   }
+
+  private markedDay: string | undefined;
+
+  /** After the active days were replaced (an import or a sync merge), look again before skipping. */
+  forgetMarkedDay(): void {
+    this.markedDay = undefined;
+    this.backfillChecked = false;
+  }
+
+  /**
+   * Phase 32: the first meaningful action of a profile-zone day adds that day's row; later actions
+   * that day add none. Called when answers are stored (the learner repo), rewards are paid (a
+   * finished journal entry, a completed scenario) and by open chat and stories.
+   */
+  async markActiveDayFrom(evidence: readonly { kind: string; at: Date }[]): Promise<void> {
+    const first = evidence.find(countsAsActivity);
+    if (first) await this.markActiveDay(first.at);
+  }
+
+  async markActiveDay(at: Date = new Date()): Promise<void> {
+    const day = dayKey(at, await profileTimeZone(this.settings.get(REVIEW_SETTINGS_KEY)));
+    if (this.markedDay === day) return;
+    await this.transaction('rw', this.activeDays, async () => {
+      if (!(await this.activeDays.get(day))) await this.activeDays.add({ day, at });
+    });
+    this.markedDay = day;
+  }
+
+  /**
+   * Phase 32: the one-time back-fill for a profile whose database never ran the v12 upgrade (a
+   * fresh browser restored from the server before any device back-filled). Waits until there is
+   * history to read, so an empty database never marks it done.
+   */
+  async ensureActiveDaysBackfill(): Promise<void> {
+    if (this.backfillChecked) return;
+    if (await this.settings.get(STREAK_BACKFILL_KEY)) {
+      this.backfillChecked = true;
+      return;
+    }
+    if ((await this.evidence.count()) === 0 && (await this.rewardEvents.count()) === 0) return;
+    await this.transaction('rw', [this.activeDays, this.settings, ...BACKFILL_SOURCES.map((n) => this.table(n))], () =>
+      backfillActiveDays({ table: (name) => this.table(name) }),
+    );
+    this.backfillChecked = true;
+  }
+  private backfillChecked = false;
 
   /** Called after a LOCAL write (never while a sync merge is writing). */
   onLocalChange?: () => void;

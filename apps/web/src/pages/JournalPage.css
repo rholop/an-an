@@ -45,7 +45,7 @@
 }
 
 .journal-text {
-  font-size: 1.3rem;
+  font-size: var(--zh-body);
   line-height: 2;
   white-space: pre-wrap;
 }

@@ -256,4 +256,4 @@
 }
 
 /* Phase 21: a tapped suggestion, readable word by word before sending. */
-.chat-reply-preview { margin: 0.25rem 0; font-size: 1.05rem; }
+.chat-reply-preview { margin: 0.25rem 0; font-size: var(--zh-small); }

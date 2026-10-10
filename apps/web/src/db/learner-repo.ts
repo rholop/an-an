@@ -22,12 +22,14 @@ export class DexieLearnerRepo implements LearnerRepo {
   async appendEvidence(events: Evidence[]): Promise<void> {
     if (events.length === 0) return;
     await this.db.evidence.bulkAdd(events);
+    await this.db.markActiveDayFrom(events); // Phase 32: an answer makes its day active
   }
 
   /** Phase 21: like appendEvidence, but returns each row's sync uid (an undo refers to it). */
   async appendEvidenceUids(events: Evidence[]): Promise<string[]> {
     if (events.length === 0) return [];
     const ids = (await this.db.evidence.bulkAdd(events, { allKeys: true })) as number[];
+    await this.db.markActiveDayFrom(events); // Phase 32: an answer makes its day active
     const rows = await this.db.evidence.bulkGet(ids);
     return rows.map((r) => r?.uid ?? '');
   }

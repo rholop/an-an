@@ -504,6 +504,7 @@ export class StoryService {
       readDates: [...(story.readDates ?? []), now],
     };
     await this.db.stories.put(updated);
+    await this.db.markActiveDay(now); // Phase 32: a finished story keeps the streak growing
     saveProgressNow(); // Phase 28: a finished story reaches the server straight away
     return { evidence: events.length, story: updated };
   }

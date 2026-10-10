@@ -22,11 +22,13 @@ import { YourProgress } from '../components/YourProgress.js';
 import { useAnswerInputMode, type AnswerInputMode } from '../lib/reading.js';
 import { readTargetRetention, RETENTION_MAX, RETENTION_MIN, setTargetRetention } from '../lib/retention.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
+import { useZhTextSize, ZH_TEXT_SIZES } from '../lib/zh-size.js';
 import './ReviewSettingsPage.css';
 
 /** Phase 21: the settings every tab shares (one place each): reading, typed answers, memory target. */
 function SharedSettings() {
   const [inputMode, setInputMode] = useAnswerInputMode();
+  const [zhSize, setZhSize] = useZhTextSize();
   const [retention, setRetention] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
   useEffect(() => onStudyDirty(() => setTick((t) => t + 1)), []);
@@ -46,6 +48,23 @@ function SharedSettings() {
         <p className="review-settings-muted">
           Used in every tab: Reader, Chat, Review, Cloze, Listen and word pop-ups. Textbook, Journal and Garden always
           show the reading, in this script.
+        </p>
+      </section>
+      <section data-testid="settings-zh-size">
+        <h2>Chinese text size</h2>
+        <div role="radiogroup" aria-label="Chinese text size">
+          {ZH_TEXT_SIZES.map((z) => (
+            <label key={z.id} className="review-settings-radio">
+              <input type="radio" name="zh-size" checked={zhSize === z.id} onChange={() => setZhSize(z.id)} />{' '}
+              {z.label}
+            </label>
+          ))}
+        </div>
+        <p className="review-settings-muted">
+          Only the Chinese gets bigger or smaller. Use your browser&apos;s zoom for everything else.{' '}
+          <span lang="zh-Hant" className="settings-zh-sample">
+            你好，我們一起去喝咖啡吧。
+          </span>
         </p>
       </section>
       <section data-testid="settings-input">

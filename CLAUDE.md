@@ -129,12 +129,16 @@ lint rule enforce this; see "Progress rule (Phase 29)" below).
 | **Current lesson** | The study focus's active lesson, which follows My class. A lesson is done at the learner's lesson share; "still to master" is empty exactly then | `ledger.focus`, `ledger.lesson` |
 | **Vocabulary ladder** | Rung 1 learned/in session/learning · 2 active lesson and catch-up words never introduced · 3 next lesson · 4 the lesson after · 5 current level · 6 everything else. Stories and open chat both rank words with it | `ledger.ladder` |
 | **Your class** | The My class setting. Labels and visibility only, never priority | `useClassScope` / `currentClassScope` |
+| **Active day / streak** | Phase 32: a profile-zone day with an answer (review, cloze, lesson step, listening, pinyin, grammar), a finished journal entry or story, a completed scenario or an open-chat turn; passive reads, lookups, imports and placement never count. Stored in the synced append-only `activeDays` table (back-filled once from history, Dexie v12); the streak (Home bar and Progress) comes only from it | `ledger.activeDays`, `ledger.streak`, `ledger.streakWeek` (`core/progress/active-days.ts`) |
 | **Days** | Phase 29: always the profile's time zone; weeks start on Monday (streak, This week, story week, forecast, journal prompt) | `ledger.dayKey`, `ledger.weekRange`, `ledger.streak` |
 
 **Colours (Phase 22):** every colour is a token in `apps/web/src/theme.css` (light = Solarized
 Light nudged green, dark = Solarized Dark); components use only `var(--…)`. `src/theme.test.ts`
 checks AA contrast and the architecture test fails on a colour written anywhere else. The five
 shared-term icons (seed, sprout, leaf, flower, droplet) are `components/PlantIcons.tsx`.
+Phase 30: Chinese text sizes are the `--zh-hero` / `--zh-body` / `--zh-small` tokens only (scaled by
+Settings → Chinese text size, `lib/zh-size.ts`; `theme.test.ts` fails on a fixed size); the laptop
+header is one 48 px row whose nav moves items into More when they don't fit (`TopNav`).
 
 Progress is always shown as "Learned X% · Mastered Y%" (`LearnedMastered` component).
 New items for any session come from one rule, `pickNewForSession` in `study/queue.ts`, under the
@@ -194,6 +198,7 @@ Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
 | 28 | Progress never lost: gzipped saves (`content-encoding: gzip`), 5 s push + session-end push, retry with backoff, a status per failure (header cloud "Saved / Saving… / Not saved for N" + Save now), fresh browser never opens empty (restore screen), Settings → Your progress (server vs browser counts, saved versions: Restore / Replace), server keeps the last 10 versions (Phase 31), shrink guard (409 over 20%), `/v1/sync-selftest` deploy check (fails on 413), `sync:inspect` | `28-progress-never-lost.md` |
 | 29 | One progress rule: the progress ledger is the only source of progress numbers (`core/progress/ledger.ts`, web `useLedger`); predicates no longer exported; typed lint rule `anan/progress-from-ledger` in CI and pre-commit; property test, owner's three cases, `e2e/numbers-agree.spec.ts`. Replaces Phase 27 | `29-one-progress-rule.md`, findings closed in `docs/progress-rule.md` |
 | 31 | Journal corrections you can question: a checked "Why?" per correction (`core/journal/explain.ts`, `/v1/journal-explain-check` on the checker model, one regeneration via `/v1/journal-why`, else "We're not sure" and never practised), legend explains itself, alternatives shown with their meaning, "Ask about this" (`/v1/journal-ask`, 5 turns, saved), "What did you mean?" / "Read as", "I think mine is right" (independent check; undoes items and evidence), gap fills in context (`/v1/journal-gap`, up to 3 checked options, nothing added without "Add to review"; old gap words listed on Reported), error-bank items keep the "Why?", Chinese-keyboard gap brackets 【】〖〗〔〕, server keeps the last 10 saves | `31-journal-explanations.md` |
+| 32 | Home streak bar: synced `activeDays` table (one row per active profile-zone day, back-filled once from past history), 7 plant icons + "🌱 N-day streak · best M" under the Home buttons, tap opens Progress at the streak; streak on by default | `32-home-streak-bar.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

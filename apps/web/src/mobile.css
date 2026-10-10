@@ -90,7 +90,7 @@ body {
   :root .chat-chip,
   :root .cloze-chip {
     min-height: 44px;
-    font-size: 1.25rem; /* Chinese answers: 20px */
+    font-size: calc(var(--zh-small) * 1.1); /* Chinese answers: about 20px */
   }
   select {
     max-width: 100%;
