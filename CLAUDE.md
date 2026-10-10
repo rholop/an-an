@@ -135,6 +135,9 @@ lint rule enforce this; see "Progress rule (Phase 29)" below).
 Light nudged green, dark = Solarized Dark); components use only `var(--…)`. `src/theme.test.ts`
 checks AA contrast and the architecture test fails on a colour written anywhere else. The five
 shared-term icons (seed, sprout, leaf, flower, droplet) are `components/PlantIcons.tsx`.
+Phase 30: Chinese text sizes are the `--zh-hero` / `--zh-body` / `--zh-small` tokens only (scaled by
+Settings → Chinese text size, `lib/zh-size.ts`; `theme.test.ts` fails on a fixed size); the laptop
+header is one 48 px row whose nav moves items into More when they don't fit (`TopNav`).
 
 Progress is always shown as "Learned X% · Mastered Y%" (`LearnedMastered` component).
 New items for any session come from one rule, `pickNewForSession` in `study/queue.ts`, under the

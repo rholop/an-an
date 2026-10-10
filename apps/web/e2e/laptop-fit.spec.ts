@@ -9,8 +9,8 @@ import { expect, test } from './fixtures.js';
  * the browser's own bars) and 1440×780, in both themes: the header is one row, and every Review
  * face, Pinyin & tones, Cloze, Water all and the lesson Vocab and Grammar steps answer with no
  * vertical scroll and the answer buttons in view. The review card's Chinese is at least 44 px at
- * Normal. A phone (390×844) keeps its tab bar. With THEME_SCREENS=1 each screen is also saved to
- * docs/theme-screens/laptop/ for the owner to look at.
+ * Normal. A phone (390×844) keeps its tab bar. With THEME_SCREENS=1 the 1280×650 screens are also
+ * saved to docs/theme-screens/laptop/ for the owner to look at.
  */
 
 const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../docs/theme-screens/laptop');
@@ -99,10 +99,14 @@ async function expectFits(page: Page, what: string, buttons: Locator, shot: stri
   expect(scroll, `${what}: page height ${scroll} > window ${inner}`).toBeLessThanOrEqual(inner);
   const box = (await buttons.last().boundingBox())!;
   expect(box.y + box.height, `${what}: buttons below the fold`).toBeLessThanOrEqual(inner);
-  if (process.env.THEME_SCREENS) {
-    mkdirSync(OUT, { recursive: true });
-    await page.screenshot({ path: path.join(OUT, `${shot}.png`) });
-  }
+  await save(page, shot);
+}
+
+/** With THEME_SCREENS=1, the 1280×650 screens (the smallest laptop) are saved for the owner. */
+async function save(page: Page, shot: string) {
+  if (!process.env.THEME_SCREENS || !shot.includes('1280x650')) return;
+  mkdirSync(OUT, { recursive: true });
+  await page.screenshot({ path: path.join(OUT, `${shot}.png`) });
 }
 
 /** Runs `act`, then waits until `el` (a keyed card) has left the page: the next card is up. */
@@ -146,10 +150,7 @@ for (const theme of THEMES) {
         }
         // Home, Review and Textbook are always in the bar
         for (const name of [/^Home/, /^Review/, /^Textbook/]) await expect(nav.getByRole('button', { name })).toBeVisible();
-        if (process.env.THEME_SCREENS) {
-          mkdirSync(OUT, { recursive: true });
-          await page.screenshot({ path: path.join(OUT, `home-${tag}.png`) });
-        }
+        await save(page, `home-${tag}`);
       });
 
       test('every Review face fits, and the Chinese on the card is at least 44 px', async ({ page }) => {
@@ -285,8 +286,15 @@ for (const theme of THEMES) {
         await expect(page.getByTestId('water-all')).toBeVisible();
         const reveal = page.getByRole('button', { name: 'Show answer' });
         const chip = page.locator('.cloze-chip');
-        await expect(reveal.or(chip).first()).toBeVisible();
-        if (await reveal.isVisible()) {
+        // a flashcard or a cloze comes first (wait until one is on screen, not mid-load)
+        let flashcard: boolean | undefined;
+        await expect
+          .poll(async () => {
+            flashcard = (await reveal.isVisible()) ? true : (await chip.first().isVisible()) ? false : undefined;
+            return flashcard !== undefined;
+          })
+          .toBe(true);
+        if (flashcard) {
           await expectFits(page, 'water all card', reveal, `water-all-${tag}`);
           await reveal.click();
           await expectFits(page, 'water all answer', page.locator('.review-buttons .review-btn'), `water-all-answer-${tag}`);
