@@ -115,14 +115,14 @@
   filter: none;
 }
 .garden-tile .an-text--inline {
-  font-size: calc(var(--zh-small) * 0.85);
+  font-size: calc(var(--zh-small) * 0.76);
   line-height: 2.2;
   white-space: nowrap;
 }
 
 @media (max-width: 639.98px) {
   .garden-tile .an-text--inline {
-    font-size: calc(var(--zh-small) * 1.1); /* Chinese on a tile: about 20px */
+    font-size: var(--zh-small); /* Chinese on a tile: 20px */
   }
   .garden-tile {
     min-width: 4.5rem;

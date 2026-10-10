@@ -141,7 +141,7 @@
   /* sentences, cloze, reader, stories: about 1.35× the English body */
   --zh-body: calc(1.375rem * var(--zh-scale));
   /* chips and lists */
-  --zh-small: calc(1.125rem * var(--zh-scale));
+  --zh-small: calc(1.25rem * var(--zh-scale));
 }
 
 /* Nunito (SIL OFL 1.1), served from this site: English headings only. */

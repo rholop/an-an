@@ -51,6 +51,11 @@
 }
 @media (min-width: 640px) and (max-height: 760px) {
   .pinyin-page h1 { font-size: 1.5rem; margin-block: 0 0.2rem; }
+  /* the tab's one-line explanation: on a short screen it goes to a tooltip on the heading */
+  .pinyin-page > .pinyin-intro { display: none; }
+  .pinyin-sort { gap: 0.3rem 1rem; }
+  .pinyin-sort-word { display: flex; flex-direction: column; line-height: 1.15; }
+  .pinyin-sort-reading { font-size: 0.75rem; }
   .pinyin-opt { min-height: 38px; padding: 0.25rem 0.55rem; }
   .pinyin-front { line-height: 1.15; }
 }

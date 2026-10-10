@@ -162,10 +162,8 @@ export function PinyinPage({ onOpenListen }: { onOpenListen?: () => void } = {})
   const ex = plan?.[index];
   return (
     <div className="pinyin-page" data-testid="pinyin-page">
-      <h1>{PINYIN_TAB}</h1>
-      <p className="textbook-muted">
-        Pinyin and tones from the characters. Answers use the dictionary tone; a note says when it changes in speech.
-      </p>
+      <h1 title={PINYIN_INTRO}>{PINYIN_TAB}</h1>
+      <p className="textbook-muted pinyin-intro">{PINYIN_INTRO}</p>
       {listening && (
         <p>
           <button
@@ -231,6 +229,9 @@ export function PinyinPage({ onOpenListen }: { onOpenListen?: () => void } = {})
     </div>
   );
 }
+
+const PINYIN_INTRO =
+  'Pinyin and tones from the characters. Answers use the dictionary tone; a note says when it changes in speech.';
 
 function Exercise(props: {
   ex: PinyinExercise;

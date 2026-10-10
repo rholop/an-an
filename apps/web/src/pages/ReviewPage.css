@@ -10,7 +10,8 @@
   font-size: 0.9rem;
 }
 .review-statusline .review-meta { font-size: 0.8rem; }
-.review-statusline .review-undo { min-height: 28px; padding: 0; font-size: 0.85rem; margin-left: auto; }
+.review-statusline .review-undo { padding: 0; font-size: 0.85rem; margin-left: auto; }
+@media (min-width: 640px) { .review-statusline .review-undo { min-height: 28px; } }
 .review-forecast { font-family: ui-monospace, monospace; }
 
 .review-card {

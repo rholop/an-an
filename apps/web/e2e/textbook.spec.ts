@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures.js';
+import { expect, goNav, test } from './fixtures.js';
 
 test.describe('Textbook / My class (phase 12)', () => {
   test('My class: turn on, set lesson 4, see the path, lesson detail with words, grammar and the private dialogue', async ({
@@ -125,12 +125,12 @@ test.describe('Textbook / My class (phase 12)', () => {
     await expect(page.getByTestId('class-status')).toBeVisible();
 
     await page.getByTestId('nav-textbook').waitFor();
-    await page.getByRole('button', { name: 'Chat', exact: true }).click();
+    await goNav(page, 'Chat');
     await expect(page.getByTestId('class-scenario-laixue-1-L02-siblings-chat')).toBeEnabled();
     await expect(page.getByTestId('class-scenario-laixue-1-L03-family-jobs')).toBeDisabled();
     await page.screenshot({ path: 'screenshots/textbook-chat.png' });
 
-    await page.getByRole('button', { name: 'Reader', exact: true }).click();
+    await goNav(page, 'Reader');
     await expect(page.getByRole('radio', { name: 'Lesson' })).toBeVisible();
     await page.getByRole('radio', { name: 'Lesson' }).click();
     await page.getByRole('button', { name: /New sentence/ }).click();
@@ -140,7 +140,7 @@ test.describe('Textbook / My class (phase 12)', () => {
     // Off again: everything back to normal.
     await page.getByRole('button', { name: /Textbook/ }).click();
     await page.getByTestId('my-class-toggle').uncheck();
-    await page.getByRole('button', { name: 'Reader', exact: true }).click();
+    await goNav(page, 'Reader');
     await expect(page.getByRole('radio', { name: 'Lesson' })).toHaveCount(0);
   });
 

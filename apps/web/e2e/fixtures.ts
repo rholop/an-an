@@ -39,3 +39,15 @@ export const test = base.extend({
 });
 
 export { expect };
+
+/**
+ * Phase 30: opens a screen from the top nav. On a laptop the nav moves the items that don't fit into
+ * More (how many fit depends on the fonts and the Textbook label), so look there too.
+ */
+export async function goNav(page: import('@playwright/test').Page, name: string): Promise<void> {
+  const nav = page.getByRole('navigation', { name: 'Sections' });
+  const inBar = nav.getByRole('button', { name, exact: true });
+  if (await inBar.isVisible()) return inBar.click();
+  await page.getByTestId('nav-more').click();
+  await page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name, exact: true }).click();
+}

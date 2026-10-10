@@ -7,8 +7,14 @@
   background: transparent;
   color: var(--text-muted);
   padding: 0;
-  min-width: 28px;
-  min-height: 28px;
+  min-width: 44px;
+  min-height: 44px;
+}
+@media (min-width: 640px) {
+  .info-tip-btn {
+    min-width: 28px;
+    min-height: 28px;
+  }
 }
 .info-tip-text {
   position: absolute;
