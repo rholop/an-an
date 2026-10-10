@@ -149,7 +149,32 @@ export interface TurnRow {
   validatorReport?: ValidatorReportRow;
   /** Phase 18: inline English glosses for the tier B/C words of an open-chat reply. */
   glosses?: { text: string; gloss: string }[];
+  // ---- Phase 36: chats that listen (both chat modes) ----
+  /** learner turns: "Read as: …" (the model's reading, or the learner's own after "What did you mean?"). */
+  meaningEn?: string;
+  /** learner turns: the meaning is the learner's own ("What did you mean?"). */
+  meaningFixed?: boolean;
+  /** learner turns: the facts this message stated ("mother: doesn't work"); the conversation's facts
+   * list is these, merged in order. */
+  facts?: string[];
+  /** learner turns: the gentle correction under the bubble (a chat journal entry). */
+  correction?: ChatCorrectionRow;
+  /** learner turns: `[gap]` words filled in context, each option with its own "Add to review". */
+  gaps?: ResolvedBracket[];
+  /** npc turns: still contradicted the learner after one regeneration ("⚠ may have misunderstood you"). */
+  misunderstood?: boolean;
+  /** npc turns: replaced by "Try again" or a fixed meaning. Kept (turns are append-only for sync), never shown or sent. */
+  replaced?: boolean;
   at: Date;
+}
+
+/** Phase 36: the state of a chat message's correction. */
+export interface ChatCorrectionRow {
+  /** pending: being checked. clean: nothing to fix (✓). issues: see the entry. paused: the free AI
+   * quota is short. off: Settings → Chat → Show corrections is off. failed: couldn't check. */
+  status: 'pending' | 'clean' | 'issues' | 'paused' | 'off' | 'failed';
+  /** The journal entry (source 'chat') holding the corrections. */
+  entryId?: string;
 }
 
 /** Phase 5. Ids are random uuid strings (CLAUDE.md: ids are stable strings,
@@ -170,6 +195,10 @@ export interface JournalEntryRow {
   finishedAt?: Date;
   /** Phase 31 Part C.2: "What did you mean?" for the whole entry, in the learner's words. */
   intendedEn?: string;
+  /** Phase 36: a chat message checked by the journal corrector. Never listed on the Journal page. */
+  source?: 'chat';
+  /** Phase 36: the chat's conversation uid (or numeric id before a uid exists). */
+  conversationRef?: string;
 }
 
 export interface ResolvedBracket {

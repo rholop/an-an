@@ -39,6 +39,7 @@ import {
   type SelfFixRecord,
   type TutorLLM,
   type Word,
+  type ResolvedGapOption,
 } from '@anan/core';
 import { saveProgressNow } from './save-progress.js';
 import type { AnanDB, JournalDispute, JournalEntryRow, JournalReviewRow, ResolvedBracket } from '../db/schema.js';
@@ -67,6 +68,12 @@ export interface SubmitEntryInput {
   promptWordIds?: string[];
   /** Phase 31 Part C.2: "What did you mean?" (optional). */
   intendedEn?: string;
+  /** Phase 36: a chat message checked by the journal corrector, with the chat before it. */
+  source?: 'chat';
+  conversationRef?: string;
+  chatContext?: { role: 'npc' | 'learner'; zh: string }[];
+  /** Phase 36: the chat fills its gaps itself (`fillGaps`), so the corrector doesn't. */
+  skipBrackets?: boolean;
 }
 
 export class JournalError extends Error {
@@ -147,6 +154,7 @@ export class JournalService {
       sentences: prepared.map((p) => p.original),
       protectedTerms,
       ...(input.intendedEn?.trim() ? { intendedEn: input.intendedEn.trim() } : {}),
+      ...(input.chatContext?.length ? { chatContext: input.chatContext.slice(-12).map((t) => ({ role: t.role, zh: t.zh.slice(0, 400) })) } : {}),
     });
     const { review, rejected } = validateJournalReview(raw, {
       lexicon: this.lexicon,
@@ -159,7 +167,7 @@ export class JournalService {
     // Phase 31 Part A.4: every explanation is checked before it is shown.
     const intendedEn = input.intendedEn?.trim() || undefined;
     const issues = await this.checkIssues(review.issues, text, input.learnerLevel, () => intendedEn);
-    const brackets = await this.resolveBrackets(text, gaps, review, input.learnerLevel, intendedEn);
+    const brackets = input.skipBrackets ? [] : await this.resolveBrackets(text, gaps, review, input.learnerLevel, intendedEn);
     const levels = summarizeLevels(text, this.lexicon, input.learnerLevel);
 
     const entry: JournalEntryRow = {
@@ -170,6 +178,8 @@ export class JournalService {
       createdAt: now,
       status: issues.length > 0 ? 'self_correcting' : 'revealed',
       ...(intendedEn ? { intendedEn } : {}),
+      ...(input.source ? { source: input.source } : {}),
+      ...(input.conversationRef ? { conversationRef: input.conversationRef } : {}),
     };
     const reviewRow: JournalReviewRow = {
       entryId: entry.id,
@@ -249,6 +259,7 @@ export class JournalService {
     review: JournalReview,
     learnerLevel: Level,
     intendedEn: string | undefined,
+    useModel = true,
   ): Promise<ResolvedBracket[]> {
     const resolved: ResolvedBracket[] = [];
     const seen = new Set<string>();
@@ -256,7 +267,7 @@ export class JournalService {
       const en = gap.en;
       if (seen.has(en.toLowerCase())) continue;
       seen.add(en.toLowerCase());
-      const options = await resolveGap(this.gapLLM(), this.lexicon, {
+      const options = await resolveGap(useModel ? this.gapLLM() : undefined, this.lexicon, {
         text,
         gap,
         learnerLevel,
@@ -289,13 +300,24 @@ export class JournalService {
     return resolved;
   }
 
-  /** Phase 31 Part D.3: "Add to review" on one gap option (nothing is ever added by itself). */
-  async addGapWord(entryId: string, en: string, zh: string, now: Date = new Date()): Promise<void> {
-    const review = await this.getReview(entryId);
-    const bracket = review?.brackets.find((b) => b.en === en);
-    const option = bracket?.options?.find((o) => o.zh === zh);
-    if (!review || !bracket || !option) throw new JournalError('Unknown gap option.');
-    if (bracket.added?.includes(zh)) return;
+  /**
+   * Phase 36: the gaps of one chat message, filled in context exactly as the journal does (up to 3
+   * checked options each). `useModel: false` (the free quota is short) keeps to lexicon matches.
+   */
+  async fillGaps(
+    text: string,
+    learnerLevel: Level,
+    opts: { intendedEn?: string; useModel?: boolean } = {},
+  ): Promise<ResolvedBracket[]> {
+    const gaps = extractBrackets(text);
+    if (gaps.length === 0) return [];
+    const empty: JournalReview = { issues: [], natural_rewrite: '', brackets: [], used_well: [] };
+    return this.resolveBrackets(text, gaps, empty, learnerLevel, opts.intendedEn, opts.useModel !== false);
+  }
+
+  /** Phase 36: "Add to review" on a gap option outside a journal entry (a chat message's gap). */
+  async addGapOption(option: ResolvedGapOption, en: string, now: Date = new Date()): Promise<Word> {
+    const zh = option.zh;
     let word: Word | undefined =
       (option.wordId ? this.lexicon.byId(option.wordId) : undefined) ?? this.lexicon.lookup(zh)[0];
     if (!word) {
@@ -304,6 +326,17 @@ export class JournalService {
       await this.db.customWords.put(word);
     }
     await this.addPriorityItem(word, now);
+    return word;
+  }
+
+  /** Phase 31 Part D.3: "Add to review" on one gap option (nothing is ever added by itself). */
+  async addGapWord(entryId: string, en: string, zh: string, now: Date = new Date()): Promise<void> {
+    const review = await this.getReview(entryId);
+    const bracket = review?.brackets.find((b) => b.en === en);
+    const option = bracket?.options?.find((o) => o.zh === zh);
+    if (!review || !bracket || !option) throw new JournalError('Unknown gap option.');
+    if (bracket.added?.includes(zh)) return;
+    await this.addGapOption(option, en, now);
     await this.db.journalReviews.update(entryId, {
       brackets: review.brackets.map((b) => (b === bracket ? { ...b, added: [...(b.added ?? []), zh] } : b)),
     });

@@ -231,6 +231,25 @@ export const NEW_WORDS_MET = 'New words you met';
 export const BACK_TO_CHATS = '← Chats';
 export const messagesFromYou = (n: number): string => `${n} message${n === 1 ? '' : 's'} from you`;
 export const UNRELIABLE_REPLY = "Couldn't get a reliable reply, try again";
+// Phase 36: chats that listen (the same in every chat)
+export const MAY_HAVE_MISUNDERSTOOD = '⚠ This reply may have misunderstood you';
+export const ANSWER_THIS = 'Answer this';
+export const CORRECTIONS_PAUSED = 'Corrections paused (free AI quota)';
+export const CHECKING_MESSAGE = 'Checking…';
+export const MESSAGE_LOOKS_RIGHT = '✓';
+export const MESSAGE_LOOKS_RIGHT_LABEL = 'No corrections: this looks right';
+export const COULD_NOT_CHECK = "Couldn't check this message.";
+export const NOT_WHAT_I_MEANT = 'Not what I meant';
+export const WORDS_FROM_THIS_CHAT = 'Words from this chat';
+export const IN_REVIEW = 'in review';
+export const SHOW_CORRECTIONS = 'Show corrections';
+export const chatWordsCount = (n: number): string => `📚 ${n}`;
+export const CHAT_WORD_SOURCE: Record<'gap' | 'lookup' | 'glossed' | 'corrected', string> = {
+  gap: 'your gap',
+  lookup: 'looked up',
+  glossed: 'glossed in a reply',
+  corrected: 'from a correction',
+};
 
 // --- Phase 24: graded stories ---------------------------------------------------------------
 export const STORIES = 'Stories';

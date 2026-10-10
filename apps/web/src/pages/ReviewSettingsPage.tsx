@@ -15,7 +15,8 @@ import { markStudyDirty } from '../lib/study-dirty.js';
 import { NOPE_LABELS, nopeSnapshot } from '../lib/nope.js';
 import { applyCleanup, cleanupPreview, removedWords } from '../lib/review-cleanup.js';
 import { updateReviewSettings, useReviewSettings } from '../lib/review-settings.js';
-import { SESSION_NAME } from '../lib/labels.js';
+import { SESSION_NAME, SHOW_CORRECTIONS } from '../lib/labels.js';
+import { useSetting } from '../lib/useSetting.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { ReadingControls } from '../components/ReadingControls.js';
 import { YourProgress } from '../components/YourProgress.js';
@@ -30,6 +31,8 @@ import './ReviewSettingsPage.css';
 function SharedSettings() {
   const [inputMode, setInputMode] = useAnswerInputMode();
   const [zhSize, setZhSize] = useZhTextSize();
+  // Phase 36: per profile, on by default
+  const [showCorrections, setShowCorrections] = useSetting('chatShowCorrections', true);
   const [retention, setRetention] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
   useEffect(() => onStudyDirty(() => setTick((t) => t + 1)), []);
@@ -66,6 +69,17 @@ function SharedSettings() {
           <span lang="zh-Hant" className="settings-zh-sample">
             你好，我們一起去喝咖啡吧。
           </span>
+        </p>
+      </section>
+      <section data-testid="settings-chat">
+        <h2>Chat</h2>
+        <label className="review-settings-radio">
+          <input type="checkbox" checked={showCorrections} onChange={(e) => void setShowCorrections(e.target.checked)} />{' '}
+          {SHOW_CORRECTIONS}
+        </label>
+        <p className="review-settings-muted">
+          Every chat checks your messages like the journal does and shows gentle corrections under them. Mistakes
+          become practice.
         </p>
       </section>
       <section data-testid="settings-input">

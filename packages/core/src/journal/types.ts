@@ -206,6 +206,12 @@ export const JournalReviewRequestSchema = z.object({
   sentencesOnly: z.boolean().optional(),
   /** Phase 31 Part C.2: "What did you mean?" in the learner's words. Corrections aim at it. */
   intendedEn: z.string().max(400).optional(),
+  /** Phase 36: the text is one chat message; the conversation before it, for context only (never
+   * corrected). */
+  chatContext: z
+    .array(z.object({ role: z.enum(['npc', 'learner']), zh: z.string().max(400) }))
+    .max(12)
+    .optional(),
 });
 export type JournalReviewRequest = z.infer<typeof JournalReviewRequestSchema>;
 

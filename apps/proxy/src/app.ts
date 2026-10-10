@@ -44,6 +44,8 @@ import {
   TopicWordsRequestSchema,
   TopicWordsResponseSchema,
   TurnRequestSchema,
+  ChatMeaningCheckRequestSchema,
+  ChatMeaningCheckResponseSchema,
   type OpenChatPersona,
 } from '@anan/core';
 import type { Env } from './env.js';
@@ -69,6 +71,7 @@ import {
   STORY_REPAIR_JSON_SCHEMA,
   STORY_JSON_SCHEMA,
   TOPIC_WORDS_JSON_SCHEMA,
+  CHAT_MEANING_CHECK_JSON_SCHEMA,
 } from './json-schema.js';
 import {
   buildEffectiveSystemPrompt,
@@ -107,6 +110,9 @@ import {
   askUserMessage,
   gapUserMessage,
   journalReviewUserMessage,
+  chatMeaningCheckUserMessage,
+  loadChatMeaningCheckPrompt,
+  fillPromptPlaceholders,
   type JournalPrompts,
 } from './prompt.js';
 import type { RateLimiter } from './rate-limit.js';
@@ -219,7 +225,8 @@ export function createApp(deps: AppDeps): Hono {
   /** Settings → AI usage: each model's calls today, limit, reserve, whether it is out and until when. */
   app.get('/v1/ai-usage', (c) => {
     if (!deps.quota) return c.json({ error: 'quota tracking is not configured' }, 501);
-    return c.json(deps.quota.usage(deps.chains ?? {}));
+    // Phase 36: each chain too, so the app can tell when corrections should pause
+    return c.json({ ...deps.quota.usage(deps.chains ?? {}), chains: deps.chains ?? {} });
   });
 
   const knownModels = new Set(Object.values(deps.chains ?? {}).flat());
@@ -803,6 +810,23 @@ export function createApp(deps: AppDeps): Hono {
         systemPrompt: buildLevelPrompt(deps.journal.prompts.gap, req.learnerLevel),
         userMessage: gapUserMessage(req),
       }),
+    ),
+  );
+
+  // Phase 36: the chat meaning check's fallback, a fresh call on the checker chain.
+  app.post('/v1/chat-meaning-check', (c) =>
+    journalRoute(
+      c,
+      '/v1/chat-meaning-check',
+      ChatMeaningCheckRequestSchema,
+      ChatMeaningCheckResponseSchema,
+      CHAT_MEANING_CHECK_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: fillPromptPlaceholders(deps.journal.prompts.chatMeaningCheck ?? loadChatMeaningCheckPrompt(), {}),
+        userMessage: chatMeaningCheckUserMessage(req),
+      }),
+      undefined,
+      true,
     ),
   );
 

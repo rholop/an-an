@@ -18,7 +18,7 @@ export function JournalProgress({ refreshKey }: { refreshKey: number }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [entries, reviews, errors, flagStats] = await Promise.all([
+      let [entries, reviews, errors, flagStats] = await Promise.all([
         db.journalEntries.where('status').equals('finished').sortBy('createdAt'),
         db.journalReviews.toArray(),
         db.errorItems.toArray(),
@@ -26,6 +26,8 @@ export function JournalProgress({ refreshKey }: { refreshKey: number }) {
       ]);
       if (cancelled) return;
       const byEntry = new Map(reviews.map((r) => [r.entryId, r]));
+      // Phase 36: journal entries only (chat messages are checked by the same corrector)
+      entries = entries.filter((e) => e.source !== 'chat');
       setPoints(
         entries.flatMap((e) => {
           const value = byEntry.get(e.id)?.errorsPer100Chars;

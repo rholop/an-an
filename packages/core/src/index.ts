@@ -17,6 +17,8 @@ export * from './chat/scenario.js';
 export * from './chat/openChat.config.js';
 export * from './chat/openChat.js';
 export * from './chat/openChatPersona.js';
+export * from './chat/listen.js';
+export * from './chat/eval.js';
 export * from './validate/turn.js';
 export * from './cloze/ladder.js';
 export * from './cloze/sentence.js';

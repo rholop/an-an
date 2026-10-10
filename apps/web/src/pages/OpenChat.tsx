@@ -40,6 +40,7 @@ import { useSetting } from '../lib/useSetting.js';
 import './ChatPage.css';
 import './OpenChat.css';
 import { aiErrorText } from '../lib/tutor-llm.js';
+import { ChatWordsButton, ChatWordsPanel, LearnerExtras, MisunderstoodNote, useChatWords } from '../components/ChatListen.js';
 
 type Scaffolding = 'high' | 'medium' | 'low';
 const SUGGESTED_REPLY_CAP: Record<Scaffolding, number> = { high: 2, medium: 1, low: 0 };
@@ -104,6 +105,11 @@ export function OpenChatView({
   const [scaffolding, setScaffolding] = useSetting<Scaffolding>('chatScaffolding', 'high');
   const [englishFallback, setEnglishFallback] = useSetting('chatEnglishFallback', false);
   const [privacySeen, setPrivacySeen, privacyLoaded] = useSetting('openChatPrivacySeen', false);
+  // Phase 36: Settings → Chat → Show corrections (per profile, on by default), as in scenario chat
+  const [showCorrections] = useSetting('chatShowCorrections', true);
+  const [wordsTick, setWordsTick] = useState(0);
+  const [wordsOpen, setWordsOpen] = useState(false);
+  const chatWords = useChatWords(service.engine, conversationId, wordsTick);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const keyboardOpen = useKeyboardOpen();
@@ -133,6 +139,7 @@ export function OpenChatView({
       const [t, conv] = await Promise.all([service.getTurns(cid), db.conversations.get(cid)]);
       setTurns(t);
       setConversation(conv ?? null);
+      setWordsTick((n) => n + 1);
     },
     [service],
   );
@@ -161,6 +168,7 @@ export function OpenChatView({
   }
 
   const lastNpcTurn = [...turns].reverse().find((t) => t.role === 'npc');
+  const lastLearnerTurn = [...turns].reverse().find((t) => t.role === 'learner');
   const suggestions = lastNpcTurn?.suggestedReplies ?? [];
   const visibleSuggestions = suggestions.slice(0, SUGGESTED_REPLY_CAP[scaffolding]);
 
@@ -209,13 +217,42 @@ export function OpenChatView({
         learnerLevel,
         scaffolding,
         englishFallback,
+        showCorrections,
       });
       setLastResult(result);
       await refresh(conversationId);
+      // the correction lands a moment later (it runs next to the reply)
+      void result.corrections?.then(() => refresh(conversationId));
       await refreshCards();
     } catch (err) {
       setError(aiErrorText(err));
       await refresh(conversationId); // the learner's own message is already saved
+    } finally {
+      setSending(false);
+    }
+  }
+
+  const turnOptions = () => ({ learnerLevel, scaffolding, englishFallback, showCorrections });
+
+  /** Phase 36: "Try again" on a reply that may have misunderstood, and "What did you mean?". */
+  async function tryAgain() {
+    if (conversationId === null) return;
+    setError(null);
+    try {
+      await service.tryAgain(conversationId, turnOptions());
+    } catch (err) {
+      setError(aiErrorText(err));
+    }
+    await refresh(conversationId);
+  }
+
+  async function fixMeaning(turnId: number, meaningEn: string) {
+    if (conversationId === null) return;
+    setSending(true);
+    try {
+      const out = await service.fixMeaning(conversationId, turnId, meaningEn, turnOptions());
+      await refresh(conversationId);
+      void out.corrections.then(() => refresh(conversationId));
     } finally {
       setSending(false);
     }
@@ -270,9 +307,11 @@ export function OpenChatView({
         <h1 lang="zh-Hant">
           {OPEN_CHAT_NPC.name} · {topic || 'Just chat'}
         </h1>
+        <ChatWordsButton count={chatWords.count} open={wordsOpen} onToggle={() => setWordsOpen((o) => !o)} />
       </div>
 
       <div className="chat-scroll" ref={scrollRef}>
+        {wordsOpen && !ended && <ChatWordsPanel entries={chatWords.entries} onAdd={chatWords.add} />}
         <div className="chat-messages">
           {turns.map((turn) => {
             const annotated = withReadingDisplay(
@@ -316,6 +355,19 @@ export function OpenChatView({
                   </div>
                 )}
                 {englishFallback && turn.en && <div className="chat-en">{turn.en}</div>}
+                {turn.role === 'learner' && (
+                  <LearnerExtras
+                    turn={turn}
+                    isLast={!ended && !sending && turn.id === lastLearnerTurn?.id}
+                    engine={service.engine}
+                    lexicon={lexicon}
+                    onFixMeaning={fixMeaning}
+                    onChange={() => void refresh(conversationId)}
+                  />
+                )}
+                {turn.role === 'npc' && turn.misunderstood && !ended && turn.id === lastNpcTurn?.id && (
+                  <MisunderstoodNote onTryAgain={tryAgain} />
+                )}
                 {import.meta.env.DEV && tiers && (
                   <div className="chat-debug" data-testid="open-chat-debug">
                     A {tiers.a} · B {tiers.b} · C {tiers.c} · allowed {tiers.allowed} · A-share{' '}
@@ -345,15 +397,16 @@ export function OpenChatView({
         )}
 
         {ended && summary && (
-          <OpenSummaryPanel
-            lexicon={lexicon}
-            summary={summary}
-            onAdd={async (ids) => {
-              await service.addToReview(ids);
-              await refreshCards();
-              setSummary(await service.getSummary(conversationId));
-            }}
-          />
+          <>
+            <OpenSummaryPanel lexicon={lexicon} summary={summary} />
+            <ChatWordsPanel
+              entries={chatWords.entries}
+              onAdd={async (chosen) => {
+                await chatWords.add(chosen);
+                await refreshCards();
+              }}
+            />
+          </>
         )}
       </div>
 
@@ -513,25 +566,8 @@ function TopicPicker({
   );
 }
 
-function OpenSummaryPanel({
-  summary,
-  onAdd,
-  lexicon,
-}: {
-  summary: OpenChatSummary;
-  onAdd: (wordIds: string[]) => Promise<void>;
-  lexicon: Lexicon;
-}) {
+function OpenSummaryPanel({ summary, lexicon }: { summary: OpenChatSummary; lexicon: Lexicon }) {
   const { script } = useReadingSettings();
-  const [chosen, setChosen] = useState<Set<string>>(new Set());
-  const [busy, setBusy] = useState(false);
-  const toggle = (id: string) =>
-    setChosen((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
   return (
     <div className="chat-summary" data-testid="open-chat-summary">
       <h2>{CHAT_FINISHED}</h2>
@@ -547,42 +583,8 @@ function OpenSummaryPanel({
       {summary.wordsMet.length > 0 && (
         <>
           <h3>{NEW_WORDS_MET}</h3>
-          <ul className="open-chat-met">
-            {summary.wordsMet.map((w) => (
-              <li key={w.wordId}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={chosen.has(w.wordId)}
-                    onChange={() => toggle(w.wordId)}
-                  />{' '}
-                  <span lang="zh-Hant">{w.headword}</span> · {w.glossEn}
-                  {w.lookedUp && <span className="open-chat-looked"> · looked up</span>}
-                </label>
-              </li>
-            ))}
-          </ul>
-          <button
-            disabled={chosen.size === 0 || busy}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                await onAdd([...chosen]);
-                setChosen(new Set());
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            Add to review{chosen.size > 0 ? ` (${chosen.size})` : ''}
-          </button>
-        </>
-      )}
-      {summary.wordsLookedUp.length > 0 && (
-        <>
-          <h3>Words you looked up</h3>
           <p className="chat-summary-words" lang="zh-Hant">
-            <AnnotatedInline text={summary.wordsLookedUp.join('、')} lexicon={lexicon} script={script} />
+            <AnnotatedInline text={summary.wordsMet.map((w) => w.headword).join('、')} lexicon={lexicon} script={script} />
           </p>
         </>
       )}

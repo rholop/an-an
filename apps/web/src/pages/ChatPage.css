@@ -257,3 +257,74 @@
 
 /* Phase 21: a tapped suggestion, readable word by word before sending. */
 .chat-reply-preview { margin: 0.25rem 0; font-size: var(--zh-small); }
+
+/* Phase 36: under the learner's message (both chats): Read as, the correction, gaps */
+.chat-learner-extras {
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+}
+.chat-learner-extras .journal-brackets h3 {
+  font-size: 0.85rem;
+  margin: 0.3rem 0 0.15rem;
+}
+.chat-read-as {
+  color: var(--text-muted);
+}
+.chat-correction-note {
+  color: var(--text-muted);
+  margin: 0.2rem 0 0;
+}
+.chat-correction-ok {
+  color: var(--c-good);
+  font-weight: 600;
+}
+.chat-corrected {
+  margin: 0.3rem 0 0.15rem;
+}
+.chat-correction-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.15rem 0 0;
+}
+.chat-correction-list > li {
+  padding: 0.15rem 0;
+}
+.chat-correction-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+.chat-correction-actions > * {
+  min-height: 2.25rem;
+}
+.chat-misunderstood {
+  margin-top: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--warn-text);
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+}
+.chat-words-button {
+  margin-left: auto;
+  min-height: 2.75rem;
+}
+.chat-words {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.75rem;
+}
+.chat-words h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+.chat-words li label {
+  display: block;
+  padding: 0.3rem 0;
+}
+.chat-in-review {
+  font-size: 0.75rem;
+  color: var(--c-good);
+}

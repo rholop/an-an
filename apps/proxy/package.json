@@ -17,7 +17,8 @@
     "stories-eval": "tsx scripts/stories-eval.ts",
     "naturalness": "tsx scripts/curriculum-naturalness.ts",
     "smoke": "tsx scripts/smoke-proxy.ts",
-    "ai:quota": "tsx scripts/ai-quota.ts"
+    "ai:quota": "tsx scripts/ai-quota.ts",
+    "chat-eval": "tsx scripts/chat-eval.ts"
   },
   "dependencies": {
     "@anan/core": "workspace:*",
