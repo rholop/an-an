@@ -20,10 +20,20 @@ export function renderReviewReport(
 
   const suspect = all.filter(([, , e]) => e.status === 'suspect');
   lines.push('', `## Suspect: speech-to-text disagreed (${suspect.length})`, '', 'The app currently plays these anyway (ALLOW_SUSPECT_AUDIO); mark them OK / Wrong on the review page.', '');
+  const heardList = (e: (typeof all)[number][2]) =>
+    (e.fixAttempts ?? []).map((a) => `${a.attempt}: “${a.heard}”`).join('; ');
   for (const [kind, id, e] of suspect) {
-    lines.push(`- ${kind} \`${id}\` “${e.text}”${e.zhuyin ? ` (${e.zhuyin})` : ''} — heard “${e.heard ?? ''}”`);
+    const tried = e.fixTried ? ` · --fix-suspect tried ${e.fixTried.slice(0, 10)}, still suspect (${heardList(e) || 'no other reading to try'})` : '';
+    lines.push(`- ${kind} \`${id}\` “${e.text}”${e.zhuyin ? ` (${e.zhuyin})` : ''} — heard “${e.heard ?? ''}”${tried}`);
   }
   if (!suspect.length) lines.push('_none_');
+
+  const fixedSuspects = all.filter(([, , e]) => e.fixed && e.suspectHeard !== undefined);
+  lines.push('', `## Suspects fixed by --fix-suspect (${fixedSuspects.length})`, '', 'Re-made clips that now pass the automatic check; listen to them on the review page.', '');
+  for (const [kind, id, e] of fixedSuspects) {
+    lines.push(`- ${kind} \`${id}\` “${e.text}”${e.zhuyin ? ` (${e.zhuyin})` : ''} — fixed by ${e.fixedBy ?? 'a retry'} (was heard “${e.suspectHeard}”; ${heardList(e)})`);
+  }
+  if (!fixedSuspects.length) lines.push('_none_');
 
   lines.push('', `## Skipped: no clip made (${skipped.length})`, '');
   for (const s of skipped) lines.push(`- ${s.kind} \`${s.id}\` “${s.text}” — ${s.reason}`);

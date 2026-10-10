@@ -1,8 +1,13 @@
 #!/usr/bin/env tsx
 // Phase 10: build the verified-audio clips offline with Azure Speech (zh-TW).
 //   pnpm --filter @anan/data-pipeline audio:build [--levels=N1,N2,L1,L2]
-//        [--voice=female|male] [--only-flagged] [--retry-suspect]
-//        [--accept-medium] [--max-chars=N] [--sync-dir=DIR] [--dry-run]
+//        [--voice=female|male] [--only-flagged] [--fix-suspect [--again]]
+//        [--retry-suspect] [--accept-medium] [--max-chars=N] [--sync-dir=DIR] [--dry-run]
+// Textbook words (any book) and lesson practice sentences are always included, whatever their level.
+// --fix-suspect: 3 different tries (other voice, explicit readings, both) per suspect clip;
+//   a failed fix keeps the current clip and is not retried unless --again.
+// --retry-suspect: a plain re-roll of suspect clips with the same voice and SSML
+//   (Azure usually returns the same audio; prefer --fix-suspect).
 // Needs AZURE_SPEECH_KEY (+ AZURE_SPEECH_REGION, default eastus) from this
 // package's .env or the environment — the key never goes to the proxy or web app.
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -11,10 +16,11 @@ import { fileURLToPath } from 'node:url';
 import { AUDIO_VOICES, Lexicon, AudioMarkSchema, type AudioMark, type Level } from '@anan/core';
 import { z } from 'zod';
 import { AzureSpeechClient, billableChars } from './lib/audio/azure.js';
-import { buildAudio, fixFlagged, loadManifest } from './lib/audio/build.js';
+import { buildAudio, fixFlagged, fixSuspect, FIX_ATTEMPTS, loadManifest, suspectsToFix } from './lib/audio/build.js';
 import {
   DEFAULT_LEVELS,
   loadBankSentences,
+  loadLessonSentences,
   loadLiveSentences,
   sentenceJobs,
   wordJobs,
@@ -42,11 +48,18 @@ const raw = JSON.parse(readFileSync(path.join(BUILD_DIR, 'lexicon.v2.json'), 'ut
 const lexicon = new Lexicon(raw.words, raw.grammar);
 
 const words = wordJobs(lexicon, levels);
-const sentences = sentenceJobs(
+// Phase 35: lesson practice sentences come first and at any level (never private/ text)
+const lessonSentences = sentenceJobs(lexicon, loadLessonSentences(BUILD_DIR), { acceptMedium: flag('accept-medium') });
+const lessonIds = new Set([...lessonSentences.jobs, ...lessonSentences.skipped].map((j) => j.id));
+const otherSentences = sentenceJobs(
   lexicon,
-  [...loadBankSentences(BUILD_DIR, levels), ...loadLiveSentences(syncDir, levels)],
+  [...loadBankSentences(BUILD_DIR, levels), ...loadLiveSentences(syncDir, levels)].filter((s) => !lessonIds.has(s.id)),
   { acceptMedium: flag('accept-medium') },
 );
+const sentences = {
+  jobs: [...lessonSentences.jobs, ...otherSentences.jobs],
+  skipped: [...lessonSentences.skipped, ...otherSentences.skipped],
+};
 const sampleN = arg('sample') ? Number(arg('sample')) : undefined;
 // --sample=N: N evenly spaced words only (the voice comparison); never combine with the real output dir
 const pick = <T,>(xs: T[]): T[] =>
@@ -54,12 +67,19 @@ const pick = <T,>(xs: T[]): T[] =>
 const jobs: AudioJob[] = sampleN ? pick(words.jobs) : [...words.jobs, ...sentences.jobs];
 const skipped = [...words.skipped, ...sentences.skipped];
 console.log(
-  `audio:build ${levels.join(',')}: ${words.jobs.length} words, ${sentences.jobs.length} sentences, ${skipped.length} skipped (uncertain reading)`,
+  `audio:build ${levels.join(',')}: ${words.jobs.length} words (${words.textbook} of them textbook words, any level), ${sentences.jobs.length} sentences (${lessonSentences.jobs.length} of them lesson sentences, any level; ${lessonSentences.skipped.length} lesson sentences skipped), ${skipped.length} skipped (uncertain reading)`,
 );
 
+const fixingSuspects = flag('fix-suspect');
 if (flag('dry-run')) {
-  const chars = jobs.reduce((n, j) => n + billableChars(j.text), 0);
-  console.log(`dry run: at most ~${chars} billed characters if every clip were new.`);
+  if (fixingSuspects) {
+    const todo = suspectsToFix(jobs, loadManifest(path.join(OUT_DIR, 'manifest.json'), new Date(), voice), flag('again'));
+    const chars = todo.reduce((n, { job }) => n + FIX_ATTEMPTS.length * billableChars(job.text), 0);
+    console.log(`dry run: ${todo.length} suspect clips would be tried, at most ~${chars} billed characters (${FIX_ATTEMPTS.length} attempts each; double that without ffmpeg).`);
+  } else {
+    const chars = jobs.reduce((n, j) => n + billableChars(j.text), 0);
+    console.log(`dry run: at most ~${chars} billed characters if every clip were new.`);
+  }
   process.exit(0);
 }
 
@@ -91,6 +111,12 @@ if (flag('only-flagged')) {
   }
   const res = await fixFlagged(jobs, marks, opts);
   console.log(`fixed ${res.fixed.length}, still bad ${res.stillBad.length}, no longer in inputs ${res.missing.length}`);
+  if (res.stoppedEarly) console.log(`stopped: ${res.stoppedEarly}`);
+} else if (fixingSuspects) {
+  const res = await fixSuspect(jobs, { ...opts, again: flag('again') });
+  console.log(
+    `fixed ${res.fixed.length} of ${res.tried.length} suspects, ${res.stillSuspect.length} still suspect`,
+  );
   if (res.stoppedEarly) console.log(`stopped: ${res.stoppedEarly}`);
 } else {
   const res = await buildAudio(jobs, opts);
