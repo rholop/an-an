@@ -12294,6 +12294,212 @@
    "status": "auto_ok",
    "text": "上個月",
    "zhuyin": "ㄕㄤˋ ˙ㄍㄜ ㄩㄝˋ"
+  },
+  "tb-3ba2add7e9": {
+   "file": "words/tb-3ba2add7e9.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "bd8913546819073e97d4381d5886263e64ba367be6e504f0ab200010aae258dd",
+   "status": "auto_ok",
+   "text": "度假",
+   "zhuyin": "ㄉㄨˋ ㄐㄧㄚˋ"
+  },
+  "tb-3c7f77e79b": {
+   "file": "words/tb-3c7f77e79b.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "44ae882a6b2e30718c425296b48e66a9d82ee0aae85b4b14d39f3ded4698fed6",
+   "status": "suspect",
+   "text": "十二月",
+   "zhuyin": "ㄕˊ ㄦˋ ㄩㄝˋ",
+   "heard": "12月。"
+  },
+  "tb-3dafe0e80a": {
+   "file": "words/tb-3dafe0e80a.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "b9ee913deb6bcffc8b703bad5faa5780d0295155119257b98422afbc963afe1a",
+   "status": "auto_ok",
+   "text": "攤販",
+   "zhuyin": "ㄊㄢ ㄈㄢˋ"
+  },
+  "tb-4181d0b336": {
+   "file": "words/tb-4181d0b336.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "cdc85958fe381dd5cbe8166dbd38ef6c3f06a22ca57ba4ce320d2df25285dede",
+   "status": "auto_ok",
+   "text": "半年",
+   "zhuyin": "ㄅㄢˋ ㄋㄧㄢˊ"
+  },
+  "tb-427c5e1c1c": {
+   "file": "words/tb-427c5e1c1c.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "8ad409ef3ece2ccb160159462ac5249ae7d0f7db92b54bd1980d641c7c3d1dc0",
+   "status": "auto_ok",
+   "text": "有一天",
+   "zhuyin": "ㄧㄡˇ ㄧ ㄊㄧㄢ"
+  },
+  "tb-45ff8d3330": {
+   "file": "words/tb-45ff8d3330.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "d927f59135e69f64c13681737cd0df1f51b6fc8a114ca90d4c25f945e4dac77b",
+   "status": "suspect",
+   "text": "脆",
+   "zhuyin": "ㄘㄨㄟˋ",
+   "heard": "翠。"
+  },
+  "tb-489951ea18": {
+   "file": "words/tb-489951ea18.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "7f8f6bd82c7bfa284074ce1c0f43b0dec232ff148f64794b30a48d503b79e6bf",
+   "status": "auto_ok",
+   "text": "做錯了",
+   "zhuyin": "ㄗㄨㄛˋ ㄘㄨㄛˋ ˙ㄌㄜ"
+  },
+  "tb-4acdd993b4": {
+   "file": "words/tb-4acdd993b4.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "dbddd335cb95c3e30b29aa2bc6534728a5e99414bb3ca0f1bf848232eac34994",
+   "status": "auto_ok",
+   "text": "城市公園",
+   "zhuyin": "ㄔㄥˊ ㄕˋ ㄍㄨㄥ ㄩㄢˊ"
+  },
+  "tb-4ad5586c87": {
+   "file": "words/tb-4ad5586c87.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "28a53156848ee53206d66500928c9a62158f1df0da498941da7d50a1c7e4bb38",
+   "status": "auto_ok",
+   "text": "所有的",
+   "zhuyin": "ㄙㄨㄛˇ ㄧㄡˇ ˙ㄉㄜ"
+  },
+  "tb-4b10793c86": {
+   "file": "words/tb-4b10793c86.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "17b3f4f970f9b6c5e448342145e4c67d48a16374e99bcc174050878a4cd2b855",
+   "status": "auto_ok",
+   "text": "看到",
+   "zhuyin": "ㄎㄢˋ ㄉㄠˋ"
+  },
+  "tb-4b31137bf8": {
+   "file": "words/tb-4b31137bf8.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "35e5f2c2fc608d909b2605a7bc1c879069e6167170887ec6100e4b53432e9118",
+   "status": "auto_ok",
+   "text": "烤火雞",
+   "zhuyin": "ㄎㄠˇ ㄏㄨㄛˇ ㄐㄧ"
+  },
+  "tb-542259b039": {
+   "file": "words/tb-542259b039.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "9dfcc017b7c782a1ea183fccc7a1cc1471051ab8195a6ac590a720427e633b04",
+   "status": "suspect",
+   "text": "十月",
+   "zhuyin": "ㄕˊ ㄩㄝˋ",
+   "heard": "10月。"
+  },
+  "tb-558f608d5b": {
+   "file": "words/tb-558f608d5b.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "a98784374a695a58bfce0c5a406c0097e49b9598baf7c7f0a961b43fcd341e4a",
+   "status": "auto_ok",
+   "text": "有一次",
+   "zhuyin": "ㄧㄡˇ ㄧ ㄘˋ"
+  },
+  "tb-56f1526e62": {
+   "file": "words/tb-56f1526e62.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "82d624c31038813725279bf3ea01c0ab2cffeae6e2ad5924a4a4a57404c97d4b",
+   "status": "suspect",
+   "text": "潛水",
+   "zhuyin": "ㄑㄧㄢˊ ㄕㄨㄟˇ",
+   "heard": "淺水。"
+  },
+  "tb-56fea02955": {
+   "file": "words/tb-56fea02955.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "2cf6333901d2de777499f06b4671ac7b6567e1750acfe023bda83f1e925d924e",
+   "status": "auto_ok",
+   "text": "三月",
+   "zhuyin": "ㄙㄢ ㄩㄝˋ"
+  },
+  "tb-5812a3138d": {
+   "file": "words/tb-5812a3138d.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "3f9c3afe080d6de1056bf68e6989d804b23fc9007ed6bf669f6f3356fdb75d59",
+   "status": "auto_ok",
+   "text": "墨西哥",
+   "zhuyin": "ㄇㄛˋ ㄒㄧ ㄍㄜ"
+  },
+  "tb-5941d06958": {
+   "file": "words/tb-5941d06958.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "040668c9c340e26a8476ac2f4b6620e9f98bf7f3b209d9868ff2ba182c2a3b4f",
+   "status": "suspect",
+   "text": "太陽眼鏡",
+   "zhuyin": "ㄊㄞˋ ㄧㄤˊ ㄧㄢˇ ㄐㄧㄥˋ",
+   "heard": "太陽野鏡。"
+  },
+  "tb-595611906a": {
+   "file": "words/tb-595611906a.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "4068c73c9357fe3735b33e6b24f64cfe15be6714f9dfb237b09ce037f49acfba",
+   "status": "suspect",
+   "text": "珍珠奶茶",
+   "zhuyin": "ㄓㄣ ㄓㄨ ㄋㄞˇ ㄔㄚˊ",
+   "heard": "真珠奶茶。"
+  },
+  "tb-5b77dab97f": {
+   "file": "words/tb-5b77dab97f.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "f6adef4a2b7a5d3d4acc439abf0069b7d8d7206e56150fa9b0a17a9b59fbbe1b",
+   "status": "auto_ok",
+   "text": "手機店",
+   "zhuyin": "ㄕㄡˇ ㄐㄧ ㄉㄧㄢˋ"
+  },
+  "tb-5cd535c171": {
+   "file": "words/tb-5cd535c171.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "85067d331a8afa15a3611681eee52d20129e070703f87ae34a1f8aa4e55678a8",
+   "status": "auto_ok",
+   "text": "小客車接送區",
+   "zhuyin": "ㄒㄧㄠˇ ㄎㄜˋ ㄔㄜ ㄐㄧㄝ ㄙㄨㄥˋ ㄑㄩ"
+  },
+  "tb-5edabb5a71": {
+   "file": "words/tb-5edabb5a71.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "cecb7bfe8c2d4fe7a2db2cd6480866c87ca4b1a3423ed8b0d5859b6f7f20aca7",
+   "status": "auto_ok",
+   "text": "綠線",
+   "zhuyin": "ㄌㄩˋ ㄒㄧㄢˋ"
+  },
+  "tb-626838faf0": {
+   "file": "words/tb-626838faf0.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "def66f5b633d38bc3e1dbbd429d9cc1daf51d42a78f3f6f8d385937be482ac83",
+   "status": "auto_ok",
+   "text": "堂姐弟",
+   "zhuyin": "ㄊㄤˊ ㄐㄧㄝˇ ㄉㄧˋ"
+  },
+  "tb-63ab9a63ea": {
+   "file": "words/tb-63ab9a63ea.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "6ab6e5669c0befdaa1f996a1a20b98605685f46f3fdbf549e9b4eb5fc106999e",
+   "status": "auto_ok",
+   "text": "豆沙包",
+   "zhuyin": "ㄉㄡˋ ㄕㄚ ㄅㄠ"
+  },
+  "tb-6534bd255b": {
+   "file": "words/tb-6534bd255b.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "e956da3a064ef84518249ec1954438d478aef0a4bec031d2a7b017d1dbbda805",
+   "status": "auto_ok",
+   "text": "開過來",
+   "zhuyin": "ㄎㄞ ㄍㄨㄛˋ ㄌㄞˊ"
+  },
+  "tb-67697fe2d1": {
+   "file": "words/tb-67697fe2d1.mp3",
+   "voice": "zh-TW-HsiaoChenNeural",
+   "hash": "1ec7158d48bf636bee0a0b32976075fc29289c0ca905328acfc0bae8f603ec96",
+   "status": "auto_ok",
+   "text": "下個月",
+   "zhuyin": "ㄒㄧㄚˋ ˙ㄍㄜ ㄩㄝˋ"
   }
  },
  "sentences": {}
