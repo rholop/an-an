@@ -342,9 +342,9 @@ describe('streaks', () => {
     );
   });
 
-  it('is off by default', async () => {
+  it('is on by default (Phase 32: the Home streak bar)', async () => {
     const { DEFAULT_STREAK_CONFIG } = await import('./streak.js');
-    expect(DEFAULT_STREAK_CONFIG.enabled).toBe(false);
+    expect(DEFAULT_STREAK_CONFIG.enabled).toBe(true);
   });
 
   it('summarises this week only: Monday to Sunday in the profile time zone (Phase 29)', () => {

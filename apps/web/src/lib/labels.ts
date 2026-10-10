@@ -328,3 +328,11 @@ export const UNSAVED_WARNING = "Some progress isn't on the server yet.";
 export const lastSavedLine = (s: { savedAt: string; cards: number; learned: number }, now: Date = new Date()): string =>
   `Last saved to the server: ${savedWhen(s.savedAt, now)} · ${copyCounts(s)}`;
 export const thisBrowserLine = (s: { cards: number; learned: number }): string => `This browser: ${copyCounts(s)}`;
+
+// Phase 32: the Home streak bar.
+export const streakLine = (current: number, best: number): string =>
+  `🌱 ${current}-day streak · best ${best}`;
+export const STREAK_KEEP_GROWING = 'Water something today to keep it growing';
+/** The bar's spoken label: the whole sentence, and where tapping goes. */
+export const streakAria = (current: number, best: number, activeToday: boolean): string =>
+  `${current}-day streak, best ${best}. ${activeToday ? 'Today counts already.' : `${STREAK_KEEP_GROWING}.`} Open Progress.`;

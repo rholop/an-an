@@ -268,6 +268,27 @@ export function App() {
     setRoute(r);
     window.scrollTo(0, 0);
   };
+  // Phase 32: a page can ask to open another one at a section (Home's streak bar → Progress).
+  useEffect(() => {
+    const onGo = (e: Event) => {
+      const { route: r, anchor } = (e as CustomEvent<{ route: Route; anchor?: string }>).detail ?? {};
+      if (!r) return;
+      setMoreOpen(false);
+      setRoute(r);
+      window.scrollTo(0, 0);
+      if (!anchor) return;
+      // The page loads lazily: look for the section for a little while, then give up.
+      let tries = 0;
+      const find = () => {
+        const el = document.getElementById(anchor);
+        if (el) el.scrollIntoView({ block: 'start' });
+        else if (tries++ < 40) setTimeout(find, 50);
+      };
+      setTimeout(find, 0);
+    };
+    window.addEventListener('anan:go', onGo);
+    return () => window.removeEventListener('anan:go', onGo);
+  }, []);
 
   return (
     <div className="app">

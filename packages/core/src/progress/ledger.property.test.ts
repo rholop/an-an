@@ -15,6 +15,8 @@ import { buildLedger, type Ledger, type NewQueue } from './ledger.js';
 import { PROGRESS_CONFIG } from './progress.config.js';
 import { DEFAULT_SESSION_SETTINGS, zonedDate, type SessionSettings } from './review-sessions.js';
 import { isActiveCard, isNewCard, levelItems } from './terms.js';
+import { activeDaysFromHistory } from './active-days.js';
+import { computeStreak } from '../game/streak.js';
 
 const HEADWORDS = [...'貓狗魚鳥馬牛羊雞鴨豬茶水書筆車船門窗山河'];
 const word = (hw: string, i: number): Word => ({
@@ -167,6 +169,7 @@ function ledgerOf(s: State): Ledger {
     session: settings,
     masteryShare: s.masteryShare,
     now,
+    activeDays: activeDaysFromHistory({ evidence }, s.zone).map((r) => r.day),
     study: {
       lexicon,
       books: [book],
@@ -281,6 +284,32 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
           }
           if (isNewCard(c) || !isActiveCard(c)) expect(ledger.creditsRead(c)).toBe(false);
         }
+      }),
+      RUNS,
+    );
+  });
+
+  it('Home streak bar = Progress streak (Phase 32): one run, one set of days', () => {
+    fc.assert(
+      fc.property(stateArb, fc.constantFrom(0, 1, 2, 3), (s, freezes) => {
+        const ledger = ledgerOf(s);
+        const config = { enabled: true, freezeDaysPerWeek: freezes };
+        // Home and Progress both ask the ledger with its own active days.
+        const home = ledger.streak(ledger.activeDays(), config);
+        const progress = ledger.streak(ledger.activeDays(), config);
+        expect(home).toEqual(progress);
+        expect(home).toEqual(computeStreak(ledger.activeDays(), ledger.now, config, ledger.timeZone));
+        const week = ledger.streakWeek(ledger.activeDays(), config);
+        expect(week).toHaveLength(7);
+        expect(week.at(-1)!.day).toBe(ledger.dayKey());
+        expect(week.at(-1)!.status === 'active').toBe(ledger.activeToday());
+        for (const d of week) expect(d.status === 'active').toBe(ledger.activeDays().has(d.day));
+        // The bar's trailing run (active and freeze days back to the last missed day) is the streak.
+        let trailing = 0;
+        let i = week.length - 1;
+        for (; i >= 0 && week[i]!.status !== 'missed'; i--) if (week[i]!.status === 'active') trailing++;
+        if (i >= 0) expect(trailing).toBe(home.current);
+        else expect(trailing).toBeLessThanOrEqual(home.current);
       }),
       RUNS,
     );

@@ -213,6 +213,7 @@ export class OpenChatService {
     if (!generate) throw new Error('This tutor cannot run open chat.');
 
     await this.db.turns.add({ conversationId, role: 'learner', zh: learnerText, at: now });
+    await this.db.markActiveDay(now); // Phase 32: an open-chat turn keeps the streak growing
     if (options.englishFallback)
       await this.db.conversations.update(conversationId, { englishFallbackUsed: true });
 

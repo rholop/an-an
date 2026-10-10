@@ -31,6 +31,9 @@ export class GameService {
     const existing = await this.db.rewardEvents.bulkGet(events.map((e) => e.id));
     const fresh = events.filter((_, i) => !existing[i]);
     if (fresh.length > 0) await this.db.rewardEvents.bulkPut(fresh);
+    // Phase 32: a reward (a finished journal entry, a completed scenario…) makes its day active.
+    const paid = fresh.find((e) => !e.revokes);
+    if (paid) await this.db.markActiveDay(paid.at);
     return fresh;
   }
 

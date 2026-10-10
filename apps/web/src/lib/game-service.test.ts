@@ -118,10 +118,10 @@ describe('points ledger', () => {
     ]);
   });
 
-  it('streaks are off by default and persist when enabled', async () => {
-    expect((await game.getStreakConfig()).enabled).toBe(false);
-    await game.setStreakConfig({ enabled: true, freezeDaysPerWeek: 1 });
-    expect(await game.getStreakConfig()).toEqual({ enabled: true, freezeDaysPerWeek: 1 });
+  it('streaks are on by default (Phase 32) and the setting persists', async () => {
+    expect((await game.getStreakConfig()).enabled).toBe(true);
+    await game.setStreakConfig({ enabled: false, freezeDaysPerWeek: 1 });
+    expect(await game.getStreakConfig()).toEqual({ enabled: false, freezeDaysPerWeek: 1 });
   });
 });
 

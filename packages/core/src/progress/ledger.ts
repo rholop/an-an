@@ -15,7 +15,7 @@ import type { ClassScope } from '../textbook/scope.js';
 import type { Evidence, ItemRef, Skill, Word } from '../types.js';
 import { getStudyFocus, lessonIndex, type StudyFocus, type StudySettings } from '../study/study-focus.js';
 import { pickNewForSession } from '../study/queue.js';
-import { computeStreak, type StreakConfig, type StreakResult } from '../game/streak.js';
+import { computeStreak, streakDays, type StreakConfig, type StreakDay, type StreakResult } from '../game/streak.js';
 import { knownCharacters } from '../learner/char-stats.js';
 import { levelNewCandidates } from '../curriculum.js';
 import { PROGRESS_CONFIG, type ProgressConfig } from './progress.config.js';
@@ -92,6 +92,8 @@ export interface LedgerInputs {
   /** The study context, for `focus`, `ladder`, `level`, `lesson` items and new-word picks. */
   study?: LedgerStudyInputs;
   config?: ProgressConfig;
+  /** Phase 32: the profile's active days (the synced `activeDays` table's day keys). */
+  activeDays?: Iterable<string>;
 }
 
 /** The earliest evidence the ledger needs besides grammar answers (the session count window and
@@ -171,6 +173,7 @@ export class Ledger {
   private readonly allCards: readonly SkillCard[];
   private readonly evidence: readonly EvidenceLike[];
   private readonly study?: LedgerStudyInputs;
+  private readonly storedActiveDays: ReadonlySet<string>;
   private readonly grammarUses: Map<string, GrammarUse>;
   private memo = new Map<string, unknown>();
 
@@ -185,6 +188,7 @@ export class Ledger {
     const since = statusEvidenceSince(inputs.now, inputs.session).getTime();
     this.evidence = inputs.evidence.filter((e) => e.at.getTime() >= since && e.at.getTime() <= inputs.now.getTime());
     this.study = inputs.study;
+    this.storedActiveDays = new Set(inputs.activeDays ?? []);
     // Phase 25: a grammar point's days are the profile's days.
     this.grammarUses = grammarUsesFromEvidence(inputs.evidence, this.cfg, this.timeZone);
     this.index = new ProgressIndex({
@@ -625,9 +629,25 @@ export class Ledger {
     return weekRange(this.now, this.timeZone);
   }
 
-  /** The gentle streak over active days (day keys from `dayKey`). */
+  /** Phase 32: the days the learner did something meaningful (the only input to the streak). */
+  activeDays(): ReadonlySet<string> {
+    return this.storedActiveDays;
+  }
+
+  /** Has today (profile zone) been active yet? */
+  activeToday(): boolean {
+    return this.storedActiveDays.has(this.dayKey());
+  }
+
+  /** The gentle streak over active days (day keys from `dayKey`). Home and Progress both pass
+   * `ledger.activeDays()`. */
   streak(activeDays: Iterable<string>, config?: StreakConfig): StreakResult {
     return computeStreak(activeDays, this.now, config, this.timeZone);
+  }
+
+  /** Phase 32: the Home bar's last seven days (oldest first, today last). */
+  streakWeek(activeDays: Iterable<string>, config?: StreakConfig): StreakDay[] {
+    return streakDays(activeDays, this.now, config, this.timeZone);
   }
 
   // -------------------------------------------------------------------------------------------

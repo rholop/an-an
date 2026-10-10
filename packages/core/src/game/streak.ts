@@ -3,13 +3,13 @@ import { DEFAULT_SESSION_SETTINGS } from '../progress/review-sessions.js';
 import { addDaysToKey, dayKey, daysBetweenKeys, weekRange } from '../progress/time.js';
 
 export interface StreakConfig {
-  /** Off by default (phase doc §5). Nothing in the UI mentions streaks unless on. */
+  /** Phase 32: on by default (the owner asked for the Home streak bar). Off hides it on Home and Progress. */
   enabled: boolean;
   /** Days that may be skipped in any rolling 7 without ending the run. */
   freezeDaysPerWeek: number;
 }
 
-export const DEFAULT_STREAK_CONFIG: StreakConfig = { enabled: false, freezeDaysPerWeek: 2 };
+export const DEFAULT_STREAK_CONFIG: StreakConfig = { enabled: true, freezeDaysPerWeek: 2 };
 
 
 export interface StreakResult {
@@ -19,6 +19,55 @@ export interface StreakResult {
   best: number;
   /** Freeze days spent inside the current run's last 7 days. */
   freezesUsed: number;
+}
+
+/** Phase 32: what one day of the streak bar shows. */
+export type StreakDayStatus = 'active' | 'freeze' | 'missed' | 'today';
+
+export interface StreakDay {
+  /** Profile-zone day key. */
+  day: string;
+  status: StreakDayStatus;
+}
+
+/** Walks every day from the first active day to today: the run, the best run and each day's status. */
+function walkStreak(
+  activeDays: Iterable<string>,
+  today: Date,
+  config: StreakConfig,
+  timeZone: string,
+): StreakResult & { todayKey: string; statuses: Map<string, StreakDayStatus> } {
+  const active = new Set(activeDays);
+  const todayKey = dayKey(today, timeZone);
+  const statuses = new Map<string, StreakDayStatus>();
+  if (active.size === 0) return { current: 0, best: 0, freezesUsed: 0, todayKey, statuses };
+  const first = [...active].sort()[0]!;
+  const days = daysBetweenKeys(first, todayKey);
+
+  let run = 0;
+  let best = 0;
+  const recentSkips: number[] = []; // indices of skipped days still inside the 7-day window
+  for (let i = 0; i <= days; i++) {
+    const key = addDaysToKey(first, i);
+    if (active.has(key)) {
+      run++;
+      best = Math.max(best, run);
+      statuses.set(key, 'active');
+      continue;
+    }
+    if (i === days) break; // today, still open
+    while (recentSkips.length > 0 && recentSkips[0]! <= i - 7) recentSkips.shift();
+    if (recentSkips.length < config.freezeDaysPerWeek && run > 0) {
+      recentSkips.push(i);
+      statuses.set(key, 'freeze');
+    } else {
+      run = 0;
+      recentSkips.length = 0;
+      statuses.set(key, 'missed');
+    }
+  }
+  const freezesUsed = recentSkips.filter((i) => i > days - 7).length;
+  return { current: run, best, freezesUsed, todayKey, statuses };
 }
 
 /**
@@ -35,32 +84,26 @@ export function computeStreak(
   config: StreakConfig = DEFAULT_STREAK_CONFIG,
   timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone,
 ): StreakResult {
-  const active = new Set(activeDays);
-  if (active.size === 0) return { current: 0, best: 0, freezesUsed: 0 };
-  const first = [...active].sort()[0]!;
-  const days = daysBetweenKeys(first, dayKey(today, timeZone));
+  const { current, best, freezesUsed } = walkStreak(activeDays, today, config, timeZone);
+  return { current, best, freezesUsed };
+}
 
-  let run = 0;
-  let best = 0;
-  const recentSkips: number[] = []; // indices of skipped days still inside the 7-day window
-  for (let i = 0; i <= days; i++) {
-    const key = addDaysToKey(first, i);
-    if (active.has(key)) {
-      run++;
-      best = Math.max(best, run);
-      continue;
-    }
-    if (i === days) break; // today, still open
-    while (recentSkips.length > 0 && recentSkips[0]! <= i - 7) recentSkips.shift();
-    if (recentSkips.length < config.freezeDaysPerWeek && run > 0) {
-      recentSkips.push(i);
-    } else {
-      run = 0;
-      recentSkips.length = 0;
-    }
-  }
-  const freezesUsed = recentSkips.filter((i) => i > days - 7).length;
-  return { current: run, best, freezesUsed };
+/**
+ * Phase 32: the last `n` days (oldest first, today last) as the Home streak bar shows them: active,
+ * a freeze day (skipped inside a run, `computeStreak`'s rule), missed, or today while still open.
+ */
+export function streakDays(
+  activeDays: Iterable<string>,
+  today: Date,
+  config: StreakConfig = DEFAULT_STREAK_CONFIG,
+  timeZone: string = DEFAULT_SESSION_SETTINGS.timeZone,
+  n = 7,
+): StreakDay[] {
+  const { todayKey, statuses } = walkStreak(activeDays, today, config, timeZone);
+  return Array.from({ length: n }, (_, i) => {
+    const day = addDaysToKey(todayKey, i - (n - 1));
+    return { day, status: statuses.get(day) ?? (day === todayKey ? 'today' : 'missed') };
+  });
 }
 
 export interface WeeklySummary {
