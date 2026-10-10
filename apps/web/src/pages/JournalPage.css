@@ -172,3 +172,86 @@
     line-height: 2;
   }
 }
+
+/* Phase 31: the "Why?", Ask about this, What did you mean?, gap options */
+.journal-legend-btn {
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  min-height: 2rem;
+}
+.journal-fixes li .journal-feedback {
+  flex-basis: 100%;
+}
+.journal-why {
+  border-left: 3px solid var(--border-strong);
+  padding: 0.25rem 0 0.25rem 0.75rem;
+  margin: 0.5rem 0;
+}
+.journal-why p {
+  margin: 0.3rem 0;
+}
+.journal-pair {
+  font-size: 1.1rem;
+}
+.journal-pair-wrong {
+  color: var(--danger-text);
+}
+.journal-rule summary {
+  cursor: pointer;
+  min-height: 2rem;
+}
+.journal-ask {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  flex-basis: 100%;
+}
+.journal-ask-q {
+  font-weight: 600;
+}
+.journal-ask-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.journal-ask-form input {
+  flex: 1 1 12rem;
+  min-height: 2.5rem;
+}
+.journal-intended {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
+.journal-intended input {
+  min-height: 2.5rem;
+}
+.journal-gap-options {
+  margin: 0.25rem 0 0.5rem;
+  padding-left: 1.4rem;
+}
+.journal-gap-options li {
+  margin-bottom: 0.4rem;
+}
+.journal-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+  min-height: 2rem;
+}
+@media (max-width: 639.98px) {
+  /* Phase 31: tap targets on phones */
+  .journal-legend-btn,
+  .journal-link,
+  .journal-rule summary {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

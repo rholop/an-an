@@ -4,6 +4,18 @@ import {
   DefineResponseSchema,
   JournalCheckResponseSchema,
   JournalExplainResponseSchema,
+  JournalExplainCheckResponseSchema,
+  IssueExplanationSchema,
+  JournalAskResponseSchema,
+  JournalGapResponseSchema,
+  type JournalExplainCheckRequest,
+  type JournalExplainCheckResponse,
+  type JournalWhyRequest,
+  type IssueExplanation,
+  type JournalAskRequest,
+  type JournalAskResponse,
+  type JournalGapRequest,
+  type JournalGapResponse,
   JournalVerifyResponseSchema,
   JournalSolveResponseSchema,
   ModelSentenceReviewSchema,
@@ -171,6 +183,26 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM {
 
   async explainJournalIssue(req: JournalExplainRequest): Promise<JournalExplainResponse> {
     return JournalExplainResponseSchema.parse(await this.post('/v1/journal-explain', req));
+  }
+
+  /** Phase 31: the independent check of every "Why?" (the proxy's checker model). */
+  async checkJournalExplanations(req: JournalExplainCheckRequest): Promise<JournalExplainCheckResponse> {
+    return JournalExplainCheckResponseSchema.parse(await this.post('/v1/journal-explain-check', req));
+  }
+
+  /** Phase 31: a fresh "Why?" after the check objected. */
+  async explainJournalWhy(req: JournalWhyRequest): Promise<IssueExplanation> {
+    return IssueExplanationSchema.parse(await this.post('/v1/journal-why', req));
+  }
+
+  /** Phase 31: "Ask about this" (counts toward the daily token budget like every AI route). */
+  async askJournal(req: JournalAskRequest): Promise<JournalAskResponse> {
+    return JournalAskResponseSchema.parse(await this.post('/v1/journal-ask', req));
+  }
+
+  /** Phase 31: an `[english]` gap translated in its sentence. */
+  async fillJournalGap(req: JournalGapRequest): Promise<JournalGapResponse> {
+    return JournalGapResponseSchema.parse(await this.post('/v1/journal-gap', req));
   }
 
   /** Phase 24: a graded story (Phase 25: Gemini only, a fallback Gemini model) and which model wrote it. */

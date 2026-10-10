@@ -147,6 +147,18 @@ const MODEL_SENTENCE_REVIEW_SCHEMA = {
 } as const;
 
 /** JournalReview (POST /v1/journal-review — phase doc 05 §3). */
+const ISSUE_EXPLANATION_SCHEMA = {
+  type: 'object',
+  properties: {
+    wrongEn: { type: 'string' },
+    fixEn: { type: 'string' },
+    exampleWrong: { type: 'string' },
+    exampleRight: { type: 'string' },
+    nativeEn: { type: 'string' },
+  },
+  required: ['wrongEn', 'fixEn', 'exampleWrong', 'exampleRight'],
+} as const;
+
 export const JOURNAL_REVIEW_JSON_SCHEMA = {
   type: 'object',
   properties: {
@@ -162,8 +174,10 @@ export const JOURNAL_REVIEW_JSON_SCHEMA = {
           correction: { type: 'string' },
           explanationEn: { type: 'string' },
           confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+          explain: ISSUE_EXPLANATION_SCHEMA,
+          meaningEn: { type: 'string' },
         },
-        required: ['span', 'type', 'correction', 'explanationEn', 'confidence'],
+        required: ['span', 'type', 'correction', 'explanationEn', 'confidence', 'explain', 'meaningEn'],
       },
     },
     natural_rewrite: { type: 'string' },
@@ -191,8 +205,77 @@ export const JOURNAL_REVIEW_JSON_SCHEMA = {
 /** JournalCheckResponse (POST /v1/journal-check). */
 export const JOURNAL_CHECK_JSON_SCHEMA = {
   type: 'object',
-  properties: { acceptable: { type: 'boolean' }, noteEn: { type: 'string' } },
-  required: ['acceptable', 'noteEn'],
+  properties: {
+    acceptable: { type: 'boolean' },
+    noteEn: { type: 'string' },
+    alternatives: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { zh: { type: 'string' }, meaningEn: { type: 'string' } },
+        required: ['zh', 'meaningEn'],
+      },
+    },
+  },
+  required: ['acceptable', 'noteEn', 'alternatives'],
+} as const;
+
+/** IssueExplanation (Phase 31): the structured "Why?" (review issues and POST /v1/journal-why). */
+export const JOURNAL_WHY_JSON_SCHEMA = ISSUE_EXPLANATION_SCHEMA;
+
+/** JournalExplainCheckResponse (POST /v1/journal-explain-check). */
+export const JOURNAL_EXPLAIN_CHECK_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    results: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { index: { type: 'integer' }, ok: { type: 'boolean' }, problem: { type: 'string' } },
+        required: ['index', 'ok', 'problem'],
+      },
+    },
+  },
+  required: ['results'],
+} as const;
+
+/** JournalAskResponse (POST /v1/journal-ask). */
+export const JOURNAL_ASK_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    answerEn: { type: 'string' },
+    examples: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { zh: { type: 'string' }, en: { type: 'string' } },
+        required: ['zh', 'en'],
+      },
+    },
+  },
+  required: ['answerEn', 'examples'],
+} as const;
+
+/** JournalGapResponse (POST /v1/journal-gap). */
+export const JOURNAL_GAP_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    options: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          zh: { type: 'string' },
+          pinyin: { type: 'string' },
+          meaningEn: { type: 'string' },
+          usageEn: { type: 'string' },
+          corrected: { type: 'string' },
+        },
+        required: ['zh', 'pinyin', 'meaningEn', 'usageEn', 'corrected'],
+      },
+    },
+  },
+  required: ['options'],
 } as const;
 
 /** JournalExplainResponse (POST /v1/journal-explain). */

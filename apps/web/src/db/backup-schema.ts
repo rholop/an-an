@@ -1,5 +1,6 @@
 import {
   EditKindSchema,
+  IssueExplanationSchema,
   LevelSchema,
   SentenceTokenSchema,
   type RawSentenceReview,
@@ -190,6 +191,10 @@ const JournalIssueSchema = z.object({
   correction: z.string(),
   explanationEn: z.string(),
   confidence: z.enum(['high', 'medium', 'low']),
+  // Phase 31: the checked "Why?", the meaning the corrector assumed, the check status.
+  explain: IssueExplanationSchema.optional(),
+  meaningEn: z.string().optional(),
+  explainStatus: z.enum(['checked', 'unsure', 'pending']).optional(),
 });
 
 export const JournalEntryRowSchema = z.object({
@@ -201,6 +206,7 @@ export const JournalEntryRowSchema = z.object({
   createdAt: z.coerce.date(),
   status: z.enum(['self_correcting', 'revealed', 'finished']),
   finishedAt: z.coerce.date().optional(),
+  intendedEn: z.string().optional(), // Phase 31
 });
 
 export const JournalReviewRowSchema = z.object({
@@ -215,6 +221,22 @@ export const JournalReviewRowSchema = z.object({
       zh: z.string(),
       wordId: z.string().optional(),
       source: z.enum(['lexicon', 'llm', 'unresolved']),
+      // Phase 31 Part D
+      options: z
+        .array(
+          z.object({
+            zh: z.string(),
+            pinyin: z.string(),
+            meaningEn: z.string(),
+            usageEn: z.string(),
+            corrected: z.string(),
+            wordId: z.string().optional(),
+            checked: z.boolean(),
+          }),
+        )
+        .optional(),
+      added: z.array(z.string()).optional(),
+      legacy: z.enum(['ask', 'flagged', 'kept', 'removed']).optional(),
     }),
   ),
   usedWell: z.array(z.object({ itemRef: ItemRefSchema, span: SpanSchema })),
@@ -227,6 +249,9 @@ export const JournalReviewRowSchema = z.object({
       fixed: z.boolean(),
       alternative: z.boolean().optional(),
       note: z.string().optional(),
+      alternatives: z
+        .array(z.object({ zh: z.string(), meaningEn: z.string(), sameMeaning: z.boolean() }))
+        .optional(),
     }),
   ),
   flagged: z.array(z.number()),
@@ -251,6 +276,33 @@ export const JournalReviewRowSchema = z.object({
     )
     .optional(),
   itemsBuiltAt: z.coerce.date().optional(),
+  // Phase 31
+  asks: z
+    .record(
+      z.string(),
+      z.array(
+        z.object({
+          q: z.string(),
+          a: z.string(),
+          examples: z.array(z.object({ zh: z.string(), en: z.string() })),
+          at: z.coerce.date(),
+        }),
+      ),
+    )
+    .optional(),
+  disputes: z
+    .record(
+      z.string(),
+      z.object({
+        at: z.coerce.date(),
+        verdict: z.enum(['upheld', 'still_wrong']),
+        problem: z.string().optional(),
+        intendedEn: z.string(),
+      }),
+    )
+    .optional(),
+  meanings: z.record(z.string(), z.string()).optional(),
+  misusePrior: z.record(z.string(), SkillCardSchema.nullable()).optional(),
 });
 
 export const ErrorItemSchema = z.object({
@@ -294,6 +346,7 @@ export const ErrorItemSchema = z.object({
   editKind: EditKindSchema.optional(),
   marks: z.object({ original: z.array(SpanSchema), corrected: z.array(SpanSchema) }).optional(),
   exercise: z.any().optional(),
+  why: IssueExplanationSchema.optional(), // Phase 31 Part E
 });
 
 export const ConversationRowSchema = z.object({

@@ -660,7 +660,7 @@ describe('journal routes', () => {
       attempt: '去了',
       correction: '去了',
     });
-    expect(await check.json()).toEqual({ acceptable: true, noteEn: 'Also fine.' });
+    expect(await check.json()).toEqual({ acceptable: true, noteEn: 'Also fine.', alternatives: [] });
     const explain = await post(app, '/v1/journal-explain', {
       sentence: '我去',
       original: '去',
@@ -670,6 +670,35 @@ describe('journal routes', () => {
     });
     expect(((await explain.json()) as { examples: unknown[] }).examples).toHaveLength(1);
     expect((await post(app, '/v1/journal-check', { sentence: 'x' })).status).toBe(400);
+  });
+
+  it('Phase 31: explain-check, why, ask and gap validate and answer', async () => {
+    const why = { wrongEn: 'w', fixEn: 'f', exampleWrong: '我喜歡念書中文', exampleRight: '我喜歡念中文' };
+    const app = buildApp({
+      journalOrchestrator: fakeJournalOrchestrator((task) => {
+        if (task === '/v1/journal-explain-check') return { results: [{ index: 0, ok: true, problem: '' }] };
+        if (task === '/v1/journal-why') return why;
+        if (task === '/v1/journal-ask') return { answerEn: 'Because 念書 has its object.', examples: [] };
+        return {
+          options: [{ zh: '人很好', pinyin: 'rén hěn hǎo', meaningEn: 'a good person', usageEn: 'for people', corrected: '我的老師人很好。' }],
+        };
+      }),
+    });
+    const item = { sentence: '我喜歡念書中文。', original: '書中文', correction: '中文', type: 'error' };
+    const checked = await post(app, '/v1/journal-explain-check', { items: [{ ...item, explain: why }] });
+    expect(((await checked.json()) as { results: unknown[] }).results).toHaveLength(1);
+    expect(await (await post(app, '/v1/journal-why', { ...item, problem: '', learnerLevel: 'L1' })).json()).toEqual(why);
+    const ask = await post(app, '/v1/journal-ask', {
+      ...item,
+      explanation: 'x',
+      learnerLevel: 'L1',
+      question: 'Why is 念書中文 wrong if 念書 means study?',
+    });
+    expect(((await ask.json()) as { answerEn: string }).answerEn).toMatch(/念書/);
+    const gap = await post(app, '/v1/journal-gap', { sentence: '我的老師很＿＿。', en: 'nice', learnerLevel: 'L1' });
+    expect(((await gap.json()) as { options: { zh: string }[] }).options[0]!.zh).toBe('人很好');
+    expect((await post(app, '/v1/journal-explain-check', { items: [] })).status).toBe(400);
+    expect((await post(app, '/v1/journal-ask', { ...item, learnerLevel: 'L1' })).status).toBe(400);
   });
 
   it('shares the rate limiter with the other routes', async () => {

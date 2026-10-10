@@ -17,6 +17,14 @@ import {
   JournalCheckResponseSchema,
   JournalExplainRequestSchema,
   JournalExplainResponseSchema,
+  JournalExplainCheckRequestSchema,
+  JournalExplainCheckResponseSchema,
+  JournalWhyRequestSchema,
+  IssueExplanationSchema,
+  JournalAskRequestSchema,
+  JournalAskResponseSchema,
+  JournalGapRequestSchema,
+  JournalGapResponseSchema,
   JournalReviewRequestSchema,
   JournalSentenceFixRequestSchema,
   ModelSentenceReviewSchema,
@@ -49,6 +57,10 @@ import {
   GLOSS_JSON_SCHEMA,
   JOURNAL_CHECK_JSON_SCHEMA,
   JOURNAL_EXPLAIN_JSON_SCHEMA,
+  JOURNAL_EXPLAIN_CHECK_JSON_SCHEMA,
+  JOURNAL_WHY_JSON_SCHEMA,
+  JOURNAL_ASK_JSON_SCHEMA,
+  JOURNAL_GAP_JSON_SCHEMA,
   JOURNAL_REVIEW_JSON_SCHEMA,
   JOURNAL_SENTENCE_FIX_JSON_SCHEMA,
   JOURNAL_SOLVE_JSON_SCHEMA,
@@ -89,6 +101,11 @@ import {
   topicWordsUserMessage,
   journalCheckUserMessage,
   journalExplainUserMessage,
+  buildLevelPrompt,
+  explainCheckUserMessage,
+  whyUserMessage,
+  askUserMessage,
+  gapUserMessage,
   journalReviewUserMessage,
   type JournalPrompts,
 } from './prompt.js';
@@ -683,6 +700,69 @@ export function createApp(deps: AppDeps): Hono {
       (req) => ({
         systemPrompt: buildSolvePrompt(deps.journal.prompts.solve),
         userMessage: solveUserMessage(req),
+      }),
+    ),
+  );
+
+  // Phase 31: the independent check of every "Why?" (checker model), a fresh "Why?" after the
+  // check objected (never cached: it must differ), "Ask about this", and gap fills in context.
+  app.post('/v1/journal-explain-check', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-explain-check',
+      JournalExplainCheckRequestSchema,
+      JournalExplainCheckResponseSchema,
+      JOURNAL_EXPLAIN_CHECK_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildLevelPrompt(deps.journal.prompts.explainCheck, ''),
+        userMessage: explainCheckUserMessage(req),
+      }),
+      undefined,
+      true,
+    ),
+  );
+
+  app.post('/v1/journal-why', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-why',
+      JournalWhyRequestSchema,
+      IssueExplanationSchema,
+      JOURNAL_WHY_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildLevelPrompt(deps.journal.prompts.why, req.learnerLevel),
+        userMessage: whyUserMessage(req),
+      }),
+      undefined,
+      false,
+      (req) => req.problem.length > 0,
+    ),
+  );
+
+  app.post('/v1/journal-ask', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-ask',
+      JournalAskRequestSchema,
+      JournalAskResponseSchema,
+      JOURNAL_ASK_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildLevelPrompt(deps.journal.prompts.ask, req.learnerLevel),
+        userMessage: askUserMessage(req),
+      }),
+    ),
+  );
+
+  app.post('/v1/journal-gap', (c) =>
+    journalRoute(
+      c,
+      '/v1/journal-gap',
+      JournalGapRequestSchema,
+      JournalGapResponseSchema,
+      JOURNAL_GAP_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: buildLevelPrompt(deps.journal.prompts.gap, req.learnerLevel),
+        userMessage: gapUserMessage(req),
       }),
     ),
   );

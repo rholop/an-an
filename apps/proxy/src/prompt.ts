@@ -14,6 +14,10 @@ import type {
   JournalVerifyRequest,
   JournalExplainRequest,
   JournalReviewRequest,
+  JournalExplainCheckRequest,
+  JournalWhyRequest,
+  JournalAskRequest,
+  JournalGapRequest,
   OpenChatPersona,
   OpenTurnRequest,
   Scenario,
@@ -110,6 +114,11 @@ export interface JournalPrompts {
   sentenceFix: string;
   verify: string;
   solve: string;
+  /** Phase 31: explanation check, a fresh "Why?", Ask about this, gap fills. */
+  explainCheck: string;
+  why: string;
+  ask: string;
+  gap: string;
 }
 
 export function loadJournalPromptTemplates(version: string): JournalPrompts {
@@ -121,6 +130,10 @@ export function loadJournalPromptTemplates(version: string): JournalPrompts {
     sentenceFix: loadPromptFile(`journal-sentence-fix.${version}.md`),
     verify: loadPromptFile(`journal-verify.${version}.md`),
     solve: loadPromptFile(`journal-solve.${version}.md`),
+    explainCheck: loadPromptFile(`journal-explain-check.${version}.md`),
+    why: loadPromptFile(`journal-why.${version}.md`),
+    ask: loadPromptFile(`journal-ask.${version}.md`),
+    gap: loadPromptFile(`journal-gap.${version}.md`),
   };
 }
 
@@ -171,10 +184,13 @@ export function journalReviewUserMessage(req: JournalReviewRequest): string {
     sentences.length > 0
       ? `\n\nThe entry split into numbered sentences (return one \`sentences\` item per number, using these numbers as \`index\`):\n<<<SENTENCES\n${sentences.map((s, i) => `[${i}] ${s}`).join('\n')}\nSENTENCES>>>`
       : '';
+  const meant = req.intendedEn?.trim()
+    ? `\n\nWhat the learner says they meant (correct towards this meaning): ${JSON.stringify(req.intendedEn.trim())}`
+    : '';
   const only = req.sentencesOnly
     ? '\n\nOnly the `sentences` list is wanted: return `issues`, `brackets` and `used_well` as empty lists and `natural_rewrite` as an empty string.'
     : '';
-  return `Review this journal entry. Offsets are JavaScript string indices (0-based, end exclusive) into the text between the markers.\n<<<ENTRY\n${req.text}\nENTRY>>>${list}${only}`;
+  return `Review this journal entry. Offsets are JavaScript string indices (0-based, end exclusive) into the text between the markers.\n<<<ENTRY\n${req.text}\nENTRY>>>${list}${meant}${only}`;
 }
 
 export function buildSentenceFixPrompt(template: string, req: JournalSentenceFixRequest): string {
@@ -373,4 +389,45 @@ export function storyCheckUserMessage(req: StoryCheckRequest): string {
     .map((q, i) => `${i + 1}. ${q.q}\n${q.options.map((o, j) => `   ${j}) ${o}`).join('\n')}`)
     .join('\n');
   return `Story:\n<<<ZH\n${story}\nZH>>>\nEnglish summary: ${req.summaryEn}\nQuestions:\n${qs || '(none)'}`;
+}
+
+/** Phase 31: the learner-written parts go in the user message as JSON data. */
+export function buildLevelPrompt(template: string, learnerLevel: string): string {
+  return fillPlaceholders(template, { learner_level: learnerLevel });
+}
+
+export function explainCheckUserMessage(req: JournalExplainCheckRequest): string {
+  return JSON.stringify({ items: req.items });
+}
+
+export function whyUserMessage(req: JournalWhyRequest): string {
+  return JSON.stringify({
+    sentence: req.sentence,
+    original: req.original,
+    correction: req.correction,
+    type: req.type,
+    intendedEn: req.intendedEn ?? '',
+    problem: req.problem,
+  });
+}
+
+export function askUserMessage(req: JournalAskRequest): string {
+  return JSON.stringify({
+    sentence: req.sentence,
+    original: req.original,
+    correction: req.correction,
+    explanation: req.explanation,
+    knownWords: req.knownWords,
+    history: req.history,
+    question: req.question,
+  });
+}
+
+export function gapUserMessage(req: JournalGapRequest): string {
+  return JSON.stringify({
+    sentence: req.sentence,
+    english: req.en,
+    candidates: req.candidates,
+    intendedEn: req.intendedEn ?? '',
+  });
 }

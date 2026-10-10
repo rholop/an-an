@@ -8,7 +8,8 @@ import {
   type ErrorItem,
   type SourceReport,
 } from '@anan/core';
-import { db } from '../db/instance.js';
+import { db, learnerService } from '../db/instance.js';
+import { JournalService } from '../lib/journal-service.js';
 import {
   alsoInOtherProfiles,
   deleteJournalItem,
@@ -20,7 +21,8 @@ import {
 import { allowedLatinNames } from '../lib/journal-cloze-check.js';
 import { withdrawGlossReport } from '../lib/gloss-reports.js';
 import { useAudioState } from '../lib/audio.js';
-import type { GlossReportRow } from '../db/schema.js';
+import type { GlossReportRow, JournalDispute } from '../db/schema.js';
+import { stillAMistake, YOU_ARE_RIGHT_REMOVED } from '../lib/labels.js';
 import { getProtectedTerms } from '../lib/journal-protected.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -91,8 +93,51 @@ export function ReportedPage() {
         }),
       ),
     );
+    // Phase 31 Part C.3: every "I think mine is right", whichever way the check went.
+    setDisputes(
+      reviews.flatMap((r) =>
+        Object.entries(r.disputes ?? {}).flatMap(([i, d]) => {
+          const issue = r.issues[Number(i)];
+          const entryText = entries.find((e) => e.id === r.entryId)?.text ?? '';
+          return issue
+            ? [{ key: `${r.entryId}:${i}`, original: entryText.slice(issue.span[0], issue.span[1]), correction: issue.correction, dispute: d, date: entryDate.get(r.entryId) }]
+            : [];
+        }),
+      ),
+    );
+    // Phase 31 Part D.4: words the old gap rule added by itself ("Added from a journal gap. Keep?").
+    setGapWords(
+      reviews.flatMap((r) =>
+        r.brackets.flatMap((b) =>
+          b.legacy === 'ask' || b.legacy === 'flagged'
+            ? [{ entryId: r.entryId, en: b.en, zh: b.zh, flagged: b.legacy === 'flagged', date: entryDate.get(r.entryId) }]
+            : [],
+        ),
+      ),
+    );
   }, []);
   const [definitions, setDefinitions] = useState<GlossReportRow[]>([]);
+  const [disputes, setDisputes] = useState<
+    Array<{ key: string; original: string; correction: string; dispute: JournalDispute; date?: Date }>
+  >([]);
+  const [gapWords, setGapWords] = useState<
+    Array<{ entryId: string; en: string; zh: string; flagged: boolean; date?: Date }>
+  >([]);
+  const journal = useMemo(
+    () =>
+      lexiconState.status === 'ready'
+        ? new JournalService(db, lexiconState.lexicon, learnerService, new FetchTutorLLM())
+        : null,
+    [lexiconState],
+  );
+  // the one-time listing of old gap words, then a reload so they show
+  useEffect(() => {
+    if (!journal) return;
+    void journal
+      .migrateLegacyGaps()
+      .then((n) => (n > 0 ? load() : undefined))
+      .catch(() => undefined);
+  }, [journal, load]);
   const [corrections, setCorrections] = useState<
     Array<{ key: string; correction: string; explanation: string; date?: Date }>
   >([]);
@@ -284,6 +329,59 @@ export function ReportedPage() {
                   {c.explanation} (not practised)
                 </small>
               </p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <h2>Journal disputes</h2>
+      {disputes.length === 0 ? (
+        <p>No “I think mine is right” yet.</p>
+      ) : (
+        <ul className="reported-list" data-testid="reported-disputes">
+          {disputes.map((d) => (
+            <li key={d.key}>
+              <p lang="zh-Hant-TW" className="reported-sentence">
+                {d.original} → {d.correction}
+              </p>
+              <p>
+                <small>
+                  {d.date ? `journal entry of ${fmt(d.date)} — ` : ''}
+                  {d.dispute.verdict === 'upheld' ? YOU_ARE_RIGHT_REMOVED : stillAMistake(d.dispute.problem)}
+                  {d.dispute.intendedEn ? ` (meant: “${d.dispute.intendedEn}”)` : ''}
+                </small>
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <h2>Words added from a journal gap</h2>
+      {gapWords.length === 0 ? (
+        <p>Nothing to check.</p>
+      ) : (
+        <ul className="reported-list" data-testid="reported-gap-words">
+          {gapWords.map((g) => (
+            <li key={`${g.entryId}:${g.en}`}>
+              <p lang="zh-Hant-TW" className="reported-sentence">
+                [{g.en}] → {g.zh}
+              </p>
+              <p>
+                <small>
+                  Added from a journal gap{g.date ? ` of ${fmt(g.date)}` : ''}. Keep?
+                  {g.flagged ? ' ⚑ Picked without looking at your sentence; it may not fit.' : ''}
+                </small>
+              </p>
+              <button
+                disabled={!journal || busy === `gap:${g.entryId}:${g.en}`}
+                onClick={() => void run(`gap:${g.entryId}:${g.en}`, () => journal!.settleLegacyGap(g.entryId, g.en, true))}
+              >
+                Keep
+              </button>{' '}
+              <button
+                disabled={!journal || busy === `gap:${g.entryId}:${g.en}`}
+                onClick={() => void run(`gap:${g.entryId}:${g.en}`, () => journal!.settleLegacyGap(g.entryId, g.en, false))}
+              >
+                Remove from review
+              </button>
             </li>
           ))}
         </ul>

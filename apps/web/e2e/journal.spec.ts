@@ -32,16 +32,27 @@ test.describe('Journal page', () => {
     });
     await expect(page.locator('.journal-text mark.journal-hl--mainland_style')).toHaveText('地鐵');
     await expect(page.getByText('捷運', { exact: true })).toHaveCount(0);
-    await expect(page.getByText(/\[gym\] →/)).toBeVisible();
+    await expect(page.getByTestId('journal-gap')).toContainText('[gym]');
+    // Phase 31: the legend explains itself
+    await page.getByRole('button', { name: 'unnatural', exact: true }).click();
+    await expect(page.getByTestId('legend-meaning')).toContainText('understandable');
 
     // Self-fix, then check.
     await page.getByLabel('Your fix for part 1').fill('捷運');
     await page.getByRole('button', { name: 'Check' }).click();
     await expect(page.getByText('✓ Correct')).toBeVisible();
+    // Phase 31: right or wrong, the checked "Why?" shows under the feedback
+    await expect(page.getByTestId('journal-why')).toContainText('地鐵');
 
     await page.getByRole('button', { name: 'Show corrections' }).click();
     await expect(page.getByText('You fixed this yourself')).toBeVisible();
-    await expect(page.getByText('In Taiwan the metro is usually called 捷運.')).toBeVisible();
+    await expect(page.getByTestId('journal-why')).toContainText("What's wrong");
+
+    // Ask about this: the answer is saved with the entry
+    await page.getByRole('button', { name: 'Ask about this' }).click();
+    await page.getByLabel('Ask about this').fill('Why not 地鐵?');
+    await page.getByRole('button', { name: 'Ask', exact: true }).click();
+    await expect(page.getByTestId('journal-ask')).toContainText('About 捷運');
 
     await page.getByRole('button', { name: 'Explain more' }).click();
     await expect(page.getByText(/More detail/)).toBeVisible();

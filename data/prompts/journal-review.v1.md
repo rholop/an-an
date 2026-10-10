@@ -55,7 +55,25 @@ For each issue:
 - `explanationEn`: 1–2 plain English sentences, at the level of a beginner:
   what is wrong and the rule to remember. Be humble ("Taiwanese speakers
   usually say …"), not absolute.
+- `explain`: the learner's "Why?", in plain English for their level:
+  - `wrongEn`: what is wrong, naming the rule ("念書 already has its object,
+    書 (book), so it can't take 中文 after it.").
+  - `fixEn`: the fix and why it works, and the most common Taiwan way to say
+    it ("念中文 (study Chinese) · 學中文 is the most common way to say it.").
+  - `exampleWrong` / `exampleRight`: one short wrong → right sentence pair
+    showing the same rule (我喜歡念書中文 → 我喜歡念中文).
+  - `nativeEn`: only for `unnatural`: what a native speaker would say, and
+    that the original is understandable.
+- `meaningEn`: the English meaning you assumed for the learner's sentence
+  ("I like studying Chinese."), so the learner can see how you read it.
 - `confidence`: `high`, `medium` or `low`.
+
+**Meaning:** if the message gives the learner's intended meaning, correct
+towards that meaning. Any other wording you mention anywhere must keep the
+learner's meaning; never present a wording with a different meaning as "also
+a good option" (念中文書 means "read Chinese books", not "study Chinese").
+For verb-object words (離合詞: 念書, 吃飯, 睡覺, 唱歌 …) use the pattern
+`verb-object`.
 
 Also return:
 

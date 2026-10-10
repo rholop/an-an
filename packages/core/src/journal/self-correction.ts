@@ -31,4 +31,8 @@ export interface SelfFixRecord {
   /** An accepted alternative that differed from the suggested correction. */
   alternative?: boolean;
   note?: string;
+  /** Phase 31 Part B: other wordings, each with its meaning and whether it keeps the learner's
+   * meaning (checked by code with the independent check). One that changes it is shown with its
+   * meaning, never as "also a good option". */
+  alternatives?: { zh: string; meaningEn: string; sameMeaning: boolean }[];
 }

@@ -10,12 +10,23 @@ import {
   type ErrorItem,
   type SentenceCache,
   type VerifiedSentence,
+  checkAlternativeMeanings,
+  checkExplanations,
   checkTaiwanness,
   compareSelfFix,
+  contextAround,
+  sentenceRange,
+  gapCandidates,
+  resolveGap,
+  JOURNAL_ASK_MAX_TURNS,
+  type ExplainLLM,
+  type GapLLM,
+  type JournalAskTurn,
+  type JournalIssue,
+  type SkillCard,
   errorsPer100Chars,
   extractBrackets,
   findWordsUsed,
-  lookupBracketInLexicon,
   MAX_JOURNAL_ISSUES,
   planJournalEvidence,
   summarizeLevels,
@@ -30,7 +41,8 @@ import {
   type Word,
 } from '@anan/core';
 import { saveProgressNow } from './save-progress.js';
-import type { AnanDB, JournalEntryRow, JournalReviewRow, ResolvedBracket } from '../db/schema.js';
+import type { AnanDB, JournalDispute, JournalEntryRow, JournalReviewRow, ResolvedBracket } from '../db/schema.js';
+import { DexieLearnerRepo } from '../db/learner-repo.js';
 import type { LearnerService } from './learner-service.js';
 import { getProtectedTerms } from './journal-protected.js';
 
@@ -53,6 +65,8 @@ export interface SubmitEntryInput {
   learnerLevel: Level;
   promptId?: string;
   promptWordIds?: string[];
+  /** Phase 31 Part C.2: "What did you mean?" (optional). */
+  intendedEn?: string;
 }
 
 export class JournalError extends Error {
@@ -132,6 +146,7 @@ export class JournalService {
       maxIssues: this.config.maxIssues,
       sentences: prepared.map((p) => p.original),
       protectedTerms,
+      ...(input.intendedEn?.trim() ? { intendedEn: input.intendedEn.trim() } : {}),
     });
     const { review, rejected } = validateJournalReview(raw, {
       lexicon: this.lexicon,
@@ -141,11 +156,10 @@ export class JournalService {
       bracketRanges: gaps.map((g): [number, number] => [g.start, g.end]),
     });
 
-    const brackets = await this.resolveBrackets(
-      gaps.map((g) => g.en),
-      review,
-      now,
-    );
+    // Phase 31 Part A.4: every explanation is checked before it is shown.
+    const intendedEn = input.intendedEn?.trim() || undefined;
+    const issues = await this.checkIssues(review.issues, text, input.learnerLevel, () => intendedEn);
+    const brackets = await this.resolveBrackets(text, gaps, review, input.learnerLevel, intendedEn);
     const levels = summarizeLevels(text, this.lexicon, input.learnerLevel);
 
     const entry: JournalEntryRow = {
@@ -154,12 +168,13 @@ export class JournalService {
       promptId: input.promptId,
       promptWordIds,
       createdAt: now,
-      status: review.issues.length > 0 ? 'self_correcting' : 'revealed',
+      status: issues.length > 0 ? 'self_correcting' : 'revealed',
+      ...(intendedEn ? { intendedEn } : {}),
     };
     const reviewRow: JournalReviewRow = {
       entryId: entry.id,
       learnerLevel: input.learnerLevel,
-      issues: review.issues,
+      issues,
       naturalRewrite: review.natural_rewrite,
       brackets,
       usedWell: review.used_well,
@@ -169,7 +184,7 @@ export class JournalService {
       explainMore: {},
       levelHeadline: levels.headline,
       wordsUsed: levels.wordsUsed,
-      errorsPer100Chars: errorsPer100Chars(review.issues.length, text),
+      errorsPer100Chars: errorsPer100Chars(issues.length, text),
       createdAt: now,
       sentences: attachModelReviews(prepared, raw.sentences, raw.servedBy),
     };
@@ -181,48 +196,117 @@ export class JournalService {
     return { entry, review: reviewRow };
   }
 
+  private explainLLM(): ExplainLLM | undefined {
+    const llm = this.tutorLLM;
+    return llm.checkJournalExplanations && llm.explainJournalWhy
+      ? {
+          checkJournalExplanations: (r) => llm.checkJournalExplanations!(r),
+          explainJournalWhy: (r) => llm.explainJournalWhy!(r),
+        }
+      : undefined;
+  }
+
+  private gapLLM(): GapLLM | undefined {
+    const llm = this.tutorLLM;
+    return llm.fillJournalGap
+      ? {
+          fillJournalGap: (r) => llm.fillJournalGap!(r),
+          verifyJournalSentence: (r) => llm.verifyJournalSentence(r),
+        }
+      : undefined;
+  }
+
+  /** Phase 31 Part A.4: the independent check of every explanation (regenerated once on a fail). */
+  private async checkIssues(
+    issues: JournalIssue[],
+    text: string,
+    learnerLevel: Level,
+    intendedFor: (issue: JournalIssue) => string | undefined,
+  ): Promise<JournalIssue[]> {
+    const llm = this.explainLLM();
+    if (!llm || issues.length === 0) return issues;
+    return checkExplanations(llm, issues, { text, learnerLevel, intendedFor });
+  }
+
+  /** The learner's meaning for the sentence holding `span`: a fixed "Read as" first, then the
+   * entry's "What did you mean?". */
+  private intendedFor(
+    entry: Pick<JournalEntryRow, 'text' | 'intendedEn'>,
+    review: Pick<JournalReviewRow, 'meanings'> | undefined,
+    span: readonly [number, number],
+  ): string | undefined {
+    return review?.meanings?.[sentenceRange(entry.text, span)[0]] ?? entry.intendedEn;
+  }
+
   /**
-   * Phase 5 §2: each bracket gets a Taiwan-appropriate translation — the
-   * lexicon first, else the (already validated) model translation — and the
-   * word becomes a high-priority production item that the next cloze session
-   * serves first. A word with no lexicon entry becomes a `custom` word.
+   * Phase 31 Part D: each gap gets up to 3 options that fit its sentence (an in-context Gemini
+   * pick among the lexicon matches and its own idea, each filled sentence independently checked).
+   * Nothing is added to review here: every option has its own "Add to review".
    */
   private async resolveBrackets(
-    gapEnglish: string[],
+    text: string,
+    gaps: ReturnType<typeof extractBrackets>,
     review: JournalReview,
-    now: Date,
+    learnerLevel: Level,
+    intendedEn: string | undefined,
   ): Promise<ResolvedBracket[]> {
     const resolved: ResolvedBracket[] = [];
     const seen = new Set<string>();
-    for (const en of gapEnglish) {
+    for (const gap of gaps) {
+      const en = gap.en;
       if (seen.has(en.toLowerCase())) continue;
       seen.add(en.toLowerCase());
-
-      const fromLexicon = lookupBracketInLexicon(en, this.lexicon);
+      const options = await resolveGap(this.gapLLM(), this.lexicon, {
+        text,
+        gap,
+        learnerLevel,
+        ...(intendedEn ? { intendedEn } : {}),
+      });
+      // the review's own translation is a last resort, shown only when nothing else was found
       const fromLlm = review.brackets.find((b) => b.en.trim().toLowerCase() === en.toLowerCase());
-
-      let word: Word | undefined;
-      let source: ResolvedBracket['source'] = 'unresolved';
-      let zh = '';
-      if (fromLexicon) {
-        word = fromLexicon;
-        zh = fromLexicon.headword;
-        source = 'lexicon';
-      } else if (fromLlm) {
-        zh = fromLlm.zh;
-        source = 'llm';
-        word =
-          (fromLlm.wordId ? this.lexicon.byId(fromLlm.wordId) : undefined) ??
-          this.lexicon.lookup(fromLlm.zh)[0];
-        if (!word && checkTaiwanness(zh).isClean) {
-          word = { ...buildCustomWord(zh, '', en), tags: ['journal-gap'] };
-          await this.db.customWords.put(word);
-        }
+      if (options.length === 0 && fromLlm && checkTaiwanness(fromLlm.zh).isClean) {
+        const word = this.lexicon.lookup(fromLlm.zh)[0];
+        options.push({
+          zh: fromLlm.zh,
+          pinyin: word?.pinyin ?? '',
+          meaningEn: word?.glossEn ?? en,
+          usageEn: '',
+          corrected: '',
+          checked: false,
+          ...(word ? { wordId: word.id } : {}),
+        });
       }
-      if (word) await this.addPriorityItem(word, now);
-      resolved.push({ en, zh, wordId: word?.id, source });
+      const first = options[0];
+      resolved.push({
+        en,
+        zh: first?.zh ?? '',
+        ...(first?.wordId ? { wordId: first.wordId } : {}),
+        source: !first ? 'unresolved' : first.checked ? 'llm' : 'lexicon',
+        options,
+        added: [],
+      });
     }
     return resolved;
+  }
+
+  /** Phase 31 Part D.3: "Add to review" on one gap option (nothing is ever added by itself). */
+  async addGapWord(entryId: string, en: string, zh: string, now: Date = new Date()): Promise<void> {
+    const review = await this.getReview(entryId);
+    const bracket = review?.brackets.find((b) => b.en === en);
+    const option = bracket?.options?.find((o) => o.zh === zh);
+    if (!review || !bracket || !option) throw new JournalError('Unknown gap option.');
+    if (bracket.added?.includes(zh)) return;
+    let word: Word | undefined =
+      (option.wordId ? this.lexicon.byId(option.wordId) : undefined) ?? this.lexicon.lookup(zh)[0];
+    if (!word) {
+      if (!checkTaiwanness(zh).isClean) throw new JournalError('Please use traditional characters and Taiwan wording.');
+      word = { ...buildCustomWord(zh, option.pinyin, option.meaningEn || en), tags: ['journal-gap'] };
+      await this.db.customWords.put(word);
+    }
+    await this.addPriorityItem(word, now);
+    await this.db.journalReviews.update(entryId, {
+      brackets: review.brackets.map((b) => (b === bracket ? { ...b, added: [...(b.added ?? []), zh] } : b)),
+    });
   }
 
   private async addPriorityItem(word: Word, now: Date): Promise<void> {
@@ -233,6 +317,242 @@ export class JournalService {
       { item, skill: 'production', kind: 'journal_priority', at: now, context: { source: 'journal' } },
       now,
     );
+  }
+
+  /** Phase 31 Part A.4: explanations that couldn't be checked (offline) are checked again. */
+  async retryExplanations(entryId: string): Promise<boolean> {
+    const [entry, review] = await Promise.all([this.getEntry(entryId), this.getReview(entryId)]);
+    if (!entry || !review || !review.issues.some((i) => i.explainStatus === 'pending')) return false;
+    const issues = await this.checkIssues(review.issues, entry.text, review.learnerLevel, (i) =>
+      this.intendedFor(entry, review, i.span),
+    );
+    await this.db.journalReviews.update(entryId, { issues });
+    return true;
+  }
+
+  /** Phase 31 Part C.1: "Ask about this", a short focused chat (up to 5 turns) saved with the entry. */
+  async ask(
+    entryId: string,
+    issueIndex: number,
+    question: string,
+    knownWords: readonly string[] = [],
+    now: Date = new Date(),
+  ): Promise<JournalAskTurn[]> {
+    const [entry, review] = await Promise.all([this.getEntry(entryId), this.getReview(entryId)]);
+    const issue = review?.issues[issueIndex];
+    if (!entry || !review || !issue) throw new JournalError('Unknown issue.');
+    if (!this.tutorLLM.askJournal) throw new JournalError('Asking is not available right now.');
+    const q = question.trim().slice(0, 400);
+    if (!q) throw new JournalError('Type a question first.');
+    const turns = review.asks?.[issueIndex] ?? [];
+    if (turns.length >= JOURNAL_ASK_MAX_TURNS) throw new JournalError('That’s the most questions for one correction.');
+    const e = issue.explain;
+    const explanation = e
+      ? [e.wrongEn, e.fixEn, `${e.exampleWrong} ✗ → ${e.exampleRight} ✓`, e.nativeEn ?? ''].filter(Boolean).join(' ')
+      : issue.explanationEn;
+    const res = await this.tutorLLM.askJournal({
+      sentence: contextAround(entry.text, issue.span),
+      original: entry.text.slice(issue.span[0], issue.span[1]),
+      correction: issue.correction,
+      explanation: explanation.slice(0, 1200),
+      learnerLevel: review.learnerLevel,
+      knownWords: knownWords.filter((w) => w.length <= 12).slice(0, 80),
+      history: turns.map((t) => ({ q: t.q, a: t.a })),
+      question: q,
+    });
+    const turn: JournalAskTurn = {
+      q,
+      a: res.answerEn,
+      examples: res.examples.filter((x) => checkTaiwanness(x.zh).isClean),
+      at: now,
+    };
+    const fresh = (await this.getReview(entryId)) ?? review;
+    const next = [...(fresh.asks?.[issueIndex] ?? []), turn];
+    await this.db.journalReviews.update(entryId, { asks: { ...(fresh.asks ?? {}), [issueIndex]: next } });
+    return next;
+  }
+
+  /**
+   * Phase 31 Part C.2: "What did you mean?" after the fact. With `sentenceStart`, it fixes the
+   * "Read as" of that sentence; without, it is the whole entry's meaning. Either way the entry is
+   * checked again aiming at that meaning (only before it is finished). Self-fixes, flags and
+   * questions about the old corrections are cleared with them.
+   */
+  async setMeaning(
+    entryId: string,
+    meaningEn: string,
+    sentenceStart?: number,
+    now: Date = new Date(),
+  ): Promise<void> {
+    const [entry, review] = await Promise.all([this.getEntry(entryId), this.getReview(entryId)]);
+    if (!entry || !review) throw new JournalError('Unknown entry.');
+    if (entry.status === 'finished') throw new JournalError('This entry is finished.');
+    const en = meaningEn.trim().slice(0, 300);
+    if (!en) throw new JournalError('Say what you meant first.');
+    const meanings = sentenceStart === undefined ? { ...(review.meanings ?? {}) } : { ...(review.meanings ?? {}), [sentenceStart]: en };
+    const entryMeaning = sentenceStart === undefined ? en : entry.intendedEn;
+    const parts = [
+      ...(entryMeaning ? [entryMeaning] : []),
+      ...Object.entries(meanings).map(
+        ([s, m]) => `"${contextAround(entry.text, [Number(s), Number(s) + 1])}" means: ${m}`,
+      ),
+    ];
+    const intendedEn = parts.join(' | ').slice(0, 400);
+
+    const prepared = prepareSentences(entry.text);
+    const protectedTerms = await getProtectedTerms(this.db);
+    const gaps = extractBrackets(entry.text);
+    const raw = await this.tutorLLM.reviewJournal({
+      text: entry.text,
+      learnerLevel: review.learnerLevel,
+      promptWords: entry.promptWordIds.flatMap((id) => this.lexicon.byId(id)?.headword ?? []),
+      recurringPatterns: [],
+      maxIssues: this.config.maxIssues,
+      sentences: prepared.map((p) => p.original),
+      protectedTerms,
+      intendedEn,
+    });
+    const { review: validated, rejected } = validateJournalReview(raw, {
+      lexicon: this.lexicon,
+      text: entry.text,
+      maxIssues: this.config.maxIssues,
+      bracketRanges: gaps.map((g): [number, number] => [g.start, g.end]),
+    });
+    const draftEntry = { ...entry, ...(entryMeaning ? { intendedEn: entryMeaning } : {}) };
+    const draftReview = { ...review, meanings };
+    const issues = await this.checkIssues(validated.issues, entry.text, review.learnerLevel, (i) =>
+      this.intendedFor(draftEntry, draftReview, i.span),
+    );
+    await this.db.transaction('rw', this.db.journalEntries, this.db.journalReviews, async () => {
+      await this.db.journalEntries.update(entryId, {
+        status: issues.length > 0 ? 'self_correcting' : 'revealed',
+        ...(entryMeaning ? { intendedEn: entryMeaning } : {}),
+      });
+      await this.db.journalReviews.update(entryId, {
+        issues,
+        naturalRewrite: validated.natural_rewrite,
+        usedWell: validated.used_well,
+        rejectedCount: rejected.length,
+        selfFix: {},
+        flagged: [],
+        explainMore: {},
+        asks: {},
+        disputes: {},
+        meanings,
+        errorsPer100Chars: errorsPer100Chars(issues.length, entry.text),
+        sentences: attachModelReviews(prepared, raw.sentences, raw.servedBy),
+        verifiedSentences: [],
+      });
+    });
+    void now;
+  }
+
+  /**
+   * Phase 31 Part C.3: "I think mine is right". The learner's own sentence goes to the
+   * independent check with their meaning. If it agrees, the correction is removed (never
+   * practised; on a finished entry its error-bank items and evidence are undone); otherwise it
+   * stays, with the check's reason. Either way the dispute is logged on the Reported page.
+   */
+  async dispute(entryId: string, issueIndex: number, now: Date = new Date()): Promise<JournalDispute> {
+    const [entry, review] = await Promise.all([this.getEntry(entryId), this.getReview(entryId)]);
+    const issue = review?.issues[issueIndex];
+    if (!entry || !review || !issue) throw new JournalError('Unknown issue.');
+    const intendedEn = this.intendedFor(entry, review, issue.span) ?? issue.meaningEn ?? '';
+    const sentence = contextAround(entry.text, issue.span);
+    const v = await this.tutorLLM.verifyJournalSentence({ zh: sentence, ...(intendedEn ? { en: intendedEn } : {}) });
+    const upheld = v.ok && v.meaningMatches;
+    const record: JournalDispute = {
+      at: now,
+      verdict: upheld ? 'upheld' : 'still_wrong',
+      intendedEn,
+      ...(upheld ? {} : { problem: v.problem || (v.meaningMatches ? '' : 'It doesn’t say what you meant.') }),
+    };
+    await this.db.journalReviews.update(entryId, { disputes: { ...(review.disputes ?? {}), [issueIndex]: record } });
+    if (upheld && entry.status === 'finished') await this.undoFinishedIssue(entry, review, issue, now);
+    return record;
+  }
+
+  /** A correction removed after the entry was finished: its error-bank items go, and its
+   * misuse evidence is taken back (`evidence_undone`, which the ledger drops). */
+  private async undoFinishedIssue(
+    entry: JournalEntryRow,
+    review: JournalReviewRow,
+    issue: JournalIssue,
+    now: Date,
+  ): Promise<void> {
+    const sentences = (review.verifiedSentences ?? []).filter(
+      (v) => v.start < issue.span[1] && issue.span[0] < v.end,
+    );
+    const items = await this.db.errorItems.where('journalEntryId').equals(entry.id).toArray();
+    for (const it of items) {
+      if (it.status === 'deleted') continue;
+      if (!sentences.some((v) => v.original === it.original)) continue;
+      await this.db.errorItems.put({ ...it, status: 'deleted', blockedReason: 'removed: the learner was right' });
+    }
+    if (!issue.itemRef) return;
+    const ref = issue.itemRef;
+    const rows = await this.db.evidence
+      .filter(
+        (e) =>
+          e.kind === 'journal_misuse' &&
+          e.context?.refId === entry.id &&
+          e.item.kind === ref.kind &&
+          e.item.id === ref.id,
+      )
+      .toArray();
+    for (const row of rows) {
+      if (!row.uid) continue;
+      const prior = review.misusePrior?.[`${ref.kind}:${ref.id}`];
+      const later = await this.db.evidence
+        .filter((e) => e.item.id === ref.id && e.skill === 'production' && e.at > row.at)
+        .count();
+      const undo: Evidence = {
+        item: ref,
+        skill: 'production',
+        kind: 'evidence_undone',
+        at: now,
+        context: { source: 'journal', refId: row.uid, ...(prior ? { restore: prior } : {}) },
+      };
+      // the card goes back only if nothing has answered it since; otherwise only the record
+      // is taken back (the ledger drops undone evidence)
+      if (later === 0 && prior !== undefined) await this.learnerService.record(undo, now);
+      else await this.db.evidence.add({ ...undo, uid: crypto.randomUUID() } as never);
+    }
+  }
+
+  /** Phase 31 Part D.4: bracket words the old rule (Phase 5) added to review by itself are listed
+   * on the Reported page ("Added from a journal gap. Keep?"). One with several lexicon matches
+   * (the rule picked blindly, like 宜人 for "nice") is pre-flagged. Runs once per profile. */
+  async migrateLegacyGaps(): Promise<number> {
+    const KEY = 'phase31-legacy-gaps';
+    if (await this.db.meta.get(KEY)) return 0;
+    let n = 0;
+    const reviews = await this.db.journalReviews.toArray();
+    for (const r of reviews) {
+      if (!r.brackets.some((b) => b.wordId && b.source !== 'unresolved' && !b.options && !b.legacy)) continue;
+      const brackets = r.brackets.map((b) => {
+        if (!b.wordId || b.source === 'unresolved' || b.options || b.legacy) return b;
+        n++;
+        const ambiguous = gapCandidates(b.en, this.lexicon).length > 1;
+        return { ...b, legacy: ambiguous ? ('flagged' as const) : ('ask' as const) };
+      });
+      await this.db.journalReviews.update(r.entryId, { brackets });
+    }
+    await this.db.meta.put({ key: KEY, value: new Date() });
+    return n;
+  }
+
+  /** Reported page: Keep or Remove one old gap word ("Remove" takes it out of review, with Undo
+   * from Settings → Removed words like any Nope). */
+  async settleLegacyGap(entryId: string, en: string, keep: boolean, now: Date = new Date()): Promise<void> {
+    const review = await this.getReview(entryId);
+    const bracket = review?.brackets.find((b) => b.en === en && b.legacy);
+    if (!review || !bracket) throw new JournalError('Unknown gap.');
+    if (!keep && bracket.wordId)
+      await this.learnerService.nope({ kind: 'word', id: bracket.wordId }, 'never', {}, now);
+    await this.db.journalReviews.update(entryId, {
+      brackets: review.brackets.map((b) => (b === bracket ? { ...b, legacy: keep ? 'kept' : 'removed' } : b)),
+    });
   }
 
   /**
@@ -265,20 +585,32 @@ export class JournalService {
       };
     } else {
       try {
+        const sentence = contextAround(entry.text, issue.span);
         const res = await this.tutorLLM.checkJournalFix({
-          sentence: entry.text.slice(
-            Math.max(0, issue.span[0] - 30),
-            Math.min(entry.text.length, issue.span[1] + 30),
-          ),
+          sentence,
           original,
           attempt: trimmed,
           correction: issue.correction,
         });
+        // Phase 31 Part B: the feedback line is built from fields. Other wordings are shown only
+        // with their meaning checked against the learner's ("does this mean the same?").
+        const intendedEn = this.intendedFor(entry, review, issue.span) ?? issue.meaningEn;
+        const alternatives =
+          intendedEn && res.alternatives.length > 0
+            ? await checkAlternativeMeanings(this.tutorLLM, {
+                sentence,
+                original,
+                intendedEn,
+                alternatives: res.alternatives,
+              })
+            : [];
         record = {
           attempt: trimmed,
           fixed: res.acceptable,
           alternative: res.acceptable,
-          note: res.noteEn,
+          // the reason is only shown when it is still off; a right answer shows the "Why?"
+          ...(res.acceptable ? {} : { note: res.noteEn }),
+          ...(alternatives.length > 0 ? { alternatives } : {}),
         };
       } catch {
         record = {
@@ -358,14 +690,14 @@ export class JournalService {
 
     const kept = review.issues
       .map((issue, index) => ({ issue, index }))
-      .filter(({ index }) => !review.flagged.includes(index));
+      .filter(({ index }) => !notPractised(review).has(index));
 
     const promptWords = entry.promptWordIds
       .map((id) => this.lexicon.byId(id))
       .filter((w): w is Word => Boolean(w));
     const wrongSpans = kept.map(({ issue }) => issue.span);
     const promptWordsUsed = [...findWordsUsed(entry.text, promptWords, this.lexicon, wrongSpans)];
-    const flaggedSpans = review.flagged.map((i) => review.issues[i]!.span);
+    const flaggedSpans = [...notPractised(review)].flatMap((i) => (review.issues[i] ? [review.issues[i]!.span] : []));
 
     const evidence = planJournalEvidence({
       entryId,
@@ -391,7 +723,15 @@ export class JournalService {
         });
       },
     );
-    if (evidence.length > 0) await this.learnerService.recordBulk(evidence, now);
+    if (evidence.length > 0) {
+      // Phase 31: what each misused item's card was before, so "I think mine is right" can undo it
+      const repo = new DexieLearnerRepo(this.db);
+      const misusePrior: Record<string, SkillCard | null> = {};
+      for (const e of evidence.filter((x) => x.kind === 'journal_misuse'))
+        misusePrior[`${e.item.kind}:${e.item.id}`] = (await repo.getCard(e.item, 'production')) ?? null;
+      await this.db.journalReviews.update(entryId, { misusePrior });
+      await this.learnerService.recordBulk(evidence, now);
+    }
     // Phase 17: fully corrected sentences -> checked -> review items. If a model
     // can't be reached the entry is retried later (nothing wrong is ever shown).
     const built = await this.processEntry(entryId, now).catch(() => ({ items: 0, complete: false }));
@@ -462,7 +802,7 @@ export class JournalService {
     };
     const verified = await verifyEntrySentences({ ...deps, cache }, raws);
     // a sentence the learner's flag called wrong never feeds the bank
-    const flaggedSpans = review.flagged.flatMap((i) => (review.issues[i] ? [review.issues[i]!.span] : []));
+    const flaggedSpans = [...notPractised(review)].flatMap((i) => (review.issues[i] ? [review.issues[i]!.span] : []));
     const eligible = verified.sentences.filter(
       (v) => !flaggedSpans.some(([a, b]) => a < v.end && v.start < b),
     );
@@ -474,7 +814,9 @@ export class JournalService {
       (i) => isLegacyErrorItem(i) && i.status !== 'reported' && i.status !== 'deleted',
     );
     const have = new Set(existing.filter((i) => !isLegacyErrorItem(i)).map((i) => i.id));
-    const fresh: ErrorItem[] = built.items.filter((i) => !have.has(i.id));
+    const fresh: ErrorItem[] = built.items
+      .filter((i) => !have.has(i.id))
+      .map((item) => withWhy(item, review, verified.sentences));
 
     const reasonFor = (old: ErrorItem): string => {
       const sentence = verified.sentences.find(
@@ -555,4 +897,37 @@ export async function journalFlagStats(db: AnanDB): Promise<{ flagged: number; s
     shown += r.issues.length;
   });
   return { flagged, shown };
+}
+
+/** Phase 31: issue indexes never practised: flagged by the learner, an explanation that failed the
+ * check twice ("We're not sure about this one"), or a dispute the learner won. */
+export function notPractised(review: Pick<JournalReviewRow, 'issues' | 'flagged' | 'disputes'>): Set<number> {
+  const out = new Set(review.flagged);
+  review.issues.forEach((issue, i) => {
+    if (issue.explainStatus === 'unsure') out.add(i);
+    if (review.disputes?.[i]?.verdict === 'upheld') out.add(i);
+  });
+  return out;
+}
+
+/** Phase 31 Part E: an error-bank item keeps the checked "Why?" (and the linked item) of the
+ * correction it practises, found by where the change sits in the entry. */
+function withWhy(
+  item: ErrorItem,
+  review: JournalReviewRow,
+  sentences: readonly { original: string; start: number }[],
+): ErrorItem {
+  const s = sentences.find((v) => v.original === item.original);
+  if (!s) return item;
+  const at: [number, number] = [s.start + item.span[0], s.start + Math.max(item.span[1], item.span[0] + 1)];
+  const issue = review.issues.find(
+    (i) => i.explainStatus === 'checked' && i.explain && i.span[0] < at[1] && at[0] < i.span[1],
+  );
+  if (!issue?.explain) return item;
+  return {
+    ...item,
+    why: issue.explain,
+    ...(issue.pattern && !item.pattern ? { pattern: issue.pattern } : {}),
+    ...(issue.itemRef && !item.itemRef ? { itemRef: issue.itemRef } : {}),
+  };
 }

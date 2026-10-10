@@ -21,6 +21,26 @@ export const ItemRefSchema = z.object({ kind: z.enum(['word', 'grammar']), id: z
 export const SpanSchema = z.tuple([z.number().int(), z.number().int()]);
 export type Span = z.infer<typeof SpanSchema>;
 
+/** Phase 31 Part A: the "Why?" of one correction, in plain English for the learner's level. */
+export const IssueExplanationSchema = z.object({
+  /** What's wrong: "念書 already has its object, 書 (book), so it can't take 中文 after it." */
+  wrongEn: z.string().min(1).max(400),
+  /** The fix and why it works: "念中文 (study Chinese) · 學中文 is the most common way to say it." */
+  fixEn: z.string().min(1).max(400),
+  /** One wrong → right example pair (Chinese). */
+  exampleWrong: z.string().min(1).max(80),
+  exampleRight: z.string().min(1).max(80),
+  /** For "unnatural": what a native speaker would say, and that the original is understandable. */
+  nativeEn: z.string().max(300).optional(),
+});
+export type IssueExplanation = z.infer<typeof IssueExplanationSchema>;
+
+/** Phase 31 Part A.4: `checked` passed the independent check; `unsure` failed it twice ("We're not
+ * sure about this one", never practised); `pending` couldn't be checked yet (retried). Set by code
+ * only, never by the model. */
+export const ExplainStatusSchema = z.enum(['checked', 'unsure', 'pending']);
+export type ExplainStatus = z.infer<typeof ExplainStatusSchema>;
+
 export const JournalIssueSchema = z.object({
   span: SpanSchema,
   type: IssueTypeSchema,
@@ -29,6 +49,11 @@ export const JournalIssueSchema = z.object({
   correction: z.string(),
   explanationEn: z.string(),
   confidence: IssueConfidenceSchema,
+  /** Phase 31: the structured "Why?". */
+  explain: IssueExplanationSchema.optional(),
+  /** Phase 31 Part C.2: the meaning the corrector assumed for the sentence ("Read as: …"). */
+  meaningEn: z.string().max(400).optional(),
+  explainStatus: ExplainStatusSchema.optional(),
 });
 export type JournalIssue = z.infer<typeof JournalIssueSchema>;
 
@@ -179,6 +204,8 @@ export const JournalReviewRequestSchema = z.object({
   protectedTerms: z.array(z.string().min(1).max(20)).max(20).optional(),
   /** Phase 17: only `sentences` is wanted (rebuilding old items). */
   sentencesOnly: z.boolean().optional(),
+  /** Phase 31 Part C.2: "What did you mean?" in the learner's words. Corrections aim at it. */
+  intendedEn: z.string().max(400).optional(),
 });
 export type JournalReviewRequest = z.infer<typeof JournalReviewRequestSchema>;
 
@@ -193,9 +220,16 @@ export const JournalCheckRequestSchema = z.object({
 });
 export type JournalCheckRequest = z.infer<typeof JournalCheckRequestSchema>;
 
+/** Phase 31 Part B: another wording the checker offers, with its own meaning; code then checks
+ * whether it keeps the learner's meaning. */
+export const AlternativeSchema = z.object({ zh: z.string().min(1).max(60), meaningEn: z.string().max(200) });
+export type Alternative = z.infer<typeof AlternativeSchema>;
+
 export const JournalCheckResponseSchema = z.object({
   acceptable: z.boolean(),
+  /** Why it is still off (only shown when not acceptable). Never lists other wordings. */
   noteEn: z.string(),
+  alternatives: z.array(AlternativeSchema).max(3).default([]),
 });
 export type JournalCheckResponse = z.infer<typeof JournalCheckResponseSchema>;
 
@@ -214,6 +248,104 @@ export const JournalExplainResponseSchema = z.object({
   examples: z.array(z.object({ zh: z.string(), en: z.string() })).max(3),
 });
 export type JournalExplainResponse = z.infer<typeof JournalExplainResponseSchema>;
+
+/** POST /v1/journal-explain-check — Phase 31 Part A.4: the independent check (checker model) that
+ * each explanation matches its correction and is true. */
+export const JournalExplainCheckRequestSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        sentence: z.string().min(1).max(500),
+        original: z.string().max(100),
+        correction: z.string().max(100),
+        type: IssueTypeSchema,
+        explain: IssueExplanationSchema,
+        intendedEn: z.string().max(400).optional(),
+      }),
+    )
+    .min(1)
+    .max(5),
+});
+export type JournalExplainCheckRequest = z.infer<typeof JournalExplainCheckRequestSchema>;
+
+export const JournalExplainCheckResponseSchema = z.object({
+  results: z
+    .array(z.object({ index: z.number().int().min(0), ok: z.boolean(), problem: z.string().max(300) }))
+    .max(5),
+});
+export type JournalExplainCheckResponse = z.infer<typeof JournalExplainCheckResponseSchema>;
+
+/** POST /v1/journal-why — Phase 31: a fresh "Why?" for one correction after the check objected. */
+export const JournalWhyRequestSchema = z.object({
+  sentence: z.string().min(1).max(500),
+  original: z.string().max(100),
+  correction: z.string().max(100),
+  type: IssueTypeSchema,
+  intendedEn: z.string().max(400).optional(),
+  /** What the check said was wrong with the earlier explanation ('' when there was none). */
+  problem: z.string().max(300),
+  learnerLevel: LevelSchema,
+});
+export type JournalWhyRequest = z.infer<typeof JournalWhyRequestSchema>;
+
+/** POST /v1/journal-ask — Phase 31 Part C.1: "Ask about this", up to 5 turns about one correction. */
+export const JOURNAL_ASK_MAX_TURNS = 5;
+export const JournalAskRequestSchema = z.object({
+  sentence: z.string().min(1).max(500),
+  original: z.string().max(100),
+  correction: z.string().max(100),
+  explanation: z.string().max(1200),
+  learnerLevel: LevelSchema,
+  /** Words the learner knows (vocabulary ladder rung 1), for the examples. */
+  knownWords: z.array(z.string().min(1).max(12)).max(80).default([]),
+  history: z
+    .array(z.object({ q: z.string().max(400), a: z.string().max(1500) }))
+    .max(JOURNAL_ASK_MAX_TURNS - 1)
+    .default([]),
+  question: z.string().min(1).max(400),
+});
+export type JournalAskRequest = z.infer<typeof JournalAskRequestSchema>;
+
+export const JournalAskResponseSchema = z.object({
+  answerEn: z.string().min(1).max(1500),
+  examples: z.array(z.object({ zh: z.string(), en: z.string() })).max(3).default([]),
+});
+export type JournalAskResponse = z.infer<typeof JournalAskResponseSchema>;
+
+/** One saved "Ask about this" turn. */
+export interface JournalAskTurn {
+  q: string;
+  a: string;
+  examples: { zh: string; en: string }[];
+  at: Date;
+}
+
+/** POST /v1/journal-gap — Phase 31 Part D: an `[english]` gap translated in its sentence. */
+export const JournalGapRequestSchema = z.object({
+  /** The sentence with the gap written as ＿＿. */
+  sentence: z.string().min(1).max(300),
+  en: z.string().min(1).max(60),
+  /** Lexicon words whose gloss matches. */
+  candidates: z.array(z.object({ zh: z.string(), glossEn: z.string() })).max(10).default([]),
+  learnerLevel: LevelSchema,
+  intendedEn: z.string().max(400).optional(),
+});
+export type JournalGapRequest = z.infer<typeof JournalGapRequestSchema>;
+
+export const GapOptionSchema = z.object({
+  /** The word or phrase to learn (人很好, 親切, 宜人). */
+  zh: z.string().min(1).max(20),
+  pinyin: z.string().max(80),
+  meaningEn: z.string().max(120),
+  /** One line: "宜人: pleasant, for weather or places, not people". */
+  usageEn: z.string().max(200),
+  /** The learner's whole sentence with the gap filled this way. */
+  corrected: z.string().min(1).max(300),
+});
+export type GapOption = z.infer<typeof GapOptionSchema>;
+
+export const JournalGapResponseSchema = z.object({ options: z.array(GapOptionSchema).max(3) });
+export type JournalGapResponse = z.infer<typeof JournalGapResponseSchema>;
 
 /** The exercise a journal review item asks for (Phase 17 Part C). Every
  * exercise is built on a sentence that passed Part B. */
@@ -307,4 +439,6 @@ export interface ErrorItem {
   /** The highlighted change in each sentence. */
   marks?: { original: Span[]; corrected: Span[] };
   exercise?: ErrorExercise;
+  /** Phase 31 Part E: the checked "Why?" of the correction this item practises. */
+  why?: IssueExplanation;
 }

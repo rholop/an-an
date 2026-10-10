@@ -5,6 +5,14 @@ import type {
   JournalCheckResponse,
   JournalExplainRequest,
   JournalExplainResponse,
+  JournalExplainCheckRequest,
+  JournalExplainCheckResponse,
+  JournalWhyRequest,
+  IssueExplanation,
+  JournalAskRequest,
+  JournalAskResponse,
+  JournalGapRequest,
+  JournalGapResponse,
   JournalReview,
   JournalReviewRequest,
   JournalSentenceFixRequest,
@@ -39,6 +47,11 @@ export interface FakeJournalScript {
   fixSentence?: (req: JournalSentenceFixRequest) => ModelSentenceReview;
   verify?: (req: JournalVerifyRequest) => JournalVerifyResponse;
   solve?: (req: JournalSolveRequest) => JournalSolveResponse;
+  /** Phase 31. */
+  explainCheck?: (req: JournalExplainCheckRequest) => JournalExplainCheckResponse;
+  why?: (req: JournalWhyRequest) => IssueExplanation;
+  ask?: (req: JournalAskRequest) => JournalAskResponse;
+  gap?: (req: JournalGapRequest) => JournalGapResponse;
 }
 
 /** No-network TutorLLM for dev (no API keys configured) and tests. A script
@@ -99,7 +112,44 @@ export class FakeTutorLLM implements TutorLLM {
   });
 
   /** Calls recorded for tests ("was the LLM asked?"). */
-  readonly journalCalls = { review: 0, check: 0, explain: 0 };
+  readonly journalCalls = { review: 0, check: 0, explain: 0, explainCheck: 0, why: 0, ask: 0, gap: 0 };
+
+  /** Phase 31 defaults: the check passes every explanation; a fresh "Why?" is built from the
+   * correction; Ask answers plainly; a gap gets no in-context options (the lexicon list is used). */
+  async checkJournalExplanations(req: JournalExplainCheckRequest): Promise<JournalExplainCheckResponse> {
+    this.journalCalls.explainCheck++;
+    return (
+      this.journal.explainCheck ??
+      ((r) => ({ results: r.items.map((_, index) => ({ index, ok: true, problem: '' })) }))
+    )(req);
+  }
+
+  async explainJournalWhy(req: JournalWhyRequest): Promise<IssueExplanation> {
+    this.journalCalls.why++;
+    return (
+      this.journal.why ??
+      ((r) => ({
+        wrongEn: `Taiwanese speakers don't say ${r.original} here.`,
+        fixEn: `Say ${r.correction} instead.`,
+        exampleWrong: `${r.original || '…'}`,
+        exampleRight: `${r.correction || '…'}`,
+      }))
+    )(req);
+  }
+
+  async askJournal(req: JournalAskRequest): Promise<JournalAskResponse> {
+    this.journalCalls.ask++;
+    return (
+      this.journal.ask ??
+      ((r) => ({ answerEn: `About ${r.correction}: ${r.explanation}`, examples: [] }))
+    )(req);
+  }
+
+  async fillJournalGap(req: JournalGapRequest): Promise<JournalGapResponse> {
+    this.journalCalls.gap++;
+    if (this.journal.gap) return this.journal.gap(req);
+    throw new Error('no gap scripted');
+  }
 
   async reviewJournal(req: JournalReviewRequest): Promise<JournalReview> {
     this.journalCalls.review++;
@@ -191,8 +241,8 @@ export class FakeTutorLLM implements TutorLLM {
 
   static defaultJournalCheck = (req: JournalCheckRequest): JournalCheckResponse =>
     req.attempt === req.correction
-      ? { acceptable: true, noteEn: 'That works.' }
-      : { acceptable: false, noteEn: 'Still not quite natural.' };
+      ? { acceptable: true, noteEn: 'That works.', alternatives: [] }
+      : { acceptable: false, noteEn: 'Still not quite natural.', alternatives: [] };
 
   static defaultJournalExplain = (req: JournalExplainRequest): JournalExplainResponse => ({
     explanationEn: `${req.explanationEn} (More detail: Taiwanese speakers usually prefer this wording.)`,

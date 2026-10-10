@@ -7,6 +7,14 @@ import type {
   JournalCheckRequest,
   JournalCheckResponse,
   JournalExplainRequest,
+  JournalExplainCheckRequest,
+  JournalExplainCheckResponse,
+  JournalWhyRequest,
+  IssueExplanation,
+  JournalAskRequest,
+  JournalAskResponse,
+  JournalGapRequest,
+  JournalGapResponse,
   JournalExplainResponse,
   JournalReview,
   JournalReviewRequest,
@@ -133,4 +141,12 @@ export interface TutorLLM {
   generateOpenTurn?(req: OpenTurnRequest): Promise<TurnResponse>;
   /** Phase 18: ~60 words for a topic (POST /v1/topic-words). */
   generateTopicWords?(req: TopicWordsRequest): Promise<TopicWordsResponse>;
+  /** Phase 31: the independent check of each correction's "Why?" (checker model). */
+  checkJournalExplanations?(req: JournalExplainCheckRequest): Promise<JournalExplainCheckResponse>;
+  /** Phase 31: a fresh "Why?" after the check objected. */
+  explainJournalWhy?(req: JournalWhyRequest): Promise<IssueExplanation>;
+  /** Phase 31: "Ask about this" on one correction. */
+  askJournal?(req: JournalAskRequest): Promise<JournalAskResponse>;
+  /** Phase 31: an `[english]` gap translated in its sentence. */
+  fillJournalGap?(req: JournalGapRequest): Promise<JournalGapResponse>;
 }

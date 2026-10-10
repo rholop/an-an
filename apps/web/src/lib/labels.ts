@@ -180,6 +180,33 @@ export const HOME = 'Home';
 /** Phase 31 Part G: Settings → Your progress → Saved versions. */
 export const SAVED_VERSIONS_KEPT = 'The server keeps your last 10 saved versions.';
 
+// --- journal corrections (Phase 31) ----------------------------------------------------------
+export const ISSUE_TYPE_LABEL = {
+  error: 'Error',
+  unnatural: 'Unnatural',
+  mainland_style: 'Mainland wording',
+} as const;
+/** The legend explains itself: one line per label. */
+export const ISSUE_TYPE_MEANING = {
+  error: 'error = a mistake: grammar, the wrong word or the wrong order.',
+  unnatural: 'unnatural = understandable, but not how people say it in Taiwan.',
+  mainland_style: 'mainland wording = a word or phrasing from mainland China; Taiwan says it differently.',
+} as const;
+export const WHY = 'Why?';
+export const ASK_ABOUT_THIS = 'Ask about this';
+export const WHAT_DID_YOU_MEAN = 'What did you mean?';
+export const MINE_IS_RIGHT_JOURNAL = 'I think mine is right';
+export const ADD_TO_REVIEW = 'Add to review';
+export const ADDED_TO_REVIEW = '✓ Added to review';
+export const NOT_SURE_EXPLANATION = "We're not sure about this one, so it won't be added to your practice.";
+export const CHECKING_EXPLANATION = 'Checking this explanation…';
+export const YOU_ARE_RIGHT_REMOVED = "You're right; removed.";
+export const stillAMistake = (problem?: string): string =>
+  `Still a mistake${problem ? `: ${problem}` : '.'}`;
+export const readAsLine = (en: string): string => `Read as: ${en}`;
+export const sameMistakeLine = (n: number): string => `You've made this mistake ${n} times`;
+export const UNDERSTANDABLE_NOTE = 'Your version is understandable; this is how people usually say it.';
+
 // --- answer feedback ------------------------------------------------------------------------
 export const FEEDBACK_CORRECT = '✓ Correct';
 export const FEEDBACK_WRONG_TONE = 'Right word, wrong tone';

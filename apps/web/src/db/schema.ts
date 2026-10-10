@@ -6,6 +6,8 @@ import type {
   VerifiedSentenceRef,
   Evidence,
   ItemRef,
+  JournalAskTurn,
+  ResolvedGapOption,
   JournalIssue,
   Level,
   SelfFixRecord,
@@ -155,6 +157,8 @@ export interface JournalEntryRow {
    * written; the entry is closed. */
   status: 'self_correcting' | 'revealed' | 'finished';
   finishedAt?: Date;
+  /** Phase 31 Part C.2: "What did you mean?" for the whole entry, in the learner's words. */
+  intendedEn?: string;
 }
 
 export interface ResolvedBracket {
@@ -163,6 +167,23 @@ export interface ResolvedBracket {
   wordId?: string;
   /** 'lexicon' wins over 'llm' (phase doc §2); 'unresolved' means neither knew. */
   source: 'lexicon' | 'llm' | 'unresolved';
+  /** Phase 31 Part D: up to 3 options that fit the sentence. Nothing is added to review until the
+   * learner taps "Add to review" (`added` holds the option's zh). Old rows have no options. */
+  options?: ResolvedGapOption[];
+  added?: string[];
+  /** Phase 31 Part D.4: a word the old rule added to review by itself. `ask` waits on the Reported
+   * page ("Added from a journal gap. Keep?"); `flagged` is pre-flagged as a likely misfit. */
+  legacy?: 'ask' | 'flagged' | 'kept' | 'removed';
+}
+
+/** Phase 31 Part C.3: "I think mine is right" on one correction. */
+export interface JournalDispute {
+  at: Date;
+  /** upheld: the check agreed with the learner, the correction is removed. */
+  verdict: 'upheld' | 'still_wrong';
+  problem?: string;
+  /** The learner's meaning the check used. */
+  intendedEn: string;
 }
 
 export interface JournalReviewRow {
@@ -196,6 +217,16 @@ export interface JournalReviewRow {
   /** Set once every sentence has been checked and its items built. Entries
    * without it are (re)processed when the app is online (the Part E migration). */
   itemsBuiltAt?: Date;
+  /** Phase 31 Part C.1: "Ask about this" turns per issue index (up to 5), kept with the entry. */
+  asks?: Record<number, JournalAskTurn[]>;
+  /** Phase 31 Part C.3: disputes per issue index (logged on the Reported page). */
+  disputes?: Record<number, JournalDispute>;
+  /** Phase 31 Part C.2: per sentence "What did you mean?" corrections ("Read as" fixed), keyed by
+   * the sentence's start offset in the entry. */
+  meanings?: Record<number, string>;
+  /** Phase 31: the production card of each misused item as it was before `finish` (null = none),
+   * keyed `kind:id`, so a later "I think mine is right" can undo the misuse. */
+  misusePrior?: Record<string, SkillCard | null>;
 }
 
 /** Phase 7 §B6: a learner's "Report this definition", kept locally and

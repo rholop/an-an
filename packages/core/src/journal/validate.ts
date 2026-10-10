@@ -157,7 +157,15 @@ export function validateJournalReview(
     const itemRef =
       resolveItemRef(issue.itemRef, lexicon) ??
       inferWordFromCorrection(original, correction, lexicon);
-    candidates.push({ ...issue, correction, itemRef });
+    // Phase 31: the check status is set by code only; a "Why?" whose examples aren't clean Taiwan
+    // traditional Chinese is dropped (it is written again and checked before it is shown).
+    const { explainStatus: _status, explain, ...rest } = issue;
+    void _status;
+    const cleanExplain =
+      explain && checkTaiwanness(explain.exampleWrong + explain.exampleRight).simplifiedChars.length === 0
+        ? explain
+        : undefined;
+    candidates.push({ ...rest, correction, itemRef, ...(cleanExplain ? { explain: cleanExplain } : {}) });
   }
 
   const recurring = new Set(opts.recurringPatterns ?? []);

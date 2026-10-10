@@ -193,20 +193,21 @@ describe('JournalService.submit', () => {
 });
 
 describe('bracket gaps', () => {
-  it('translates from the lexicon first and queues a priority production item that the next session serves first', async () => {
+  it('Phase 31: offers the lexicon word as an option without adding it; Add to review queues it first', async () => {
     const llm = new FakeTutorLLM(undefined, {
-      // the model disagrees with the lexicon: the lexicon must win
       review: () => review({ brackets: [{ en: 'gym', zh: '體育館' }] }),
     });
-    const { review: row } = await service(llm).submit(
-      { text: '今天我去 [gym]。', learnerLevel: 'L1' },
-      now,
-    );
-    expect(row.brackets).toEqual([{ en: 'gym', zh: '健身房', wordId: 'w-gym', source: 'lexicon' }]);
+    const svc = service(llm);
+    const { entry, review: row } = await svc.submit({ text: '今天我去 [gym]。', learnerLevel: 'L1' }, now);
+    expect(row.brackets[0]).toMatchObject({ en: 'gym', zh: '健身房', wordId: 'w-gym', added: [] });
+    expect(row.brackets[0]!.options!.map((o) => o.zh)).toEqual(['健身房']);
+    // nothing reaches review without a tap
+    expect(await learnerService.getCard({ kind: 'word', id: 'w-gym' }, 'production')).toBeUndefined();
 
+    await svc.addGapWord(entry.id, 'gym', '健身房', now);
+    expect((await svc.getReview(entry.id))!.brackets[0]!.added).toEqual(['健身房']);
     const card = await learnerService.getCard({ kind: 'word', id: 'w-gym' }, 'production');
     expect(card?.flags.priority).toBe(true);
-    expect(card?.card.due.getTime()).toBeLessThanOrEqual(now.getTime());
 
     // Phase 21: the priority card is New (never answered), so it comes from the ledger's New cards,
     // not this session's.
@@ -227,15 +228,15 @@ describe('bracket gaps', () => {
     expect(session.map((s) => s.word.headword)).toEqual(['健身房']);
   });
 
-  it('falls back to the model translation, creating a custom word when the lexicon lacks it', async () => {
+  it('falls back to the model translation; Add to review creates a custom word', async () => {
     const llm = new FakeTutorLLM(undefined, {
       review: () => review({ brackets: [{ en: 'barbell', zh: '槓鈴' }] }),
     });
-    const { review: row } = await service(llm).submit(
-      { text: '我買 [barbell]。', learnerLevel: 'L1' },
-      now,
-    );
-    expect(row.brackets[0]).toMatchObject({ en: 'barbell', zh: '槓鈴', source: 'llm' });
+    const svc = service(llm);
+    const { entry, review: row } = await svc.submit({ text: '我買 [barbell]。', learnerLevel: 'L1' }, now);
+    expect(row.brackets[0]).toMatchObject({ en: 'barbell', zh: '槓鈴' });
+    expect(await db.customWords.count()).toBe(0);
+    await svc.addGapWord(entry.id, 'barbell', '槓鈴', now);
     const custom = await db.customWords.toArray();
     expect(custom).toHaveLength(1);
     expect(custom[0]).toMatchObject({ headword: '槓鈴', source: 'custom', glossEn: 'barbell' });
@@ -288,12 +289,14 @@ describe('self-correction and reveal', () => {
   it('asks the LLM once about a differing alternative and caches the answer per attempt', async () => {
     const llm = new FakeTutorLLM(undefined, {
       review: () => review({ issues: [issue(text, '地鐵', '捷運', { type: 'mainland_style' })] }),
-      check: () => ({ acceptable: true, noteEn: 'Also fine.' }),
+      check: () => ({ acceptable: true, noteEn: 'Also fine.', alternatives: [] }),
     });
     const svc = service(llm);
     const { entry } = await svc.submit({ text, learnerLevel: 'L1' }, now);
     const first = await svc.recheckSpan(entry.id, 0, '地下鐵');
-    expect(first).toMatchObject({ fixed: true, alternative: true, note: 'Also fine.' });
+    // Phase 31: a right answer shows the "Why?", not the checker's free text
+    expect(first).toMatchObject({ fixed: true, alternative: true });
+    expect(first.note).toBeUndefined();
     await svc.recheckSpan(entry.id, 0, '地下鐵');
     expect(llm.journalCalls.check).toBe(1);
   });

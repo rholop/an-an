@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   gradeErrorItem,
   type ClozeInputMode,
@@ -9,7 +9,8 @@ import {
   type Reconsidered,
   type Span,
 } from '@anan/core';
-import { FEEDBACK_CORRECT, FEEDBACK_WRONG_TONE, MINE_IS_RIGHT, NEXT } from '../lib/labels.js';
+import { FEEDBACK_CORRECT, FEEDBACK_WRONG_TONE, MINE_IS_RIGHT, NEXT, WHY, sameMistakeLine } from '../lib/labels.js';
+import { db } from '../db/instance.js';
 import { useAnswerInputMode } from '../lib/reading.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 
@@ -83,6 +84,22 @@ export function ErrorExerciseView({
   const [last, setLast] = useState<ItemAnswer | null>(null);
   const [checking, setChecking] = useState(false);
   const [note, setNote] = useState('');
+  // Phase 31 Part E: "You've made this mistake N times" (error-bank items of the same pattern)
+  const [sameCount, setSameCount] = useState(0);
+  useEffect(() => {
+    if (!item.pattern) return;
+    let live = true;
+    db.errorItems
+      .where('pattern')
+      .equals(item.pattern)
+      .filter((i) => i.status !== 'deleted' && i.status !== 'blocked')
+      .count()
+      .then((n) => live && setSameCount(n))
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [item.pattern]);
   const [typed, setTyped] = useState(ex.kind === 'fix' ? item.original : '');
   // Phase 21: the one remembered answer input mode (shared with Cloze and Listen).
   const [inputMode, setInputMode] = useAnswerInputMode();
@@ -325,7 +342,26 @@ export function ErrorExerciseView({
             <Marked text={item.corrected} spans={item.marks?.corrected ?? []} tone="right" />{' '}
             <SpeakerButton kind="sentence" text={item.corrected} />
           </p>
-          {item.explanationEn && <p>{item.explanationEn}</p>}
+          {item.why ? (
+            // Phase 31 Part E: the checked "Why?" of the correction this practises
+            <div className="journal-why" data-testid="error-why">
+              <p>
+                <strong>{WHY}</strong> {item.why.wrongEn}
+              </p>
+              <p>{item.why.fixEn}</p>
+              <p lang="zh-Hant">
+                {item.why.exampleWrong} ✗ → {item.why.exampleRight} ✓
+              </p>
+            </div>
+          ) : (
+            item.explanationEn && <p>{item.explanationEn}</p>
+          )}
+          {sameCount >= 2 && (
+            <details>
+              <summary>{sameMistakeLine(sameCount)}</summary>
+              <p>{item.why?.wrongEn ?? item.explanationEn}</p>
+            </details>
+          )}
           {item.en && <p className="cloze-gloss">{item.en}</p>}
           {note && <p role="status">{note}</p>}
           {!right && last && ex.kind !== 'fix' && (
