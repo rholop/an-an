@@ -47,15 +47,20 @@ async function open(page: Page, route: string) {
 
 async function seed(page: Page) {
   const book = (await (await page.request.get('/textbook/laixue-1/book.json')).json()) as {
-    textbook: { lessons: { vocab: string[]; properNouns: string[]; grammarWords?: string[]; grammar: string[] }[] };
+    textbook: {
+      lessons: { vocab: string[]; properNouns: string[]; grammarWords?: string[]; grammar: string[]; supplementary?: string[]; extra?: string[] }[];
+    };
   };
   const l1 = book.textbook.lessons[0]!;
-  const lessonWords = [...l1.vocab.filter((id) => !l1.properNouns.includes(id)), ...(l1.grammarWords ?? [])];
+  // Phase 34: the lesson's extra words are taught in its Vocab step too (they never count for mastery)
+  const lessonWords = [
+    ...new Set([...l1.vocab, ...(l1.grammarWords ?? []), ...(l1.supplementary ?? []), ...(l1.extra ?? [])].filter((id) => !l1.properNouns.includes(id))),
+  ];
   await page.evaluate(
     async ({ due, lessonWords, grammar, lastWeek }) => {
       const anan = (window as unknown as { __anan: AnanHandle }).__anan;
       const when = new Date(lastWeek);
-      // Lesson 1: passed "I already know this" (words both ways, its grammar points)
+      // Lesson 1: passed "I already know this" (words both ways, extras too, its grammar points)
       await anan.learnerService.recordBulk(
         [
           ...lessonWords.flatMap((id) =>
