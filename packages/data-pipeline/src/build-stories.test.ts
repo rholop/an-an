@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dryStory, dryStoryCheck, dryStoryRepair, type StoryRequest, type Textbook } from '@anan/core';
+import { dryStory, dryStoryCheck, dryStoryRepair, LessonStoriesFileSchema, type StoryRequest, type Textbook } from '@anan/core';
 import { buildStories, lessonStoryLadder, parseArgs, retryAfterMs, type BuildDeps } from './build-stories.js';
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -120,6 +120,31 @@ describe('Phase 30 Part B.1: stories:build is safe to rerun', { timeout: 120_000
     const r = await buildStories(parseArgs(['--book', 'laixue-1', '--lesson', '1']), rerun);
     expect(r.written).toBe(0);
     expect(rerun.lines[0]).toBe('Resuming: 1 of 1 lessons already have 3 stories and will be skipped. Existing stories are never overwritten.');
+    expect(readFileSync(fileOf(root)).equals(before)).toBe(true);
+  });
+
+  it('a saved story whose questions were all dropped still loads; a broken file is reported, never rewritten', async () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'stories-'));
+    const proxy = fakeProxy();
+    await buildStories(parseArgs(['--book', 'laixue-1', '--lesson', '1', '--delay', '0']), deps(root, proxy.fetchFn));
+    // The independent check can disagree with every question: the story is kept with none
+    const file = JSON.parse(readFileSync(fileOf(root), 'utf8')) as { stories: { story: { questions: unknown[] } }[] };
+    file.stories[0]!.story.questions = [];
+    writeFileSync(fileOf(root), JSON.stringify(file));
+    const noCalls = (async () => {
+      throw new Error('no model calls allowed');
+    }) as unknown as typeof fetch;
+    const status = deps(root, noCalls);
+    await buildStories(parseArgs(['--status']), status);
+    expect(status.lines).toContain('  laixue-1-L01 3/3');
+    expect(LessonStoriesFileSchema.safeParse(file).success).toBe(true);
+
+    file.stories[1]!.story.questions = 'none' as never;
+    writeFileSync(fileOf(root), JSON.stringify(file));
+    const before = readFileSync(fileOf(root));
+    await expect(buildStories(parseArgs(['--book', 'laixue-1', '--lesson', '1']), deps(root, noCalls))).rejects.toThrow(
+      /does not match the stories format \(nothing was changed\):\n {2}stories 1: story\.questions/,
+    );
     expect(readFileSync(fileOf(root)).equals(before)).toBe(true);
   });
 

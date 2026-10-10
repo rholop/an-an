@@ -156,7 +156,9 @@ export const LessonStorySchema = z.object({
   lessonId: z.string().min(1).max(60),
   level: LevelSchema,
   topic: z.string().min(1).max(200),
-  story: StoryResponseSchema,
+  /** Phase 30 fix: a saved story may have no questions. The pipeline drops every question the
+   * independent check disagrees with, and the reader shows "Finish" when none are left. */
+  story: StoryResponseSchema.extend({ questions: z.array(StoryQuestionSchema).max(6) }),
 });
 export type LessonStory = z.infer<typeof LessonStorySchema>;
 export const LessonStoriesFileSchema = z.object({ version: z.literal(1), stories: z.array(LessonStorySchema) });

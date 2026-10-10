@@ -1,7 +1,7 @@
 // Phase 24: one StoryService per lexicon, the per-profile difficulty, and the background
 // "keep 2 ready" step shared by Home and the Reader.
 import { useEffect, useMemo } from 'react';
-import { LessonStoriesFileSchema, type LessonStory, type Lexicon, type Level, type StoryDifficulty, type StoryLLM, type StoryRecord, type Textbook } from '@anan/core';
+import { LessonStoriesFileSchema, LessonStorySchema, type LessonStory, type Lexicon, type Level, type StoryDifficulty, type StoryLLM, type StoryRecord, type Textbook } from '@anan/core';
 import { db, learnerService } from '../db/instance.js';
 import { getSiteCode } from './api.js';
 import { FakeStoryLLM } from './fake-story-llm.js';
@@ -60,7 +60,13 @@ function lessonStories(bookId: string): Promise<readonly LessonStory[]> {
   const stories = fetchPrivateTextbook<unknown>('stories', bookId).then((r) => {
     if (r.status !== 'ok') return [];
     const parsed = LessonStoriesFileSchema.safeParse(r.data);
-    return parsed.success ? parsed.data.stories : [];
+    if (parsed.success) return parsed.data.stories;
+    // One bad entry never hides the rest of the book's stories
+    const rows = (r.data as { stories?: unknown } | null)?.stories;
+    return Array.isArray(rows) ? rows.flatMap((row) => {
+      const one = LessonStorySchema.safeParse(row);
+      return one.success ? [one.data] : [];
+    }) : [];
   });
   lessonStoryFiles.set(bookId, { at: Date.now(), stories });
   return stories;

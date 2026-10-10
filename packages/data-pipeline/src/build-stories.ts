@@ -274,7 +274,11 @@ const storiesFile = (root: string, bookId: string) => path.join(root, 'data/curr
 
 function load(file: string): LessonStory[] {
   if (!existsSync(file)) return [];
-  return LessonStoriesFileSchema.parse(JSON.parse(readFileSync(file, 'utf8'))).stories;
+  const parsed = LessonStoriesFileSchema.safeParse(JSON.parse(readFileSync(file, 'utf8')));
+  if (parsed.success) return parsed.data.stories;
+  // Never drop or rewrite saved stories on a schema mismatch: say which ones and stop.
+  const where = [...new Set(parsed.error.issues.map((i) => `${i.path.slice(0, 2).join(' ')}: ${i.path.slice(2).join('.')} ${i.message}`))];
+  throw new Error(`${file} does not match the stories format (nothing was changed):\n  ${where.slice(0, 10).join('\n  ')}`);
 }
 
 function save(file: string, stories: readonly LessonStory[]): void {
@@ -481,4 +485,8 @@ async function main() {
   });
 }
 
-if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) await main();
+if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`)
+  await main().catch((e: unknown) => {
+    console.error(e instanceof Error ? e.message : e);
+    process.exitCode = 1;
+  });
