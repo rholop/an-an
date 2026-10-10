@@ -1,0 +1,208 @@
+# Lesson extras for laixue-3 (Phase 34). Words only, no book text.
+# Written by `pnpm curriculum:extras laixue-3`; edit freely, re-runs keep your edits.
+#   status: proposed | keep -> imported as a lesson extra by `pnpm curriculum:import`
+#   status: drop            -> left out
+# Add a word by hand with just: lesson, page, headword (pinyin and gloss come from the lexicon).
+- lesson: 4
+  page: 67
+  pdfPage: 79
+  headword: 電腦公司
+  pinyin: diànnǎo gōngsī
+  glossEn: computer company
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 4
+  page: 67
+  pdfPage: 79
+  headword: 貿易公司
+  pinyin: màoyì gōngsī
+  glossEn: trading company
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 4
+  page: 67
+  pdfPage: 79
+  headword: 科技公司
+  pinyin: kējì gōngsī
+  glossEn: technology company
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 7
+  page: 131
+  headword: 表姐妹
+  pinyin: biǎojiěmèi
+  glossEn: female cousin through a female relative
+  wordId: moec-8af37d248b
+  found: word-bank
+  status: proposed
+- lesson: 7
+  page: 131
+  headword: 堂姐弟
+  pinyin: tángjiědì
+  glossEn: paternal cousins (older sister, younger brother)
+  wordId: null
+  found: word-bank
+  status: proposed
+- lesson: 7
+  page: 131
+  headword: 外婆
+  pinyin: wàipó
+  glossEn: maternal grandmother
+  wordId: tocfl-c73d263018
+  found: image
+  status: proposed
+- lesson: 7
+  page: 131
+  headword: 奶奶
+  pinyin: nǎinai
+  glossEn: paternal grandmother
+  wordId: tocfl-30816d1bdd
+  found: image
+  status: proposed
+- lesson: 7
+  page: 131
+  headword: 叔叔
+  pinyin: shūshu
+  glossEn: father's younger brother
+  wordId: tocfl-88026d898d
+  found: image
+  status: proposed
+- lesson: 7
+  page: 131
+  headword: 堂弟
+  pinyin: tángdì
+  glossEn: younger male cousin (father's side)
+  wordId: moec-24fbf8edf7
+  found: image
+  status: proposed
+- lesson: 7
+  page: 132
+  headword: 計程車
+  pinyin: jìchéngchē
+  glossEn: taxi
+  wordId: tocfl-0ce131f786
+  found: image
+  status: proposed
+- lesson: 7
+  page: 132
+  headword: 腳踏車
+  pinyin: jiǎotàchē
+  glossEn: bicycle
+  wordId: tocfl-6c031665a6
+  found: image
+  status: proposed
+- lesson: 7
+  page: 132
+  headword: 汽車
+  pinyin: qìchē
+  glossEn: car
+  wordId: tocfl-eeff7a7a38
+  found: image
+  status: proposed
+- lesson: 7
+  page: 132
+  headword: 摩托車
+  pinyin: mótuōchē
+  glossEn: motorcycle
+  wordId: tocfl-bc7811901f
+  found: image
+  status: proposed
+- lesson: 7
+  page: 132
+  headword: 騎
+  pinyin: qí
+  glossEn: to ride
+  wordId: tocfl-146fd654fd
+  found: image
+  status: proposed
+- lesson: 7
+  page: 132
+  headword: 買東西
+  pinyin: mǎi dōngxi
+  glossEn: to shop
+  wordId: moec-2063a9385c
+  found: image
+  status: proposed
+- lesson: 7
+  page: 132
+  headword: 擠
+  pinyin: jǐ
+  glossEn: crowded
+  wordId: tocfl-5142a0893a
+  found: image
+  status: proposed
+- lesson: 8
+  page: 148
+  headword: 不舒服
+  pinyin: bù shūfú
+  glossEn: unwell
+  wordId: moec-66d7d0576e
+  found: image
+  status: proposed
+- lesson: 9
+  page: 166
+  headword: 導盲犬
+  pinyin: dǎomángquǎn
+  glossEn: guide dog
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 9
+  page: 166
+  headword: 禁止
+  pinyin: jìnzhǐ
+  glossEn: to forbid
+  wordId: tocfl-d2e92e416b
+  found: image
+  status: proposed
+- lesson: 9
+  page: 166
+  headword: 進入
+  pinyin: jìnrù
+  glossEn: to enter
+  wordId: tocfl-8dc0f60692
+  found: image
+  status: proposed
+- lesson: 9
+  page: 166
+  headword: 兒童
+  pinyin: értóng
+  glossEn: children
+  wordId: tocfl-782aa06c77
+  found: image
+  status: proposed
+- lesson: 9
+  page: 166
+  headword: 玩具
+  pinyin: wánjù
+  glossEn: toy
+  wordId: tocfl-2d45cc1166
+  found: image
+  status: proposed
+- lesson: 9
+  page: 166
+  headword: 服裝
+  pinyin: fúzhuāng
+  glossEn: clothing
+  wordId: tocfl-2dcce81750
+  found: image
+  status: proposed
+- lesson: 9
+  page: 166
+  headword: 化妝品
+  pinyin: huàzhuāngpǐn
+  glossEn: cosmetics
+  wordId: tocfl-1397320a20
+  found: image
+  status: proposed
+- lesson: 9
+  page: 166
+  headword: 咖啡廳
+  pinyin: kāfēitīng
+  glossEn: café
+  wordId: null
+  found: image
+  status: proposed

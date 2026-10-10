@@ -301,3 +301,57 @@
   tags:
     - textbook:laixue-3
     - textbook:laixue-3:L09
+- headword: 電腦公司
+  variants: []
+  pos: []
+  level: L2
+  pinyin: diànnǎo gōngsī
+  glossEn: computer company
+  tags:
+    - textbook:laixue-3
+    - textbook:laixue-3:L04
+- headword: 貿易公司
+  variants: []
+  pos: []
+  level: L2
+  pinyin: màoyì gōngsī
+  glossEn: trading company
+  tags:
+    - textbook:laixue-3
+    - textbook:laixue-3:L04
+- headword: 科技公司
+  variants: []
+  pos: []
+  level: L2
+  pinyin: kējì gōngsī
+  glossEn: technology company
+  tags:
+    - textbook:laixue-3
+    - textbook:laixue-3:L04
+- headword: 堂姐弟
+  variants: []
+  pos: []
+  level: L2
+  pinyin: tángjiědì
+  glossEn: paternal cousins (older sister, younger brother)
+  tags:
+    - textbook:laixue-3
+    - textbook:laixue-3:L07
+- headword: 導盲犬
+  variants: []
+  pos: []
+  level: L2
+  pinyin: dǎomángquǎn
+  glossEn: guide dog
+  tags:
+    - textbook:laixue-3
+    - textbook:laixue-3:L09
+- headword: 咖啡廳
+  variants: []
+  pos: []
+  level: L2
+  pinyin: kāfēitīng
+  glossEn: café
+  tags:
+    - textbook:laixue-3
+    - textbook:laixue-3:L09

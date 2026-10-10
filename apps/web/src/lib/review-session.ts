@@ -1,7 +1,7 @@
 import {
   capMixedCards,
   emptyCard,
-  lessonCoreItems,
+  lessonTaughtItems,
   pickNewForSession,
   describeSkillCard,
   orderSession,
@@ -71,7 +71,9 @@ export function buildReviewSession(input: {
 export function lessonSessionCards(input: {
   due: readonly SkillCard[];
   newCards: readonly SkillCard[];
-  lesson: Pick<Lesson, 'vocab' | 'grammarWords' | 'properNouns' | 'grammar'>;
+  lesson: Pick<Lesson, 'vocab' | 'grammarWords' | 'properNouns' | 'grammar'> & Partial<Pick<Lesson, 'supplementary' | 'extra'>>;
+  /** Phase 34: the lesson's extra words join its new words, after the core ones (default on). */
+  teachExtras?: boolean;
   focus?: StudyFocus;
   lessonIdx?: ReadonlyMap<string, string>;
   /** Items the learner already has a card for (so they aren't introduced twice). */
@@ -79,7 +81,7 @@ export function lessonSessionCards(input: {
   allowedNew: number;
   maxDue?: number;
 }): { due: SkillCard[]; fresh: SkillCard[]; newItems: ItemRef[] } {
-  const words = lessonCoreItems(input.lesson as Lesson).filter((i) => i.kind === 'word');
+  const words = lessonTaughtItems(input.lesson, input.teachExtras !== false).filter((i) => i.kind === 'word');
   const keys = new Set(words.map((i) => `${i.kind}:${i.id}`));
   // Phase 23: reading (pinyin) cards aren't part of lesson mastery: they stay in Review and Pinyin & tones.
   const mine = (c: SkillCard) => c.skill !== 'reading' && keys.has(`${c.item.kind}:${c.item.id}`);

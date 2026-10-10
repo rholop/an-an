@@ -211,3 +211,27 @@
 - 25195 words (7898 TOCFL, 17128 supplement).
 - Content hash: `1e1acd626243d8e7`.
 - 55 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-10
+
+- 25212 words (7898 TOCFL, 17128 supplement).
+- Content hash: `f31412d890eed103`.
+- 51 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-10
+
+- 25220 words (7898 TOCFL, 17128 supplement).
+- Content hash: `347ffcdb11c01ebb`.
+- 51 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-10
+
+- 25239 words (7898 TOCFL, 17141 supplement).
+- Content hash: `85cf788a4fe5225e`.
+- 51 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.
+
+## v2 — 2026-10-10
+
+- 25279 words (7898 TOCFL, 17170 supplement).
+- Content hash: `1712d9ca7bd6ef10`.
+- 51 MOE/TOCFL reading mismatches, 0 unverified readings, 24 cross-level duplicates dropped. See review-report.md.

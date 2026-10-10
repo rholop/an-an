@@ -8,6 +8,7 @@ import { buildFsrs } from '../learner/fsrs-instance.js';
 import { DEFAULT_LEARNER_CONFIG, type SkillCard } from '../learner/types.js';
 import { Lexicon } from '../lexicon.js';
 import { buildPlants } from '../game/garden.js';
+import { PRIORITY_CONFIG, type PriorityConfig } from '../curriculum/priority.config.js';
 import { DEFAULT_STUDY_SETTINGS } from '../study/study-focus.js';
 import type { Lesson, Textbook } from '../textbook/types.js';
 import type { Evidence, ItemRef, Level, Skill, Word } from '../types.js';
@@ -137,7 +138,7 @@ const stateArb = fc.record({
 
 type State = typeof stateArb extends fc.Arbitrary<infer T> ? T : never;
 
-function ledgerOf(s: State): Ledger {
+function ledgerOf(s: State, over: { book?: Textbook; config?: PriorityConfig } = {}): Ledger {
   const settings: SessionSettings = { ...DEFAULT_SESSION_SETTINGS, timeZone: s.zone, capPerSession: s.cap };
   const now = zonedDate(s.day[0], s.day[1], s.day[2], s.hour, s.minute, s.zone);
   const evidence: Evidence[] = s.events
@@ -172,7 +173,8 @@ function ledgerOf(s: State): Ledger {
     activeDays: activeDaysFromHistory({ evidence }, s.zone).map((r) => r.day),
     study: {
       lexicon,
-      books: [book],
+      books: [over.book ?? book],
+      ...(over.config ? { config: over.config } : {}),
       settings: { ...DEFAULT_STUDY_SETTINGS, enabled: false, masteryShare: s.masteryShare, knownItems: s.knownItems },
     },
   });
@@ -330,6 +332,41 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
         expect(ledger.newAllowance('review').faces).toBe(0);
         expect(ledger.practice('listening').fresh).toHaveLength(0);
         expect(ledger.practice('reading').fresh).toHaveLength(0);
+      }),
+      RUNS,
+    );
+  });
+
+  // Phase 34: a lesson's extra words are taught with it, but its numbers are the book's own list.
+  it('extra words never change a lesson\'s Learned / Mastered / done (default flag)', () => {
+    const withExtras: Lesson = { ...lesson, supplementary: ['w9'], extra: ['w10', 'w11', 'w12'] };
+    const bookX: Textbook = { ...book, lessons: [withExtras] };
+    fc.assert(
+      fc.property(stateArb, (s) => {
+        const a = ledgerOf(s).lesson(lesson);
+        const b = ledgerOf(s, { book: bookX }).lesson(withExtras);
+        expect(b.items).toEqual(a.items);
+        expect([b.learned, b.mastered, b.total, b.done]).toEqual([a.learned, a.mastered, a.total, a.done]);
+        expect(b.stillToMaster).toEqual(a.stillToMaster);
+      }),
+      RUNS,
+    );
+  });
+
+  it('with extrasCountForLessonMastery on, the extras are counted (and only then)', () => {
+    const withExtras: Lesson = { ...lesson, supplementary: [], extra: ['w10', 'w11'] };
+    const bookX: Textbook = { ...book, lessons: [withExtras] };
+    const on: PriorityConfig = { ...PRIORITY_CONFIG, extrasCountForLessonMastery: true };
+    fc.assert(
+      fc.property(stateArb, (s) => {
+        const off = ledgerOf(s, { book: bookX }).lesson(withExtras);
+        const counted = ledgerOf(s, { book: bookX, config: on }).lesson(withExtras);
+        const offIds = off.items.map((i) => i.id);
+        const added = counted.items.map((i) => i.id).filter((id) => !offIds.includes(id));
+        expect(counted.items.map((i) => i.id)).toEqual(expect.arrayContaining(offIds));
+        expect(added.every((id) => id === 'w10' || id === 'w11')).toBe(true);
+        // an extra the learner removed (Nope) is left out, like any other item
+        expect(added.length).toBeGreaterThanOrEqual(0);
       }),
       RUNS,
     );

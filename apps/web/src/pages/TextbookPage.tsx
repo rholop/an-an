@@ -26,6 +26,7 @@ import { setMyClass, useMyClass } from '../lib/my-class.js';
 import { GrammarStep } from './GrammarStep.js';
 import { GrammarDots } from '../components/GrammarDots.js';
 import { lessonSessionCards, newSessionCard } from '../lib/review-session.js';
+import { peekStudySettings } from '../lib/study.js';
 import {
   bookSubtitle,
   bookTitle,
@@ -44,6 +45,8 @@ import {
   STORY_WRITING,
   TERM,
   yourClassLabel,
+  EXTRA_WORDS,
+  extraFromPage,
 } from '../lib/labels.js';
 import { LearnedMastered } from '../components/LearnedMastered.js';
 import {
@@ -406,7 +409,13 @@ function LessonDetail({
     .map((id) => data.grammarItems.find((g) => g.id === id))
     .filter((g): g is GrammarItem => Boolean(g));
   const words = [...new Set(lesson.vocab)].flatMap((id) => lexicon.byId(id) ?? []);
-  const supp = [...new Set(lesson.supplementary)].flatMap((id) => lexicon.byId(id) ?? []);
+  // Phase 34: 補充生詞 and the words from the lesson's other pages are its extras, with the page they came from.
+  const extraPage = new Map(
+    data.wordNotes.filter((n) => n.lesson === lesson.n && n.section === 'extra' && n.page).map((n) => [n.wordId, n.page!]),
+  );
+  const supp = [...new Set([...lesson.supplementary, ...(lesson.extra ?? [])])]
+    .filter((id) => !lesson.vocab.includes(id))
+    .flatMap((id) => lexicon.byId(id) ?? []);
   // Phase 25: names are never study vocabulary; they are listed on their own.
   const names = [...new Set(lesson.properNouns)].flatMap((id) => lexicon.byId(id) ?? []);
   const here = { bookId, n: lesson.n };
@@ -465,14 +474,15 @@ function LessonDetail({
       </ul>
       {supp.length > 0 && (
         <>
-          <h3>Supplementary words</h3>
-          <ul className="textbook-words">
+          <h3>{EXTRA_WORDS}</h3>
+          <ul className="textbook-words" data-testid="lesson-extras">
             {supp.map((w) => (
               <li key={w.id}>
                 <span lang="zh-Hant">
                   <AnnotatedWord word={w} script={script} textbook />
                 </span>{' '}
                 <span className="textbook-muted">{glossFor(w, { textbook: true, lesson: here })}</span>
+                {extraPage.has(w.id) && <small className="textbook-muted"> ({extraFromPage(extraPage.get(w.id)!)})</small>}
               </li>
             ))}
           </ul>
@@ -749,6 +759,7 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
         due: ledger.session().cards,
         newCards: ledger.newCards(),
         lesson,
+        teachExtras: peekStudySettings().teachExtras,
         ...(focus ? { focus } : {}),
         lessonIdx: lessonIndexFor(getStudyBooks()),
         hasCard: (i) => ledger.hasCard(i),

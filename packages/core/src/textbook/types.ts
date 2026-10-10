@@ -30,6 +30,12 @@ export interface Lesson {
   vocab: string[];
   /** 補充生詞 word ids — lower priority, not required for "lesson done". */
   supplementary: string[];
+  /**
+   * Phase 34: vocabulary found on the lesson's other pages (word boxes, tables, picture labels),
+   * from `extras.yaml`. With `supplementary` these are the lesson's "extras": taught with the
+   * lesson, but not part of its mastery (unless `PRIORITY_CONFIG.extrasCountForLessonMastery`).
+   */
+  extra?: string[];
   /** Function words the lesson's grammar points introduce (的, 呢, 星期一…): word ids. */
   grammarWords?: string[];
   /** Names/places (validator whitelist). */

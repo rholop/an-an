@@ -19,15 +19,17 @@ export interface LessonProgressInputs {
   index: ProgressIndex;
   completedScenarioIds?: ReadonlySet<string>;
   donePromptIds?: ReadonlySet<string>;
+  /** Phase 34: count the lesson's extra words too (`extrasCountForMastery`). */
+  withExtras?: boolean;
 }
 
 /** The items a lesson's numbers count: its core items, minus words the learner removed (Phase 20). */
-export function countedLessonItems(lesson: Lesson, index: ProgressIndex): ItemRef[] {
-  return lessonCoreItems(lesson).filter((i) => !index.removed(i));
+export function countedLessonItems(lesson: Lesson, index: ProgressIndex, withExtras = false): ItemRef[] {
+  return lessonCoreItems(lesson, { withExtras }).filter((i) => !index.removed(i));
 }
 
 export function lessonProgress(lesson: Lesson, inputs: LessonProgressInputs): LessonProgress {
-  const items = countedLessonItems(lesson, inputs.index);
+  const items = countedLessonItems(lesson, inputs.index, inputs.withExtras);
   const sum = inputs.index.summarize(items);
   const grammar = items.filter((i) => i.kind === 'grammar');
   return {

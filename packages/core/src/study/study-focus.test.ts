@@ -139,7 +139,8 @@ describe('getStudyFocus', () => {
     expect(name(f)).toBe(' 1 · Lesson 1'.trim().length ? stepName(f.activeStep!) : '');
     expect(f.activeLesson).toMatchObject({ bookId: 'laixue-1', n: 1 });
     expect(f.focusItems.map((i) => i.id)).toEqual(['laixue-1-w1a', 'laixue-1-w1b', 'g-laixue-1-1']);
-    expect(f.newItemsAllowed).toHaveLength(3);
+    // Phase 34: the lesson's supplementary word is taught after its core items (not part of its mastery)
+    expect(f.newItemsAllowed.map((i) => i.id)).toEqual(['laixue-1-w1a', 'laixue-1-w1b', 'g-laixue-1-1', 'laixue-1-supp1']);
     expect(f.generalNewItemsAllowed).toBe(false);
     expect(f.mastery).toMatchObject({ mastered: 0, total: 3, remainingWords: 2, remainingGrammar: 1 });
   });

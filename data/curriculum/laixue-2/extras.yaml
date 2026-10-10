@@ -1,0 +1,229 @@
+# Lesson extras for laixue-2 (Phase 34). Words only, no book text.
+# Written by `pnpm curriculum:extras laixue-2`; edit freely, re-runs keep your edits.
+#   status: proposed | keep -> imported as a lesson extra by `pnpm curriculum:import`
+#   status: drop            -> left out
+# Add a word by hand with just: lesson, page, headword (pinyin and gloss come from the lexicon).
+- lesson: 2
+  page: 23
+  pdfPage: 35
+  headword: 上個月
+  pinyin: shàng ge yuè
+  glossEn: last month
+  wordId: null
+  found: word-bank
+  status: proposed
+- lesson: 2
+  page: 23
+  pdfPage: 35
+  headword: 這個月
+  pinyin: zhè ge yuè
+  glossEn: this month
+  wordId: null
+  found: word-bank
+  status: proposed
+- lesson: 2
+  page: 23
+  pdfPage: 35
+  headword: 下個月
+  pinyin: xià ge yuè
+  glossEn: next month
+  wordId: null
+  found: word-bank
+  status: proposed
+- lesson: 2
+  page: 33
+  pdfPage: 45
+  headword: 糖果
+  pinyin: tángguǒ
+  glossEn: candy
+  wordId: moec-900f64f7bb
+  found: image
+  status: proposed
+- lesson: 2
+  page: 33
+  pdfPage: 45
+  headword: 雨天
+  pinyin: yǔtiān
+  glossEn: rainy day
+  wordId: moec-6affe989cf
+  found: image
+  status: proposed
+- lesson: 2
+  page: 33
+  pdfPage: 45
+  headword: 不好吃
+  pinyin: bù hǎochī
+  glossEn: not tasty
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 33
+  pdfPage: 45
+  headword: 好喝
+  pinyin: hǎohē
+  glossEn: tasty (for soup or drinks)
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 33
+  pdfPage: 45
+  headword: 好看
+  pinyin: hǎokàn
+  glossEn: nice, pretty
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 33
+  pdfPage: 45
+  headword: 沒用
+  pinyin: méiyòng
+  glossEn: useless
+  wordId: moec-bc80aea1e5
+  found: image
+  status: proposed
+- lesson: 2
+  page: 33
+  pdfPage: 45
+  headword: 茶
+  pinyin: chá
+  glossEn: tea
+  wordId: tocfl-4ff50dae17
+  found: image
+  status: proposed
+- lesson: 3
+  page: 48
+  pdfPage: 60
+  headword: 炸雞
+  pinyin: zhájī
+  glossEn: fried chicken
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 3
+  page: 48
+  pdfPage: 60
+  headword: 糖醋肉
+  pinyin: tángcùròu
+  glossEn: sweet and sour pork
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 3
+  page: 48
+  pdfPage: 60
+  headword: 炒飯
+  pinyin: chǎofàn
+  glossEn: fried rice
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 3
+  page: 48
+  pdfPage: 60
+  headword: 炒麵
+  pinyin: chǎomiàn
+  glossEn: fried noodles
+  wordId: moec-537e78e3e2
+  found: image
+  status: proposed
+- lesson: 6
+  page: 94
+  pdfPage: 106
+  headword: 停車場
+  pinyin: tíngchēchǎng
+  glossEn: parking lot
+  wordId: tocfl-e7f9ff4fe4
+  found: image
+  status: proposed
+- lesson: 6
+  page: 94
+  pdfPage: 106
+  headword: 城市公園
+  pinyin: chéngshì gōngyuán
+  glossEn: city park
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 8
+  page: 137
+  headword: 聽音樂
+  pinyin: tīng yīnyuè
+  glossEn: to listen to music
+  wordId: null
+  found: image
+  status: drop
+- lesson: 8
+  page: 137
+  headword: 吃早飯
+  pinyin: chī zǎofàn
+  glossEn: to eat breakfast
+  wordId: null
+  found: image
+  status: drop
+- lesson: 8
+  page: 137
+  headword: 看電視
+  pinyin: kàn diànshì
+  glossEn: to watch TV
+  wordId: null
+  found: image
+  status: drop
+- lesson: 8
+  page: 137
+  headword: 喝咖啡
+  pinyin: hē kāfēi
+  glossEn: to drink coffee
+  wordId: null
+  found: image
+  status: drop
+- lesson: 8
+  page: 137
+  headword: 練習寫字
+  pinyin: liànxí xiězì
+  glossEn: to practice writing characters
+  wordId: null
+  found: image
+  status: drop
+- lesson: 8
+  page: 137
+  headword: 玩遊戲
+  pinyin: wán yóuxì
+  glossEn: to play games
+  wordId: null
+  found: image
+  status: drop
+- lesson: 8
+  page: 137
+  headword: 買禮物
+  pinyin: mǎi lǐwù
+  glossEn: to buy a gift
+  wordId: null
+  found: image
+  status: drop
+- lesson: 8
+  page: 137
+  headword: 吃午飯
+  pinyin: chī wǔfàn
+  glossEn: to eat lunch
+  wordId: null
+  found: image
+  status: drop
+- lesson: 8
+  page: 137
+  headword: 打網球
+  pinyin: dǎ wǎngqiú
+  glossEn: to play tennis
+  wordId: null
+  found: image
+  status: drop
+- lesson: 8
+  page: 137
+  headword: 中午
+  pinyin: zhōngwǔ
+  glossEn: noon
+  wordId: tocfl-20eacb253a
+  found: image
+  status: proposed

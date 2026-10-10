@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "v1",
-    "buildDate": "2026-10-04"
+    "buildDate": "2026-10-10"
   },
   "textbook": {
     "id": "laixue-4",
@@ -46,6 +46,9 @@
           "tocfl-5ff1faa6fe"
         ],
         "supplementary": [],
+        "extra": [
+          "tb-04f6deac3c"
+        ],
         "grammarWords": [
           "tb-135593900a"
         ],
@@ -158,6 +161,25 @@
           "tocfl-d7934f15b4"
         ],
         "supplementary": [],
+        "extra": [
+          "tb-6976579ee5",
+          "tb-7dbc4b8a07",
+          "tb-5b77dab97f",
+          "tb-11e9825223",
+          "tocfl-9a1036bdff",
+          "tocfl-fae65aca07",
+          "tb-d09b2c9cbc",
+          "tb-774f1328cb",
+          "supp-e58571bedc",
+          "tb-02d80acbb6",
+          "moec-7df227c27a",
+          "tb-a4e536d43f",
+          "tb-5cd535c171",
+          "moec-0c85373463",
+          "tocfl-423ccc6d96",
+          "tb-2d82c2999d",
+          "tb-2b0f07ae30"
+        ],
         "grammarWords": [],
         "properNouns": [
           "tb-778c8fa37b"
@@ -277,6 +299,7 @@
           "tb-6aa1cea08d"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -391,6 +414,7 @@
         "supplementary": [
           "tocfl-c0d931c34a"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -494,6 +518,7 @@
           "tocfl-8807163ceb"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [
           "tb-ac6851271e"
@@ -614,6 +639,7 @@
           "tb-4784678c90"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [
           "tb-7758f85bbd"
@@ -732,6 +758,7 @@
           "tb-984e4f1285"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -852,6 +879,7 @@
           "tb-d16a0db799"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -958,6 +986,7 @@
           "tocfl-db79a04994"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [
           "tb-3c14dbd5fd",
@@ -1080,6 +1109,7 @@
           "tocfl-e69e12fa5a"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -5847,6 +5877,204 @@
       "pinyin": "de huà",
       "pos": [],
       "glossEn": "if (clause-final marker)"
+    },
+    {
+      "wordId": "tb-04f6deac3c",
+      "lesson": 1,
+      "n": 0,
+      "section": "extra",
+      "page": 14,
+      "headword": "小籠包",
+      "pinyin": "xiǎolóngbāo",
+      "pos": [],
+      "glossEn": "soup dumplings"
+    },
+    {
+      "wordId": "tb-6976579ee5",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 27,
+      "headword": "網球場",
+      "pinyin": "wǎngqiúchǎng",
+      "pos": [],
+      "glossEn": "tennis court"
+    },
+    {
+      "wordId": "tb-7dbc4b8a07",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 27,
+      "headword": "棒球場",
+      "pinyin": "bàngqiúchǎng",
+      "pos": [],
+      "glossEn": "baseball field"
+    },
+    {
+      "wordId": "tb-5b77dab97f",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 27,
+      "headword": "手機店",
+      "pinyin": "shǒujīdiàn",
+      "pos": [],
+      "glossEn": "mobile phone shop"
+    },
+    {
+      "wordId": "tb-11e9825223",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 27,
+      "headword": "飲料店",
+      "pinyin": "yǐnliàodiàn",
+      "pos": [],
+      "glossEn": "beverage shop"
+    },
+    {
+      "wordId": "tocfl-9a1036bdff",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 31,
+      "headword": "南部",
+      "pinyin": "nánbù",
+      "pos": [],
+      "glossEn": "the south"
+    },
+    {
+      "wordId": "tocfl-fae65aca07",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 31,
+      "headword": "西部",
+      "pinyin": "xībù",
+      "pos": [],
+      "glossEn": "the west"
+    },
+    {
+      "wordId": "tb-d09b2c9cbc",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "接機大廳",
+      "pinyin": "jiējīdàtīng",
+      "pos": [],
+      "glossEn": "arrival hall"
+    },
+    {
+      "wordId": "tb-774f1328cb",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "美食廣場",
+      "pinyin": "měishíguǎngchǎng",
+      "pos": [],
+      "glossEn": "food court"
+    },
+    {
+      "wordId": "supp-e58571bedc",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "便利商店",
+      "pinyin": "biànlìshāngdiàn",
+      "pos": [],
+      "glossEn": "convenience store"
+    },
+    {
+      "wordId": "tb-02d80acbb6",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "外幣兌換",
+      "pinyin": "wàibìduìhuàn",
+      "pos": [],
+      "glossEn": "currency exchange"
+    },
+    {
+      "wordId": "moec-7df227c27a",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "高鐵",
+      "pinyin": "gāotiě",
+      "pos": [],
+      "glossEn": "high-speed rail"
+    },
+    {
+      "wordId": "tb-a4e536d43f",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "租賃車服務",
+      "pinyin": "zūlìnchēfúwù",
+      "pos": [],
+      "glossEn": "car rental service"
+    },
+    {
+      "wordId": "tb-5cd535c171",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "小客車接送區",
+      "pinyin": "xiǎokèchējiēsòngqū",
+      "pos": [],
+      "glossEn": "car pick-up area"
+    },
+    {
+      "wordId": "moec-0c85373463",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "餐飲",
+      "pinyin": "cānyǐn",
+      "pos": [],
+      "glossEn": "food and drink"
+    },
+    {
+      "wordId": "tocfl-423ccc6d96",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "洗手間",
+      "pinyin": "xǐshǒujiān",
+      "pos": [],
+      "glossEn": "restroom"
+    },
+    {
+      "wordId": "tb-2d82c2999d",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "醫療中心",
+      "pinyin": "yīliáozhōngxīn",
+      "pos": [],
+      "glossEn": "medical center"
+    },
+    {
+      "wordId": "tb-2b0f07ae30",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 32,
+      "headword": "電信服務",
+      "pinyin": "diànxìnfúwù",
+      "pos": [],
+      "glossEn": "telecommunications service"
     }
   ]
 }

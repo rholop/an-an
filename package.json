@@ -19,6 +19,7 @@
     "dev:web": "pnpm --filter @anan/web dev",
     "curriculum:build": "pnpm --filter @anan/data-pipeline curriculum:build",
     "curriculum:plan": "pnpm --filter @anan/data-pipeline curriculum:plan",
+    "curriculum:extras": "pnpm --filter @anan/data-pipeline curriculum:extras",
     "curriculum:content": "pnpm --filter @anan/data-pipeline curriculum:content",
     "audit:curriculum": "pnpm --filter @anan/data-pipeline audit:curriculum",
     "stories:build": "pnpm --filter @anan/data-pipeline stories:build",

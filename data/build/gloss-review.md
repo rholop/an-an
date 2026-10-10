@@ -2,9 +2,9 @@
 
 Words whose gloss a human should check. Put corrections in `data/supplement/gloss-overrides.yaml` (overrides always win and survive rebuilds).
 
-- 8087 words: 46 override, 0 ai, 7947 heuristic, 94 authored, 0 none.
-- N1–L2 words with a cited source: 95.6% of 1484.
-- 285 flagged.
+- 8129 words: 46 override, 0 ai, 7971 heuristic, 112 authored, 0 none.
+- N1–L2 words with a cited source: 100.0% of 1434.
+- 303 flagged.
 
 | level | word | reading | shown gloss | origin | flags | other candidates |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -23,7 +23,6 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | N1 | 明美 | míng měi | Mingmei | authored | no-source |  |
 | N1 | 住在 | zhù zài | to live in / at | authored | no-source |  |
 | N1 | 王小文 | wáng xiǎo wén | Wang Xiaowen | authored | no-source |  |
-| N1 | 什麼時候 | shí me shí hòu | when | authored | no-source |  |
 | N1 | 幾號 | jǐ hào | What is the phone number? | authored | no-source |  |
 | N1 | 台一銀行 | tái yī yín háng | Taiyi Bank | authored | no-source |  |
 | N1 | 林美美 | lín měi měi | an example of a name | authored | no-source |  |
@@ -33,6 +32,11 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | N1 | 可以嗎 | kě yǐ ma | Could I? Is it okay? | authored | no-source |  |
 | N1 | 太好了 | tài hǎo le | Excellent! Great! | authored | no-source |  |
 | N1 | 美味餐廳 | měi wèi cān tīng | Tasty Café | authored | no-source |  |
+| N1 | 堂兄妹 | táng xiōng mèi | paternal cousins | authored | no-source |  |
+| N1 | 表兄妹 | biǎo xiōng mèi | cousins | authored | no-source |  |
+| N1 | 看電影 | kàn diàn yǐng | to watch movies | authored | no-source |  |
+| N1 | 打籃球 | dǎ lán qiú | to play basket ball | authored | no-source |  |
+| N1 | 踢足球 | tī zú qiú | to play soccer | authored | no-source |  |
 | N2 | 工作 | gōng zuò | work | heuristic | close-call | to work · (of a machine) to operate · job |
 | N2 | 說話 | shuō huà | to speak; to say; to talk | heuristic | close-call | to speak · to say · to talk |
 | N2 | 共 | gòng | together; altogether | heuristic | close-call | common · general · to share |
@@ -48,13 +52,16 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L1 | 紅燒魚 | hóng shāo yú | braised fish | authored | no-source |  |
 | L1 | 炸豆腐 | zhá dòu fǔ | fried tofu | authored | no-source |  |
 | L1 | 炒青菜 | chǎo qīng cài | stir-fried green vegetables | authored | no-source |  |
-| L1 | 雞肉三明治 | jī ròu sā míng zhì | chicken sandwich | authored | no-source |  |
-| L1 | 南區 | ná qū | southern district | authored | no-source |  |
+| L1 | 雞肉三明治 | jī ròu sān míng zhì | chicken sandwich | authored | no-source |  |
 | L1 | 搬到 | bān dào | to move to | authored | no-source |  |
 | L1 | 請進 | qǐng jìn | Please come in. | authored | no-source |  |
 | L1 | 洗頭髮 | xǐ tóu fǎ | to wash hair | authored | no-source |  |
-| L1 | 怎麼了 | zě me le | What’s wrong? What’s the matter? | authored | no-source |  |
 | L1 | 好多了 | hǎo duō le | to feel much better | authored | no-source |  |
+| L1 | 上個月 | shàng ge yuè | last month | authored | no-source |  |
+| L1 | 這個月 | zhè ge yuè | this month | authored | no-source |  |
+| L1 | 下個月 | xià ge yuè | next month | authored | no-source |  |
+| L1 | 不好吃 | bù hǎo chī | not tasty | authored | no-source |  |
+| L1 | 城市公園 | chéng shì gōng yuán | city park | authored | no-source |  |
 | L2 | 報告 | bào gào | report; speech | heuristic | close-call | to inform · to report · to make known |
 | L2 | 夢 | mèng | dream | heuristic | close-call | dream · (bound form) to dream · dream |
 | L2 | 回信 | huí xìn | to reply | heuristic | close-call | to reply · to write back · letter written in reply |
@@ -64,7 +71,6 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L2 | 張家安 | zhāng jiā ān | Joann Zhang | authored | no-source |  |
 | L2 | 杜翔 | dù xiáng | Dushyant | authored | no-source |  |
 | L2 | 海裡 | hǎi lǐ | in the sea | authored | no-source |  |
-| L2 | 南瓜派 | ná guā pài | pumpkin pie | authored | no-source |  |
 | L2 | 早一點 | zǎo yī diǎn | a bit early | authored | no-source |  |
 | L2 | 烤火雞 | kǎo huǒ jī | roast turkey | authored | no-source |  |
 | L2 | 東方美人茶 | dōng fāng měi rén chá | dongfang meiren tea | authored | no-source |  |
@@ -79,6 +85,10 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L2 | 拿出去 | ná chū qù | take outside | authored | no-source |  |
 | L2 | 爬上去 | pá shàng qù | climb up | authored | no-source |  |
 | L2 | 走下來 | zǒu xià lái | go down | authored | no-source |  |
+| L2 | 電腦公司 | diàn nǎo gōng sī | computer company | authored | no-source |  |
+| L2 | 貿易公司 | mào yì gōng sī | trading company | authored | no-source |  |
+| L2 | 科技公司 | kē jì gōng sī | technology company | authored | no-source |  |
+| L2 | 堂姐弟 | táng jiě dì | paternal cousins | authored | no-source |  |
 | L2 | 所有的 | suǒ yǒu de | all | authored | no-source |  |
 | L2 | 開過來 | kāi guò lái | drive over [to some place] | authored | no-source |  |
 | L2 | 哈 | hā | sentence-final particle softening the request; husky | heuristic | close-call | (interj.) ha! · (onom. for laughter) · to be infatuated with; to adore |
@@ -89,6 +99,14 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L2 | 綠線 | lǜ xiàn | the Green Line | authored | no-source |  |
 | L2 | 木瓜牛奶 | mù guā niú nǎi | papaya milk | authored | no-source |  |
 | L2 | 中山站 | zhōng shān zhàn | Zhongshan station | authored | no-source |  |
+| L2 | 手機店 | shǒu jī diàn | mobile phone shop | authored | no-source |  |
+| L2 | 接機大廳 | jiē jī dà tīng | arrival hall | authored | no-source |  |
+| L2 | 美食廣場 | měi shí guǎng chǎng | food court | authored | no-source |  |
+| L2 | 外幣兌換 | wài bì duì huàn | currency exchange | authored | no-source |  |
+| L2 | 租賃車服務 | zū lìn chē fú wù | car rental service | authored | no-source |  |
+| L2 | 小客車接送區 | xiǎo kè chē jiē sòng qū | car pick-up area | authored | no-source |  |
+| L2 | 醫療中心 | yī liáo zhōng xīn | medical center | authored | no-source |  |
+| L2 | 電信服務 | diàn xìn fú wù | telecommunications service | authored | no-source |  |
 | L3 | 安排 | ān pái | arrangements; plans | heuristic | close-call | to arrange · to plan · to set up |
 | L3 | 白白 | bái bái | in vain; for nothing; white | heuristic | close-call | in vain · to no purpose · for nothing |
 | L3 | 表現 | biǎo xiàn | expression; manifestation; show; display | heuristic | close-call | to show · to show off · to display |
@@ -137,7 +155,7 @@ Words whose gloss a human should check. Put corrections in `data/supplement/glos
 | L3 | 從來沒 | cóng lái méi | never [do/have done something] | authored | no-source |  |
 | L3 | 棒球迷 | bàng qiú mí | baseball fan | authored | no-source |  |
 | L3 | 世界上 | shì jiè shàng | in [terms of] the world | authored | no-source |  |
-| L3 | 怎麼這麼 | zě me zhè me | how could it be this... | authored | no-source |  |
+| L3 | 怎麼這麼 | zěn me zhè me | how could it be this... | authored | no-source |  |
 | L3 | 穿上 | chuān shàng | put on [clothing], be wearing [clothing] | authored | no-source |  |
 | L3 | 喝喜酒 | hē xǐ jiǔ | attend a wedding banquet | authored | no-source |  |
 | L3 | 臺灣原住民 | tái wān yuán zhù mín | Táiwān | authored | no-source |  |

@@ -12,7 +12,7 @@ import type { Lexicon } from '../lexicon.js';
 import { LEVEL_IDS, tocflLabel, type Level } from '../levels.config.js';
 import { bookTitle, courseBook, courseLessonLevel, courseOrdinal, LAIXUE_COURSE, lessonBadge, type Course } from '../textbook/course.js';
 import type { Lesson, Textbook } from '../textbook/types.js';
-import { lessonCoreItems, lessonCoreWordIds, levelItems, ProgressIndex, type GrammarUse, type LearnedMastered } from '../progress/terms.js';
+import { lessonCoreItems, lessonCoreWordIds, lessonExtraWordIds, lessonTaughtItems, levelItems, ProgressIndex, type GrammarUse, type LearnedMastered } from '../progress/terms.js';
 import type { ItemRef } from '../types.js';
 
 export type StepRef =
@@ -32,6 +32,8 @@ export interface StudySettings {
   reached: number;
   /** Items ("word:id" / "grammar:id") that passed the "already known" quick check. */
   knownItems: readonly string[];
+  /** Phase 34: teach a lesson's extra words with the lesson (Settings → Study). */
+  teachExtras: boolean;
 }
 
 export const DEFAULT_STUDY_SETTINGS: StudySettings = {
@@ -40,9 +42,15 @@ export const DEFAULT_STUDY_SETTINGS: StudySettings = {
   classAheadLessons: PRIORITY_CONFIG.classAheadLessons,
   reached: 0,
   knownItems: [],
+  teachExtras: true,
 };
 
 export type { GrammarUse };
+
+/** Phase 34: do the extra words count toward lesson mastery now? (The flag, and only while they are taught.) */
+export function extrasCountForMastery(cfg: PriorityConfig | undefined, settings: Pick<StudySettings, 'teachExtras'>): boolean {
+  return (cfg ?? PRIORITY_CONFIG).extrasCountForLessonMastery && settings.teachExtras !== false;
+}
 
 export interface StudyProfile {
   lexicon: Pick<Lexicon, 'allWords' | 'byId'>;
@@ -205,7 +213,9 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
 
   // Words covered by some lesson's core vocabulary (so "the rest of the level" excludes them).
   const inLesson = new Set<string>();
-  for (const l of lessonById.values()) for (const id of lessonCoreWordIds(l)) inLesson.add(id);
+  for (const l of lessonById.values()) for (const id of [...lessonCoreWordIds(l), ...lessonExtraWordIds(l)]) inLesson.add(id);
+  const teachExtras = profile.settings.teachExtras !== false;
+  const withExtras = extrasCountForMastery(cfg, profile.settings);
 
   const share = profile.settings.masteryShare;
   const levelWords = new Map<Level, ItemRef[]>();
@@ -215,7 +225,7 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
   const itemsOfStep = (s: StepRef): ItemRef[] => allItemsOfStep(s).filter((i) => !idx.removed(i));
   const allItemsOfStep = (s: StepRef): ItemRef[] => {
     if (s.kind === 'lesson') {
-      return lessonCoreItems(lessonById.get(s.lessonId)!);
+      return lessonCoreItems(lessonById.get(s.lessonId)!, { withExtras });
     }
     return (levelWords.get(s.level) ?? [])
       .filter((w) => !inLesson.has(w.id))
@@ -303,11 +313,24 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
   // Part A: the active lesson's new items first, then the catch-up lessons' (earliest first),
   // never a lesson held back by the TOCFL gate.
   const seenNew = new Set<string>();
+  // Phase 34: extra words follow the core words, earliest lesson first: the extras of lessons already
+  // passed (catch-up), then the active lesson's own. They are never "to master", only to introduce.
+  const extraItemsOf = (s: StepRef): ItemRef[] =>
+    s.kind === 'lesson' && teachExtras
+      ? lessonTaughtItems(lessonById.get(s.lessonId)!, true).slice(lessonCoreItems(lessonById.get(s.lessonId)!).length)
+      : [];
+  const activeKey = active ? stepKey(active) : '';
+  const passedLessons = steps
+    .slice(0, Math.max(activeIndex, p))
+    .filter((s): s is Extract<StepRef, { kind: 'lesson' }> => s.kind === 'lesson')
+    .filter((s) => stepKey(s) !== activeKey && firstUnmasteredLevelBelow(s.level) === undefined);
   const newItemsAllowed = [
     ...focusItems,
     ...reviewLessons
       .filter((s) => firstUnmasteredLevelBelow(s.level) === undefined)
       .flatMap((s) => itemsOfStep(s).filter((i) => !idx.mastered(i))),
+    ...passedLessons.flatMap((s) => extraItemsOf(s).filter((i) => !idx.removed(i))),
+    ...(active ? extraItemsOf(active).filter((i) => !idx.removed(i)) : []),
   ].filter((i) => {
     const k = itemKey(i);
     if (idx.hasCard(i) || seenNew.has(k)) return false;
@@ -408,13 +431,13 @@ export function studyRank(
 }
 
 /** item key → the lesson that first teaches it (course order), for `studyRank`. */
-export function lessonIndex(books: readonly Textbook[], course: Course = LAIXUE_COURSE): Map<string, string> {
+export function lessonIndex(books: readonly Textbook[], course: Course = LAIXUE_COURSE, withExtras = true): Map<string, string> {
   const out = new Map<string, string>();
   const ordered = books
     .flatMap((b) => b.lessons.map((l) => ({ l, o: courseOrdinal(course, b.id, l.n) ?? 999 })))
     .sort((a, b) => a.o - b.o);
   for (const { l } of ordered) {
-    for (const i of lessonCoreItems(l)) {
+    for (const i of lessonTaughtItems(l, withExtras)) {
       const key = `${i.kind}:${i.id}`;
       if (!out.has(key)) out.set(key, l.id);
     }

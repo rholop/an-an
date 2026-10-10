@@ -95,6 +95,15 @@ describe('lesson session (Phase 19)', () => {
     expect(lessonSessionCards({ due: answered, newCards: [], lesson, hasCard: () => false, allowedNew: 0 }).newItems).toEqual([]);
   });
 
+  it('Phase 34: the lesson Vocab step teaches its extras after the core words, unless the setting is off', () => {
+    const withExtras = { ...lesson, supplementary: ['sx'], extra: ['ex1', 'ex2'] };
+    const on = lessonSessionCards({ due: [], newCards: [], lesson: withExtras, hasCard: () => false, allowedNew: 50 });
+    const core = lessonSessionCards({ due: [], newCards: [], lesson, hasCard: () => false, allowedNew: 50 }).newItems.map((i) => i.id);
+    expect(on.newItems.map((i) => i.id)).toEqual([...core, 'sx', 'ex1', 'ex2']);
+    const off = lessonSessionCards({ due: [], newCards: [], lesson: withExtras, teachExtras: false, hasCard: () => false, allowedNew: 50 });
+    expect(off.newItems.map((i) => i.id)).toEqual(core);
+  });
+
   it('Phase 21: New cards are capped in Review like new items (My class cards no longer uncapped)', () => {
     const newCards = WORDS.map((w) => card(w.id, 'recognition'));
     const r = pickReviewCards({ due: [], newCards, doneThisSession: 0, cap: 80, now: NOW, allowance: { state: 'open', allowed: 3, faces: 8 } });

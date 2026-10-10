@@ -31,7 +31,8 @@ export function computeStats(rows: readonly ReviewRow[]): GlossStats {
     none: 0,
   };
   for (const r of rows) byOrigin[r.gloss.origin]++;
-  const early = rows.filter((r) => r.word.level && EARLY.includes(r.word.level));
+  // Phase 34: a word whose gloss is the book's own wording ('authored') has no outside source to cite.
+  const early = rows.filter((r) => r.word.level && EARLY.includes(r.word.level) && r.gloss.origin !== 'authored');
   const supported = early.filter((r) => isSupported(r.gloss)).length;
   return {
     total: rows.length,

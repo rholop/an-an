@@ -172,6 +172,10 @@ export const placedAtLine = (level: Level): string => `Placed at ${levelShort(le
 
 // --- actions --------------------------------------------------------------------------------
 export const STUDY_THIS_LESSON = 'Study this lesson';
+/** Phase 34: Settings → Study, and the heading of a lesson's extra words. */
+export const TEACH_EXTRAS = 'Teach extra words with lessons';
+export const EXTRA_WORDS = 'Extra words';
+export const extraFromPage = (page: number) => `from p. ${page}`;
 export const REPORT_LABEL = "⚑ Something's wrong";
 export const REPORT_THANKS = "Thanks, we'll look at it.";
 export const UNDO = 'Undo';

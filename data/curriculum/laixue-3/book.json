@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "v1",
-    "buildDate": "2026-10-04"
+    "buildDate": "2026-10-10"
   },
   "textbook": {
     "id": "laixue-3",
@@ -48,6 +48,7 @@
           "tocfl-18a6fbac30"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [
           "tb-afdc0a7ceb",
@@ -161,6 +162,7 @@
           "tb-4b10793c86"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -271,6 +273,7 @@
           "tb-4b31137bf8"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -376,6 +379,11 @@
           "tocfl-41593e0383"
         ],
         "supplementary": [],
+        "extra": [
+          "tb-f936162e0c",
+          "tb-23b74de161",
+          "tb-a5df41bcb3"
+        ],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -478,6 +486,7 @@
           "moec-d2432031ec"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [
           "tocfl-5b865ba0a8",
           "tocfl-81dbeac696"
@@ -596,6 +605,7 @@
           "tocfl-86d7c0a9cd",
           "tocfl-95a1b898ea"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -706,6 +716,21 @@
           "tocfl-2f50547e96",
           "moec-e8e10ea8ce",
           "moec-f464551f4b"
+        ],
+        "extra": [
+          "moec-8af37d248b",
+          "tb-626838faf0",
+          "tocfl-c73d263018",
+          "tocfl-30816d1bdd",
+          "tocfl-88026d898d",
+          "moec-24fbf8edf7",
+          "tocfl-0ce131f786",
+          "tocfl-6c031665a6",
+          "tocfl-eeff7a7a38",
+          "tocfl-bc7811901f",
+          "tocfl-146fd654fd",
+          "moec-2063a9385c",
+          "tocfl-5142a0893a"
         ],
         "grammarWords": [],
         "properNouns": [],
@@ -818,6 +843,9 @@
         "supplementary": [
           "tocfl-28f89db477"
         ],
+        "extra": [
+          "moec-66d7d0576e"
+        ],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -928,6 +956,16 @@
           "tocfl-6b9708e128",
           "tocfl-2ab2866fb7",
           "tocfl-5b97cf313d"
+        ],
+        "extra": [
+          "tb-05fbf2fda2",
+          "tocfl-d2e92e416b",
+          "tocfl-8dc0f60692",
+          "tocfl-782aa06c77",
+          "tocfl-2d45cc1166",
+          "tocfl-2dcce81750",
+          "tocfl-1397320a20",
+          "tb-6aa3380a4d"
         ],
         "grammarWords": [],
         "properNouns": [],
@@ -1041,6 +1079,7 @@
         "supplementary": [
           "tocfl-4a5ba27986"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -5499,6 +5538,281 @@
       "pinyin": "nà me",
       "pos": [],
       "glossEn": "like that; in that way"
+    },
+    {
+      "wordId": "tb-f936162e0c",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 67,
+      "headword": "電腦公司",
+      "pinyin": "diànnǎogōngsī",
+      "pos": [],
+      "glossEn": "computer company"
+    },
+    {
+      "wordId": "tb-23b74de161",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 67,
+      "headword": "貿易公司",
+      "pinyin": "màoyìgōngsī",
+      "pos": [],
+      "glossEn": "trading company"
+    },
+    {
+      "wordId": "tb-a5df41bcb3",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 67,
+      "headword": "科技公司",
+      "pinyin": "kējìgōngsī",
+      "pos": [],
+      "glossEn": "technology company"
+    },
+    {
+      "wordId": "moec-8af37d248b",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 131,
+      "headword": "表姐妹",
+      "pinyin": "biǎojiěmèi",
+      "pos": [],
+      "glossEn": "female cousin through a female relative"
+    },
+    {
+      "wordId": "tb-626838faf0",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 131,
+      "headword": "堂姐弟",
+      "pinyin": "tángjiědì",
+      "pos": [],
+      "glossEn": "paternal cousins (older sister, younger brother)"
+    },
+    {
+      "wordId": "tocfl-c73d263018",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 131,
+      "headword": "外婆",
+      "pinyin": "wàipó",
+      "pos": [],
+      "glossEn": "maternal grandmother"
+    },
+    {
+      "wordId": "tocfl-30816d1bdd",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 131,
+      "headword": "奶奶",
+      "pinyin": "nǎinai",
+      "pos": [],
+      "glossEn": "paternal grandmother"
+    },
+    {
+      "wordId": "tocfl-88026d898d",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 131,
+      "headword": "叔叔",
+      "pinyin": "shūshu",
+      "pos": [],
+      "glossEn": "father's younger brother"
+    },
+    {
+      "wordId": "moec-24fbf8edf7",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 131,
+      "headword": "堂弟",
+      "pinyin": "tángdì",
+      "pos": [],
+      "glossEn": "younger male cousin (father's side)"
+    },
+    {
+      "wordId": "tocfl-0ce131f786",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 132,
+      "headword": "計程車",
+      "pinyin": "jìchéngchē",
+      "pos": [],
+      "glossEn": "taxi"
+    },
+    {
+      "wordId": "tocfl-6c031665a6",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 132,
+      "headword": "腳踏車",
+      "pinyin": "jiǎotàchē",
+      "pos": [],
+      "glossEn": "bicycle"
+    },
+    {
+      "wordId": "tocfl-eeff7a7a38",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 132,
+      "headword": "汽車",
+      "pinyin": "qìchē",
+      "pos": [],
+      "glossEn": "car"
+    },
+    {
+      "wordId": "tocfl-bc7811901f",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 132,
+      "headword": "摩托車",
+      "pinyin": "mótuōchē",
+      "pos": [],
+      "glossEn": "motorcycle"
+    },
+    {
+      "wordId": "tocfl-146fd654fd",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 132,
+      "headword": "騎",
+      "pinyin": "qí",
+      "pos": [],
+      "glossEn": "to ride"
+    },
+    {
+      "wordId": "moec-2063a9385c",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 132,
+      "headword": "買東西",
+      "pinyin": "mǎidōngxi",
+      "pos": [],
+      "glossEn": "to shop"
+    },
+    {
+      "wordId": "tocfl-5142a0893a",
+      "lesson": 7,
+      "n": 0,
+      "section": "extra",
+      "page": 132,
+      "headword": "擠",
+      "pinyin": "jǐ",
+      "pos": [],
+      "glossEn": "crowded"
+    },
+    {
+      "wordId": "moec-66d7d0576e",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 148,
+      "headword": "不舒服",
+      "pinyin": "bùshūfú",
+      "pos": [],
+      "glossEn": "unwell"
+    },
+    {
+      "wordId": "tb-05fbf2fda2",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 166,
+      "headword": "導盲犬",
+      "pinyin": "dǎomángquǎn",
+      "pos": [],
+      "glossEn": "guide dog"
+    },
+    {
+      "wordId": "tocfl-d2e92e416b",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 166,
+      "headword": "禁止",
+      "pinyin": "jìnzhǐ",
+      "pos": [],
+      "glossEn": "to forbid"
+    },
+    {
+      "wordId": "tocfl-8dc0f60692",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 166,
+      "headword": "進入",
+      "pinyin": "jìnrù",
+      "pos": [],
+      "glossEn": "to enter"
+    },
+    {
+      "wordId": "tocfl-782aa06c77",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 166,
+      "headword": "兒童",
+      "pinyin": "értóng",
+      "pos": [],
+      "glossEn": "children"
+    },
+    {
+      "wordId": "tocfl-2d45cc1166",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 166,
+      "headword": "玩具",
+      "pinyin": "wánjù",
+      "pos": [],
+      "glossEn": "toy"
+    },
+    {
+      "wordId": "tocfl-2dcce81750",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 166,
+      "headword": "服裝",
+      "pinyin": "fúzhuāng",
+      "pos": [],
+      "glossEn": "clothing"
+    },
+    {
+      "wordId": "tocfl-1397320a20",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 166,
+      "headword": "化妝品",
+      "pinyin": "huàzhuāngpǐn",
+      "pos": [],
+      "glossEn": "cosmetics"
+    },
+    {
+      "wordId": "tb-6aa3380a4d",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 166,
+      "headword": "咖啡廳",
+      "pinyin": "kāfēitīng",
+      "pos": [],
+      "glossEn": "café"
     }
   ]
 }

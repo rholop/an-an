@@ -50,6 +50,8 @@ export {
   isReviewSkill,
   itemKeyOf,
   lessonCoreItems,
+  lessonExtraWordIds,
+  lessonTaughtItems,
   lessonCoreWordIds,
   levelItems,
   productionUnlockFor,

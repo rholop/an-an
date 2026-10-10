@@ -185,18 +185,38 @@ export function productionUnlockFor(updated: SkillCard, hasProduction: boolean, 
 // ---------------------------------------------------------------------------------------------
 // Item sets: one lesson set, one level set
 
-/** A lesson's core items: vocab + grammar words − proper nouns, then its grammar points (de-duplicated). */
-export function lessonCoreItems(lesson: Pick<Lesson, 'vocab' | 'grammarWords' | 'properNouns' | 'grammar'>): ItemRef[] {
+type LessonLists = Pick<Lesson, 'vocab' | 'grammarWords' | 'properNouns' | 'grammar'> &
+  Partial<Pick<Lesson, 'supplementary' | 'extra'>>;
+
+/** Phase 34: a lesson's extra word ids: 補充生詞 and the words found on its other pages, minus its core words and names. */
+export function lessonExtraWordIds(lesson: LessonLists): string[] {
+  const skip = new Set([...lesson.properNouns, ...lesson.vocab, ...(lesson.grammarWords ?? [])]);
+  return [...new Set([...(lesson.supplementary ?? []), ...(lesson.extra ?? [])])].filter((id) => !skip.has(id));
+}
+
+/**
+ * A lesson's core items: vocab + grammar words − proper nouns, then its grammar points (de-duplicated).
+ * This is what the lesson's Mastered share counts. Phase 34: `withExtras` adds the extra words
+ * (only when `PRIORITY_CONFIG.extrasCountForLessonMastery` is on; the default leaves them out).
+ */
+export function lessonCoreItems(lesson: LessonLists, opts: { withExtras?: boolean } = {}): ItemRef[] {
   const proper = new Set(lesson.properNouns);
   const words = [...new Set([...lesson.vocab, ...(lesson.grammarWords ?? [])])].filter((id) => !proper.has(id));
   return [
     ...words.map((id) => ({ kind: 'word' as const, id })),
     ...[...new Set(lesson.grammar)].map((id) => ({ kind: 'grammar' as const, id })),
+    ...(opts.withExtras ? lessonExtraWordIds(lesson).map((id) => ({ kind: 'word' as const, id })) : []),
   ];
 }
 
+/** Phase 34: what a lesson TEACHES: its core items, then its extra words (when taught). */
+export function lessonTaughtItems(lesson: LessonLists, teachExtras: boolean): ItemRef[] {
+  const core = lessonCoreItems(lesson);
+  return teachExtras ? [...core, ...lessonExtraWordIds(lesson).map((id) => ({ kind: 'word' as const, id }))] : core;
+}
+
 /** Word ids of `lessonCoreItems`. */
-export function lessonCoreWordIds(lesson: Pick<Lesson, 'vocab' | 'grammarWords' | 'properNouns' | 'grammar'>): string[] {
+export function lessonCoreWordIds(lesson: LessonLists): string[] {
   return lessonCoreItems(lesson)
     .filter((i) => i.kind === 'word')
     .map((i) => i.id);

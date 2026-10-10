@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "v1",
-    "buildDate": "2026-10-04"
+    "buildDate": "2026-10-10"
   },
   "textbook": {
     "id": "laixue-1",
@@ -38,6 +38,7 @@
         "supplementary": [
           "tocfl-c8b02f2841"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [
           "tb-f31eb37a1d",
@@ -132,6 +133,7 @@
         "supplementary": [
           "tocfl-eeac533ccb"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -228,6 +230,18 @@
           "moec-34a1c97d9c",
           "tocfl-0b3d2f7f28"
         ],
+        "extra": [
+          "tocfl-af7a4a2f21",
+          "tb-6c3457d28e",
+          "tocfl-d67bae60de",
+          "tocfl-f2f57a7d2d",
+          "moec-1aed5443bc",
+          "moec-42df9328c3",
+          "tb-9d6e6996d6",
+          "tocfl-7f8221cda8",
+          "tocfl-ba09dd5d35",
+          "moec-1c0b813583"
+        ],
         "grammarWords": [],
         "properNouns": [
           "tb-354710efde",
@@ -320,6 +334,18 @@
         ],
         "supplementary": [
           "tocfl-74c7794307"
+        ],
+        "extra": [
+          "moec-3f8f7b990f",
+          "tocfl-662cb8d8a4",
+          "moec-798314cd57",
+          "tocfl-91a115e269",
+          "tocfl-608c6a9c24",
+          "tocfl-9800970e5d",
+          "tocfl-bc3f6eb953",
+          "tocfl-4b583491f0",
+          "moec-9f01ca1faa",
+          "tocfl-97c1125be2"
         ],
         "grammarWords": [
           "tocfl-8c8a536423",
@@ -420,6 +446,7 @@
           "tocfl-8c7b2e0173",
           "tocfl-9becc067c8"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [
           "tb-9d7f2ffa5d",
@@ -516,6 +543,12 @@
         "supplementary": [
           "tocfl-6b8f725337",
           "tocfl-446d85bce3"
+        ],
+        "extra": [
+          "tb-1c43bc84bd",
+          "tb-aba1a91b6d",
+          "tb-109f0094f9",
+          "tb-9b9f60288f"
         ],
         "grammarWords": [],
         "properNouns": [],
@@ -621,6 +654,7 @@
           "tocfl-81bf8200e7",
           "tocfl-b74453d607"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [
           "tb-afdc0a7ceb",
@@ -724,6 +758,20 @@
           "tocfl-032218f744",
           "tocfl-e40b830809"
         ],
+        "extra": [
+          "moec-00ce68838d",
+          "tb-93720b6122",
+          "tb-56fea02955",
+          "moec-6532579102",
+          "tb-edde5226e4",
+          "moec-867ed1c06c",
+          "moec-89d328370d",
+          "tb-cc382982f2",
+          "tb-eac3388f1b",
+          "tb-542259b039",
+          "tb-fe79be2f7c",
+          "tb-3c7f77e79b"
+        ],
         "grammarWords": [
           "tocfl-3caff6844c",
           "tocfl-76fa79162a"
@@ -823,6 +871,12 @@
         "supplementary": [
           "tocfl-1d0ecc194a",
           "moec-685847b391"
+        ],
+        "extra": [
+          "tb-9db5dc58d8",
+          "tb-e72aa47550",
+          "tb-93444cae3b",
+          "tb-2750a4f013"
         ],
         "grammarWords": [
           "tocfl-b2d18e1fd7",
@@ -933,6 +987,7 @@
           "tocfl-c797debd16",
           "tocfl-86251eab21"
         ],
+        "extra": [],
         "grammarWords": [
           "tocfl-7e16c61d13"
         ],
@@ -4485,6 +4540,446 @@
       "pinyin": "yǒu diǎn",
       "pos": [],
       "glossEn": "a little"
+    },
+    {
+      "wordId": "tocfl-af7a4a2f21",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 39,
+      "headword": "兄弟",
+      "pinyin": "xiōngdì",
+      "pos": [],
+      "glossEn": "brothers"
+    },
+    {
+      "wordId": "tb-6c3457d28e",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 39,
+      "headword": "堂兄妹",
+      "pinyin": "tángxiōngmèi",
+      "pos": [],
+      "glossEn": "paternal cousins"
+    },
+    {
+      "wordId": "tocfl-d67bae60de",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 39,
+      "headword": "爺爺",
+      "pinyin": "yéye",
+      "pos": [],
+      "glossEn": "paternal grandfather"
+    },
+    {
+      "wordId": "tocfl-f2f57a7d2d",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 39,
+      "headword": "伯伯",
+      "pinyin": "bóbo",
+      "pos": [],
+      "glossEn": "father's older brother"
+    },
+    {
+      "wordId": "moec-1aed5443bc",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 39,
+      "headword": "堂妹",
+      "pinyin": "tángmèi",
+      "pos": [],
+      "glossEn": "younger female cousin (father's side)"
+    },
+    {
+      "wordId": "moec-42df9328c3",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 40,
+      "headword": "姐妹",
+      "pinyin": "jiěmèi",
+      "pos": [],
+      "glossEn": "sisters"
+    },
+    {
+      "wordId": "tb-9d6e6996d6",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 40,
+      "headword": "表兄妹",
+      "pinyin": "biǎoxiōngmèi",
+      "pos": [],
+      "glossEn": "cousins (mother's side or father's sisters' children)"
+    },
+    {
+      "wordId": "tocfl-7f8221cda8",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 40,
+      "headword": "外公",
+      "pinyin": "wàigōng",
+      "pos": [],
+      "glossEn": "maternal grandfather"
+    },
+    {
+      "wordId": "tocfl-ba09dd5d35",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 40,
+      "headword": "阿姨",
+      "pinyin": "āyí",
+      "pos": [],
+      "glossEn": "aunt (mother's sister)"
+    },
+    {
+      "wordId": "moec-1c0b813583",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 40,
+      "headword": "表妹",
+      "pinyin": "biǎomèi",
+      "pos": [],
+      "glossEn": "younger female cousin (mother's side)"
+    },
+    {
+      "wordId": "moec-3f8f7b990f",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "工程師",
+      "pinyin": "gōngchéngshī",
+      "pos": [],
+      "glossEn": "engineer"
+    },
+    {
+      "wordId": "tocfl-662cb8d8a4",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "廚師",
+      "pinyin": "chúshī",
+      "pos": [],
+      "glossEn": "chef"
+    },
+    {
+      "wordId": "moec-798314cd57",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "服務員",
+      "pinyin": "fúwùyuán",
+      "pos": [],
+      "glossEn": "server, waiter, waitress"
+    },
+    {
+      "wordId": "tocfl-91a115e269",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "醫生",
+      "pinyin": "yīshēng",
+      "pos": [],
+      "glossEn": "doctor"
+    },
+    {
+      "wordId": "tocfl-608c6a9c24",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "護士",
+      "pinyin": "hùshì",
+      "pos": [],
+      "glossEn": "nurse"
+    },
+    {
+      "wordId": "tocfl-9800970e5d",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "律師",
+      "pinyin": "lǜshī",
+      "pos": [],
+      "glossEn": "lawyer"
+    },
+    {
+      "wordId": "tocfl-bc3f6eb953",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "軍人",
+      "pinyin": "jūnrén",
+      "pos": [],
+      "glossEn": "soldier"
+    },
+    {
+      "wordId": "tocfl-4b583491f0",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "商人",
+      "pinyin": "shāngrén",
+      "pos": [],
+      "glossEn": "businessman"
+    },
+    {
+      "wordId": "moec-9f01ca1faa",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "農人",
+      "pinyin": "nóngrén",
+      "pos": [],
+      "glossEn": "farmer"
+    },
+    {
+      "wordId": "tocfl-97c1125be2",
+      "lesson": 4,
+      "n": 0,
+      "section": "extra",
+      "page": 53,
+      "headword": "退休",
+      "pinyin": "tuìxiū",
+      "pos": [],
+      "glossEn": "to retire"
+    },
+    {
+      "wordId": "tb-1c43bc84bd",
+      "lesson": 6,
+      "n": 0,
+      "section": "extra",
+      "page": 83,
+      "headword": "看書",
+      "pinyin": "kànshū",
+      "pos": [],
+      "glossEn": "to read"
+    },
+    {
+      "wordId": "tb-aba1a91b6d",
+      "lesson": 6,
+      "n": 0,
+      "section": "extra",
+      "page": 83,
+      "headword": "看電影",
+      "pinyin": "kàndiànyǐng",
+      "pos": [],
+      "glossEn": "to watch movies"
+    },
+    {
+      "wordId": "tb-109f0094f9",
+      "lesson": 6,
+      "n": 0,
+      "section": "extra",
+      "page": 83,
+      "headword": "打籃球",
+      "pinyin": "dǎlánqiú",
+      "pos": [],
+      "glossEn": "to play basket ball"
+    },
+    {
+      "wordId": "tb-9b9f60288f",
+      "lesson": 6,
+      "n": 0,
+      "section": "extra",
+      "page": 83,
+      "headword": "踢足球",
+      "pinyin": "tīzúqiú",
+      "pos": [],
+      "glossEn": "to play soccer"
+    },
+    {
+      "wordId": "moec-00ce68838d",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "一月",
+      "pinyin": "yīyuè",
+      "pos": [],
+      "glossEn": "January"
+    },
+    {
+      "wordId": "tb-93720b6122",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "二月",
+      "pinyin": "èryuè",
+      "pos": [],
+      "glossEn": "February"
+    },
+    {
+      "wordId": "tb-56fea02955",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "三月",
+      "pinyin": "sānyuè",
+      "pos": [],
+      "glossEn": "March"
+    },
+    {
+      "wordId": "moec-6532579102",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "四月",
+      "pinyin": "sìyuè",
+      "pos": [],
+      "glossEn": "April"
+    },
+    {
+      "wordId": "tb-edde5226e4",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "五月",
+      "pinyin": "wǔyuè",
+      "pos": [],
+      "glossEn": "May"
+    },
+    {
+      "wordId": "moec-867ed1c06c",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "六月",
+      "pinyin": "liùyuè",
+      "pos": [],
+      "glossEn": "June"
+    },
+    {
+      "wordId": "moec-89d328370d",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "七月",
+      "pinyin": "qīyuè",
+      "pos": [],
+      "glossEn": "July"
+    },
+    {
+      "wordId": "tb-cc382982f2",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "八月",
+      "pinyin": "bāyuè",
+      "pos": [],
+      "glossEn": "August"
+    },
+    {
+      "wordId": "tb-eac3388f1b",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "九月",
+      "pinyin": "jiǔyuè",
+      "pos": [],
+      "glossEn": "September"
+    },
+    {
+      "wordId": "tb-542259b039",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "十月",
+      "pinyin": "shíyuè",
+      "pos": [],
+      "glossEn": "October"
+    },
+    {
+      "wordId": "tb-fe79be2f7c",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "十一月",
+      "pinyin": "shíyīyuè",
+      "pos": [],
+      "glossEn": "November"
+    },
+    {
+      "wordId": "tb-3c7f77e79b",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 121,
+      "headword": "十二月",
+      "pinyin": "shí’èryuè",
+      "pos": [],
+      "glossEn": "December"
+    },
+    {
+      "wordId": "tb-9db5dc58d8",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 137,
+      "headword": "星期一",
+      "pinyin": "xīngqíyī",
+      "pos": [],
+      "glossEn": "Monday"
+    },
+    {
+      "wordId": "tb-e72aa47550",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 137,
+      "headword": "星期二",
+      "pinyin": "xīngqí’èr",
+      "pos": [],
+      "glossEn": "Tuesday"
+    },
+    {
+      "wordId": "tb-93444cae3b",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 137,
+      "headword": "星期三",
+      "pinyin": "xīngqísān",
+      "pos": [],
+      "glossEn": "Wednesday"
+    },
+    {
+      "wordId": "tb-2750a4f013",
+      "lesson": 9,
+      "n": 0,
+      "section": "extra",
+      "page": 137,
+      "headword": "星期四",
+      "pinyin": "xīngqísì",
+      "pos": [],
+      "glossEn": "Thursday"
     }
   ]
 }

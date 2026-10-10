@@ -1,0 +1,167 @@
+# Lesson extras for laixue-4 (Phase 34). Words only, no book text.
+# Written by `pnpm curriculum:extras laixue-4`; edit freely, re-runs keep your edits.
+#   status: proposed | keep -> imported as a lesson extra by `pnpm curriculum:import`
+#   status: drop            -> left out
+# Add a word by hand with just: lesson, page, headword (pinyin and gloss come from the lexicon).
+- lesson: 1
+  page: 14
+  pdfPage: 26
+  headword: 小籠包
+  pinyin: xiǎolóngbāo
+  glossEn: soup dumplings
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 27
+  pdfPage: 39
+  headword: 網球場
+  pinyin: wǎngqiúchǎng
+  glossEn: tennis court
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 27
+  pdfPage: 39
+  headword: 棒球場
+  pinyin: bàngqiúchǎng
+  glossEn: baseball field
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 27
+  pdfPage: 39
+  headword: 手機店
+  pinyin: shǒujīdiàn
+  glossEn: mobile phone shop
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 27
+  pdfPage: 39
+  headword: 飲料店
+  pinyin: yǐnliào diàn
+  glossEn: beverage shop
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 31
+  pdfPage: 43
+  headword: 南部
+  pinyin: nánbù
+  glossEn: the south
+  wordId: tocfl-9a1036bdff
+  found: image
+  status: proposed
+- lesson: 2
+  page: 31
+  pdfPage: 43
+  headword: 西部
+  pinyin: xībù
+  glossEn: the west
+  wordId: tocfl-fae65aca07
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 接機大廳
+  pinyin: jiējī dàtīng
+  glossEn: arrival hall
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 美食廣場
+  pinyin: měishí guǎngchǎng
+  glossEn: food court
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 便利商店
+  pinyin: biànlì shāngdiàn
+  glossEn: convenience store
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 外幣兌換
+  pinyin: wàibì duìhuàn
+  glossEn: currency exchange
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 高鐵
+  pinyin: gāotiě
+  glossEn: high-speed rail
+  wordId: moec-7df227c27a
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 租賃車服務
+  pinyin: zūlìnchē fúwù
+  glossEn: car rental service
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 小客車接送區
+  pinyin: xiǎokèchē jiēsòngqū
+  glossEn: car pick-up area
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 餐飲
+  pinyin: cānyǐn
+  glossEn: food and drink
+  wordId: moec-0c85373463
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 洗手間
+  pinyin: xǐshǒujiān
+  glossEn: restroom
+  wordId: tocfl-423ccc6d96
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 醫療中心
+  pinyin: yīliáo zhōngxīn
+  glossEn: medical center
+  wordId: null
+  found: image
+  status: proposed
+- lesson: 2
+  page: 32
+  pdfPage: 44
+  headword: 電信服務
+  pinyin: diànxìn fúwù
+  glossEn: telecommunications service
+  wordId: null
+  found: image
+  status: proposed

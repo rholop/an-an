@@ -217,7 +217,7 @@ export function lessonCoveredEvidence(
     for (const id of lesson.vocab) push({ kind: 'word', id }, lesson.id);
     for (const id of lesson.grammarWords ?? []) push({ kind: 'word', id }, lesson.id);
     if (opts.includeSupplementary)
-      for (const id of lesson.supplementary) push({ kind: 'word', id }, lesson.id);
+      for (const id of [...lesson.supplementary, ...(lesson.extra ?? [])]) push({ kind: 'word', id }, lesson.id);
     for (const id of lesson.grammar) push({ kind: 'grammar', id }, lesson.id);
   }
   return out;
@@ -251,7 +251,7 @@ export function lessonScopedWordIds(
       for (const id of l.vocab) ids.add(id);
       for (const id of l.properNouns) ids.add(id);
       for (const id of l.grammarWords ?? []) ids.add(id);
-      if (includeSupp) for (const id of l.supplementary) ids.add(id);
+      if (includeSupp) for (const id of [...l.supplementary, ...(l.extra ?? [])]) ids.add(id);
     }
   }
   return ids;

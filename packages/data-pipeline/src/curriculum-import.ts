@@ -40,6 +40,8 @@ import {
 import { parseLessonFront, parseToc } from './lib/curriculum/objectives.js';
 import { buildReport, type ImportStats } from './lib/curriculum/report.js';
 import { entryToWord, parseVocabBlock, type BookWord } from './lib/curriculum/vocab-parse.js';
+import { activeExtras, loadExtras } from './lib/curriculum/extras-file.js';
+import { resolveExtra, type ExtraNote } from './lib/curriculum/extras-resolve.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../../..');
@@ -61,7 +63,7 @@ interface RawPages {
   pages: Record<string, string>;
 }
 
-function loadPages(cfg: BookConfig, dir: string): RawPages {
+export function loadPages(cfg: BookConfig, dir: string): RawPages {
   const priv = path.join(dir, 'private');
   mkdirSync(priv, { recursive: true });
   const out = path.join(priv, 'pages.json');
@@ -107,9 +109,10 @@ function supplementPath(bookId: string): string {
  * that appears again in a later book must reuse that id, so it stays ONE item
  * carrying both books' tags.
  */
-function priorSupplementIds(bookId: string): Map<string, string> {
+function priorSupplementIds(bookId: string, includeLater = false): Map<string, string> {
   const out = new Map<string, string>();
-  for (const earlier of BOOK_ORDER.slice(0, BOOK_ORDER.indexOf(bookId))) {
+  // Phase 34: an extra may be a word a LATER book teaches as core (看書 b1 extra / b2 core): one item, the existing id.
+  for (const earlier of includeLater ? BOOK_ORDER : BOOK_ORDER.slice(0, BOOK_ORDER.indexOf(bookId))) {
     const file = supplementPath(earlier);
     if (!existsSync(file)) continue;
     const entries = (yaml.load(readFileSync(file, 'utf8')) as Array<{
@@ -133,6 +136,16 @@ function homeBookIndex(w: Word): number {
   }
   return best;
 }
+
+/** Link against the lexicon WITHOUT this book's (and later books') textbook-only entries. */
+export function loadLinkLexicon(bookId: string): Lexicon {
+  const bookIdx = BOOK_ORDER.indexOf(bookId);
+  const lexData = JSON.parse(readFileSync(LEXICON, 'utf8')) as { words: Word[] };
+  return new Lexicon(lexData.words.filter((w) => w.source !== 'textbook' || homeBookIndex(w) < bookIdx));
+}
+
+export const REPO_ROOT = REPO;
+export { BOOK_ORDER };
 
 export function importBook(bookId: string): void {
   const cfg = loadBookConfig(bookId);
@@ -219,6 +232,17 @@ export function importBook(bookId: string): void {
     glossEn: string;
   }> = [];
   const patternIds = new Set<BookWord>();
+  // Phase 34: lesson extras (extras.yaml): words from a lesson's other pages, taught with the lesson.
+  const extraEntries = activeExtras(loadExtras(DIR));
+  const extraNotes: ExtraNote[] = [];
+  // Words an earlier book already teaches as core (an extra never repeats them).
+  const earlierCore = new Set<string>();
+  for (const earlier of BOOK_ORDER.slice(0, bookIdx)) {
+    const f = path.join(REPO, 'data/curriculum', earlier, 'book.json');
+    if (!existsSync(f)) continue;
+    const eb = JSON.parse(readFileSync(f, 'utf8')) as TextbookFile;
+    for (const l of eb.textbook.lessons) for (const id of [...l.vocab, ...l.properNouns]) earlierCore.add(id);
+  }
 
   for (let n = 1; n <= lessonCount; n++) {
     const start = cfg.lessonStartPages[n - 1]!;
@@ -418,6 +442,22 @@ export function importBook(bookId: string): void {
       }
     }
 
+    const extraIds: string[] = [];
+    for (const e of extraEntries.filter((x) => x.lesson === n)) {
+      const coreIds = new Set([...earlierCore, ...lessons.flatMap((l) => l.vocab), ...vocabIds, ...suppIds, ...properIds]);
+      const r = resolveExtra(e, { lexicon, prior, bookId, level: lessonLevelOf(n), coreIds, taken: new Set(extraIds) });
+      if (!r.ok) {
+        stats.manual.push(r.reason);
+        continue;
+      }
+      if (r.created) {
+        stats.unlinked.push(r.created.message);
+        if (!supplementOut.has(r.created.key)) supplementOut.set(r.created.key, r.created.entry);
+      }
+      extraIds.push(r.id);
+      extraNotes.push(r.note);
+    }
+
     const lid = lessonId(n);
     const old = prevLessons.get(lid);
     const grammar = grammarPoints.filter((g) => g.lesson === n).map((g) => g.id);
@@ -437,6 +477,7 @@ export function importBook(bookId: string): void {
         );
       }),
       supplementary: [...new Set(suppIds)].filter((id) => !vocabIds.includes(id)),
+      extra: extraIds.filter((id) => !suppIds.includes(id)),
       grammarWords: [...new Set(grammarWordIds)].filter(
         (id) => !vocabIds.includes(id) && !suppIds.includes(id),
       ),
@@ -599,6 +640,9 @@ export function importBook(bookId: string): void {
       glossEn: word.glossEn,
     });
   }
+  for (const x of extraNotes) {
+    wordNotes.push({ wordId: x.wordId, lesson: x.lesson, n: 0, section: 'extra' as never, page: x.page, headword: x.headword, pinyin: x.pinyin, pos: [], glossEn: x.glossEn } as (typeof wordNotes)[number]);
+  }
   for (const g of grammarNotes) {
     if (!wordNotes.some((w) => w.wordId === g.wordId && w.lesson === g.lesson)) {
       wordNotes.push({
@@ -657,6 +701,85 @@ export function importBook(bookId: string): void {
     console.log('Now run: pnpm --filter @anan/data-pipeline build:lexicon');
 }
 
+/**
+ * Phase 34: merge `extras.yaml` into the book already imported, touching nothing else. A full
+ * re-import re-derives every textbook entry from today's parser, which can change ids that saved
+ * progress points at; this adds only the extras (lesson `extra` lists, `extra` word notes, new
+ * supplement entries for words the lexicon lacks).
+ */
+export function importExtrasOnly(bookId: string): void {
+  const cfg = loadBookConfig(bookId);
+  const DIR = path.join(REPO, 'data/curriculum', bookId);
+  const bookPath = path.join(DIR, 'book.json');
+  const book = JSON.parse(readFileSync(bookPath, 'utf8')) as TextbookFile & { wordNotes: Array<Record<string, unknown>> };
+  const bookIdx = BOOK_ORDER.indexOf(bookId);
+  const lexicon = loadLinkLexicon(bookId);
+  const prior = priorSupplementIds(bookId, true);
+  const earlierCore = new Set<string>();
+  for (const earlier of BOOK_ORDER.slice(0, bookIdx)) {
+    const f = path.join(REPO, 'data/curriculum', earlier, 'book.json');
+    if (!existsSync(f)) continue;
+    const eb = JSON.parse(readFileSync(f, 'utf8')) as TextbookFile;
+    for (const l of eb.textbook.lessons) for (const id of [...l.vocab, ...l.properNouns]) earlierCore.add(id);
+  }
+  const entries = activeExtras(loadExtras(DIR));
+  const supplementFile = supplementPath(bookId);
+  const supplement = existsSync(supplementFile)
+    ? ((yaml.load(readFileSync(supplementFile, 'utf8')) as Array<Record<string, unknown>> | null) ?? [])
+    : [];
+  const have = new Set(supplement.map((x) => `${x.headword}|${x.pinyin}`));
+  const created: string[] = [];
+  const skipped: string[] = [];
+  const notes: ExtraNote[] = [];
+  book.textbook.lessons = book.textbook.lessons.map((l) => {
+    const ids: string[] = [];
+    for (const e of entries.filter((x) => x.lesson === l.n)) {
+      const coreIds = new Set([
+        ...earlierCore,
+        ...book.textbook.lessons.filter((x) => x.n <= l.n).flatMap((x) => [...x.vocab, ...x.supplementary, ...x.properNouns]),
+      ]);
+      const r = resolveExtra(e, { lexicon, prior, bookId, level: courseLessonLevel(LAIXUE_COURSE, bookId, l.n), coreIds, taken: new Set(ids) });
+      if (!r.ok) {
+        skipped.push(r.reason);
+        continue;
+      }
+      if (r.created && !have.has(r.created.key)) {
+        have.add(r.created.key);
+        supplement.push(r.created.entry);
+        created.push(r.created.message);
+      }
+      ids.push(r.id);
+      notes.push(r.note);
+    }
+    const { extra: _old, ...rest } = l as Lesson & { extra?: string[] };
+    void _old;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(rest)) {
+      out[k] = v;
+      if (k === 'supplementary') out.extra = ids.filter((id) => !l.supplementary.includes(id));
+    }
+    return out as unknown as Lesson;
+  });
+  book.wordNotes = [
+    ...book.wordNotes.filter((n) => n.section !== 'extra'),
+    ...notes.map((x) => ({ wordId: x.wordId, lesson: x.lesson, n: 0, section: 'extra', page: x.page, headword: x.headword, pinyin: x.pinyin, pos: [], glossEn: x.glossEn })),
+  ];
+  const before = readFileSync(bookPath, 'utf8');
+  const after = JSON.stringify(book, null, 2) + '\n';
+  if (before !== after) {
+    book.meta.buildDate = new Date().toISOString().slice(0, 10);
+    writeFileSync(bookPath, JSON.stringify(book, null, 2) + '\n', 'utf8');
+  }
+  if (created.length) {
+    const head = readFileSync(supplementFile, 'utf8').split('\n').filter((l) => l.startsWith('#')).join('\n');
+    writeFileSync(supplementFile, (head ? head + '\n' : '') + yaml.dump(supplement, { lineWidth: 120 }), 'utf8');
+  }
+  void cfg;
+  console.log(`${bookId}: ${notes.length} extras merged (${created.length} new textbook entries, ${skipped.length} left out).`);
+  for (const m of skipped) console.log(`  - ${m}`);
+  if (created.length) console.log('Now run: pnpm --filter @anan/data-pipeline build:lexicon');
+}
+
 /** Book ids that have a config.json, in course order. */
 export function configuredBooks(): string[] {
   const dir = path.join(REPO, 'data/curriculum');
@@ -671,7 +794,13 @@ if (invokedDirectly) {
     process.exit(2);
   }
   const all = arg === 'all';
+  const extrasOnly = process.argv.includes('--extras-only');
   for (const id of all ? configuredBooks() : [arg]) {
+    if (extrasOnly) {
+      importExtrasOnly(id);
+      if (all) execFileSync('npx', ['tsx', path.join(HERE, 'build-lexicon.ts')], { stdio: 'inherit' });
+      continue;
+    }
     importBook(id);
     // A later book links against the lexicon, which must already hold the earlier books' new words.
     if (all) execFileSync('npx', ['tsx', path.join(HERE, 'build-lexicon.ts')], { stdio: 'ignore' });

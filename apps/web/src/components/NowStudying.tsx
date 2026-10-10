@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { LearnedMastered } from './LearnedMastered.js';
 import { GrammarDotsList } from './GrammarDots.js';
 import { useTextbook } from '../lib/textbook-data.js';
-import { lessonLabel, lessonOnly, STUDY_THIS_LESSON, stepName } from '../lib/labels.js';
+import { lessonLabel, lessonOnly, STUDY_THIS_LESSON, stepName, TEACH_EXTRAS } from '../lib/labels.js';
 import { updateStudySettings, useStudyFocus, useStudySettings } from '../lib/study.js';
 import { StudyLessonView } from '../pages/TextbookPage.js';
 import { ReviewPage } from '../pages/ReviewPage.js';
@@ -103,6 +103,15 @@ export function NowStudying() {
             data-testid="study-order-toggle"
           />{' '}
           Study order (textbook lessons and TOCFL levels, until mastered)
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={settings.teachExtras}
+            onChange={(e) => void updateStudySettings({ teachExtras: e.target.checked })}
+            data-testid="teach-extras-toggle"
+          />{' '}
+          {TEACH_EXTRAS}
         </label>
         <label>
           Mastery threshold:{' '}

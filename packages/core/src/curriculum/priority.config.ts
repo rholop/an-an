@@ -22,6 +22,11 @@ export const PRIORITY_CONFIG = {
   reviewNewItems: 5,
   /** Reader: share of sentences built around a weak item of a review lesson instead. */
   reviewLessonShare: 0.3,
+  /**
+   * Phase 34: do a lesson's extra words (補充生詞 + words from its other pages) count toward the
+   * lesson's Mastered share and the gate? false = only the book's own 生詞 list does.
+   */
+  extrasCountForLessonMastery: false as boolean,
   /** Evidence kinds that count as a correct / incorrect use of a grammar point. */
   grammarCorrectKinds: PROGRESS_CONFIG.grammarCorrectKinds,
   grammarWrongKinds: PROGRESS_CONFIG.grammarWrongKinds,

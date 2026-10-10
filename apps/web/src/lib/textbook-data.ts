@@ -21,6 +21,8 @@ export interface BookData extends TextbookFile {
     lesson: number;
     n: number;
     section: string;
+    /** Phase 34: the printed page an extra word was found on. */
+    page?: number;
     headword: string;
     pinyin: string;
     glossEn: string;

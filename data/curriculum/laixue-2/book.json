@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "v1",
-    "buildDate": "2026-10-04"
+    "buildDate": "2026-10-10"
   },
   "textbook": {
     "id": "laixue-2",
@@ -52,6 +52,7 @@
           "tocfl-1a0883e6a7",
           "tocfl-f1abc0e7bd"
         ],
+        "extra": [],
         "grammarWords": [
           "tocfl-45f633b897"
         ],
@@ -166,6 +167,18 @@
           "tocfl-989ea1d693",
           "tb-39373942bd"
         ],
+        "extra": [
+          "tb-3a6055b0dd",
+          "tb-89b489f21d",
+          "tb-67697fe2d1",
+          "moec-900f64f7bb",
+          "moec-6affe989cf",
+          "tb-37757ce36e",
+          "tb-8f411e7f6d",
+          "moec-8339e20838",
+          "moec-bc80aea1e5",
+          "tocfl-4ff50dae17"
+        ],
         "grammarWords": [
           "tocfl-65157ccc1c",
           "tocfl-caf6477636"
@@ -273,6 +286,12 @@
           "moec-cea418b10a"
         ],
         "supplementary": [],
+        "extra": [
+          "tb-0e438ec33a",
+          "tb-9499858c9f",
+          "tb-bf1162ad44",
+          "moec-537e78e3e2"
+        ],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -372,6 +391,7 @@
           "moec-d98d3d8604"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -479,6 +499,7 @@
         "supplementary": [
           "tocfl-ca79e477b1"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -578,6 +599,10 @@
           "tocfl-2bbec775ba",
           "tocfl-6a195e1d68",
           "tocfl-a1895ed7f5"
+        ],
+        "extra": [
+          "tocfl-e7f9ff4fe4",
+          "tb-4acdd993b4"
         ],
         "grammarWords": [],
         "properNouns": [],
@@ -681,6 +706,7 @@
           "tocfl-b03f382540",
           "tocfl-59b3c68a07"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -783,6 +809,9 @@
           "tb-1c43bc84bd"
         ],
         "supplementary": [],
+        "extra": [
+          "tocfl-20eacb253a"
+        ],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -885,6 +914,7 @@
           "tb-98caedd7e8"
         ],
         "supplementary": [],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -977,6 +1007,7 @@
         "supplementary": [
           "tocfl-ec4f3e6530"
         ],
+        "extra": [],
         "grammarWords": [],
         "properNouns": [],
         "grammar": [
@@ -4997,6 +5028,193 @@
       "pinyin": "xià",
       "pos": [],
       "glossEn": "next (下個月)"
+    },
+    {
+      "wordId": "tb-3a6055b0dd",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 23,
+      "headword": "上個月",
+      "pinyin": "shànggeyuè",
+      "pos": [],
+      "glossEn": "last month"
+    },
+    {
+      "wordId": "tb-89b489f21d",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 23,
+      "headword": "這個月",
+      "pinyin": "zhègeyuè",
+      "pos": [],
+      "glossEn": "this month"
+    },
+    {
+      "wordId": "tb-67697fe2d1",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 23,
+      "headword": "下個月",
+      "pinyin": "xiàgeyuè",
+      "pos": [],
+      "glossEn": "next month"
+    },
+    {
+      "wordId": "moec-900f64f7bb",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 33,
+      "headword": "糖果",
+      "pinyin": "tángguǒ",
+      "pos": [],
+      "glossEn": "candy"
+    },
+    {
+      "wordId": "moec-6affe989cf",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 33,
+      "headword": "雨天",
+      "pinyin": "yǔtiān",
+      "pos": [],
+      "glossEn": "rainy day"
+    },
+    {
+      "wordId": "tb-37757ce36e",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 33,
+      "headword": "不好吃",
+      "pinyin": "bùhǎochī",
+      "pos": [],
+      "glossEn": "not tasty"
+    },
+    {
+      "wordId": "tb-8f411e7f6d",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 33,
+      "headword": "好喝",
+      "pinyin": "hǎohē",
+      "pos": [],
+      "glossEn": "tasty (for soup or drinks)"
+    },
+    {
+      "wordId": "moec-8339e20838",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 33,
+      "headword": "好看",
+      "pinyin": "hǎokàn",
+      "pos": [],
+      "glossEn": "nice, pretty"
+    },
+    {
+      "wordId": "moec-bc80aea1e5",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 33,
+      "headword": "沒用",
+      "pinyin": "méiyòng",
+      "pos": [],
+      "glossEn": "useless"
+    },
+    {
+      "wordId": "tocfl-4ff50dae17",
+      "lesson": 2,
+      "n": 0,
+      "section": "extra",
+      "page": 33,
+      "headword": "茶",
+      "pinyin": "chá",
+      "pos": [],
+      "glossEn": "tea"
+    },
+    {
+      "wordId": "tb-0e438ec33a",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 48,
+      "headword": "炸雞",
+      "pinyin": "zhájī",
+      "pos": [],
+      "glossEn": "fried chicken"
+    },
+    {
+      "wordId": "tb-9499858c9f",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 48,
+      "headword": "糖醋肉",
+      "pinyin": "tángcùròu",
+      "pos": [],
+      "glossEn": "sweet and sour pork"
+    },
+    {
+      "wordId": "tb-bf1162ad44",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 48,
+      "headword": "炒飯",
+      "pinyin": "chǎofàn",
+      "pos": [],
+      "glossEn": "fried rice"
+    },
+    {
+      "wordId": "moec-537e78e3e2",
+      "lesson": 3,
+      "n": 0,
+      "section": "extra",
+      "page": 48,
+      "headword": "炒麵",
+      "pinyin": "chǎomiàn",
+      "pos": [],
+      "glossEn": "fried noodles"
+    },
+    {
+      "wordId": "tocfl-e7f9ff4fe4",
+      "lesson": 6,
+      "n": 0,
+      "section": "extra",
+      "page": 94,
+      "headword": "停車場",
+      "pinyin": "tíngchēchǎng",
+      "pos": [],
+      "glossEn": "parking lot"
+    },
+    {
+      "wordId": "tb-4acdd993b4",
+      "lesson": 6,
+      "n": 0,
+      "section": "extra",
+      "page": 94,
+      "headword": "城市公園",
+      "pinyin": "chéngshìgōngyuán",
+      "pos": [],
+      "glossEn": "city park"
+    },
+    {
+      "wordId": "tocfl-20eacb253a",
+      "lesson": 8,
+      "n": 0,
+      "section": "extra",
+      "page": 137,
+      "headword": "中午",
+      "pinyin": "zhōngwǔ",
+      "pos": [],
+      "glossEn": "noon"
     }
   ]
 }

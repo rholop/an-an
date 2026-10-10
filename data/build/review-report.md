@@ -1,6 +1,6 @@
 # Lexicon build review report — v2
 
-Built 2026-10-04. 25195 words.
+Built 2026-10-10. 25279 words.
 
 ## Row normalization
 
@@ -666,7 +666,7 @@ Built 2026-10-04. 25195 words.
 - `架/架(子)` / `jià/jià(zi)` — "架(子)" (jià(zi)) -> "架子" (jiàzi) (expanded stray optional-char parens with no matched counterpart for this alternative)
 - `老頭兒/老頭(子)` / `lăotóur/lăotóu(zi) ` — "老頭(子)" (lǎotóu(zi)) -> "老頭子" (lǎotóuzi) (expanded stray optional-char parens with no matched counterpart for this alternative)
 
-## MOE reading mismatches (55)
+## MOE reading mismatches (51)
 
 TOCFL list pinyin vs MOE pinyin — MOE was used in the built lexicon.
 
@@ -709,20 +709,16 @@ TOCFL list pinyin vs MOE pinyin — MOE was used in the built lexicon.
 - `欸` (supplement): list says `ê`, MOE says `āi`
 - `那個` (supplement): list says `nèige`, MOE says `nǎ ge`
 - `安安` (textbook): list says `Ān’ān`, MOE says `ān ān`
-- `什麼時候` (textbook): list says `shénme shíhòu`, MOE says `shí me shí hòu`
 - `噢` (textbook): list says `òu`, MOE says `yǔ`
 - `是啊` (textbook): list says `shì a!`, MOE says `shì a`
 - `可以嗎` (textbook): list says `kěyǐ ma?`, MOE says `kě yǐ ma`
+- `十二月` (textbook): list says `shí’èryuè`, MOE says `shí èr yuè`
+- `星期二` (textbook): list says `xīngqí’èr`, MOE says `xīng qí èr`
 - `下星期` (textbook): list says `xià (ge) xīngqí`, MOE says `xià xīng qí`
 - `為什麼` (textbook): list says `wèishéme`, MOE says `wèi shén me`
 - `上星期` (textbook): list says `shàng (ge) xīngqí`, MOE says `shàng xīng qí`
-- `雞肉三明治` (textbook): list says `jīròu sānmíngzhì`, MOE says `jī ròu sā míng zhì`
-- `南區` (textbook): list says `nánqū`, MOE says `ná qū`
-- `怎麼了` (textbook): list says `zěnme le`, MOE says `zě me le`
 - `張家安` (textbook): list says `Zhāng Jiā'ān`, MOE says `zhāng jiā ān`
 - `感恩節` (textbook): list says `Gǎn'ēn jié`, MOE says `gǎn ēn jié`
-- `南瓜派` (textbook): list says `nánguā pài`, MOE says `ná guā pài`
-- `怎麼這麼` (textbook): list says `zěnme zhème`, MOE says `zě me zhè me`
 - `海岸` (textbook): list says `hǎi'àn.`, MOE says `hǎi àn`
 - `臺灣原住民` (textbook): list says `族文化園區`, MOE says `tái wān yuán zhù mín`
 

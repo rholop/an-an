@@ -42,6 +42,7 @@ function sanitize(v: unknown): StudySettings {
     classAheadLessons: Math.round(num(o.classAheadLessons, DEFAULT_STUDY_SETTINGS.classAheadLessons, 0, 5)),
     reached: Math.round(num(o.reached, 0, 0, 1000)),
     knownItems: Array.isArray(o.knownItems) ? o.knownItems.filter((x): x is string => typeof x === 'string') : [],
+    teachExtras: o.teachExtras !== false,
   };
 }
 

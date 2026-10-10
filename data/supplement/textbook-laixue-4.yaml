@@ -564,3 +564,102 @@
   tags:
     - textbook:laixue-4
     - textbook:laixue-4:L10
+- headword: 小籠包
+  variants: []
+  pos: []
+  level: L2
+  pinyin: xiǎolóngbāo
+  glossEn: soup dumplings
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L01
+- headword: 網球場
+  variants: []
+  pos: []
+  level: L2
+  pinyin: wǎngqiúchǎng
+  glossEn: tennis court
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02
+- headword: 棒球場
+  variants: []
+  pos: []
+  level: L2
+  pinyin: bàngqiúchǎng
+  glossEn: baseball field
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02
+- headword: 手機店
+  variants: []
+  pos: []
+  level: L2
+  pinyin: shǒujīdiàn
+  glossEn: mobile phone shop
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02
+- headword: 接機大廳
+  variants: []
+  pos: []
+  level: L2
+  pinyin: jiējī dàtīng
+  glossEn: arrival hall
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02
+- headword: 美食廣場
+  variants: []
+  pos: []
+  level: L2
+  pinyin: měishí guǎngchǎng
+  glossEn: food court
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02
+- headword: 外幣兌換
+  variants: []
+  pos: []
+  level: L2
+  pinyin: wàibì duìhuàn
+  glossEn: currency exchange
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02
+- headword: 租賃車服務
+  variants: []
+  pos: []
+  level: L2
+  pinyin: zūlìnchē fúwù
+  glossEn: car rental service
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02
+- headword: 小客車接送區
+  variants: []
+  pos: []
+  level: L2
+  pinyin: xiǎokèchē jiēsòngqū
+  glossEn: car pick-up area
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02
+- headword: 醫療中心
+  variants: []
+  pos: []
+  level: L2
+  pinyin: yīliáo zhōngxīn
+  glossEn: medical center
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02
+- headword: 電信服務
+  variants: []
+  pos: []
+  level: L2
+  pinyin: diànxìn fúwù
+  glossEn: telecommunications service
+  tags:
+    - textbook:laixue-4
+    - textbook:laixue-4:L02

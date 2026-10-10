@@ -300,3 +300,75 @@
   tags:
     - textbook:laixue-2
     - textbook:laixue-2:L09
+- headword: 上個月
+  variants: []
+  pos: []
+  level: L1
+  pinyin: shàng ge yuè
+  glossEn: last month
+  tags:
+    - textbook:laixue-2
+    - textbook:laixue-2:L02
+- headword: 這個月
+  variants: []
+  pos: []
+  level: L1
+  pinyin: zhè ge yuè
+  glossEn: this month
+  tags:
+    - textbook:laixue-2
+    - textbook:laixue-2:L02
+- headword: 下個月
+  variants: []
+  pos: []
+  level: L1
+  pinyin: xià ge yuè
+  glossEn: next month
+  tags:
+    - textbook:laixue-2
+    - textbook:laixue-2:L02
+- headword: 不好吃
+  variants: []
+  pos: []
+  level: L1
+  pinyin: bù hǎochī
+  glossEn: not tasty
+  tags:
+    - textbook:laixue-2
+    - textbook:laixue-2:L02
+- headword: 炸雞
+  variants: []
+  pos: []
+  level: L1
+  pinyin: zhájī
+  glossEn: fried chicken
+  tags:
+    - textbook:laixue-2
+    - textbook:laixue-2:L03
+- headword: 糖醋肉
+  variants: []
+  pos: []
+  level: L1
+  pinyin: tángcùròu
+  glossEn: sweet and sour pork
+  tags:
+    - textbook:laixue-2
+    - textbook:laixue-2:L03
+- headword: 炒飯
+  variants: []
+  pos: []
+  level: L1
+  pinyin: chǎofàn
+  glossEn: fried rice
+  tags:
+    - textbook:laixue-2
+    - textbook:laixue-2:L03
+- headword: 城市公園
+  variants: []
+  pos: []
+  level: L1
+  pinyin: chéngshì gōngyuán
+  glossEn: city park
+  tags:
+    - textbook:laixue-2
+    - textbook:laixue-2:L06

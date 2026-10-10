@@ -13,7 +13,8 @@ import type { Textbook, Lesson } from '../textbook/types.js';
 import { lessonProgress, lessonDone, type LessonProgress } from '../textbook/progress.js';
 import type { ClassScope } from '../textbook/scope.js';
 import type { Evidence, ItemRef, Skill, Word } from '../types.js';
-import { getStudyFocus, lessonIndex, type StudyFocus, type StudySettings } from '../study/study-focus.js';
+import type { PriorityConfig } from '../curriculum/priority.config.js';
+import { extrasCountForMastery, getStudyFocus, lessonIndex, type StudyFocus, type StudySettings } from '../study/study-focus.js';
 import { pickNewForSession } from '../study/queue.js';
 import { computeStreak, streakDays, type StreakConfig, type StreakDay, type StreakResult } from '../game/streak.js';
 import { knownCharacters } from '../learner/char-stats.js';
@@ -74,6 +75,8 @@ export interface LedgerStudyInputs {
   level?: Level;
   /** My class scope (visibility only). */
   classScope?: ClassScope;
+  /** Priority config override (tests); default `PRIORITY_CONFIG`. */
+  config?: PriorityConfig;
 }
 
 export interface LedgerInputs {
@@ -499,8 +502,9 @@ export class Ledger {
     lesson: Lesson,
     extras: { completedScenarioIds?: ReadonlySet<string>; donePromptIds?: ReadonlySet<string> } = {},
   ): LessonView {
-    const p = lessonProgress(lesson, { index: this.index, ...extras });
-    const items = lessonCoreItems(lesson).filter((i) => !this.index.removed(i));
+    const withExtras = this.study ? extrasCountForMastery(this.study.config, this.study.settings) : false;
+    const p = lessonProgress(lesson, { index: this.index, withExtras, ...extras });
+    const items = lessonCoreItems(lesson, { withExtras }).filter((i) => !this.index.removed(i));
     const done = lessonDone(p, this.masteryShare);
     // "Still to master" is what the lesson needs to be done at the learner's share, so the chip's
     // done and "0 still to master" are one fact (Phase 29 Part C.3).
@@ -548,6 +552,7 @@ export class Ledger {
           grammarUses: this.grammarUses,
           index: this.index,
           settings: s.settings,
+          ...(s.config ? { config: s.config } : {}),
           ...(s.myClass ? { myClass: s.myClass } : {}),
         },
         this.now,
@@ -556,7 +561,7 @@ export class Ledger {
   }
 
   private lessonIdx(): Map<string, string> | undefined {
-    return this.once('lessonIdx', () => (this.study && this.study.books.length > 0 ? lessonIndex(this.study.books) : undefined));
+    return this.once('lessonIdx', () => (this.study && this.study.books.length > 0 ? lessonIndex(this.study.books, undefined, this.study.settings.teachExtras !== false) : undefined));
   }
 
   /** The vocabulary ladder (stories, open chat) from the ledger's own sets and focus. */

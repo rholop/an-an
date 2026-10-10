@@ -1,17 +1,17 @@
 {
   "meta": {
     "version": "v2",
-    "buildDate": "2026-10-04",
-    "contentHash": "1e1acd626243d8e7e2c70c3df6061e251a85d16949a1e303cc083808f321af73",
+    "buildDate": "2026-10-10",
+    "contentHash": "1712d9ca7bd6ef101509c235face86cd7ec828a3bb988ef2d2b30a2d7cfe6215",
     "sourceHashes": {
       "tocfl": "b72a7e8b4a494d2c8c8f44b281e5eb58b68dd4ae208c77af7d830d59212d4ccf",
       "moe": "99f2159a7c5beac1cefe73fcfc744b0b74232e22f8fd14a0b07f45aa68278ea0",
       "supplement": "75a791d495d95dafaf0414756dac55725884c0461aae193b6044c01649439d01",
-      "textbook": "f9992896b00d0a77b83fa9c2161cd8bd96fa1030c73fb292817bba09c69052dd",
+      "textbook": "169041f7db8125b8d69d5f8611bd6998f393e4858cb2f63d0bf7d8440ad1f58e",
       "cedict": "a8cbe6459f166b7c200132f6141beea625602a6f3e16225df1f318243faba819",
       "top2011": "5fe940bff7753783c9465b3a92e3004701f50e02f227cca9259ea1b02a924502"
     },
-    "wordCount": 25195,
+    "wordCount": 25279,
     "missingLevels": [],
     "levels": [
       "N1",
@@ -23,16 +23,16 @@
       "L5"
     ],
     "glossStats": {
-      "total": 8087,
+      "total": 8129,
       "byOrigin": {
         "override": 46,
         "ai": 0,
-        "heuristic": 7947,
-        "authored": 94,
+        "heuristic": 7971,
+        "authored": 112,
         "none": 0
       },
-      "earlyTotal": 1484,
-      "earlySupportedShare": 0.956199460916442
+      "earlyTotal": 1434,
+      "earlySupportedShare": 1
     },
     "glossSourceFiles": [
       "ivankra-tocfl-cedict.csv",
@@ -1015,7 +1015,7 @@
       "headword": "一月",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "N1",
       "source": "supplement",
       "pinyin": "yī yuè",
       "pinyinNumeric": "yi1 yue4",
@@ -1026,8 +1026,20 @@
         "月"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "moec-00ce68838d#tb",
+          "glossEn": "January",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-00ce68838d#tb"
     },
     {
       "id": "moec-00d20bdfcd",
@@ -16084,7 +16096,7 @@
       "headword": "餐飲",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L2",
       "source": "supplement",
       "pinyin": "cān yǐn",
       "pinyinNumeric": "can1 yin3",
@@ -16095,8 +16107,20 @@
         "飲"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "moec-0c85373463#tb",
+          "glossEn": "food and drink",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-0c85373463#tb"
     },
     {
       "id": "moec-0c869eb320",
@@ -27255,6 +27279,25 @@
       ]
     },
     {
+      "id": "moec-154432cffb",
+      "headword": "理療",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "lǐ liáo",
+      "pinyinNumeric": "li3 liao2",
+      "zhuyin": "ㄌㄧˇ ㄌㄧㄠˊ",
+      "glossEn": "physiotherapy",
+      "chars": [
+        "理",
+        "療"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-1547fbfa2f",
       "headword": "火輪",
       "variants": [],
@@ -28629,6 +28672,25 @@
         "亮",
         "堂",
         "堂"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-1645a37a0b",
+      "headword": "兌換",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "duì huàn",
+      "pinyinNumeric": "dui4 huan4",
+      "zhuyin": "ㄉㄨㄟˋ ㄏㄨㄢˋ",
+      "glossEn": "to convert",
+      "chars": [
+        "兌",
+        "換"
       ],
       "tags": [
         "compound:moe"
@@ -30716,6 +30778,25 @@
       "chars": [
         "問",
         "答"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-1814b78df0",
+      "headword": "回籠",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "huí lóng",
+      "pinyinNumeric": "hui2 long2",
+      "zhuyin": "ㄏㄨㄟˊ ㄌㄨㄥˊ",
+      "glossEn": "to steam again",
+      "chars": [
+        "回",
+        "籠"
       ],
       "tags": [
         "compound:moe"
@@ -33408,6 +33489,25 @@
       ]
     },
     {
+      "id": "moec-1a591d9a0d",
+      "headword": "療法",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "liáo fǎ",
+      "pinyinNumeric": "liao2 fa3",
+      "zhuyin": "ㄌㄧㄠˊ ㄈㄚˇ",
+      "glossEn": "therapy",
+      "chars": [
+        "療",
+        "法"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-1a5a44c6dc",
       "headword": "不含糊",
       "variants": [],
@@ -34195,7 +34295,7 @@
       "headword": "堂妹",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "N1",
       "source": "supplement",
       "pinyin": "táng mèi",
       "pinyinNumeric": "tang2 mei4",
@@ -34206,8 +34306,20 @@
         "妹"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "senses": [
+        {
+          "id": "moec-1aed5443bc#tb",
+          "glossEn": "younger female cousin (father's side)",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-1aed5443bc#tb"
     },
     {
       "id": "moec-1af08b9f71",
@@ -35632,7 +35744,7 @@
       "headword": "表妹",
       "variants": [],
       "pos": [],
-      "level": "L2",
+      "level": "N1",
       "source": "supplement",
       "pinyin": "biǎo mèi",
       "pinyinNumeric": "biao3 mei4",
@@ -35644,12 +35756,28 @@
       ],
       "tags": [
         "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03",
         "textbook:laixue-3",
         "textbook:laixue-3:L07"
       ],
       "senses": [
         {
           "id": "moec-1c0b813583#tb",
+          "glossEn": "younger female cousin (mother's side)",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "moec-1c0b813583#tb-laixue-3",
+          "glossEn": "[younger female] cousin",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "moec-1c0b813583#tb-laixue-3-L07",
           "glossEn": "[younger female] cousin",
           "basedOn": [
             "textbook"
@@ -41323,7 +41451,7 @@
       "headword": "買東西",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L2",
       "source": "supplement",
       "pinyin": "mǎi dōng xī",
       "pinyinNumeric": "mai3 dong1 xi1",
@@ -41335,8 +41463,20 @@
         "西"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "senses": [
+        {
+          "id": "moec-2063a9385c#tb",
+          "glossEn": "to shop",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-2063a9385c#tb"
     },
     {
       "id": "moec-20646378d0",
@@ -46203,7 +46343,7 @@
       "headword": "堂弟",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L2",
       "source": "supplement",
       "pinyin": "táng dì",
       "pinyinNumeric": "tang2 di4",
@@ -46214,8 +46354,20 @@
         "弟"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "senses": [
+        {
+          "id": "moec-24fbf8edf7#tb",
+          "glossEn": "younger male cousin (father's side)",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-24fbf8edf7#tb"
     },
     {
       "id": "moec-2506c25c71",
@@ -63801,6 +63953,25 @@
       ]
     },
     {
+      "id": "moec-32bfc6446a",
+      "headword": "小犬",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "xiǎo quǎn",
+      "pinyinNumeric": "xiao3 quan3",
+      "zhuyin": "ㄒㄧㄠˇ ㄑㄩㄢˇ",
+      "glossEn": "puppy",
+      "chars": [
+        "小",
+        "犬"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-32c3829424",
       "headword": "段子",
       "variants": [],
@@ -79144,6 +79315,25 @@
       ]
     },
     {
+      "id": "moec-3e630c4c67",
+      "headword": "籠火",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "lóng huǒ",
+      "pinyinNumeric": "long2 huo3",
+      "zhuyin": "ㄌㄨㄥˊ ㄏㄨㄛˇ",
+      "glossEn": "to make a fire",
+      "chars": [
+        "籠",
+        "火"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-3e6524b905",
       "headword": "貌美",
       "variants": [],
@@ -80364,7 +80554,7 @@
       "headword": "工程師",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "N1",
       "source": "supplement",
       "pinyin": "gōng chéng shī",
       "pinyinNumeric": "gong1 cheng2 shi1",
@@ -80376,8 +80566,20 @@
         "師"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "senses": [
+        {
+          "id": "moec-3f8f7b990f#tb",
+          "glossEn": "engineer",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-3f8f7b990f#tb"
     },
     {
       "id": "moec-3f930b50bf",
@@ -84355,7 +84557,7 @@
       "headword": "姐妹",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "N1",
       "source": "supplement",
       "pinyin": "jiě mèi",
       "pinyinNumeric": "jie3 mei4",
@@ -84366,8 +84568,20 @@
         "妹"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "senses": [
+        {
+          "id": "moec-42df9328c3#tb",
+          "glossEn": "sisters",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-42df9328c3#tb"
     },
     {
       "id": "moec-42e01dcbaf",
@@ -91208,6 +91422,25 @@
       ]
     },
     {
+      "id": "moec-483d435dcf",
+      "headword": "法盲",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "fǎ máng",
+      "pinyinNumeric": "fa3 mang2",
+      "zhuyin": "ㄈㄚˇ ㄇㄤˊ",
+      "glossEn": "person who has no understanding of legal matters",
+      "chars": [
+        "法",
+        "盲"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-483fa4a8a0",
       "headword": "程子",
       "variants": [],
@@ -91738,6 +91971,25 @@
       "chars": [
         "打",
         "罵"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-48c2d24caa",
+      "headword": "鳥籠",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "niǎo lóng",
+      "pinyinNumeric": "niao3 long2",
+      "zhuyin": "ㄋㄧㄠˇ ㄌㄨㄥˊ",
+      "glossEn": "birdcage",
+      "chars": [
+        "鳥",
+        "籠"
       ],
       "tags": [
         "compound:moe"
@@ -103412,6 +103664,25 @@
       ]
     },
     {
+      "id": "moec-516fa3fe62",
+      "headword": "擠兌",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "jǐ duì",
+      "pinyinNumeric": "ji3 dui4",
+      "zhuyin": "ㄐㄧˇ ㄉㄨㄟˋ",
+      "glossEn": "bank run",
+      "chars": [
+        "擠",
+        "兌"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-5172d47c99",
       "headword": "西打",
       "variants": [],
@@ -105999,7 +106270,7 @@
       "headword": "炒麵",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L1",
       "source": "supplement",
       "pinyin": "chǎo miàn",
       "pinyinNumeric": "chao3 mian4",
@@ -106010,8 +106281,20 @@
         "麵"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L03"
+      ],
+      "senses": [
+        {
+          "id": "moec-537e78e3e2#tb",
+          "glossEn": "fried noodles",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-537e78e3e2#tb"
     },
     {
       "id": "moec-537e9c22f9",
@@ -108827,6 +109110,25 @@
       "chars": [
         "餅",
         "子"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-55cccadc7e",
+      "headword": "犬齒",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "quǎn chǐ",
+      "pinyinNumeric": "quan3 chi3",
+      "zhuyin": "ㄑㄩㄢˇ ㄔˇ",
+      "glossEn": "canine tooth",
+      "chars": [
+        "犬",
+        "齒"
       ],
       "tags": [
         "compound:moe"
@@ -112280,6 +112582,25 @@
       "chars": [
         "毒",
         "蟲"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-58b88d5813",
+      "headword": "折兌",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "zhé duì",
+      "pinyinNumeric": "zhe2 dui4",
+      "zhuyin": "ㄓㄜˊ ㄉㄨㄟˋ",
+      "glossEn": "to cash",
+      "chars": [
+        "折",
+        "兌"
       ],
       "tags": [
         "compound:moe"
@@ -116323,6 +116644,25 @@
       "chars": [
         "重",
         "圍"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-5ba0bc92a4",
+      "headword": "色盲",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "sè máng",
+      "pinyinNumeric": "se4 mang2",
+      "zhuyin": "ㄙㄜˋ ㄇㄤˊ",
+      "glossEn": "color-blind",
+      "chars": [
+        "色",
+        "盲"
       ],
       "tags": [
         "compound:moe"
@@ -128086,7 +128426,7 @@
       "headword": "四月",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "N1",
       "source": "supplement",
       "pinyin": "sì yuè",
       "pinyinNumeric": "si4 yue4",
@@ -128097,8 +128437,20 @@
         "月"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "moec-6532579102#tb",
+          "glossEn": "April",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-6532579102#tb"
     },
     {
       "id": "moec-65344b166c",
@@ -130187,7 +130539,7 @@
       "headword": "不舒服",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L2",
       "source": "supplement",
       "pinyin": "bù shū fu",
       "pinyinNumeric": "bu4 shu1 fu5",
@@ -130199,8 +130551,20 @@
         "服"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L08"
+      ],
+      "senses": [
+        {
+          "id": "moec-66d7d0576e#tb",
+          "glossEn": "unwell",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-66d7d0576e#tb"
     },
     {
       "id": "moec-66d8e724fc",
@@ -135651,7 +136015,7 @@
       "headword": "雨天",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L1",
       "source": "supplement",
       "pinyin": "yǔ tiān",
       "pinyinNumeric": "yu3 tian1",
@@ -135662,8 +136026,20 @@
         "天"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
+      ],
+      "senses": [
+        {
+          "id": "moec-6affe989cf#tb",
+          "glossEn": "rainy day",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-6affe989cf#tb"
     },
     {
       "id": "moec-6b02ea2e3c",
@@ -137296,6 +137672,25 @@
       ]
     },
     {
+      "id": "moec-6c553ecb43",
+      "headword": "警犬",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "jǐng quǎn",
+      "pinyinNumeric": "jing3 quan3",
+      "zhuyin": "ㄐㄧㄥˇ ㄑㄩㄢˇ",
+      "glossEn": "police dog",
+      "chars": [
+        "警",
+        "犬"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-6c56dc8fc1",
       "headword": "社會學",
       "variants": [],
@@ -138075,6 +138470,25 @@
       ]
     },
     {
+      "id": "moec-6cfed97ed3",
+      "headword": "犬牙",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "quǎn yá",
+      "pinyinNumeric": "quan3 ya2",
+      "zhuyin": "ㄑㄩㄢˇ ㄧㄚˊ",
+      "glossEn": "canine tooth",
+      "chars": [
+        "犬",
+        "牙"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-6cfff16742",
       "headword": "戰敗",
       "variants": [],
@@ -138281,6 +138695,25 @@
       "chars": [
         "鄉",
         "親"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-6d2610d24c",
+      "headword": "承兌",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "chéng duì",
+      "pinyinNumeric": "cheng2 dui4",
+      "zhuyin": "ㄔㄥˊ ㄉㄨㄟˋ",
+      "glossEn": "(commerce) to accept (i.e. acknowledge as calling for payment)",
+      "chars": [
+        "承",
+        "兌"
       ],
       "tags": [
         "compound:moe"
@@ -146285,6 +146718,25 @@
       ]
     },
     {
+      "id": "moec-731d10478e",
+      "headword": "籠嘴",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "lóng zuǐ",
+      "pinyinNumeric": "long2 zui3",
+      "zhuyin": "ㄌㄨㄥˊ ㄗㄨㄟˇ",
+      "glossEn": "muzzle (device)",
+      "chars": [
+        "籠",
+        "嘴"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-732799e214",
       "headword": "小學生",
       "variants": [],
@@ -147584,6 +148036,25 @@
         "航",
         "海",
         "家"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-741d113045",
+      "headword": "軍犬",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "jūn quǎn",
+      "pinyinNumeric": "jun1 quan3",
+      "zhuyin": "ㄐㄩㄣ ㄑㄩㄢˇ",
+      "glossEn": "military dog",
+      "chars": [
+        "軍",
+        "犬"
       ],
       "tags": [
         "compound:moe"
@@ -152523,6 +152994,25 @@
       ]
     },
     {
+      "id": "moec-77c89bab0f",
+      "headword": "籠統",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "lóng tǒng",
+      "pinyinNumeric": "long2 tong3",
+      "zhuyin": "ㄌㄨㄥˊ ㄊㄨㄥˇ",
+      "glossEn": "general",
+      "chars": [
+        "籠",
+        "統"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-77c8c089f5",
       "headword": "數數",
       "variants": [],
@@ -154905,7 +155395,7 @@
       "headword": "服務員",
       "variants": [],
       "pos": [],
-      "level": "L1",
+      "level": "N1",
       "source": "supplement",
       "pinyin": "fú wù yuán",
       "pinyinNumeric": "fu2 wu4 yuan2",
@@ -154918,12 +155408,28 @@
       ],
       "tags": [
         "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04",
         "textbook:laixue-2",
         "textbook:laixue-2:L03"
       ],
       "senses": [
         {
           "id": "moec-798314cd57#tb",
+          "glossEn": "server, waiter, waitress",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "moec-798314cd57#tb-laixue-2",
+          "glossEn": "waiter, waitress",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "moec-798314cd57#tb-laixue-2-L03",
           "glossEn": "waiter, waitress",
           "basedOn": [
             "textbook"
@@ -160696,7 +161202,7 @@
       "headword": "高鐵",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L2",
       "source": "supplement",
       "pinyin": "gāo tiě",
       "pinyinNumeric": "gao1 tie3",
@@ -160707,8 +161213,20 @@
         "鐵"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "moec-7df227c27a#tb",
+          "glossEn": "high-speed rail",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-7df227c27a#tb"
     },
     {
       "id": "moec-7df44966ed",
@@ -163488,6 +164006,25 @@
       "chars": [
         "街",
         "巷"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-8035d79b00",
+      "headword": "療效",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "liáo xiào",
+      "pinyinNumeric": "liao2 xiao4",
+      "zhuyin": "ㄌㄧㄠˊ ㄒㄧㄠˋ",
+      "glossEn": "healing efficacy",
+      "chars": [
+        "療",
+        "效"
       ],
       "tags": [
         "compound:moe"
@@ -167381,7 +167918,8 @@
       "tags": [
         "compound:moe",
         "textbook:laixue-2",
-        "textbook:laixue-2:L05"
+        "textbook:laixue-2:L05",
+        "textbook:laixue-2:L02"
       ],
       "senses": [
         {
@@ -169637,6 +170175,25 @@
       ]
     },
     {
+      "id": "moec-8548b6302e",
+      "headword": "盲字",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "máng zì",
+      "pinyinNumeric": "mang2 zi4",
+      "zhuyin": "ㄇㄤˊ ㄗˋ",
+      "glossEn": "braille",
+      "chars": [
+        "盲",
+        "字"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-854ca3f410",
       "headword": "下限",
       "variants": [],
@@ -171310,7 +171867,7 @@
       "headword": "六月",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "N1",
       "source": "supplement",
       "pinyin": "liù yuè",
       "pinyinNumeric": "liu4 yue4",
@@ -171321,8 +171878,20 @@
         "月"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "moec-867ed1c06c#tb",
+          "glossEn": "June",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-867ed1c06c#tb"
     },
     {
       "id": "moec-867f65f035",
@@ -172009,6 +172578,25 @@
       "chars": [
         "光",
         "鮮"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-86f5ad4d1b",
+      "headword": "食療",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "shí liáo",
+      "pinyinNumeric": "shi2 liao2",
+      "zhuyin": "ㄕˊ ㄌㄧㄠˊ",
+      "glossEn": "(TCM) food therapy",
+      "chars": [
+        "食",
+        "療"
       ],
       "tags": [
         "compound:moe"
@@ -175254,6 +175842,26 @@
       ]
     },
     {
+      "id": "moec-8988f216a8",
+      "headword": "豬籠草",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "zhū lóng cǎo",
+      "pinyinNumeric": "zhu1 long2 cao3",
+      "zhuyin": "ㄓㄨ ㄌㄨㄥˊ ㄘㄠˇ",
+      "glossEn": "tropical pitcher plant (i.e. genus Nepenthes)",
+      "chars": [
+        "豬",
+        "籠",
+        "草"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-898e845a33",
       "headword": "心機",
       "variants": [],
@@ -175700,7 +176308,7 @@
       "headword": "七月",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "N1",
       "source": "supplement",
       "pinyin": "qī yuè",
       "pinyinNumeric": "qi1 yue4",
@@ -175711,8 +176319,20 @@
         "月"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "moec-89d328370d#tb",
+          "glossEn": "July",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-89d328370d#tb"
     },
     {
       "id": "moec-89dab59ad9",
@@ -177346,7 +177966,7 @@
       "headword": "表姐妹",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L2",
       "source": "supplement",
       "pinyin": "biǎo jiě mèi",
       "pinyinNumeric": "biao3 jie3 mei4",
@@ -177358,8 +177978,20 @@
         "妹"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "senses": [
+        {
+          "id": "moec-8af37d248b#tb",
+          "glossEn": "female cousin through a female relative",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-8af37d248b#tb"
     },
     {
       "id": "moec-8afb040969",
@@ -184431,7 +185063,7 @@
       "headword": "糖果",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L1",
       "source": "supplement",
       "pinyin": "táng guǒ",
       "pinyinNumeric": "tang2 guo3",
@@ -184442,8 +185074,20 @@
         "果"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
+      ],
+      "senses": [
+        {
+          "id": "moec-900f64f7bb#tb",
+          "glossEn": "candy",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-900f64f7bb#tb"
     },
     {
       "id": "moec-900f6d9cfd",
@@ -189506,6 +190150,25 @@
       "chars": [
         "雜",
         "費"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-9421e970e4",
+      "headword": "籠頭",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "lóng tou",
+      "pinyinNumeric": "long2 tou5",
+      "zhuyin": "ㄌㄨㄥˊ ˙ㄊㄡ",
+      "glossEn": "headstall",
+      "chars": [
+        "籠",
+        "頭"
       ],
       "tags": [
         "compound:moe"
@@ -200839,6 +201502,26 @@
       ]
     },
     {
+      "id": "moec-9c6a1f6200",
+      "headword": "療養所",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "liáo yǎng suǒ",
+      "pinyinNumeric": "liao2 yang3 suo3",
+      "zhuyin": "ㄌㄧㄠˊ ㄧㄤˇ ㄙㄨㄛˇ",
+      "glossEn": "sanitorium",
+      "chars": [
+        "療",
+        "養",
+        "所"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-9c6b4b09a6",
       "headword": "替代品",
       "variants": [],
@@ -203805,6 +204488,25 @@
       ]
     },
     {
+      "id": "moec-9ed54875f2",
+      "headword": "療傷",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "liáo shāng",
+      "pinyinNumeric": "liao2 shang1",
+      "zhuyin": "ㄌㄧㄠˊ ㄕㄤ",
+      "glossEn": "healing",
+      "chars": [
+        "療",
+        "傷"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-9ed8c6c6de",
       "headword": "許字",
       "variants": [],
@@ -204059,7 +204761,7 @@
       "headword": "農人",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "N1",
       "source": "supplement",
       "pinyin": "nóng rén",
       "pinyinNumeric": "nong2 ren2",
@@ -204070,8 +204772,20 @@
         "人"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
+      ],
+      "senses": [
+        {
+          "id": "moec-9f01ca1faa#tb",
+          "glossEn": "farmer",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-9f01ca1faa#tb"
     },
     {
       "id": "moec-9f03cfcea0",
@@ -205392,6 +206106,25 @@
       "chars": [
         "驚",
         "異"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-a00e70439c",
+      "headword": "放療",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "fàng liáo",
+      "pinyinNumeric": "fang4 liao2",
+      "zhuyin": "ㄈㄤˋ ㄌㄧㄠˊ",
+      "glossEn": "radiotherapy (abbr. for 放射療法|放射疗法[fang4 she4 liao2 fa3])",
+      "chars": [
+        "放",
+        "療"
       ],
       "tags": [
         "compound:moe"
@@ -211395,6 +212128,25 @@
       "chars": [
         "風",
         "範"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-a5067b44ea",
+      "headword": "盲文",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "máng wén",
+      "pinyinNumeric": "mang2 wen2",
+      "zhuyin": "ㄇㄤˊ ㄨㄣˊ",
+      "glossEn": "braille",
+      "chars": [
+        "盲",
+        "文"
       ],
       "tags": [
         "compound:moe"
@@ -225303,6 +226055,25 @@
       ]
     },
     {
+      "id": "moec-afe3f78034",
+      "headword": "療程",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "liáo chéng",
+      "pinyinNumeric": "liao2 cheng2",
+      "zhuyin": "ㄌㄧㄠˊ ㄔㄥˊ",
+      "glossEn": "course of treatment",
+      "chars": [
+        "療",
+        "程"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-afe99bfc9a",
       "headword": "密報",
       "variants": [],
@@ -227833,6 +228604,25 @@
         "元",
         "世",
         "祖"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-b21880c70d",
+      "headword": "兌獎",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "duì jiǎng",
+      "pinyinNumeric": "dui4 jiang3",
+      "zhuyin": "ㄉㄨㄟˋ ㄐㄧㄤˇ",
+      "glossEn": "to cash in a winning ticket",
+      "chars": [
+        "兌",
+        "獎"
       ],
       "tags": [
         "compound:moe"
@@ -231150,6 +231940,25 @@
         "三",
         "級",
         "片"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-b4ca325654",
+      "headword": "兌付",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "duì fù",
+      "pinyinNumeric": "dui4 fu4",
+      "zhuyin": "ㄉㄨㄟˋ ㄈㄨˋ",
+      "glossEn": "to cash (a check)",
+      "chars": [
+        "兌",
+        "付"
       ],
       "tags": [
         "compound:moe"
@@ -240760,7 +241569,7 @@
       "headword": "沒用",
       "variants": [],
       "pos": [],
-      "level": null,
+      "level": "L1",
       "source": "supplement",
       "pinyin": "méi yòng",
       "pinyinNumeric": "mei2 yong4",
@@ -240771,8 +241580,20 @@
         "用"
       ],
       "tags": [
-        "compound:moe"
-      ]
+        "compound:moe",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
+      ],
+      "senses": [
+        {
+          "id": "moec-bc80aea1e5#tb",
+          "glossEn": "useless",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "textbookSenseId": "moec-bc80aea1e5#tb"
     },
     {
       "id": "moec-bc858585b2",
@@ -246727,6 +247548,25 @@
       "chars": [
         "純",
         "種"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-c140b12c0a",
+      "headword": "籠絡",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "lóng luò",
+      "pinyinNumeric": "long2 luo4",
+      "zhuyin": "ㄌㄨㄥˊ ㄌㄨㄛˋ",
+      "glossEn": "to coax",
+      "chars": [
+        "籠",
+        "絡"
       ],
       "tags": [
         "compound:moe"
@@ -259379,6 +260219,26 @@
       ]
     },
     {
+      "id": "moec-cab2c7d494",
+      "headword": "燈籠褲",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "dēng lóng kù",
+      "pinyinNumeric": "deng1 long2 ku4",
+      "zhuyin": "ㄉㄥ ㄌㄨㄥˊ ㄎㄨˋ",
+      "glossEn": "bloomers",
+      "chars": [
+        "燈",
+        "籠",
+        "褲"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-cab41651e9",
       "headword": "選擇題",
       "variants": [],
@@ -262112,6 +262972,25 @@
       "chars": [
         "定",
         "見"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-ccec985197",
+      "headword": "電療",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "diàn liáo",
+      "pinyinNumeric": "dian4 liao2",
+      "zhuyin": "ㄉㄧㄢˋ ㄌㄧㄠˊ",
+      "glossEn": "electrotherapy",
+      "chars": [
+        "電",
+        "療"
       ],
       "tags": [
         "compound:moe"
@@ -270244,6 +271123,26 @@
       ]
     },
     {
+      "id": "moec-d32c053c32",
+      "headword": "療養院",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "liáo yǎng yuàn",
+      "pinyinNumeric": "liao2 yang3 yuan4",
+      "zhuyin": "ㄌㄧㄠˊ ㄧㄤˇ ㄩㄢˋ",
+      "glossEn": "sanatorium",
+      "chars": [
+        "療",
+        "養",
+        "院"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-d330f14214",
       "headword": "野戰",
       "variants": [],
@@ -274440,6 +275339,25 @@
       ]
     },
     {
+      "id": "moec-d6b69dc59b",
+      "headword": "犬子",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "quǎn zǐ",
+      "pinyinNumeric": "quan3 zi3",
+      "zhuyin": "ㄑㄩㄢˇ ㄗˇ",
+      "glossEn": "(literary) (humble) my son",
+      "chars": [
+        "犬",
+        "子"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-d6b9d0dd18",
       "headword": "風雨",
       "variants": [],
@@ -276515,6 +277433,25 @@
       "chars": [
         "爬",
         "蟲"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-d864c6dcf6",
+      "headword": "療養",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "liáo yǎng",
+      "pinyinNumeric": "liao2 yang3",
+      "zhuyin": "ㄌㄧㄠˊ ㄧㄤˇ",
+      "glossEn": "to get well",
+      "chars": [
+        "療",
+        "養"
       ],
       "tags": [
         "compound:moe"
@@ -285389,6 +286326,25 @@
       "chars": [
         "察",
         "察"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-deb74f4da4",
+      "headword": "水療",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "shuǐ liáo",
+      "pinyinNumeric": "shui3 liao2",
+      "zhuyin": "ㄕㄨㄟˇ ㄌㄧㄠˊ",
+      "glossEn": "hydrotherapy",
+      "chars": [
+        "水",
+        "療"
       ],
       "tags": [
         "compound:moe"
@@ -299993,6 +300949,25 @@
       ]
     },
     {
+      "id": "moec-ea227ca9a9",
+      "headword": "盲點",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "máng diǎn",
+      "pinyinNumeric": "mang2 dian3",
+      "zhuyin": "ㄇㄤˊ ㄉㄧㄢˇ",
+      "glossEn": "blind spot",
+      "chars": [
+        "盲",
+        "點"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-ea28e802c2",
       "headword": "第四臺",
       "variants": [],
@@ -300007,6 +300982,25 @@
         "第",
         "四",
         "臺"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-ea29e7e154",
+      "headword": "文盲",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "wén máng",
+      "pinyinNumeric": "wen2 mang2",
+      "zhuyin": "ㄨㄣˊ ㄇㄤˊ",
+      "glossEn": "illiterate",
+      "chars": [
+        "文",
+        "盲"
       ],
       "tags": [
         "compound:moe"
@@ -308385,6 +309379,25 @@
       "chars": [
         "破",
         "家"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
+      "id": "moec-f07cce1d32",
+      "headword": "商兌",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "shāng duì",
+      "pinyinNumeric": "shang1 dui4",
+      "zhuyin": "ㄕㄤ ㄉㄨㄟˋ",
+      "glossEn": "to discuss and deliberate",
+      "chars": [
+        "商",
+        "兌"
       ],
       "tags": [
         "compound:moe"
@@ -319207,6 +320220,25 @@
       ]
     },
     {
+      "id": "moec-f89a617457",
+      "headword": "科盲",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "kē máng",
+      "pinyinNumeric": "ke1 mang2",
+      "zhuyin": "ㄎㄜ ㄇㄤˊ",
+      "glossEn": "person who is ignorant about science and technology",
+      "chars": [
+        "科",
+        "盲"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-f89b0ec300",
       "headword": "東歐",
       "variants": [],
@@ -326381,6 +327413,25 @@
       ]
     },
     {
+      "id": "moec-fe161bec00",
+      "headword": "出籠",
+      "variants": [],
+      "pos": [],
+      "level": null,
+      "source": "supplement",
+      "pinyin": "chū lóng",
+      "pinyinNumeric": "chu1 long2",
+      "zhuyin": "ㄔㄨ ㄌㄨㄥˊ",
+      "glossEn": "(of food) to be taken out of the steamer",
+      "chars": [
+        "出",
+        "籠"
+      ],
+      "tags": [
+        "compound:moe"
+      ]
+    },
+    {
       "id": "moec-fe16416b67",
       "headword": "鋼片琴",
       "variants": [],
@@ -329642,7 +330693,8 @@
         "taiwan-specific",
         "gloss:authored",
         "textbook:laixue-4",
-        "textbook:laixue-4:L03"
+        "textbook:laixue-4:L03",
+        "textbook:laixue-4:L02"
       ],
       "senses": [
         {
@@ -329899,6 +330951,120 @@
       "textbookSenseId": "tb-02af7c4093#tb"
     },
     {
+      "id": "tb-02d80acbb6",
+      "headword": "外幣兌換",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "wài bì duì huàn",
+      "pinyinNumeric": "wai4 bi4 dui4 huan4",
+      "zhuyin": "ㄨㄞˋ ㄅㄧˋ ㄉㄨㄟˋ ㄏㄨㄢˋ",
+      "glossEn": "currency exchange",
+      "chars": [
+        "外",
+        "幣",
+        "兌",
+        "換"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-02d80acbb6#tb",
+          "glossEn": "currency exchange",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-02d80acbb6#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-02d80acbb6#tb"
+    },
+    {
+      "id": "tb-04f6deac3c",
+      "headword": "小籠包",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "xiǎo lóng bāo",
+      "pinyinNumeric": "xiao3 long2 bao1",
+      "zhuyin": "ㄒㄧㄠˇ ㄌㄨㄥˊ ㄅㄠ",
+      "glossEn": "soup dumplings",
+      "chars": [
+        "小",
+        "籠",
+        "包"
+      ],
+      "tags": [
+        "gloss:heuristic",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L01"
+      ],
+      "senses": [
+        {
+          "id": "tb-04f6deac3c#tb",
+          "glossEn": "soup dumplings",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-04f6deac3c#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "moeDefZh": [
+        "一種麵食點心，似包子而較小，內包肉餡，蒸熟食用。"
+      ],
+      "textbookSenseId": "tb-04f6deac3c#tb"
+    },
+    {
+      "id": "tb-05fbf2fda2",
+      "headword": "導盲犬",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "dǎo máng quǎn",
+      "pinyinNumeric": "dao3 mang2 quan3",
+      "zhuyin": "ㄉㄠˇ ㄇㄤˊ ㄑㄩㄢˇ",
+      "glossEn": "guide dog",
+      "chars": [
+        "導",
+        "盲",
+        "犬"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "senses": [
+        {
+          "id": "tb-05fbf2fda2#tb",
+          "glossEn": "guide dog",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-05fbf2fda2#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-05fbf2fda2#tb"
+    },
+    {
       "id": "tb-06f27e8f3e",
       "headword": "蘭嶼",
       "variants": [],
@@ -330041,6 +331207,42 @@
       ]
     },
     {
+      "id": "tb-0e438ec33a",
+      "headword": "炸雞",
+      "variants": [],
+      "pos": [],
+      "level": "L1",
+      "source": "textbook",
+      "pinyin": "zhá jī",
+      "pinyinNumeric": "zha2 ji1",
+      "zhuyin": "ㄓㄚˊ ㄐㄧ",
+      "glossEn": "fried chicken",
+      "chars": [
+        "炸",
+        "雞"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L03"
+      ],
+      "senses": [
+        {
+          "id": "tb-0e438ec33a#tb",
+          "glossEn": "fried chicken",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-0e438ec33a#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-0e438ec33a#tb"
+    },
+    {
       "id": "tb-0edfbf162a",
       "headword": "原住民族",
       "variants": [],
@@ -330118,6 +331320,43 @@
       "textbookSenseId": "tb-0f7c542524#tb"
     },
     {
+      "id": "tb-109f0094f9",
+      "headword": "打籃球",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "dǎ lán qiú",
+      "pinyinNumeric": "da3 lan2 qiu2",
+      "zhuyin": "ㄉㄚˇ ㄌㄢˊ ㄑㄧㄡˊ",
+      "glossEn": "to play basket ball",
+      "chars": [
+        "打",
+        "籃",
+        "球"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "senses": [
+        {
+          "id": "tb-109f0094f9#tb",
+          "glossEn": "to play basket ball",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-109f0094f9#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-109f0094f9#tb"
+    },
+    {
       "id": "tb-114fbfad60",
       "headword": "長褲",
       "variants": [],
@@ -330175,7 +331414,8 @@
         "reading:composed",
         "gloss:authored",
         "textbook:laixue-4",
-        "textbook:laixue-4:L06"
+        "textbook:laixue-4:L06",
+        "textbook:laixue-4:L02"
       ],
       "senses": [
         {
@@ -330553,7 +331793,7 @@
       "pinyin": "kàn shū",
       "pinyinNumeric": "kan4 shu1",
       "zhuyin": "ㄎㄢˋ ㄕㄨ",
-      "glossEn": "to read books",
+      "glossEn": "to read",
       "chars": [
         "看",
         "書"
@@ -330562,11 +331802,27 @@
         "reading:composed",
         "gloss:heuristic",
         "textbook:laixue-2",
-        "textbook:laixue-2:L08"
+        "textbook:laixue-2:L08",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
       ],
       "senses": [
         {
           "id": "tb-1c43bc84bd#tb",
+          "glossEn": "to read",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tb-1c43bc84bd#tb-laixue-2",
+          "glossEn": "to read books",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tb-1c43bc84bd#tb-laixue-2-L08",
           "glossEn": "to read books",
           "basedOn": [
             "textbook"
@@ -330851,6 +332107,44 @@
       "textbookSenseId": "tb-23665fb010#tb"
     },
     {
+      "id": "tb-23b74de161",
+      "headword": "貿易公司",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "mào yì gōng sī",
+      "pinyinNumeric": "mao4 yi4 gong1 si1",
+      "zhuyin": "ㄇㄠˋ ㄧˋ ㄍㄨㄥ ㄙ",
+      "glossEn": "trading company",
+      "chars": [
+        "貿",
+        "易",
+        "公",
+        "司"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "senses": [
+        {
+          "id": "tb-23b74de161#tb",
+          "glossEn": "trading company",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-23b74de161#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-23b74de161#tb"
+    },
+    {
       "id": "tb-256c9887c6",
       "headword": "受歡迎",
       "variants": [],
@@ -330886,6 +332180,43 @@
         "textbook"
       ],
       "textbookSenseId": "tb-256c9887c6#tb"
+    },
+    {
+      "id": "tb-2750a4f013",
+      "headword": "星期四",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "xīng qí sì",
+      "pinyinNumeric": "xing1 qi2 si4",
+      "zhuyin": "ㄒㄧㄥ ㄑㄧˊ ㄙˋ",
+      "glossEn": "Thursday",
+      "chars": [
+        "星",
+        "期",
+        "四"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "senses": [
+        {
+          "id": "tb-2750a4f013#tb",
+          "glossEn": "Thursday",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-2750a4f013#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-2750a4f013#tb"
     },
     {
       "id": "tb-292b51f677",
@@ -330927,6 +332258,44 @@
       "textbookSenseId": "tb-292b51f677#tb"
     },
     {
+      "id": "tb-2b0f07ae30",
+      "headword": "電信服務",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "diàn xìn fú wù",
+      "pinyinNumeric": "dian4 xin4 fu2 wu4",
+      "zhuyin": "ㄉㄧㄢˋ ㄒㄧㄣˋ ㄈㄨˊ ㄨˋ",
+      "glossEn": "telecommunications service",
+      "chars": [
+        "電",
+        "信",
+        "服",
+        "務"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-2b0f07ae30#tb",
+          "glossEn": "telecommunications service",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-2b0f07ae30#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-2b0f07ae30#tb"
+    },
+    {
       "id": "tb-2d0ec7af64",
       "headword": "畢業了",
       "variants": [],
@@ -330962,6 +332331,44 @@
         "textbook"
       ],
       "textbookSenseId": "tb-2d0ec7af64#tb"
+    },
+    {
+      "id": "tb-2d82c2999d",
+      "headword": "醫療中心",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "yī liáo zhōng xīn",
+      "pinyinNumeric": "yi1 liao2 zhong1 xin1",
+      "zhuyin": "ㄧ ㄌㄧㄠˊ ㄓㄨㄥ ㄒㄧㄣ",
+      "glossEn": "medical center",
+      "chars": [
+        "醫",
+        "療",
+        "中",
+        "心"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-2d82c2999d#tb",
+          "glossEn": "medical center",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-2d82c2999d#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-2d82c2999d#tb"
     },
     {
       "id": "tb-2e9db6e051",
@@ -331061,7 +332468,7 @@
       ],
       "tags": [
         "reading:composed",
-        "gloss:authored",
+        "gloss:heuristic",
         "textbook:laixue-3",
         "textbook:laixue-3:L03"
       ],
@@ -331118,6 +332525,43 @@
       "glossSources": [
         "moe-cedict"
       ]
+    },
+    {
+      "id": "tb-37757ce36e",
+      "headword": "不好吃",
+      "variants": [],
+      "pos": [],
+      "level": "L1",
+      "source": "textbook",
+      "pinyin": "bù hǎo chī",
+      "pinyinNumeric": "bu4 hao3 chi1",
+      "zhuyin": "ㄅㄨˋ ㄏㄠˇ ㄔ",
+      "glossEn": "not tasty",
+      "chars": [
+        "不",
+        "好",
+        "吃"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-37757ce36e#tb",
+          "glossEn": "not tasty",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-37757ce36e#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-37757ce36e#tb"
     },
     {
       "id": "tb-37b1e482f1",
@@ -331252,7 +332696,7 @@
       ],
       "tags": [
         "reading:composed",
-        "gloss:authored",
+        "gloss:heuristic",
         "textbook:laixue-2",
         "textbook:laixue-2:L06"
       ],
@@ -331270,6 +332714,43 @@
         "textbook"
       ],
       "textbookSenseId": "tb-39568ff4a5#tb"
+    },
+    {
+      "id": "tb-3a6055b0dd",
+      "headword": "上個月",
+      "variants": [],
+      "pos": [],
+      "level": "L1",
+      "source": "textbook",
+      "pinyin": "shàng ge yuè",
+      "pinyinNumeric": "shang4 ge5 yue4",
+      "zhuyin": "ㄕㄤˋ ˙ㄍㄜ ㄩㄝˋ",
+      "glossEn": "last month",
+      "chars": [
+        "上",
+        "個",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-3a6055b0dd#tb",
+          "glossEn": "last month",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-3a6055b0dd#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-3a6055b0dd#tb"
     },
     {
       "id": "tb-3ba2add7e9",
@@ -331348,6 +332829,43 @@
         "海洋名。介於美洲與亞洲、澳洲之間。北以白令海峽通北極海，南接南極海，面積約一億六千五百萬平方公里，是世界最大的海洋。西元一五一九年麥哲倫於暴風後航行至此，見其波浪平靜，故稱為「太平洋」。"
       ],
       "textbookSenseId": "tb-3c14dbd5fd#tb"
+    },
+    {
+      "id": "tb-3c7f77e79b",
+      "headword": "十二月",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "shí èr yuè",
+      "pinyinNumeric": "shi2 er4 yue4",
+      "zhuyin": "ㄕˊ ㄦˋ ㄩㄝˋ",
+      "glossEn": "December",
+      "chars": [
+        "十",
+        "二",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "tb-3c7f77e79b#tb",
+          "glossEn": "December",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-3c7f77e79b#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-3c7f77e79b#tb"
     },
     {
       "id": "tb-3dafe0e80a",
@@ -331736,6 +333254,44 @@
       "textbookSenseId": "tb-48d72fbb7d#tb"
     },
     {
+      "id": "tb-4acdd993b4",
+      "headword": "城市公園",
+      "variants": [],
+      "pos": [],
+      "level": "L1",
+      "source": "textbook",
+      "pinyin": "chéng shì gōng yuán",
+      "pinyinNumeric": "cheng2 shi4 gong1 yuan2",
+      "zhuyin": "ㄔㄥˊ ㄕˋ ㄍㄨㄥ ㄩㄢˊ",
+      "glossEn": "city park",
+      "chars": [
+        "城",
+        "市",
+        "公",
+        "園"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L06"
+      ],
+      "senses": [
+        {
+          "id": "tb-4acdd993b4#tb",
+          "glossEn": "city park",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-4acdd993b4#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-4acdd993b4#tb"
+    },
+    {
       "id": "tb-4ad5586c87",
       "headword": "所有的",
       "variants": [],
@@ -331927,6 +333483,42 @@
       "textbookSenseId": "tb-5349f88cc6#tb"
     },
     {
+      "id": "tb-542259b039",
+      "headword": "十月",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "shí yuè",
+      "pinyinNumeric": "shi2 yue4",
+      "zhuyin": "ㄕˊ ㄩㄝˋ",
+      "glossEn": "October",
+      "chars": [
+        "十",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "tb-542259b039#tb",
+          "glossEn": "October",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-542259b039#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-542259b039#tb"
+    },
+    {
       "id": "tb-555986b8fa",
       "headword": "花蓮",
       "variants": [],
@@ -332040,6 +333632,42 @@
         "潛入水面以下。"
       ],
       "textbookSenseId": "tb-56f1526e62#tb"
+    },
+    {
+      "id": "tb-56fea02955",
+      "headword": "三月",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "sān yuè",
+      "pinyinNumeric": "san1 yue4",
+      "zhuyin": "ㄙㄢ ㄩㄝˋ",
+      "glossEn": "March",
+      "chars": [
+        "三",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "tb-56fea02955#tb",
+          "glossEn": "March",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-56fea02955#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-56fea02955#tb"
     },
     {
       "id": "tb-5812a3138d",
@@ -332242,6 +333870,43 @@
       "textbookSenseId": "tb-59ab4a93ec#tb"
     },
     {
+      "id": "tb-5b77dab97f",
+      "headword": "手機店",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "shǒu jī diàn",
+      "pinyinNumeric": "shou3 ji1 dian4",
+      "zhuyin": "ㄕㄡˇ ㄐㄧ ㄉㄧㄢˋ",
+      "glossEn": "mobile phone shop",
+      "chars": [
+        "手",
+        "機",
+        "店"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-5b77dab97f#tb",
+          "glossEn": "mobile phone shop",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-5b77dab97f#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-5b77dab97f#tb"
+    },
+    {
       "id": "tb-5cb466146b",
       "headword": "可以嗎",
       "variants": [],
@@ -332277,6 +333942,46 @@
         "textbook"
       ],
       "textbookSenseId": "tb-5cb466146b#tb"
+    },
+    {
+      "id": "tb-5cd535c171",
+      "headword": "小客車接送區",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "xiǎo kè chē jiē sòng qū",
+      "pinyinNumeric": "xiao3 ke4 che1 jie1 song4 qu1",
+      "zhuyin": "ㄒㄧㄠˇ ㄎㄜˋ ㄔㄜ ㄐㄧㄝ ㄙㄨㄥˋ ㄑㄩ",
+      "glossEn": "car pick-up area",
+      "chars": [
+        "小",
+        "客",
+        "車",
+        "接",
+        "送",
+        "區"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-5cd535c171#tb",
+          "glossEn": "car pick-up area",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-5cd535c171#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-5cd535c171#tb"
     },
     {
       "id": "tb-5edabb5a71",
@@ -332315,6 +334020,43 @@
         "黎巴嫩貝魯特市區內，屬基督徒教區的東貝魯特和回教區西貝魯特之間的分界線。它並非邊界，只是停火時雙方用砂石、廢土、貨櫃、刺絲網等隔離開的保護線。綠線於西元一九七六年成立，一九八〇年拆除。"
       ],
       "textbookSenseId": "tb-5edabb5a71#tb"
+    },
+    {
+      "id": "tb-626838faf0",
+      "headword": "堂姐弟",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "táng jiě dì",
+      "pinyinNumeric": "tang2 jie3 di4",
+      "zhuyin": "ㄊㄤˊ ㄐㄧㄝˇ ㄉㄧˋ",
+      "glossEn": "paternal cousins (older sister, younger brother)",
+      "chars": [
+        "堂",
+        "姐",
+        "弟"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
+      ],
+      "senses": [
+        {
+          "id": "tb-626838faf0#tb",
+          "glossEn": "paternal cousins (older sister, younger brother)",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-626838faf0#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-626838faf0#tb"
     },
     {
       "id": "tb-6317d59e8c",
@@ -332545,6 +334287,43 @@
       "textbookSenseId": "tb-6534bd255b#tb"
     },
     {
+      "id": "tb-67697fe2d1",
+      "headword": "下個月",
+      "variants": [],
+      "pos": [],
+      "level": "L1",
+      "source": "textbook",
+      "pinyin": "xià ge yuè",
+      "pinyinNumeric": "xia4 ge5 yue4",
+      "zhuyin": "ㄒㄧㄚˋ ˙ㄍㄜ ㄩㄝˋ",
+      "glossEn": "next month",
+      "chars": [
+        "下",
+        "個",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-67697fe2d1#tb",
+          "glossEn": "next month",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-67697fe2d1#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-67697fe2d1#tb"
+    },
+    {
       "id": "tb-67f28b0c26",
       "headword": "結婚了",
       "variants": [],
@@ -332582,6 +334361,43 @@
       "textbookSenseId": "tb-67f28b0c26#tb"
     },
     {
+      "id": "tb-6976579ee5",
+      "headword": "網球場",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "wǎng qiú chǎng",
+      "pinyinNumeric": "wang3 qiu2 chang3",
+      "zhuyin": "ㄨㄤˇ ㄑㄧㄡˊ ㄔㄤˇ",
+      "glossEn": "tennis court",
+      "chars": [
+        "網",
+        "球",
+        "場"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-6976579ee5#tb",
+          "glossEn": "tennis court",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-6976579ee5#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-6976579ee5#tb"
+    },
+    {
       "id": "tb-6aa1cea08d",
       "headword": "捷運站",
       "variants": [],
@@ -332617,6 +334433,80 @@
         "textbook"
       ],
       "textbookSenseId": "tb-6aa1cea08d#tb"
+    },
+    {
+      "id": "tb-6aa3380a4d",
+      "headword": "咖啡廳",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "kā fēi tīng",
+      "pinyinNumeric": "ka1 fei1 ting1",
+      "zhuyin": "ㄎㄚ ㄈㄟ ㄊㄧㄥ",
+      "glossEn": "café",
+      "chars": [
+        "咖",
+        "啡",
+        "廳"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
+      ],
+      "senses": [
+        {
+          "id": "tb-6aa3380a4d#tb",
+          "glossEn": "café",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-6aa3380a4d#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-6aa3380a4d#tb"
+    },
+    {
+      "id": "tb-6c3457d28e",
+      "headword": "堂兄妹",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "táng xiōng mèi",
+      "pinyinNumeric": "tang2 xiong1 mei4",
+      "zhuyin": "ㄊㄤˊ ㄒㄩㄥ ㄇㄟˋ",
+      "glossEn": "paternal cousins",
+      "chars": [
+        "堂",
+        "兄",
+        "妹"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "senses": [
+        {
+          "id": "tb-6c3457d28e#tb",
+          "glossEn": "paternal cousins",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-6c3457d28e#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-6c3457d28e#tb"
     },
     {
       "id": "tb-6e32cb2b50",
@@ -332731,6 +334621,44 @@
         "textbook"
       ],
       "textbookSenseId": "tb-774a0f095f#tb"
+    },
+    {
+      "id": "tb-774f1328cb",
+      "headword": "美食廣場",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "měi shí guǎng chǎng",
+      "pinyinNumeric": "mei3 shi2 guang3 chang3",
+      "zhuyin": "ㄇㄟˇ ㄕˊ ㄍㄨㄤˇ ㄔㄤˇ",
+      "glossEn": "food court",
+      "chars": [
+        "美",
+        "食",
+        "廣",
+        "場"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-774f1328cb#tb",
+          "glossEn": "food court",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-774f1328cb#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-774f1328cb#tb"
     },
     {
       "id": "tb-7758f85bbd",
@@ -333063,7 +334991,7 @@
       ],
       "tags": [
         "reading:composed",
-        "gloss:authored",
+        "gloss:heuristic",
         "textbook:laixue-1",
         "textbook:laixue-1:L07"
       ],
@@ -333081,6 +335009,45 @@
         "textbook"
       ],
       "textbookSenseId": "tb-7d808eaf1f#tb"
+    },
+    {
+      "id": "tb-7dbc4b8a07",
+      "headword": "棒球場",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "bàng qiú chǎng",
+      "pinyinNumeric": "bang4 qiu2 chang3",
+      "zhuyin": "ㄅㄤˋ ㄑㄧㄡˊ ㄔㄤˇ",
+      "glossEn": "baseball field",
+      "chars": [
+        "棒",
+        "球",
+        "場"
+      ],
+      "tags": [
+        "gloss:heuristic",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-7dbc4b8a07#tb",
+          "glossEn": "baseball field",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-7dbc4b8a07#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "moeDefZh": [
+        "棒球運動場地。"
+      ],
+      "textbookSenseId": "tb-7dbc4b8a07#tb"
     },
     {
       "id": "tb-7e3658e3b9",
@@ -333585,6 +335552,43 @@
       "textbookSenseId": "tb-8931a1bd22#tb"
     },
     {
+      "id": "tb-89b489f21d",
+      "headword": "這個月",
+      "variants": [],
+      "pos": [],
+      "level": "L1",
+      "source": "textbook",
+      "pinyin": "zhè ge yuè",
+      "pinyinNumeric": "zhe4 ge5 yue4",
+      "zhuyin": "ㄓㄜˋ ˙ㄍㄜ ㄩㄝˋ",
+      "glossEn": "this month",
+      "chars": [
+        "這",
+        "個",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-89b489f21d#tb",
+          "glossEn": "this month",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-89b489f21d#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-89b489f21d#tb"
+    },
+    {
       "id": "tb-8c847a0d60",
       "headword": "酥",
       "variants": [],
@@ -333687,7 +335691,8 @@
         "reading:composed",
         "gloss:heuristic",
         "textbook:laixue-2",
-        "textbook:laixue-2:L03"
+        "textbook:laixue-2:L03",
+        "textbook:laixue-2:L02"
       ],
       "senses": [
         {
@@ -333742,6 +335747,79 @@
       "textbookSenseId": "tb-926d0d10d5#tb"
     },
     {
+      "id": "tb-93444cae3b",
+      "headword": "星期三",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "xīng qí sān",
+      "pinyinNumeric": "xing1 qi2 san1",
+      "zhuyin": "ㄒㄧㄥ ㄑㄧˊ ㄙㄢ",
+      "glossEn": "Wednesday",
+      "chars": [
+        "星",
+        "期",
+        "三"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "senses": [
+        {
+          "id": "tb-93444cae3b#tb",
+          "glossEn": "Wednesday",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-93444cae3b#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-93444cae3b#tb"
+    },
+    {
+      "id": "tb-93720b6122",
+      "headword": "二月",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "èr yuè",
+      "pinyinNumeric": "er4 yue4",
+      "zhuyin": "ㄦˋ ㄩㄝˋ",
+      "glossEn": "February",
+      "chars": [
+        "二",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "tb-93720b6122#tb",
+          "glossEn": "February",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-93720b6122#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-93720b6122#tb"
+    },
+    {
       "id": "tb-93eaf14b08",
       "headword": "電費",
       "variants": [],
@@ -333780,6 +335858,43 @@
         "使用電力的費用。"
       ],
       "textbookSenseId": "tb-93eaf14b08#tb"
+    },
+    {
+      "id": "tb-9499858c9f",
+      "headword": "糖醋肉",
+      "variants": [],
+      "pos": [],
+      "level": "L1",
+      "source": "textbook",
+      "pinyin": "táng cù ròu",
+      "pinyinNumeric": "tang2 cu4 rou4",
+      "zhuyin": "ㄊㄤˊ ㄘㄨˋ ㄖㄡˋ",
+      "glossEn": "sweet and sour pork",
+      "chars": [
+        "糖",
+        "醋",
+        "肉"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L03"
+      ],
+      "senses": [
+        {
+          "id": "tb-9499858c9f#tb",
+          "glossEn": "sweet and sour pork",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-9499858c9f#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-9499858c9f#tb"
     },
     {
       "id": "tb-959e1ef3eb",
@@ -333933,6 +336048,80 @@
       "textbookSenseId": "tb-98caedd7e8#tb"
     },
     {
+      "id": "tb-9b9f60288f",
+      "headword": "踢足球",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "tī zú qiú",
+      "pinyinNumeric": "ti1 zu2 qiu2",
+      "zhuyin": "ㄊㄧ ㄗㄨˊ ㄑㄧㄡˊ",
+      "glossEn": "to play soccer",
+      "chars": [
+        "踢",
+        "足",
+        "球"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "senses": [
+        {
+          "id": "tb-9b9f60288f#tb",
+          "glossEn": "to play soccer",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-9b9f60288f#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-9b9f60288f#tb"
+    },
+    {
+      "id": "tb-9d6e6996d6",
+      "headword": "表兄妹",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "biǎo xiōng mèi",
+      "pinyinNumeric": "biao3 xiong1 mei4",
+      "zhuyin": "ㄅㄧㄠˇ ㄒㄩㄥ ㄇㄟˋ",
+      "glossEn": "cousins (mother's side or father's sisters' children)",
+      "chars": [
+        "表",
+        "兄",
+        "妹"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
+      ],
+      "senses": [
+        {
+          "id": "tb-9d6e6996d6#tb",
+          "glossEn": "cousins (mother's side or father's sisters' children)",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-9d6e6996d6#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-9d6e6996d6#tb"
+    },
+    {
       "id": "tb-9d7f2ffa5d",
       "headword": "迪士尼樂園",
       "variants": [],
@@ -333971,6 +336160,43 @@
         "textbook"
       ],
       "textbookSenseId": "tb-9d7f2ffa5d#tb"
+    },
+    {
+      "id": "tb-9db5dc58d8",
+      "headword": "星期一",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "xīng qí yī",
+      "pinyinNumeric": "xing1 qi2 yi1",
+      "zhuyin": "ㄒㄧㄥ ㄑㄧˊ ㄧ",
+      "glossEn": "Monday",
+      "chars": [
+        "星",
+        "期",
+        "一"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "senses": [
+        {
+          "id": "tb-9db5dc58d8#tb",
+          "glossEn": "Monday",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-9db5dc58d8#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-9db5dc58d8#tb"
     },
     {
       "id": "tb-a0f45b43eb",
@@ -334049,6 +336275,120 @@
       "glossSources": [
         "wiktionary"
       ]
+    },
+    {
+      "id": "tb-a4e536d43f",
+      "headword": "租賃車服務",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "zū lìn chē fú wù",
+      "pinyinNumeric": "zu1 lin4 che1 fu2 wu4",
+      "zhuyin": "ㄗㄨ ㄌㄧㄣˋ ㄔㄜ ㄈㄨˊ ㄨˋ",
+      "glossEn": "car rental service",
+      "chars": [
+        "租",
+        "賃",
+        "車",
+        "服",
+        "務"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-a4e536d43f#tb",
+          "glossEn": "car rental service",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-a4e536d43f#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-a4e536d43f#tb"
+    },
+    {
+      "id": "tb-a5df41bcb3",
+      "headword": "科技公司",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "kē jì gōng sī",
+      "pinyinNumeric": "ke1 ji4 gong1 si1",
+      "zhuyin": "ㄎㄜ ㄐㄧˋ ㄍㄨㄥ ㄙ",
+      "glossEn": "technology company",
+      "chars": [
+        "科",
+        "技",
+        "公",
+        "司"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "senses": [
+        {
+          "id": "tb-a5df41bcb3#tb",
+          "glossEn": "technology company",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-a5df41bcb3#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-a5df41bcb3#tb"
+    },
+    {
+      "id": "tb-aba1a91b6d",
+      "headword": "看電影",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "kàn diàn yǐng",
+      "pinyinNumeric": "kan4 dian4 ying3",
+      "zhuyin": "ㄎㄢˋ ㄉㄧㄢˋ ㄧㄥˇ",
+      "glossEn": "to watch movies",
+      "chars": [
+        "看",
+        "電",
+        "影"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L06"
+      ],
+      "senses": [
+        {
+          "id": "tb-aba1a91b6d#tb",
+          "glossEn": "to watch movies",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-aba1a91b6d#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-aba1a91b6d#tb"
     },
     {
       "id": "tb-ac6036fbfb",
@@ -334567,6 +336907,42 @@
       ]
     },
     {
+      "id": "tb-bf1162ad44",
+      "headword": "炒飯",
+      "variants": [],
+      "pos": [],
+      "level": "L1",
+      "source": "textbook",
+      "pinyin": "chǎo fàn",
+      "pinyinNumeric": "chao3 fan4",
+      "zhuyin": "ㄔㄠˇ ㄈㄢˋ",
+      "glossEn": "fried rice",
+      "chars": [
+        "炒",
+        "飯"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L03"
+      ],
+      "senses": [
+        {
+          "id": "tb-bf1162ad44#tb",
+          "glossEn": "fried rice",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-bf1162ad44#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-bf1162ad44#tb"
+    },
+    {
       "id": "tb-bf77eb9faa",
       "headword": "紅燒魚",
       "variants": [],
@@ -334873,6 +337249,42 @@
       "textbookSenseId": "tb-cb22e79489#tb"
     },
     {
+      "id": "tb-cc382982f2",
+      "headword": "八月",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "bā yuè",
+      "pinyinNumeric": "ba1 yue4",
+      "zhuyin": "ㄅㄚ ㄩㄝˋ",
+      "glossEn": "August",
+      "chars": [
+        "八",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "tb-cc382982f2#tb",
+          "glossEn": "August",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-cc382982f2#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-cc382982f2#tb"
+    },
+    {
       "id": "tb-cc63efa7b1",
       "headword": "星期六",
       "variants": [],
@@ -334985,6 +337397,44 @@
         "textbook"
       ],
       "textbookSenseId": "tb-cff8c55db7#tb"
+    },
+    {
+      "id": "tb-d09b2c9cbc",
+      "headword": "接機大廳",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "jiē jī dà tīng",
+      "pinyinNumeric": "jie1 ji1 da4 ting1",
+      "zhuyin": "ㄐㄧㄝ ㄐㄧ ㄉㄚˋ ㄊㄧㄥ",
+      "glossEn": "arrival hall",
+      "chars": [
+        "接",
+        "機",
+        "大",
+        "廳"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
+      ],
+      "senses": [
+        {
+          "id": "tb-d09b2c9cbc#tb",
+          "glossEn": "arrival hall",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-d09b2c9cbc#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-d09b2c9cbc#tb"
     },
     {
       "id": "tb-d12e69317b",
@@ -335159,7 +337609,7 @@
       ],
       "tags": [
         "reading:composed",
-        "gloss:authored",
+        "gloss:heuristic",
         "textbook:laixue-2",
         "textbook:laixue-2:L09"
       ],
@@ -335673,6 +338123,79 @@
       "textbookSenseId": "tb-e53af56b7a#tb"
     },
     {
+      "id": "tb-e72aa47550",
+      "headword": "星期二",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "xīng qí èr",
+      "pinyinNumeric": "xing1 qi2 er4",
+      "zhuyin": "ㄒㄧㄥ ㄑㄧˊ ㄦˋ",
+      "glossEn": "Tuesday",
+      "chars": [
+        "星",
+        "期",
+        "二"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L09"
+      ],
+      "senses": [
+        {
+          "id": "tb-e72aa47550#tb",
+          "glossEn": "Tuesday",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-e72aa47550#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-e72aa47550#tb"
+    },
+    {
+      "id": "tb-eac3388f1b",
+      "headword": "九月",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "jiǔ yuè",
+      "pinyinNumeric": "jiu3 yue4",
+      "zhuyin": "ㄐㄧㄡˇ ㄩㄝˋ",
+      "glossEn": "September",
+      "chars": [
+        "九",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "tb-eac3388f1b#tb",
+          "glossEn": "September",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-eac3388f1b#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-eac3388f1b#tb"
+    },
+    {
       "id": "tb-eb5833ca28",
       "headword": "木瓜牛奶",
       "variants": [],
@@ -335785,6 +338308,42 @@
         "textbook"
       ],
       "textbookSenseId": "tb-ed06520f4f#tb"
+    },
+    {
+      "id": "tb-edde5226e4",
+      "headword": "五月",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "wǔ yuè",
+      "pinyinNumeric": "wu3 yue4",
+      "zhuyin": "ㄨˇ ㄩㄝˋ",
+      "glossEn": "May",
+      "chars": [
+        "五",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "tb-edde5226e4#tb",
+          "glossEn": "May",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-edde5226e4#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-edde5226e4#tb"
     },
     {
       "id": "tb-ef10f7d379",
@@ -336093,6 +338652,44 @@
       "textbookSenseId": "tb-f83853d719#tb"
     },
     {
+      "id": "tb-f936162e0c",
+      "headword": "電腦公司",
+      "variants": [],
+      "pos": [],
+      "level": "L2",
+      "source": "textbook",
+      "pinyin": "diàn nǎo gōng sī",
+      "pinyinNumeric": "dian4 nao3 gong1 si1",
+      "zhuyin": "ㄉㄧㄢˋ ㄋㄠˇ ㄍㄨㄥ ㄙ",
+      "glossEn": "computer company",
+      "chars": [
+        "電",
+        "腦",
+        "公",
+        "司"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:authored",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L04"
+      ],
+      "senses": [
+        {
+          "id": "tb-f936162e0c#tb",
+          "glossEn": "computer company",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-f936162e0c#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-f936162e0c#tb"
+    },
+    {
       "id": "tb-f9a2eb1592",
       "headword": "天氣預報",
       "variants": [],
@@ -336283,6 +338880,43 @@
         "textbook"
       ],
       "textbookSenseId": "tb-fcc1ca28ee#tb"
+    },
+    {
+      "id": "tb-fe79be2f7c",
+      "headword": "十一月",
+      "variants": [],
+      "pos": [],
+      "level": "N1",
+      "source": "textbook",
+      "pinyin": "shí yī yuè",
+      "pinyinNumeric": "shi2 yi1 yue4",
+      "zhuyin": "ㄕˊ ㄧ ㄩㄝˋ",
+      "glossEn": "November",
+      "chars": [
+        "十",
+        "一",
+        "月"
+      ],
+      "tags": [
+        "reading:composed",
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L08"
+      ],
+      "senses": [
+        {
+          "id": "tb-fe79be2f7c#tb",
+          "glossEn": "November",
+          "basedOn": [
+            "textbook"
+          ]
+        }
+      ],
+      "primarySenseId": "tb-fe79be2f7c#tb",
+      "glossSources": [
+        "textbook"
+      ],
+      "textbookSenseId": "tb-fe79be2f7c#tb"
     },
     {
       "id": "tb-ff6830c502",
@@ -357293,6 +359927,8 @@
       ],
       "tags": [
         "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07",
         "textbook:laixue-4",
         "textbook:laixue-4:L04"
       ],
@@ -357317,6 +359953,20 @@
         },
         {
           "id": "tocfl-0ce131f786#tb",
+          "glossEn": "taxi",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-0ce131f786#tb-laixue-4",
+          "glossEn": "taxicab",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-0ce131f786#tb-laixue-4-L04",
           "glossEn": "taxicab",
           "basedOn": [
             "textbook"
@@ -369025,7 +371675,9 @@
         "品"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
       ],
       "senses": [
         {
@@ -369044,6 +371696,13 @@
             "cedict"
           ],
           "id": "tocfl-1397320a20#2"
+        },
+        {
+          "id": "tocfl-1397320a20#tb",
+          "glossEn": "cosmetics",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-1397320a20#1",
@@ -369053,7 +371712,8 @@
       ],
       "moeDefZh": [
         "修飾容貌的用品。如面霜、脂粉、脣膏、香水等。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-1397320a20#tb"
     },
     {
       "id": "tocfl-1399bf70a7",
@@ -370538,6 +373198,8 @@
       ],
       "tags": [
         "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07",
         "textbook:laixue-4",
         "textbook:laixue-4:L04"
       ],
@@ -370569,6 +373231,20 @@
         },
         {
           "id": "tocfl-146fd654fd#tb",
+          "glossEn": "to ride",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-146fd654fd#tb-laixue-4",
+          "glossEn": "ride [astride]",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-146fd654fd#tb-laixue-4-L04",
           "glossEn": "ride [astride]",
           "basedOn": [
             "textbook"
@@ -389882,7 +392558,9 @@
         "午"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L08"
       ],
       "senses": [
         {
@@ -389901,6 +392579,13 @@
             "cedict"
           ],
           "id": "tocfl-20eacb253a#2"
+        },
+        {
+          "id": "tocfl-20eacb253a#tb",
+          "glossEn": "noon",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-20eacb253a#1",
@@ -389910,7 +392595,8 @@
       ],
       "moeDefZh": [
         "白天十二點左右的時間。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-20eacb253a#tb"
     },
     {
       "id": "tocfl-20efb2c63d",
@@ -410835,7 +413521,9 @@
         "具"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
       ],
       "senses": [
         {
@@ -410846,6 +413534,13 @@
             "top2011"
           ],
           "id": "tocfl-2d45cc1166#1"
+        },
+        {
+          "id": "tocfl-2d45cc1166#tb",
+          "glossEn": "toy",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-2d45cc1166#1",
@@ -410855,7 +413550,8 @@
       ],
       "moeDefZh": [
         "可供遊戲玩弄的東西。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-2d45cc1166#tb"
     },
     {
       "id": "tocfl-2d49cc16c0",
@@ -412049,7 +414745,9 @@
         "裝"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
       ],
       "senses": [
         {
@@ -412060,6 +414758,13 @@
             "top2011"
           ],
           "id": "tocfl-2dcce81750#1"
+        },
+        {
+          "id": "tocfl-2dcce81750#tb",
+          "glossEn": "clothing",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-2dcce81750#1",
@@ -412069,7 +414774,8 @@
       ],
       "moeDefZh": [
         "衣服鞋帽佩飾的總稱。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-2dcce81750#tb"
     },
     {
       "id": "tocfl-2dd205e0f5",
@@ -416923,7 +419629,9 @@
         "奶"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
       ],
       "senses": [
         {
@@ -416959,6 +419667,13 @@
             "cedict"
           ],
           "id": "tocfl-30816d1bdd#4"
+        },
+        {
+          "id": "tocfl-30816d1bdd#tb",
+          "glossEn": "paternal grandmother",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-30816d1bdd#1",
@@ -416969,7 +419684,8 @@
       "moeDefZh": [
         "祖母。",
         "對主婦的尊稱。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-30816d1bdd#tb"
     },
     {
       "id": "tocfl-308e301469",
@@ -447252,7 +449968,9 @@
         "間"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
       ],
       "senses": [
         {
@@ -447262,6 +449980,13 @@
             "cedict"
           ],
           "id": "tocfl-423ccc6d96#1"
+        },
+        {
+          "id": "tocfl-423ccc6d96#tb",
+          "glossEn": "restroom",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-423ccc6d96#1",
@@ -447270,7 +449995,8 @@
       ],
       "moeDefZh": [
         "廁所。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-423ccc6d96#tb"
     },
     {
       "id": "tocfl-4240800554",
@@ -464991,7 +467717,9 @@
         "人"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
       ],
       "senses": [
         {
@@ -465019,6 +467747,13 @@
             "wiktionary"
           ],
           "id": "tocfl-4b583491f0#3"
+        },
+        {
+          "id": "tocfl-4b583491f0#tb",
+          "glossEn": "businessman",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-4b583491f0#1",
@@ -465029,7 +467764,8 @@
       "moeDefZh": [
         "從事買賣的人。",
         "特指商朝人。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-4b583491f0#tb"
     },
     {
       "id": "tocfl-4b640eb852",
@@ -473109,7 +475845,9 @@
         "茶"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L02"
       ],
       "senses": [
         {
@@ -473144,6 +475882,13 @@
             "wiktionary"
           ],
           "id": "tocfl-4ff50dae17#4"
+        },
+        {
+          "id": "tocfl-4ff50dae17#tb",
+          "glossEn": "tea",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-4ff50dae17#1",
@@ -473154,7 +475899,8 @@
       "moeDefZh": [
         "植物名。山茶科茶屬，「茶樹」之古稱。參見「茶樹」條。",
         "用茶葉沏成或煮成的飲料。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-4ff50dae17#tb"
     },
     {
       "id": "tocfl-500149bf43",
@@ -475397,7 +478143,9 @@
         "擠"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
       ],
       "senses": [
         {
@@ -475432,6 +478180,13 @@
             "cedict"
           ],
           "id": "tocfl-5142a0893a#4"
+        },
+        {
+          "id": "tocfl-5142a0893a#tb",
+          "glossEn": "crowded",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-5142a0893a#1",
@@ -475442,7 +478197,8 @@
       "moeDefZh": [
         "聚集、緊密的靠攏在一起。",
         "在擁擠的環境中，用力穿插而過。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-5142a0893a#tb"
     },
     {
       "id": "tocfl-516541ea3b",
@@ -493187,10 +495943,10 @@
       ],
       "tags": [
         "gloss:heuristic",
-        "textbook:laixue-4",
-        "textbook:laixue-4:L02",
         "textbook:laixue-3",
-        "textbook:laixue-3:L05"
+        "textbook:laixue-3:L05",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
       ],
       "senses": [
         {
@@ -501627,7 +504383,9 @@
         "士"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
       ],
       "senses": [
         {
@@ -501638,6 +504396,13 @@
             "top2011"
           ],
           "id": "tocfl-608c6a9c24#1"
+        },
+        {
+          "id": "tocfl-608c6a9c24#tb",
+          "glossEn": "nurse",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-608c6a9c24#1",
@@ -501647,7 +504412,8 @@
       ],
       "moeDefZh": [
         "經過護理培訓機構的教育訓練，通過考試並且領有執照的醫療專業人員。舊稱護士，現已正名為護理師。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-608c6a9c24#tb"
     },
     {
       "id": "tocfl-609c996826",
@@ -511594,7 +514360,9 @@
         "師"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
       ],
       "senses": [
         {
@@ -511605,6 +514373,13 @@
             "top2011"
           ],
           "id": "tocfl-662cb8d8a4#1"
+        },
+        {
+          "id": "tocfl-662cb8d8a4#tb",
+          "glossEn": "chef",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-662cb8d8a4#1",
@@ -511614,7 +514389,8 @@
       ],
       "moeDefZh": [
         "掌理廚房烹飪事務的師傅。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-662cb8d8a4#tb"
     },
     {
       "id": "tocfl-663b620144",
@@ -521252,6 +524028,8 @@
       ],
       "tags": [
         "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07",
         "textbook:laixue-4",
         "textbook:laixue-4:L04"
       ],
@@ -523691,13 +526469,6 @@
         },
         {
           "id": "tocfl-6d149bc49b#tb",
-          "glossEn": "for example,",
-          "basedOn": [
-            "textbook"
-          ]
-        },
-        {
-          "id": "tocfl-6d149bc49b#tb-laixue-4-L10",
           "glossEn": "for example",
           "basedOn": [
             "textbook"
@@ -540889,7 +543660,9 @@
         "童"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
       ],
       "senses": [
         {
@@ -540899,6 +543672,13 @@
             "cedict"
           ],
           "id": "tocfl-782aa06c77#1"
+        },
+        {
+          "id": "tocfl-782aa06c77#tb",
+          "glossEn": "children",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-782aa06c77#1",
@@ -540907,7 +543687,8 @@
       ],
       "moeDefZh": [
         "未成年的男女。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-782aa06c77#tb"
     },
     {
       "id": "tocfl-7831081a60",
@@ -553475,7 +556256,9 @@
         "公"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
       ],
       "senses": [
         {
@@ -553495,6 +556278,13 @@
             "cedict"
           ],
           "id": "tocfl-7f8221cda8#2"
+        },
+        {
+          "id": "tocfl-7f8221cda8#tb",
+          "glossEn": "maternal grandfather",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-7f8221cda8#1",
@@ -553504,7 +556294,8 @@
       ],
       "moeDefZh": [
         "稱謂。稱母親的父親。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-7f8221cda8#tb"
     },
     {
       "id": "tocfl-7fa79002ed",
@@ -569202,7 +571993,9 @@
         "叔"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
       ],
       "senses": [
         {
@@ -569232,6 +572025,13 @@
             "top2011"
           ],
           "id": "tocfl-88026d898d#3"
+        },
+        {
+          "id": "tocfl-88026d898d#tb",
+          "glossEn": "father's younger brother",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-88026d898d#1",
@@ -569242,7 +572042,8 @@
       ],
       "moeDefZh": [
         "稱謂：(1)稱父親的弟弟。《清平山堂話本．西湖三塔記》：「嫡親有四口，只有宣替母親，及宣替之妻，又有一個叔叔出家在龍虎山。」(2)稱丈夫的弟弟。《初刻拍案驚奇》卷一九：「多是丈夫與叔叔做的事，須與奴家無干。」(3)泛稱與父親同輩，而年紀較小的男子。如：「王叔叔和爸爸是好朋友。」"
-      ]
+      ],
+      "textbookSenseId": "tocfl-88026d898d#tb"
     },
     {
       "id": "tocfl-8803b3339c",
@@ -578441,7 +581242,9 @@
         "入"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
       ],
       "senses": [
         {
@@ -578469,6 +581272,13 @@
             "cedict"
           ],
           "id": "tocfl-8dc0f60692#3"
+        },
+        {
+          "id": "tocfl-8dc0f60692#tb",
+          "glossEn": "to enter",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-8dc0f60692#1",
@@ -578479,7 +581289,8 @@
       "moeDefZh": [
         "由外入內。",
         "到達某一種時期、狀態。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-8dc0f60692#tb"
     },
     {
       "id": "tocfl-8dd26aa546",
@@ -585197,6 +588008,8 @@
       ],
       "tags": [
         "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04",
         "textbook:laixue-2",
         "textbook:laixue-2:L09"
       ],
@@ -594111,7 +596924,9 @@
         "休"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
       ],
       "senses": [
         {
@@ -594122,6 +596937,13 @@
             "top2011"
           ],
           "id": "tocfl-97c1125be2#1"
+        },
+        {
+          "id": "tocfl-97c1125be2#tb",
+          "glossEn": "to retire",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-97c1125be2#1",
@@ -594131,7 +596953,8 @@
       ],
       "moeDefZh": [
         "受雇任者因年長、服務到達應有年資、個人規劃等原因，退離所任職的工作。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-97c1125be2#tb"
     },
     {
       "id": "tocfl-97c32e4353",
@@ -594582,7 +597405,9 @@
         "師"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
       ],
       "senses": [
         {
@@ -594601,6 +597426,13 @@
             "wiktionary"
           ],
           "id": "tocfl-9800970e5d#2"
+        },
+        {
+          "id": "tocfl-9800970e5d#tb",
+          "glossEn": "lawyer",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-9800970e5d#1",
@@ -594611,7 +597443,8 @@
       "moeDefZh": [
         "精通戒律的法師。",
         "唐代對道士的一種尊稱。按修行其一曰法師，其二曰威儀師，其三曰律師。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-9800970e5d#tb"
     },
     {
       "id": "tocfl-9811202c80",
@@ -598237,7 +601070,9 @@
         "部"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
       ],
       "senses": [
         {
@@ -598257,6 +601092,13 @@
             "top2011"
           ],
           "id": "tocfl-9a1036bdff#2"
+        },
+        {
+          "id": "tocfl-9a1036bdff#tb",
+          "glossEn": "the south",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-9a1036bdff#1",
@@ -598266,7 +601108,8 @@
       ],
       "moeDefZh": [
         "一地的南方區域。相對於北部而言。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-9a1036bdff#tb"
     },
     {
       "id": "tocfl-9a1961d9b7",
@@ -635168,7 +638011,9 @@
         "弟"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
       ],
       "senses": [
         {
@@ -635203,6 +638048,13 @@
             "cedict"
           ],
           "id": "tocfl-af7a4a2f21#4"
+        },
+        {
+          "id": "tocfl-af7a4a2f21#tb",
+          "glossEn": "brothers",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-af7a4a2f21#1",
@@ -635213,7 +638065,8 @@
       "moeDefZh": [
         "男子同胞先出生的為兄，後出生的為弟。",
         "內外的族親、姻親。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-af7a4a2f21#tb"
     },
     {
       "id": "tocfl-af7b5943ce",
@@ -652175,6 +655028,8 @@
       ],
       "tags": [
         "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03",
         "textbook:laixue-3",
         "textbook:laixue-3:L07"
       ],
@@ -652216,6 +655071,20 @@
         },
         {
           "id": "tocfl-ba09dd5d35#tb",
+          "glossEn": "aunt (mother's sister)",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-ba09dd5d35#tb-laixue-3",
+          "glossEn": "aunt",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-ba09dd5d35#tb-laixue-3-L07",
           "glossEn": "aunt",
           "basedOn": [
             "textbook"
@@ -656428,7 +659297,9 @@
         "人"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L04"
       ],
       "senses": [
         {
@@ -656447,6 +659318,13 @@
             "cedict"
           ],
           "id": "tocfl-bc3f6eb953#2"
+        },
+        {
+          "id": "tocfl-bc3f6eb953#tb",
+          "glossEn": "soldier",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-bc3f6eb953#1",
@@ -656456,7 +659334,8 @@
       ],
       "moeDefZh": [
         "凡有軍籍的人，不論官兵，均稱為「軍人」。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-bc3f6eb953#tb"
     },
     {
       "id": "tocfl-bc4c8262e1",
@@ -656849,6 +659728,8 @@
       ],
       "tags": [
         "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07",
         "textbook:laixue-4",
         "textbook:laixue-4:L04"
       ],
@@ -675217,7 +678098,9 @@
         "婆"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07"
       ],
       "senses": [
         {
@@ -675237,6 +678120,13 @@
             "cedict"
           ],
           "id": "tocfl-c73d263018#2"
+        },
+        {
+          "id": "tocfl-c73d263018#tb",
+          "glossEn": "maternal grandmother",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-c73d263018#1",
@@ -675246,7 +678136,8 @@
       ],
       "moeDefZh": [
         "稱謂。稱母親的母親。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-c73d263018#tb"
     },
     {
       "id": "tocfl-c73db8afec",
@@ -694026,7 +696917,9 @@
         "止"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L09"
       ],
       "senses": [
         {
@@ -694045,6 +696938,13 @@
             "cedict"
           ],
           "id": "tocfl-d2e92e416b#2"
+        },
+        {
+          "id": "tocfl-d2e92e416b#tb",
+          "glossEn": "to forbid",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-d2e92e416b#1",
@@ -694055,7 +696955,8 @@
       "moeDefZh": [
         "制止、不許。",
         "拘禁在一定地方，管制其行動出入。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-d2e92e416b#tb"
     },
     {
       "id": "tocfl-d2f7ab257a",
@@ -699919,7 +702820,9 @@
         "爺"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
       ],
       "senses": [
         {
@@ -699939,6 +702842,13 @@
             "cedict"
           ],
           "id": "tocfl-d67bae60de#2"
+        },
+        {
+          "id": "tocfl-d67bae60de#tb",
+          "glossEn": "paternal grandfather",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-d67bae60de#1",
@@ -699949,7 +702859,8 @@
       "moeDefZh": [
         "稱謂。對祖父的稱呼。",
         "對官吏、有威望或受人尊敬者的敬稱。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-d67bae60de#tb"
     },
     {
       "id": "tocfl-d687bf475c",
@@ -729774,13 +732685,6 @@
         },
         {
           "id": "tocfl-e69e12fa5a#tb",
-          "glossEn": "generally speaking,",
-          "basedOn": [
-            "textbook"
-          ]
-        },
-        {
-          "id": "tocfl-e69e12fa5a#tb-laixue-4-L10",
           "glossEn": "generally speaking",
           "basedOn": [
             "textbook"
@@ -732446,6 +735350,8 @@
       ],
       "tags": [
         "gloss:heuristic",
+        "textbook:laixue-2",
+        "textbook:laixue-2:L06",
         "textbook:laixue-4",
         "textbook:laixue-4:L02"
       ],
@@ -732670,9 +735576,7 @@
         "車"
       ],
       "tags": [
-        "gloss:heuristic",
-        "textbook:laixue-4",
-        "textbook:laixue-4:L04"
+        "gloss:heuristic"
       ],
       "senses": [
         {
@@ -732683,13 +735587,6 @@
             "top2011"
           ],
           "id": "tocfl-e819af9284#1"
-        },
-        {
-          "id": "tocfl-e819af9284#tb",
-          "glossEn": "bicycle",
-          "basedOn": [
-            "textbook"
-          ]
         }
       ],
       "primarySenseId": "tocfl-e819af9284#1",
@@ -732699,8 +735596,7 @@
       ],
       "moeDefZh": [
         "一種利用雙腳踩踏板前進的輪車。"
-      ],
-      "textbookSenseId": "tocfl-e819af9284#tb"
+      ]
     },
     {
       "id": "tocfl-e81eb7b95e",
@@ -744894,6 +747790,8 @@
       ],
       "tags": [
         "gloss:heuristic",
+        "textbook:laixue-3",
+        "textbook:laixue-3:L07",
         "textbook:laixue-4",
         "textbook:laixue-4:L04"
       ],
@@ -744917,6 +747815,20 @@
         },
         {
           "id": "tocfl-eeff7a7a38#tb",
+          "glossEn": "car",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-eeff7a7a38#tb-laixue-4",
+          "glossEn": "automobile, car",
+          "basedOn": [
+            "textbook"
+          ]
+        },
+        {
+          "id": "tocfl-eeff7a7a38#tb-laixue-4-L04",
           "glossEn": "automobile, car",
           "basedOn": [
             "textbook"
@@ -751096,7 +754008,9 @@
         "伯"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-1",
+        "textbook:laixue-1:L03"
       ],
       "senses": [
         {
@@ -751107,6 +754021,13 @@
             "top2011"
           ],
           "id": "tocfl-f2f57a7d2d#1"
+        },
+        {
+          "id": "tocfl-f2f57a7d2d#tb",
+          "glossEn": "father's older brother",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-f2f57a7d2d#1",
@@ -751116,7 +754037,8 @@
       ],
       "moeDefZh": [
         "稱謂。對伯父的口語稱呼。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-f2f57a7d2d#tb"
     },
     {
       "id": "tocfl-f30ce3f006",
@@ -762682,7 +765604,9 @@
         "部"
       ],
       "tags": [
-        "gloss:heuristic"
+        "gloss:heuristic",
+        "textbook:laixue-4",
+        "textbook:laixue-4:L02"
       ],
       "senses": [
         {
@@ -762693,6 +765617,13 @@
             "top2011"
           ],
           "id": "tocfl-fae65aca07#1"
+        },
+        {
+          "id": "tocfl-fae65aca07#tb",
+          "glossEn": "the west",
+          "basedOn": [
+            "textbook"
+          ]
         }
       ],
       "primarySenseId": "tocfl-fae65aca07#1",
@@ -762702,7 +765633,8 @@
       ],
       "moeDefZh": [
         "位在某一地區的西方部分。"
-      ]
+      ],
+      "textbookSenseId": "tocfl-fae65aca07#tb"
     },
     {
       "id": "tocfl-faf63e1e05",
@@ -771233,7 +774165,7 @@
         "沒有",
         "有"
       ],
-      "matcher": "有"
+      "matcher": "沒有|有"
     },
     {
       "id": "gram-ma-question",
@@ -771880,7 +774812,7 @@
       "id": "gram-duoshao-ji",
       "pattern": "S + V + 多少 / 幾 + (measure word) + N？",
       "level": "N1",
-      "explanationEn": "多少 asks about any quantity (the measure word is optional); 幾 is for small numbers (up to about ten) and always takes a measure word: 你有幾個孩子？",
+      "explanationEn": "多少 asks about any quantity (the measure word is optional); 幾 is for small numbers (up to about ten). Before a noun 幾 takes a measure word (你有幾個孩子？); with words that are units themselves it does not (幾月幾號, 幾歲, 幾點).",
       "examples": [
         "tb-L10-024",
         "tb-L10-025",
@@ -772224,7 +775156,7 @@
       "focus": [
         "了"
       ],
-      "matcher": "了([，。！？]|$)"
+      "matcher": "(?<!太[^，。！？]*)了([，。！？]|$)"
     },
     {
       "id": "gram-suiran-keshi",
@@ -772514,7 +775446,7 @@
       "id": "gram-mei-negation",
       "pattern": "S + 沒 (有) + V + (O)",
       "level": "L1",
-      "explanationEn": "沒(有) negates a completed action: 昨天沒來上班 (didn't come to work yesterday). Do not use 了 with it.",
+      "explanationEn": "沒(有) negates a completed action: 昨天沒來上班 (didn't come to work yesterday). Don't put 了 after the verb (not 我沒吃了飯); a 了 at the end of the sentence can still mark a change or a repeat, as in 又沒……了.",
       "examples": [
         "tb-b2-L09-010",
         "tb-b2-L09-011",
@@ -773216,7 +776148,7 @@
       "id": "gram-cai-little",
       "pattern": "S + 才 + V / number",
       "level": "L2",
-      "explanationEn": "才 says an amount or time is smaller or later than expected: 現在才三點, 我才學了一個月. Compare 就, which suggests 'already, so early'.",
+      "explanationEn": "才 before a number says an amount, an age or a time is small or early: 現在才三點, 他才二十歲, 我才學了一個月. Book 4 adds a second use, 才 after a length of time for 'only then, late'.",
       "examples": [
         "tb-b3-L07-020",
         "tb-b3-L07-021",
@@ -773747,13 +776679,13 @@
         "等",
         "再"
       ],
-      "matcher": "等.+再"
+      "matcher": "等(?!一下).+再"
     },
     {
       "id": "gram-cai-condition",
       "pattern": "Condition clause，S + 才 + V",
       "level": "L2",
-      "explanationEn": "才 in the second clause says the result happens ONLY after the first clause is satisfied, and often later or harder than hoped: 雞腿便當賣完了，他才買烤肉便當.",
+      "explanationEn": "才 in the second clause says the result happens only when the first clause is true: 要有悠遊卡，才能坐捷運 (you can ride the MRT only with an EasyCard). The first clause is the condition; 才 comes after the subject of the second.",
       "examples": [
         "tb-b4-L04-001",
         "tb-b4-L04-002",
@@ -773953,7 +776885,7 @@
       "id": "gram-gen-guanxi",
       "pattern": "A + 跟 + B + (沒) 有關係",
       "level": "L3",
-      "explanationEn": "跟…有關係 says A is connected to B, and B influences A. The negative is 沒有關係; 有關alone also works.",
+      "explanationEn": "跟…有關係 says A is connected to B, and B influences A. The negative is 跟…沒有關係; in writing, 有關 alone also works (跟天氣有關).",
       "examples": [
         "tb-b4-L06-007",
         "tb-b4-L06-008",
@@ -774331,7 +777263,7 @@
       "id": "gram-yiban-laishuo",
       "pattern": "一般來說，……",
       "level": "L3",
-      "explanationEn": "一般來說 introduces a general rule or the usual situation: 一般來說，臺灣人七點上班.",
+      "explanationEn": "一般來說 introduces a general rule or the usual situation: 一般來說，臺灣的夏天很熱.",
       "examples": [
         "tb-b4-L10-017",
         "tb-b4-L10-018",
@@ -774675,6 +777607,7 @@
       "moec-df90b04be1",
       "moec-f8afc0eceb",
       "moec-f8fb4964b4",
+      "tb-bf1162ad44",
       "tocfl-752403db3c",
       "tocfl-7724b7b3cd",
       "tocfl-9e597c754f",
@@ -774732,6 +777665,7 @@
       "moec-5524787b0e",
       "moec-552d43de6e",
       "moec-55b6dcd38a",
+      "moec-5ba0bc92a4",
       "moec-64137522a9",
       "moec-6624464381",
       "moec-682b2b8d69",
@@ -775455,6 +778389,17 @@
       "moec-fbb15ee9dc",
       "moec-fc5fc720a4",
       "tb-028c667d00",
+      "tb-3a6055b0dd",
+      "tb-3c7f77e79b",
+      "tb-542259b039",
+      "tb-56fea02955",
+      "tb-67697fe2d1",
+      "tb-89b489f21d",
+      "tb-93720b6122",
+      "tb-cc382982f2",
+      "tb-eac3388f1b",
+      "tb-edde5226e4",
+      "tb-fe79be2f7c",
       "tocfl-3870c998c2",
       "tocfl-6eda83ec11",
       "tocfl-a21127fb50",
@@ -775499,6 +778444,7 @@
       "moec-f70c0b4f6b",
       "tb-77709d71a3",
       "tb-84b4437aca",
+      "tb-edde5226e4",
       "tocfl-861b6e4c98",
       "tocfl-c51230ed9b"
     ],
@@ -776024,6 +778970,9 @@
       "moec-e90a4c2113",
       "moec-f0cfbf0dc9",
       "supp-d4e1c26873",
+      "tb-3a6055b0dd",
+      "tb-67697fe2d1",
+      "tb-89b489f21d",
       "tocfl-059b1dc3fa",
       "tocfl-2c3c969ad5",
       "tocfl-3f1666f948",
@@ -776163,6 +779112,7 @@
       "moec-fd7751e4a9",
       "moec-fe592dc1b7",
       "moec-fe68506f4c",
+      "tb-2d82c2999d",
       "tb-ac6036fbfb",
       "tb-ac6851271e",
       "tocfl-0107e748d5",
@@ -776481,6 +779431,7 @@
       "moec-7f5a32d7e9",
       "moec-828116815a",
       "moec-82f4561cbd",
+      "moec-8548b6302e",
       "moec-87b509c44a",
       "moec-8b424bf503",
       "moec-8ece9780f6",
@@ -776652,6 +779603,8 @@
       "moec-f887f7babc",
       "moec-ffd9189082",
       "supp-f5fef933b7",
+      "tb-5b77dab97f",
+      "tb-d09b2c9cbc",
       "tocfl-00ea4c3abd",
       "tocfl-08b19c8209",
       "tocfl-1592b5efde",
@@ -776975,6 +779928,7 @@
       "moec-fe38a82864",
       "moec-fec62796b8",
       "moec-ff746bd06b",
+      "tb-02d80acbb6",
       "tocfl-06c450e086",
       "tocfl-0970bb7f79",
       "tocfl-0e68804102",
@@ -778222,8 +781176,12 @@
       "moec-ff746bd06b",
       "moec-ffba9846d1",
       "tb-11ebdba46e",
+      "tb-2750a4f013",
       "tb-84b4437aca",
+      "tb-93444cae3b",
+      "tb-9db5dc58d8",
       "tb-cc63efa7b1",
+      "tb-e72aa47550",
       "tb-f7256d23a5",
       "tocfl-00e4004fe5",
       "tocfl-15ca1d201b",
@@ -778370,6 +781328,7 @@
       "moec-f98e803f44",
       "moec-f9c6f885b7",
       "moec-fad09d94c7",
+      "moec-fe161bec00",
       "tb-fc696c7f12",
       "tocfl-08f7c7e199",
       "tocfl-0a390e8e25",
@@ -779019,6 +781978,7 @@
       "moec-ffcfd42601",
       "supp-a5ae87ab4d",
       "tb-22622d2fd2",
+      "tb-37757ce36e",
       "tb-83407a5b28",
       "tb-c82bfa3296",
       "tocfl-0053fb20d3",
@@ -779252,6 +782212,7 @@
       "moec-df28171e0e",
       "moec-e29816f86b",
       "tb-8e631607be",
+      "tb-9b9f60288f",
       "tocfl-02a03b33ed",
       "tocfl-0cdc764801",
       "tocfl-201f53f7a5",
@@ -780624,6 +783585,7 @@
       "moec-d234a15c17",
       "moec-d5537c5e88",
       "moec-d58b3a53f8",
+      "moec-d6b69dc59b",
       "moec-d75f3ef11f",
       "moec-d76a2319be",
       "moec-d87e6cda8e",
@@ -781451,6 +784413,7 @@
       "moec-f920113735",
       "moec-f936e9bf3b",
       "moec-fda3c57050",
+      "tb-cc382982f2",
       "tocfl-061a3e26f1",
       "tocfl-50c3aa5b31",
       "tocfl-b286d26f1a"
@@ -781602,10 +784565,12 @@
       "moec-f9e9a76bf9",
       "tb-427c5e1c1c",
       "tb-558f608d5b",
+      "tb-9db5dc58d8",
       "tb-afcab8df87",
       "tb-b7c8d9cd62",
       "tb-cb02b1161f",
       "tb-d4bb82f879",
+      "tb-fe79be2f7c",
       "tocfl-00d9a128c5",
       "tocfl-08f719085d",
       "tocfl-09ad37a60c",
@@ -781944,6 +784909,7 @@
       "moec-ca244db742",
       "moec-cab5722f18",
       "moec-ce459b6a9d",
+      "moec-d32c053c32",
       "moec-d711e1581d",
       "moec-d71a2f2662",
       "moec-d71efd698e",
@@ -782597,6 +785563,7 @@
       "moec-fc9e778698",
       "moec-fe18158ff1",
       "moec-fe7e9416cb",
+      "tb-04f6deac3c",
       "tb-63ab9a63ea",
       "tocfl-04a29c7d5d",
       "tocfl-23567de34e",
@@ -782909,6 +785876,7 @@
       "moec-dd7606885a",
       "moec-e84069beef",
       "moec-fad70b0dd5",
+      "tb-23b74de161",
       "tocfl-45f343ff3a",
       "tocfl-7cd1777367",
       "tocfl-80cdf8212b",
@@ -783082,6 +786050,7 @@
       "moec-fc630aa453",
       "moec-fd3474339b",
       "moec-fe28291dfc",
+      "tb-2d82c2999d",
       "tocfl-011f6bb56c",
       "tocfl-04301b39f7",
       "tocfl-09fbad2c3d",
@@ -783192,6 +786161,7 @@
       "moec-ececce7149",
       "moec-ef1c3dba7c",
       "moec-f9b02049b0",
+      "tb-5cd535c171",
       "tocfl-0c56290796",
       "tocfl-0cc23e37b7",
       "tocfl-0e111cc095",
@@ -783866,6 +786836,7 @@
       "moec-c45cb6b46f",
       "moec-c4a0a8aed1",
       "moec-c54b3f390d",
+      "moec-ccec985197",
       "moec-d5e4967b8e",
       "moec-da127fdde8",
       "moec-dad12f64d6",
@@ -783880,8 +786851,11 @@
       "moec-fc7c4cf034",
       "moec-fca9a8b339",
       "tb-292b51f677",
+      "tb-2b0f07ae30",
       "tb-93eaf14b08",
+      "tb-aba1a91b6d",
       "tb-d93a192beb",
+      "tb-f936162e0c",
       "tocfl-0e821ff7ca",
       "tocfl-1449ace0ba",
       "tocfl-30f8b55611",
@@ -784185,6 +787159,7 @@
       "moec-f622a58276",
       "moec-f82eff6b38",
       "moec-fde813637b",
+      "tb-4acdd993b4",
       "tocfl-0da8753168",
       "tocfl-235de1afbb",
       "tocfl-243cb37cd7",
@@ -785875,6 +788850,7 @@
       "moec-f33ef3b5c3",
       "moec-f54f55e8e7",
       "moec-f5eafa0a3f",
+      "tb-5b77dab97f",
       "tocfl-069271eb78",
       "tocfl-0d939adb3f",
       "tocfl-1688a2b974",
@@ -786344,6 +789320,7 @@
       "moec-edfb5fdd50",
       "moec-ef06445c07",
       "moec-f24518fa37",
+      "tb-a5df41bcb3",
       "tocfl-3aafbe64b5",
       "tocfl-629bc22447",
       "tocfl-776e3c8e7c",
@@ -786614,6 +789591,9 @@
       "moec-f8a07d9b6e",
       "moec-f99c6991cf",
       "moec-fdbcb89708",
+      "tb-6976579ee5",
+      "tb-774f1328cb",
+      "tb-7dbc4b8a07",
       "tocfl-02827ff78f",
       "tocfl-09b1671e76",
       "tocfl-1d87bc4d08",
@@ -786874,6 +789854,7 @@
       "moec-da89a6ff7a",
       "moec-e3d26e303e",
       "moec-e4014722aa",
+      "tb-f936162e0c",
       "tocfl-105027767f",
       "tocfl-20bf661346",
       "tocfl-21a059205e",
@@ -787231,6 +790212,7 @@
       "moec-13b67706fd",
       "moec-168d76104a",
       "moec-19afcaaee7",
+      "moec-1a591d9a0d",
       "moec-1ec8cc9bd2",
       "moec-1ef9e8c28a",
       "moec-21891c9fc6",
@@ -787254,6 +790236,7 @@
       "moec-42504badb8",
       "moec-43241d9d40",
       "moec-45d348fbaf",
+      "moec-483d435dcf",
       "moec-48ec46074f",
       "moec-491ad22f83",
       "moec-49969fbed4",
@@ -787858,6 +790841,7 @@
       "moec-e25b0e6f99",
       "moec-e34c63b35c",
       "moec-e9e8407eae",
+      "moec-ea227ca9a9",
       "moec-eaf09fa61d",
       "moec-ef2eb3bea9",
       "moec-efc8360a8d",
@@ -787938,6 +790922,7 @@
       "moec-962a7aac41",
       "moec-9c69255eb4",
       "moec-9e9d9a48c4",
+      "moec-9ed54875f2",
       "moec-b8ed205fc0",
       "moec-b933b02257",
       "moec-c373c068bc",
@@ -788232,6 +791217,7 @@
       "moec-dcd3579d75",
       "moec-dcfd6a94fe",
       "moec-dd4a5ed505",
+      "moec-deb74f4da4",
       "moec-df4b7912cd",
       "moec-e1f762a708",
       "moec-e57b8e5adb",
@@ -788357,6 +791343,7 @@
       "moec-2f328d62a4",
       "moec-343a438521",
       "moec-35134dea95",
+      "moec-3e630c4c67",
       "moec-3f31555f10",
       "moec-40b30ae830",
       "moec-4309afdd4c",
@@ -789098,6 +792085,7 @@
       "moec-e50d6f16de",
       "moec-f0bfef6ed9",
       "moec-f38bd8a47e",
+      "tb-9d6e6996d6",
       "tocfl-155def1bc1",
       "tocfl-1d17ac3894",
       "tocfl-3297af19d9",
@@ -789458,6 +792446,7 @@
       "moec-fdd053d6b2",
       "moec-ff00b60e31",
       "moec-ff7ebf8ff1",
+      "tb-3a6055b0dd",
       "tb-59ab4a93ec",
       "tb-77723aa154",
       "tb-ae8c406a50",
@@ -789698,6 +792687,7 @@
       "moec-fec7684316",
       "moec-ffe0a3c175",
       "moec-fff6b6050e",
+      "tb-109f0094f9",
       "tocfl-02e10d3a46",
       "tocfl-16232be9d8",
       "tocfl-165cb944b5",
@@ -790504,6 +793494,7 @@
       "moec-982cd5ed67",
       "moec-9ff669d54f",
       "moec-b3093f25ef",
+      "tb-9499858c9f",
       "tocfl-33b1f08c8b"
     ],
     "酸": [
@@ -790563,6 +793554,7 @@
       "moec-94bf8addf0",
       "moec-9c29a977b8",
       "moec-9f981c7fd8",
+      "moec-a00e70439c",
       "moec-a1ca22e7cd",
       "moec-a5b71de274",
       "moec-a877698a45",
@@ -792240,6 +795232,7 @@
       "moec-64c045c8d1",
       "moec-7e4bfc96e9",
       "moec-7e75ee1e61",
+      "moec-8035d79b00",
       "moec-86babf84b5",
       "moec-8bb1d1dbac",
       "moec-9fa5b7705d",
@@ -793505,6 +796498,7 @@
       "moec-68d9f6fdfc",
       "moec-6abe1b1ef1",
       "moec-6ee5e00636",
+      "moec-741d113045",
       "moec-75caf408e8",
       "moec-787b291aff",
       "moec-7e516a02e0",
@@ -793885,6 +796879,7 @@
       "moec-e92c0a2319",
       "moec-f69395f858",
       "moec-f736070f84",
+      "tb-37757ce36e",
       "tocfl-29992340ae",
       "tocfl-66b37f8522",
       "tocfl-bb87c8ed73",
@@ -794222,6 +797217,7 @@
       "moec-8f67386da2",
       "moec-9277d5fe06",
       "moec-937d7fc0d2",
+      "moec-9421e970e4",
       "moec-945d5ea099",
       "moec-9487e8a2c8",
       "moec-94db8d2b82",
@@ -794415,6 +797411,8 @@
       "moec-f93d647387",
       "moec-fc31261a3e",
       "moec-fdb4057bbc",
+      "tb-56fea02955",
+      "tb-93444cae3b",
       "tb-c6e8b8d056",
       "tocfl-1e6df0ee37",
       "tocfl-4cebb6df06",
@@ -794798,6 +797796,7 @@
       "moec-ff0ee833fd",
       "moec-ff94cde637",
       "tb-7758f85bbd",
+      "tb-d09b2c9cbc",
       "tocfl-04bb1f8353",
       "tocfl-0d83705a6d",
       "tocfl-144a74ffc3",
@@ -795042,7 +798041,11 @@
       "moec-fe28291dfc",
       "moec-fe2d46ccd3",
       "moec-ff1d94ccd2",
+      "tb-23b74de161",
       "tb-292b51f677",
+      "tb-4acdd993b4",
+      "tb-a5df41bcb3",
+      "tb-f936162e0c",
       "tocfl-006e2a2192",
       "tocfl-054b65b6b9",
       "tocfl-105c7118cc",
@@ -795165,6 +798168,7 @@
       "moec-848161defd",
       "moec-91ca73ebbc",
       "moec-a7814b02a2",
+      "moec-cab2c7d494",
       "moec-d902572ddf",
       "moec-db04434a10",
       "moec-db3b549cfc",
@@ -797338,6 +800342,7 @@
       "moec-138913308e",
       "moec-1392639f46",
       "moec-13b2ac2692",
+      "moec-154432cffb",
       "moec-1895324334",
       "moec-1991c56f95",
       "moec-1b0cb10e4e",
@@ -799749,6 +802754,7 @@
       "moec-a60c1231e2",
       "moec-a9e68eebe6",
       "moec-ae5ca7badd",
+      "moec-afe3f78034",
       "moec-c971f89bf8",
       "moec-e40a088fe1",
       "moec-e958539d62",
@@ -799805,6 +802811,8 @@
       "moec-e9442ac69a",
       "moec-ee3874fcf9",
       "moec-f8c19cc247",
+      "tb-2b0f07ae30",
+      "tb-a4e536d43f",
       "tocfl-237b647dce",
       "tocfl-38f65e6f0c",
       "tocfl-646f258793",
@@ -800399,6 +803407,7 @@
     "回": [
       "moec-04034b8645",
       "moec-0552c9c73a",
+      "moec-1814b78df0",
       "moec-191ea7e785",
       "moec-195abf748b",
       "moec-1a607abf2a",
@@ -800488,6 +803497,7 @@
       "moec-62da8d2f26",
       "moec-721ef142fd",
       "moec-7275119112",
+      "moec-731d10478e",
       "moec-756137debd",
       "moec-7a975bb426",
       "moec-7d9dc28aaa",
@@ -800697,6 +803707,7 @@
       "moec-a29af2aa0d",
       "moec-a3430cf88e",
       "moec-a42f3b3c5d",
+      "moec-a5067b44ea",
       "moec-a6176af415",
       "moec-a9b6c02b6a",
       "moec-b069f78daa",
@@ -800723,6 +803734,7 @@
       "moec-e02d6be4d2",
       "moec-e3213063ac",
       "moec-e3e7af3af3",
+      "moec-ea29e7e154",
       "moec-eac55a190d",
       "moec-ecccc6dc62",
       "moec-f0c766e8e4",
@@ -801526,6 +804538,7 @@
       "moec-d6bada0541",
       "moec-edc21569e3",
       "moec-f5c6d934f2",
+      "tb-eac3388f1b",
       "tocfl-2417cadddd"
     ],
     "華": [
@@ -801906,6 +804919,7 @@
       "moec-cf7ac5896e",
       "moec-f139112c76",
       "moec-f3be360702",
+      "tb-4acdd993b4",
       "tocfl-0da8753168",
       "tocfl-23f5406d62"
     ],
@@ -802341,6 +805355,8 @@
       "moec-fe732103c4",
       "moec-ff509275ff",
       "supp-f5fef933b7",
+      "tb-5cd535c171",
+      "tb-a4e536d43f",
       "tocfl-0577f4fea5",
       "tocfl-0ce131f786",
       "tocfl-1b83020852",
@@ -802559,6 +805575,7 @@
       "moec-cf3fccc85b",
       "moec-e7ca4f7835",
       "moec-ee7e6fcde4",
+      "moec-f07cce1d32",
       "moec-f1db6e62eb",
       "moec-f25db31d62",
       "supp-e58571bedc",
@@ -802625,7 +805642,9 @@
       "moec-c183f7ee8d",
       "moec-dc8c684ddc",
       "moec-e66d70d0cd",
+      "tb-6c3457d28e",
       "tb-801ccf4079",
+      "tb-9d6e6996d6",
       "tocfl-64bda18536",
       "tocfl-af7a4a2f21"
     ],
@@ -802824,6 +805843,7 @@
       "moec-a8f3351418",
       "moec-aa0b3b3352",
       "moec-c40069537f",
+      "moec-cab2c7d494",
       "moec-cb68eaa131",
       "moec-cbc1d83b73",
       "moec-d4e71a61ee",
@@ -802956,6 +805976,7 @@
       "tb-15ef5e4b10",
       "tb-1918cf8ff8",
       "tb-1918cf8ff8",
+      "tb-37757ce36e",
       "tb-8f411e7f6d",
       "tb-926d0d10d5",
       "tb-98caedd7e8",
@@ -804862,6 +807883,7 @@
       "moec-fffb99d2cd",
       "tb-018dcc20a0",
       "tb-11ebdba46e",
+      "tb-67697fe2d1",
       "tb-d12e69317b",
       "tb-f9d239154f",
       "tocfl-08b365a730",
@@ -806336,6 +809358,7 @@
       "moec-7ebbc40fa1",
       "moec-834649fee2",
       "moec-853eaaf593",
+      "moec-8988f216a8",
       "moec-8d2a533843",
       "moec-9681880137",
       "moec-9b9a80a296",
@@ -806569,6 +809592,7 @@
       "moec-2bcd0f5ee3",
       "moec-2fd4231974",
       "moec-31ec8ddad2",
+      "moec-32bfc6446a",
       "moec-33ec008737",
       "moec-36a9dd2035",
       "moec-38629bf35b",
@@ -806668,7 +809692,9 @@
       "moec-ff40ebefbd",
       "moec-ff7eae4891",
       "supp-bdfd47ad7e",
+      "tb-04f6deac3c",
       "tb-4edb729a91",
+      "tb-5cd535c171",
       "tb-842d3bbe31",
       "tb-b63ca20aef",
       "tb-de30499b7f",
@@ -806949,6 +809975,8 @@
       "moec-e8fa43f452",
       "moec-ef541e853f",
       "moec-effb1a05b3",
+      "moec-f89a617457",
+      "tb-a5df41bcb3",
       "tocfl-06c450e086",
       "tocfl-1198ff2ca7",
       "tocfl-1f0c4fd62a",
@@ -807092,6 +810120,7 @@
       "moec-f1689c1def",
       "moec-f1a351d475",
       "moec-fb8dd3ac08",
+      "tb-2b0f07ae30",
       "tocfl-05d21bed8e",
       "tocfl-0a65f1b5d3",
       "tocfl-35f8b2efc9",
@@ -807385,6 +810414,7 @@
       "moec-ef05ce02c4",
       "moec-ff61656c10",
       "tb-39568ff4a5",
+      "tb-5cd535c171",
       "tb-e154c43375",
       "tocfl-066ac4afb7",
       "tocfl-0c9339fe48",
@@ -807557,6 +810587,7 @@
       "tb-4b10793c86",
       "tb-81f10365fb",
       "tb-83407a5b28",
+      "tb-aba1a91b6d",
       "tb-f213e6950f",
       "tocfl-121e2bcfaf",
       "tocfl-26e30fbbce",
@@ -807800,6 +810831,7 @@
       "moec-ed5ea8f85b",
       "moec-f0d95f53a7",
       "moec-fdd0b4eb9f",
+      "tb-9499858c9f",
       "tocfl-f532a62c03"
     ],
     "瓜": [
@@ -808397,6 +811429,7 @@
       "moec-167a949560",
       "moec-34c8b16a22",
       "moec-b0228cf928",
+      "tb-9b9f60288f",
       "tocfl-adba032853"
     ],
     "皮": [
@@ -808529,7 +811562,11 @@
       "moec-f43fbedfed",
       "moec-f6f838a8db",
       "moec-faa6115c26",
+      "tb-109f0094f9",
+      "tb-6976579ee5",
+      "tb-7dbc4b8a07",
       "tb-8e631607be",
+      "tb-9b9f60288f",
       "tb-ec2d4e2e99",
       "tocfl-0011aaca20",
       "tocfl-035aab765e",
@@ -808617,6 +811654,7 @@
       "moec-956310d2eb",
       "moec-9723209fea",
       "moec-9c29a977b8",
+      "moec-9c6a1f6200",
       "moec-a55395e9ac",
       "moec-aabd6b0858",
       "moec-b15f8db280",
@@ -808625,6 +811663,8 @@
       "moec-d02cff9ccd",
       "moec-d1d4852499",
       "moec-d2673d704a",
+      "moec-d32c053c32",
+      "moec-d864c6dcf6",
       "moec-dd1100cfdb",
       "moec-dd5cecf938",
       "moec-e74f33c12f",
@@ -809552,6 +812592,7 @@
       "moec-d3e07673c6",
       "moec-ee7c4ceb28",
       "moec-f70190f717",
+      "tb-7dbc4b8a07",
       "tb-ec2d4e2e99",
       "tocfl-270b4ffe91",
       "tocfl-51280c2f59",
@@ -809566,6 +812607,7 @@
       "moec-6fdcae7588",
       "moec-8557f95c66",
       "moec-afa07ca73d",
+      "moec-b4ca325654",
       "moec-b771aee9fe",
       "moec-e1f86763d5",
       "moec-faf2583a14",
@@ -810183,7 +813225,9 @@
       "moec-e51d37771f",
       "moec-f4ad43cf54",
       "moec-ff7eae4891",
+      "tb-6c3457d28e",
       "tb-801ccf4079",
+      "tb-9d6e6996d6",
       "tocfl-27ed7ab017",
       "tocfl-e66e598b7d",
       "tocfl-eeac533ccb",
@@ -810451,6 +813495,7 @@
       "moec-3d0285e024",
       "moec-496e3fddee",
       "moec-4ea5b293a1",
+      "moec-58b88d5813",
       "moec-65f49884d7",
       "moec-6c0eae5d87",
       "moec-7047dd0e5d",
@@ -810886,6 +813931,8 @@
       "moec-e2992560b4",
       "moec-e8a4b98c8a",
       "moec-f46c9f632b",
+      "tb-2b0f07ae30",
+      "tb-a4e536d43f",
       "tocfl-00a1dc2e69",
       "tocfl-2dcce81750",
       "tocfl-559f38cd8e",
@@ -811274,6 +814321,7 @@
       "moec-ee27730039",
       "moec-f5fef00b6a",
       "tb-7b0b0ae000",
+      "tb-9499858c9f",
       "tb-c6e8b8d056",
       "tocfl-208af27d8f",
       "tocfl-711c959913",
@@ -811910,6 +814958,7 @@
       "moec-5a5e6d341b",
       "moec-69bdea2d45",
       "moec-73cc34e108",
+      "moec-77c89bab0f",
       "moec-7e39d1b945",
       "moec-a2b96d960d",
       "moec-a3f8e5c0a9",
@@ -812047,6 +815096,7 @@
       "moec-f1e31f0003",
       "moec-f9420bc883",
       "moec-fb2892e2aa",
+      "tb-aba1a91b6d",
       "tocfl-0f8f2ac58e",
       "tocfl-17a28e82a4",
       "tocfl-21ca03e228",
@@ -812455,6 +815505,7 @@
       "moec-5592fc0d4e",
       "moec-5e0df1812c",
       "moec-69fa489b11",
+      "moec-6cfed97ed3",
       "moec-730e8c0067",
       "moec-7519130f3c",
       "moec-777bd66c33",
@@ -813550,6 +816601,9 @@
       "moec-e9f1d146ef",
       "moec-ea791641b2",
       "moec-f6749c945a",
+      "tb-3c7f77e79b",
+      "tb-542259b039",
+      "tb-fe79be2f7c",
       "tocfl-201f53f7a5",
       "tocfl-617c0b1658",
       "tocfl-81bf8200e7",
@@ -813594,6 +816648,9 @@
       "moec-eb739f8bf9",
       "moec-f94ecc5d14",
       "moec-fdc58ae1d9",
+      "tb-3c7f77e79b",
+      "tb-93720b6122",
+      "tb-e72aa47550",
       "tocfl-7bb5d94953"
     ],
     "釋": [
@@ -813673,6 +816730,8 @@
       "moec-f66c7ebcf3",
       "moec-fc6f2ee4a0",
       "moec-fdcd44441d",
+      "tb-5cd535c171",
+      "tb-d09b2c9cbc",
       "tocfl-0b63c8985a",
       "tocfl-0c75a8cb20",
       "tocfl-1386bd9c96",
@@ -813814,6 +816873,7 @@
       "moec-88f79ff2cf",
       "moec-8c1cdb7da0",
       "moec-98eb482704",
+      "moec-9c6a1f6200",
       "moec-a920acf09a",
       "moec-ba56d65d50",
       "moec-cc5c534535",
@@ -814040,8 +817100,12 @@
       "moec-f5ff7830a6",
       "moec-f73302de31",
       "tb-11ebdba46e",
+      "tb-2750a4f013",
       "tb-84b4437aca",
+      "tb-93444cae3b",
+      "tb-9db5dc58d8",
       "tb-cc63efa7b1",
+      "tb-e72aa47550",
       "tb-f7256d23a5",
       "tocfl-0f5118597c",
       "tocfl-0f553c15b5",
@@ -814333,6 +817397,7 @@
       "moec-eec4e2d7a9",
       "moec-f07bd36ad0",
       "moec-f7c7be47ed",
+      "tb-0e438ec33a",
       "tb-4b31137bf8",
       "tb-79e63dddb5",
       "tb-c6e8b8d056",
@@ -814445,6 +817510,8 @@
       "moec-ef956fa22c",
       "moec-f1f8fee25f",
       "moec-f5bd0c0831",
+      "tb-626838faf0",
+      "tb-6c3457d28e",
       "tocfl-1ad3bc9c4b",
       "tocfl-1b4205a7a8",
       "tocfl-43f67cb178",
@@ -815118,6 +818185,7 @@
       "tb-341493acd2",
       "tb-3ea3cefdc3",
       "tb-3ea3cefdc3",
+      "tb-774f1328cb",
       "tb-8e631607be",
       "tb-a0f45b43eb",
       "tb-a0f45b43eb",
@@ -816183,6 +819251,8 @@
       "moec-c6cb67fd7e",
       "moec-ef9c8eeccd",
       "tb-2e9db6e051",
+      "tb-6aa3380a4d",
+      "tb-d09b2c9cbc",
       "tocfl-8277d29534",
       "tocfl-90c7688865",
       "tocfl-f7b58430c0"
@@ -816634,6 +819704,7 @@
       "moec-30f0ee4239",
       "moec-49dba45bf5",
       "moec-4b4b07244c",
+      "moec-55cccadc7e",
       "moec-8ea8fa53af",
       "moec-a2efba78c0",
       "moec-a48a7b13c8",
@@ -816949,6 +820020,7 @@
       "moec-f00fcc9638",
       "moec-f5c3d9b9a8",
       "moec-f8f0659368",
+      "tb-2d82c2999d",
       "tocfl-153f25a870",
       "tocfl-22acd0d98e",
       "tocfl-439a500380",
@@ -816999,6 +820071,7 @@
       "moec-e728ac6c38",
       "moec-f0b97f9642",
       "moec-ff96d071be",
+      "tb-a4e536d43f",
       "tocfl-b7bb685153",
       "tocfl-c4e7f150de",
       "tocfl-d46013104c",
@@ -817673,6 +820746,7 @@
       "moec-f23af763bd",
       "moec-f3907b0f20",
       "moec-f52c503cfd",
+      "tb-2750a4f013",
       "tocfl-0e0084100d",
       "tocfl-15844c7386",
       "tocfl-3d6375e767",
@@ -817699,6 +820773,7 @@
       "moec-d72a99d762",
       "moec-dcada0b02c",
       "moec-ea44fd8ee7",
+      "tb-4acdd993b4",
       "tb-778c8fa37b",
       "tb-9d7f2ffa5d",
       "tb-e154c43375",
@@ -818067,6 +821142,7 @@
       "moec-f000a09fa3",
       "moec-f262c1e6b2",
       "moec-f573234f1a",
+      "tb-05fbf2fda2",
       "tocfl-1ebe3718c9",
       "tocfl-2a92f2953c",
       "tocfl-2b46c63a31",
@@ -818549,6 +821625,7 @@
     ],
     "換": [
       "moec-0fa7ef672e",
+      "moec-1645a37a0b",
       "moec-1c2bd5709b",
       "moec-38c3f7808b",
       "moec-40d82e1549",
@@ -818577,6 +821654,7 @@
       "moec-eed3683384",
       "moec-ef87adc5a8",
       "moec-f70711ee9b",
+      "tb-02d80acbb6",
       "tocfl-6350b2d71d",
       "tocfl-be379b3f50",
       "tocfl-f2239685a3"
@@ -818639,6 +821717,7 @@
       "moec-576eb2042f",
       "moec-5ee0884e7f",
       "moec-6c8f0c766a",
+      "moec-6d2610d24c",
       "moec-72a4feb12e",
       "moec-776feb8496",
       "moec-7a76b7628c",
@@ -819592,6 +822671,7 @@
       "moec-235fa1cf67",
       "moec-6568309ba2",
       "moec-7cbc8e6631",
+      "moec-8988f216a8",
       "moec-b03d446e08",
       "moec-b51eb461f6",
       "moec-f972e146cb",
@@ -819859,6 +822939,7 @@
       "moec-89876af58d",
       "moec-9511ca959b",
       "moec-ae87227cf5",
+      "moec-b21880c70d",
       "moec-bd9f5441f1",
       "moec-ce008ef92a",
       "moec-e0b8fdeb92",
@@ -819928,6 +823009,7 @@
       "moec-309380becd",
       "moec-52ed7bd025",
       "moec-552d43de6e",
+      "tb-6aa3380a4d",
       "tocfl-7c491838af"
     ],
     "啡": [
@@ -819935,6 +823017,7 @@
       "moec-309380becd",
       "moec-552d43de6e",
       "moec-7305b70849",
+      "tb-6aa3380a4d",
       "tocfl-7c491838af"
     ],
     "耐": [
@@ -820483,6 +823566,7 @@
       "moec-b0d775d833",
       "moec-c0debac77c",
       "moec-f4ad43cf54",
+      "tb-626838faf0",
       "tocfl-9b66c24d69"
     ],
     "批": [
@@ -821090,6 +824174,23 @@
       "tocfl-e77476c7b7",
       "tocfl-f0a5bc60f7"
     ],
+    "療": [
+      "moec-154432cffb",
+      "moec-1a591d9a0d",
+      "moec-8035d79b00",
+      "moec-86f5ad4d1b",
+      "moec-9c6a1f6200",
+      "moec-9ed54875f2",
+      "moec-a00e70439c",
+      "moec-afe3f78034",
+      "moec-ccec985197",
+      "moec-d32c053c32",
+      "moec-d864c6dcf6",
+      "moec-deb74f4da4",
+      "tb-2d82c2999d",
+      "tocfl-22acd0d98e",
+      "tocfl-77d0dcabb2"
+    ],
     "困": [
       "moec-1562bb1662",
       "moec-28b4025f90",
@@ -821197,6 +824298,7 @@
       "moec-5bc82cee95",
       "moec-62b4657506",
       "moec-6471f72c3c",
+      "moec-6c553ecb43",
       "moec-71f007b97e",
       "moec-9a36eb4796",
       "moec-b34876492c",
@@ -821293,6 +824395,7 @@
       "moec-fc97540c6b",
       "supp-e58571bedc",
       "tb-11e9825223",
+      "tb-5b77dab97f",
       "tocfl-0c0bc4256f",
       "tocfl-12cbd3b40f",
       "tocfl-2df8cb02a1",
@@ -821369,6 +824472,17 @@
       "tocfl-78602d3286",
       "tocfl-dfb9c6cf41",
       "tocfl-f586d55b3f"
+    ],
+    "兌": [
+      "moec-1645a37a0b",
+      "moec-516fa3fe62",
+      "moec-58b88d5813",
+      "moec-6d2610d24c",
+      "moec-b21880c70d",
+      "moec-b4ca325654",
+      "moec-f07cce1d32",
+      "tb-02d80acbb6",
+      "tocfl-6e2ceef523"
     ],
     "你": [
       "moec-166f8176bb",
@@ -821724,6 +824838,7 @@
       "moec-ed6b16514f",
       "moec-f10f38d545",
       "moec-fab6bc906c",
+      "tb-5cd535c171",
       "tocfl-032218f744",
       "tocfl-0416adeb49",
       "tocfl-0744a560b4",
@@ -821783,6 +824898,7 @@
       "moec-a9acf4b522",
       "moec-bf97d9e8a4",
       "moec-d3a9fb1bd5",
+      "tb-774f1328cb",
       "tocfl-1a1be7bed1",
       "tocfl-226d21f07d",
       "tocfl-375e357ed5",
@@ -821906,6 +825022,22 @@
       "moec-ec93467ea5",
       "tocfl-4d03ab2678",
       "tocfl-eff54bef79"
+    ],
+    "籠": [
+      "moec-1814b78df0",
+      "moec-3e630c4c67",
+      "moec-48c2d24caa",
+      "moec-731d10478e",
+      "moec-77c89bab0f",
+      "moec-8988f216a8",
+      "moec-9421e970e4",
+      "moec-c140b12c0a",
+      "moec-cab2c7d494",
+      "moec-fe161bec00",
+      "tb-04f6deac3c",
+      "tocfl-2757e0bdde",
+      "tocfl-4fee56672c",
+      "tocfl-a72208a7c2"
     ],
     "實": [
       "moec-183969bd4c",
@@ -822327,6 +825459,7 @@
       "moec-9da16a3a21",
       "moec-c2734aec08",
       "moec-cadab8785c",
+      "tb-02d80acbb6",
       "tb-80b2e06a7b",
       "tocfl-2d5b7ee7ed",
       "tocfl-e69b7be2e3",
@@ -822641,6 +825774,7 @@
       "moec-eb3557c01f",
       "moec-fe149963f5",
       "tb-1dc204b53d",
+      "tb-6976579ee5",
       "tocfl-0011aaca20",
       "tocfl-12c5812ec1",
       "tocfl-3f4963603b",
@@ -823269,6 +826403,7 @@
       "moec-7c82d7cf3a",
       "moec-80b38a4a78",
       "moec-8113a6c5f9",
+      "moec-86f5ad4d1b",
       "moec-8966f5f47e",
       "moec-89c97d2bc4",
       "moec-8bd1ef7e4d",
@@ -823293,6 +826428,7 @@
       "moec-f9b02049b0",
       "moec-fbffd84bf1",
       "moec-ff0503e568",
+      "tb-774f1328cb",
       "tocfl-0f7d07b10e",
       "tocfl-149b7c30ae",
       "tocfl-42369e3ca4",
@@ -823518,7 +826654,10 @@
       "moec-dbf968969e",
       "moec-e26a54ed54",
       "moec-f67a6e3fa3",
+      "tb-23b74de161",
       "tb-292b51f677",
+      "tb-a5df41bcb3",
+      "tb-f936162e0c",
       "tocfl-4bf2daaa1c",
       "tocfl-5c8b9eb82d",
       "tocfl-6947087100",
@@ -823879,6 +827018,7 @@
     "炸": [
       "moec-2339c037be",
       "moec-f3f4faf784",
+      "tb-0e438ec33a",
       "tb-f139cec962",
       "tocfl-61306f6806",
       "tocfl-7a713277e4",
@@ -824162,6 +827302,7 @@
       "moec-c183f7ee8d",
       "moec-cdfbd4d851",
       "moec-df3bde3dba",
+      "tb-626838faf0",
       "tb-801ccf4079",
       "tocfl-07023d3785",
       "tocfl-64bda18536",
@@ -824216,6 +827357,7 @@
       "moec-b755a7fb61",
       "moec-d76a2319be",
       "moec-faec449fbb",
+      "tb-89b489f21d",
       "tb-984e4f1285",
       "tocfl-0f3588e449",
       "tocfl-5b865ba0a8",
@@ -825078,6 +828220,15 @@
       "tocfl-84ffddd87d",
       "tocfl-fa5d2a3c55"
     ],
+    "犬": [
+      "moec-32bfc6446a",
+      "moec-55cccadc7e",
+      "moec-6c553ecb43",
+      "moec-6cfed97ed3",
+      "moec-741d113045",
+      "moec-d6b69dc59b",
+      "tb-05fbf2fda2"
+    ],
     "橘": [
       "moec-32de4c22be",
       "moec-7fab46daf2",
@@ -825090,11 +828241,13 @@
       "moec-3b4fbbae68",
       "moec-5c53635633",
       "moec-79de478ab0",
+      "moec-c140b12c0a",
       "moec-fbee0be07a",
       "tocfl-fd5037312d"
     ],
     "鳥": [
       "moec-331ebf1341",
+      "moec-48c2d24caa",
       "moec-540f746646",
       "moec-560ead5796",
       "moec-5c8d867102",
@@ -825372,6 +828525,7 @@
       "moec-f43fbedfed",
       "moec-f7fef43154",
       "moec-fb75baef34",
+      "tb-109f0094f9",
       "tocfl-035aab765e",
       "tocfl-707c71f13a"
     ],
@@ -825615,6 +828769,7 @@
       "moec-dd0a14bff0",
       "moec-eda3217f2f",
       "tb-8891e1df1f",
+      "tb-bf1162ad44",
       "tocfl-b4b3d8a1f2"
     ],
     "最": [
@@ -825792,6 +828947,19 @@
       "tocfl-e20883181b",
       "tocfl-e3ac832463",
       "tocfl-e583d12181"
+    ],
+    "盲": [
+      "moec-483d435dcf",
+      "moec-5ba0bc92a4",
+      "moec-8548b6302e",
+      "moec-a5067b44ea",
+      "moec-ea227ca9a9",
+      "moec-ea29e7e154",
+      "moec-f89a617457",
+      "tb-05fbf2fda2",
+      "tocfl-207f8800f7",
+      "tocfl-9d97c44b08",
+      "tocfl-eb8d3add0d"
     ],
     "蹟": [
       "moec-485757f4d3",
@@ -826010,6 +829178,15 @@
       "tocfl-660e977f3b",
       "tocfl-7ce4b6438e"
     ],
+    "擠": [
+      "moec-516fa3fe62",
+      "moec-c104bbff82",
+      "moec-eea07714db",
+      "tocfl-5142a0893a",
+      "tocfl-7c010305e3",
+      "tocfl-8f65efe3c6",
+      "tocfl-a28f3c6f4b"
+    ],
     "隻": [
       "moec-52a64cb474",
       "moec-ced5f72e85",
@@ -826053,6 +829230,7 @@
     "貿": [
       "moec-53110bf9a5",
       "moec-ce727ab87b",
+      "tb-23b74de161",
       "tocfl-7cd1777367",
       "tocfl-f165a71710"
     ],
@@ -826585,14 +829763,6 @@
       "tocfl-4db6e06db1",
       "tocfl-d214b63617"
     ],
-    "擠": [
-      "moec-c104bbff82",
-      "moec-eea07714db",
-      "tocfl-5142a0893a",
-      "tocfl-7c010305e3",
-      "tocfl-8f65efe3c6",
-      "tocfl-a28f3c6f4b"
-    ],
     "肯": [
       "moec-cd1fb6c9f2",
       "moec-cf3e3e049b",
@@ -826698,6 +829868,10 @@
     "莉": [
       "tb-7e3658e3b9",
       "tb-ffdb02ab2e"
+    ],
+    "賃": [
+      "tb-a4e536d43f",
+      "tocfl-c4e7f150de"
     ],
     "噢": [
       "tb-c60e9ca34c",
@@ -828142,11 +831316,6 @@
     "掩": [
       "tocfl-2073b8be37"
     ],
-    "盲": [
-      "tocfl-207f8800f7",
-      "tocfl-9d97c44b08",
-      "tocfl-eb8d3add0d"
-    ],
     "鯨": [
       "tocfl-20a714c712"
     ],
@@ -828218,10 +831387,6 @@
     "慕": [
       "tocfl-228cf4732d",
       "tocfl-4e35f4863e"
-    ],
-    "療": [
-      "tocfl-22acd0d98e",
-      "tocfl-77d0dcabb2"
     ],
     "葉": [
       "tocfl-22d2920cfc",
@@ -828380,11 +831545,6 @@
       "tocfl-2727bbd242",
       "tocfl-7945c35df8",
       "tocfl-7b3d8dcda4"
-    ],
-    "籠": [
-      "tocfl-2757e0bdde",
-      "tocfl-4fee56672c",
-      "tocfl-a72208a7c2"
     ],
     "梳": [
       "tocfl-27d126ed6d"
@@ -830040,9 +833200,6 @@
       "tocfl-6e2940c971",
       "tocfl-94d9e64e6e"
     ],
-    "兌": [
-      "tocfl-6e2ceef523"
-    ],
     "祀": [
       "tocfl-6e352ec3d9"
     ],
@@ -831162,9 +834319,6 @@
     "訊": [
       "tocfl-c456c82f47",
       "tocfl-ccf4d68fe5"
-    ],
-    "賃": [
-      "tocfl-c4e7f150de"
     ],
     "哼": [
       "tocfl-c4efc5461b",

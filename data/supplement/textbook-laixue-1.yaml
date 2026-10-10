@@ -484,3 +484,156 @@
     - textbook:laixue-1
     - textbook:laixue-1:L09
     - name
+- headword: 堂兄妹
+  variants: []
+  pos: []
+  level: N1
+  pinyin: tángxiōngmèi
+  glossEn: paternal cousins
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L03
+- headword: 表兄妹
+  variants: []
+  pos: []
+  level: N1
+  pinyin: biǎoxiōngmèi
+  glossEn: cousins (mother's side or father's sisters' children)
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L03
+- headword: 看電影
+  variants: []
+  pos: []
+  level: N1
+  pinyin: kàn diànyǐng
+  glossEn: to watch movies
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L06
+- headword: 打籃球
+  variants: []
+  pos: []
+  level: N1
+  pinyin: dǎ lánqiú
+  glossEn: to play basket ball
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L06
+- headword: 踢足球
+  variants: []
+  pos: []
+  level: N1
+  pinyin: tī zúqiú
+  glossEn: to play soccer
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L06
+- headword: 二月
+  variants: []
+  pos: []
+  level: N1
+  pinyin: èryuè
+  glossEn: February
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L08
+- headword: 三月
+  variants: []
+  pos: []
+  level: N1
+  pinyin: sānyuè
+  glossEn: March
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L08
+- headword: 五月
+  variants: []
+  pos: []
+  level: N1
+  pinyin: wǔyuè
+  glossEn: May
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L08
+- headword: 八月
+  variants: []
+  pos: []
+  level: N1
+  pinyin: bāyuè
+  glossEn: August
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L08
+- headword: 九月
+  variants: []
+  pos: []
+  level: N1
+  pinyin: jiǔyuè
+  glossEn: September
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L08
+- headword: 十月
+  variants: []
+  pos: []
+  level: N1
+  pinyin: shíyuè
+  glossEn: October
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L08
+- headword: 十一月
+  variants: []
+  pos: []
+  level: N1
+  pinyin: shíyīyuè
+  glossEn: November
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L08
+- headword: 十二月
+  variants: []
+  pos: []
+  level: N1
+  pinyin: shí’èryuè
+  glossEn: December
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L08
+- headword: 星期一
+  variants: []
+  pos: []
+  level: N1
+  pinyin: xīngqíyī
+  glossEn: Monday
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L09
+- headword: 星期二
+  variants: []
+  pos: []
+  level: N1
+  pinyin: xīngqí’èr
+  glossEn: Tuesday
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L09
+- headword: 星期三
+  variants: []
+  pos: []
+  level: N1
+  pinyin: xīngqísān
+  glossEn: Wednesday
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L09
+- headword: 星期四
+  variants: []
+  pos: []
+  level: N1
+  pinyin: xīngqísì
+  glossEn: Thursday
+  tags:
+    - textbook:laixue-1
+    - textbook:laixue-1:L09

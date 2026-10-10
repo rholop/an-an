@@ -57,8 +57,12 @@ describe('the built lexicon (phase 7)', () => {
   });
 
   it('≥ 95% of N1–L2 words have a gloss supported by a cited source', () => {
+    // Phase 34: words whose only gloss is the textbook's own wording (lesson extras) have no outside source to cite.
     const early = lexicon.words.filter(
-      (w) => w.level && ['N1', 'N2', 'L1', 'L2'].includes(w.level),
+      (w) =>
+        w.level &&
+        ['N1', 'N2', 'L1', 'L2'].includes(w.level) &&
+        !(w.senses?.length && w.senses.every((s) => s.basedOn.length === 1 && s.basedOn[0] === 'textbook')),
     );
     const supported = early.filter((w) => (w.glossSources?.length ?? 0) > 0 && w.senses?.length);
     expect(supported.length / early.length).toBeGreaterThanOrEqual(0.95);

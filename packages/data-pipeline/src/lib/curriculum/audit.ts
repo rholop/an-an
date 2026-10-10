@@ -42,7 +42,9 @@ export type AuditCheck =
   | 'sentence-duplicate'
   | 'lesson-grammar-exercises'
   | 'lesson-proper-noun'
-  | 'lesson-prompt-scope';
+  | 'lesson-prompt-scope'
+  | 'extra-repeat'
+  | 'extra-page';
 
 export const AUDIT_CHECKS: Record<AuditCheck, string> = {
   'lexicon-unresolved': 'A lesson word id that is not in the lexicon',
@@ -61,6 +63,8 @@ export const AUDIT_CHECKS: Record<AuditCheck, string> = {
   'lesson-grammar-exercises': 'A grammar point with fewer than 3 exercises or fewer than 2 types',
   'lesson-proper-noun': 'A proper noun in study vocabulary',
   'lesson-prompt-scope': "A journal prompt using words or grammar beyond its lesson",
+  'extra-repeat': 'A lesson extra that is already a core word of this or an earlier lesson',
+  'extra-page': 'A lesson extra with no lesson and page in its word note',
 };
 
 export interface AuditFinding {
@@ -73,7 +77,7 @@ export interface AuditFinding {
 export interface AuditBook {
   textbook: Textbook;
   grammarItems: GrammarItem[];
-  wordNotes?: Array<{ wordId: string; headword?: string; glossEn?: string; pinyin?: string }>;
+  wordNotes?: Array<{ wordId: string; lesson?: number; section?: string; page?: number; headword?: string; glossEn?: string; pinyin?: string }>;
 }
 
 /** Text in a lesson other than bank sentences (scenario lines, prompt models). */
@@ -166,7 +170,7 @@ export function runCurriculumAudit(inputs: AuditInputs): AuditResult {
   const courseIds = new Map<string, string>(); // id -> where it is used
   for (const b of books) {
     for (const l of b.textbook.lessons)
-      for (const id of [...l.vocab, ...l.supplementary, ...(l.grammarWords ?? []), ...l.properNouns])
+      for (const id of [...l.vocab, ...l.supplementary, ...(l.extra ?? []), ...(l.grammarWords ?? []), ...l.properNouns])
         if (!courseIds.has(id)) courseIds.set(id, `${b.textbook.id} L${l.n}`);
   }
   for (const [id, where] of courseIds) {
@@ -191,6 +195,20 @@ export function runCurriculumAudit(inputs: AuditInputs): AuditResult {
         add('lexicon-headword', `${b.textbook.id} note ${note.wordId}`, `the book's ${note.headword} is linked to ${nw.headword}`);
       if (note.pinyin && /[.,;:]$/.test(note.pinyin.trim()))
         add('lexicon-gloss', `${b.textbook.id} note ${note.wordId}`, `pinyin "${note.pinyin}"`);
+    }
+
+  // ---------------------------------------------------------------- Phase 34: lesson extras
+  const coreSoFar = new Set<string>();
+  for (const b of books)
+    for (const l of b.textbook.lessons) {
+      for (const id of [...l.vocab, ...l.properNouns]) coreSoFar.add(id);
+      for (const id of l.extra ?? []) {
+        const at = `${b.textbook.id} L${l.n} ${id}`;
+        // (unresolved ids are reported above as lexicon-unresolved: every extra must link to a lexicon word)
+        if (coreSoFar.has(id)) add('extra-repeat', at, `${lexicon.byId(id)?.headword ?? id} is already a core word`);
+        const note = (b.wordNotes ?? []).find((n) => n.wordId === id && n.section === 'extra' && n.lesson === l.n);
+        if (!note || !note.page || note.page < 1) add('extra-page', at, 'no word note with a lesson and page');
+      }
     }
 
   // ---------------------------------------------------------------- per lesson
@@ -248,7 +266,7 @@ export function runCurriculumAudit(inputs: AuditInputs): AuditResult {
   };
   const firstLesson = new Map<string, string>();
   for (const { bookId, l } of allLessons)
-    for (const id of [...l.vocab, ...l.supplementary, ...(l.grammarWords ?? [])])
+    for (const id of [...l.vocab, ...l.supplementary, ...(l.extra ?? []), ...(l.grammarWords ?? [])])
       if (!firstLesson.has(id)) firstLesson.set(id, `${bookId} L${l.n}`);
   const firstLessonOf = (id: string) => firstLesson.get(id) ?? '?';
 
@@ -314,7 +332,7 @@ export function runCurriculumAudit(inputs: AuditInputs): AuditResult {
             add('lesson-grammar-exercises', `${L} ${gid}`, `${ex.length} exercises, types ${[...types].join('/') || 'none'} (seed ${seed})`);
         }
       }
-      for (const id of [...l.vocab, ...l.supplementary]) {
+      for (const id of [...l.vocab, ...l.supplementary, ...(l.extra ?? [])]) {
         const w = lexicon.byId(id);
         if (w && (l.properNouns.includes(id) || w.tags.includes('name'))) add('lesson-proper-noun', `${L} ${id}`, `${w.headword} is a name`);
       }
