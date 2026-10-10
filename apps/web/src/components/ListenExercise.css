@@ -7,10 +7,10 @@
 .listen-options button { min-height: 52px; min-width: 52px; font-size: 1.25rem; padding: 0 1rem; }
 .listen-options button.is-right { outline: 2px solid var(--accent); }
 .listen-options button.is-wrong { outline: 2px solid var(--danger-text); }
-.listen-diff { font-size: 1.25rem; }
+.listen-diff { font-size: var(--zh-body); }
 .listen-diff--ok { }
 .listen-diff--missed { background: color-mix(in srgb, var(--warn) 35%, transparent); padding: 0 2px; text-decoration: underline; }
 .listen-diff--extra { color: var(--danger-text); text-decoration: line-through; }
 .listen-feedback { margin: 0.75rem 0; }
 .listen-feedback button { min-height: 44px; }
-.listen-reveal { font-size: 1.25rem; }
+.listen-reveal { font-size: var(--zh-body); }

@@ -1,11 +1,11 @@
 /* Phase 23 Part C: the Pinyin & tones tab. Tap targets are at least 44px for phones. */
 .pinyin-page { max-width: 40rem; margin: 0 auto; }
 .pinyin-exercise { display: flex; flex-direction: column; gap: 0.75rem; }
-.pinyin-front { font-size: 2.2rem; text-align: center; }
+.pinyin-front { font-size: var(--zh-hero); text-align: center; }
 .pinyin-ask { margin: 0; text-align: center; color: var(--text-muted); }
 .pinyin-syllables { display: flex; flex-direction: column; gap: 0.75rem; }
 .pinyin-syllable { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-.pinyin-syllable-char { font-size: 1.6rem; min-width: 2rem; text-align: center; }
+.pinyin-syllable-char { font-size: calc(var(--zh-body) * 1.15); min-width: 2rem; text-align: center; }
 .pinyin-tone-row { display: flex; flex-wrap: wrap; gap: 0.35rem; flex: 1; }
 .pinyin-opt {
   min-height: 44px;
@@ -24,13 +24,33 @@
 .pinyin-opt--wrong { border-color: var(--danger); border-width: 2px; }
 .pinyin-match { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
 .pinyin-match-col { display: flex; flex-direction: column; gap: 0.4rem; }
-.pinyin-match-zh { font-size: 1.4rem; }
+.pinyin-match-zh { font-size: var(--zh-body); }
 .pinyin-which { display: flex; flex-direction: column; gap: 0.5rem; }
 .pinyin-which-opt { font-size: 1.2rem; }
 .pinyin-sort { display: flex; flex-direction: column; gap: 0.6rem; }
 .pinyin-sort-row { display: flex; flex-direction: column; gap: 0.3rem; }
-.pinyin-sort-word { font-size: 1.4rem; }
+.pinyin-sort-word { font-size: var(--zh-body); }
 .pinyin-sort-reading { font-size: 0.9rem; color: var(--text-muted); }
 .pinyin-after { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
 .pinyin-word-info { margin: 0; }
 .pinyin-listen-link { min-height: 44px; }
+
+/* Phase 30: laptops. Short screens get smaller gaps (never smaller Chinese); the six-word sort is two
+   columns, a word beside its patterns; the result, the word and Next share one row. */
+@media (min-width: 640px) {
+  .pinyin-page > .textbook-muted { margin: 0 0 0.4rem; font-size: 0.9rem; }
+  .pinyin-exercise { gap: 0.5rem; }
+  .pinyin-syllables { gap: 0.4rem; }
+  .pinyin-sort { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1rem; }
+  .pinyin-sort-row { flex-direction: row; align-items: center; gap: 0.5rem; }
+  .pinyin-sort-word { flex: none; min-width: 3.5em; }
+  .pinyin-after { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.25rem 1rem; }
+  .pinyin-after .review-typed,
+  .pinyin-after .review-sandhi-note { margin: 0; }
+  .pinyin-after [data-testid='pinyin-next'] { margin-left: auto; }
+}
+@media (min-width: 640px) and (max-height: 760px) {
+  .pinyin-page h1 { font-size: 1.5rem; margin-block: 0 0.2rem; }
+  .pinyin-opt { min-height: 38px; padding: 0.25rem 0.55rem; }
+  .pinyin-front { line-height: 1.15; }
+}

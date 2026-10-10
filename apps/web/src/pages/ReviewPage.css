@@ -1,13 +1,24 @@
 .review-page { max-width: 480px; margin: 0 auto; }
 .review-meta { opacity: 0.7; font-size: 0.85rem; }
+/* Phase 30: status, counts, cap tip and Undo on one line above the card */
+.review-statusline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.15rem 0.75rem;
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+}
+.review-statusline .review-meta { font-size: 0.8rem; }
+.review-statusline .review-undo { min-height: 28px; padding: 0; font-size: 0.85rem; margin-left: auto; }
 .review-forecast { font-family: ui-monospace, monospace; }
 
 .review-card {
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 2rem 1.5rem;
+  padding: clamp(0.75rem, 2.5vh, 1.5rem);
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 0.4rem;
 }
 .review-card-skill {
   text-transform: uppercase;
@@ -16,8 +27,19 @@
   opacity: 0.6;
   margin-bottom: 0.5rem;
 }
-.review-card-front { font-size: 2rem; margin-bottom: 1.5rem; }
+.review-card-front { font-size: 1.5rem; line-height: 1.25; margin-bottom: clamp(0.5rem, 2.5vh, 1.5rem); }
+/* Phase 30: Chinese on the front is the hero size (≥ 44 px at Normal); an English front stays 1.5rem */
+.review-card-front[lang|='zh'] { font-size: var(--zh-hero); }
 .review-card-front--small { font-size: 1.1rem; margin-bottom: 0.5rem; }
+.review-card-front--small[lang|='zh'] { font-size: var(--zh-body); }
+/* short laptop screens: smaller gaps, never smaller Chinese */
+@media (max-height: 760px) and (min-width: 640px) {
+  .review-page h1 { font-size: 1.5rem; margin-block: 0 0.25rem; }
+  .review-card-skill { margin-bottom: 0.25rem; }
+  .review-card-back { margin-bottom: 0.5rem; }
+  .review-pick-options { margin-bottom: 0.5rem; }
+  .review-buttons { margin-top: 0.5rem; }
+}
 .review-card-back { font-size: 1.2rem; margin-bottom: 1rem; opacity: 0.9; }
 
 .review-reveal, .review-btn {
@@ -47,7 +69,7 @@
 .leech-title { font-weight: bold; margin-bottom: 0.5rem; font-size: 0.85rem; }
 .leech-chars { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .leech-char { text-align: center; }
-.leech-char-glyph { font-size: 1.5rem; }
+.leech-char-glyph { font-size: var(--zh-body); }
 .leech-char-reading { font-size: 0.75rem; font-family: ui-monospace, monospace; }
 .leech-char-gloss { font-size: 0.7rem; opacity: 0.8; max-width: 90px; }
 .leech-stub-note { margin-top: 0.5rem; font-size: 0.7rem; opacity: 0.6; font-style: italic; }
@@ -85,7 +107,7 @@
   cursor: pointer;
 }
 .review-pick:disabled { cursor: default; opacity: 1; }
-.review-pick-zh { font-size: 1.6rem; }
+.review-pick-zh { font-size: calc(var(--zh-body) * 1.15); }
 .review-pick-info { font-size: 0.8rem; color: var(--text-muted); }
 .review-pick--right { border-color: var(--accent); border-width: 2px; }
 .review-pick--wrong { border-color: var(--danger); border-width: 2px; }

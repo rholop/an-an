@@ -34,6 +34,7 @@ import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
 import { ensureFaceCards } from '../lib/face-cards.js';
 import { DueIcon, EmptySprout } from '../components/PlantIcons.js';
 import { useLexicon } from '../lib/useLexicon.js';
+import { InfoTip } from '../components/InfoTip.js';
 import './ReviewPage.css';
 
 export { ReviewCard, type Grade, type RateExtra } from './ReviewCard.js';
@@ -328,30 +329,29 @@ export function ReviewPage({
     <div className="review-page">
       {onExit && <button onClick={onExit}>{exitLabel}</button>}
       <h1>{title ?? (focusCards ? 'Water these words' : 'Review')}</h1>
-      {ledgerNow && !focusCards && (
-        <p className="review-status" data-testid="review-status">
-          <DueIcon /> {sessionLine(ledgerNow.status)}
-        </p>
-      )}
-      <p className="review-meta" data-testid="review-counts">
-        {dueNewLine(dueLeft, newLeft, againLeft)}
-      </p>
-
-      {lastAnswer && (
-        <p className="review-undo">
-          <button type="button" onClick={() => void undoLast()} data-testid="review-undo">
+      {/* Phase 30: status, counts and Undo share one compact line; the cap note is a tip icon */}
+      <div className="review-statusline">
+        {ledgerNow && !focusCards && (
+          <span className="review-status" data-testid="review-status">
+            <DueIcon /> {sessionLine(ledgerNow.status)}
+          </span>
+        )}
+        <span className="review-meta" data-testid="review-counts">
+          {dueNewLine(dueLeft, newLeft, againLeft)}
+        </span>
+        {capNote && (
+          <InfoTip label="About today's cap" testId="review-cap-note">
+            {capNote.held > 0 &&
+              `Today's ${capNote.cap} most important reviews; ${capNote.held} more stay due for later (daily cap, Settings → Review). `}
+            {capNote.newReason}
+          </InfoTip>
+        )}
+        {lastAnswer && (
+          <button type="button" className="link-button review-undo" onClick={() => void undoLast()} data-testid="review-undo">
             {UNDO} last answer
           </button>
-        </p>
-      )}
-
-      {capNote && (
-        <p className="review-cap-note" data-testid="review-cap-note">
-          {capNote.held > 0 &&
-            `Today's ${capNote.cap} most important reviews; ${capNote.held} more stay due for later (daily cap, Settings → Review). `}
-          {capNote.newReason}
-        </p>
-      )}
+        )}
+      </div>
 
       {nope && (
         <NopeToast

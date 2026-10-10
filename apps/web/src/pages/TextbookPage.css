@@ -136,7 +136,7 @@
   text-align: center;
 }
 .textbook-cloze {
-  font-size: 1.6rem;
+  font-size: calc(var(--zh-body) * 1.15);
   min-height: 2.4rem;
 }
 .textbook-blank {

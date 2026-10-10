@@ -19,7 +19,7 @@
   text-transform: uppercase;
 }
 .audio-review-text {
-  font-size: 2rem;
+  font-size: var(--zh-hero);
   text-align: center;
   line-height: 1.4;
 }

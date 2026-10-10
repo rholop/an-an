@@ -1,5 +1,5 @@
 .an-text {
-  font-size: 1.5rem;
+  font-size: var(--zh-body);
   line-height: 3.2;
   word-break: break-word;
 }
@@ -254,7 +254,7 @@
     letter-spacing: 0.04em;
   }
   .an-text {
-    font-size: 1.4rem;
+    font-size: var(--zh-body);
     line-height: 2.8;
   }
   .an-text--inline {

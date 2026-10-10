@@ -22,7 +22,7 @@
 
 .placement-round { margin-top: 2rem; }
 .placement-progress { opacity: 0.6; font-size: 0.85rem; }
-.placement-word { font-size: 2.5rem; margin: 2rem 0; }
+.placement-word { font-size: var(--zh-hero); margin: 2rem 0; }
 .placement-buttons { display: flex; gap: 1rem; justify-content: center; }
 .placement-btn {
   font-size: 1rem;
