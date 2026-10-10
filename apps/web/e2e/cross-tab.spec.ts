@@ -23,7 +23,10 @@ const DUE_WORDS = ['tocfl-7c491838af', 'tocfl-29992340ae', 'tocfl-3361e60084']; 
 const LESSON_3 = '來學華語 1 · Lesson 3';
 
 async function setClassLesson(page: Page, n: string) {
-  await page.getByTestId('my-class-toggle').check();
+  // the textbook page may still be settling (a late load re-renders the toggle): check until it holds
+  await expect(async () => {
+    await page.getByTestId('my-class-toggle').check({ timeout: 2000 });
+  }).toPass({ timeout: 15_000 });
   await page.getByTestId('my-class-lesson').selectOption(n);
   await expect(page.getByTestId('class-status')).toBeVisible();
   await expect(page.getByRole('status').filter({ hasText: /Added \d+ words and grammar points/ })).toBeVisible();
