@@ -18,6 +18,8 @@
   "dependencies": {
     "@anan/core": "workspace:*",
     "dexie": "^4.4.6",
+    "opencc-js": "1.4.2",
+    "pdfjs-dist": "5.7.284",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zod": "^3.23.8"

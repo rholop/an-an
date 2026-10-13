@@ -1,0 +1,15 @@
+# Phase 39: general grammar points that no textbook lesson teaches but tutoring classes do.
+# Merged into the lexicon's grammar list by build-lexicon.ts (tag `supplement`). A tutoring
+# session's grammar point that matches one of these joins its Grammar step.
+- id: gram-ganggang-just
+  pattern: "S + 剛剛 / 剛 + V (O)"
+  level: L1
+  explanationEn: "剛剛 (or 剛) before a verb says the action happened just now, a very short time ago: 我剛剛到家. It goes after the subject and before the verb."
+  focus: ["剛剛", "剛"]
+  matcher: "剛剛?.{1,8}"
+- id: gram-de-shihou
+  pattern: "Clause + 的時候，……"
+  level: L1
+  explanationEn: "的時候 after a clause means \"when …\" or \"while …\": 吃飯的時候，我喜歡看電視. The 的時候 clause comes first and sets the time for the rest of the sentence."
+  focus: ["的時候"]
+  matcher: ".+的時候"

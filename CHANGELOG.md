@@ -3,6 +3,17 @@
 Notable changes that affect how An'an is run. Phase-by-phase features are in the
 `CLAUDE.md` phase table.
 
+## Phase 39 (2026-10-13)
+
+- New Tutoring section (Textbook page and More): upload the summary PDF a tutor sends, check what
+  was read, Save. The PDF stays in the browser; its page images go to the proxy once.
+- New proxy routes `POST /v1/tutor-extract` (page images, up to 24 MB, Gemini image input on the
+  story chain), `/v1/tutor-check` (checker chain) and `/v1/tutor-scenario`. No new env settings.
+  If nginx limits request bodies below 24 MB on `/an-an/api/`, large PDFs get a 413
+  (`client_max_body_size 40m;` from Phase 28 covers it).
+- Two grammar items added to the built lexicon (`gram-ganggang-just`, `gram-de-shihou`) from
+  `data/supplement/grammar-supplement.yaml`; the next full `build:lexicon` keeps them.
+
 ## Phase 38 (2026-10-13)
 
 - The app's data files (lexicon, scenarios, sentence banks, textbook) are published under

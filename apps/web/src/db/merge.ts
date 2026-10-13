@@ -234,6 +234,13 @@ export function mergeBackups(local: Backup, remote: Backup): Backup {
     ),
     // Phase 32: union by day; the earlier moment wins, so both devices end with the same rows
     activeDays: mergeActiveDays(local.activeDays, remote.activeDays),
+    // Phase 39: a class saved (or re-uploaded) on either device keeps the later copy
+    tutorSessions: mergeByKey(
+      local.tutorSessions,
+      remote.tutorSessions,
+      (s) => s.id,
+      (s) => t(s.updatedAt),
+    ),
   };
 }
 
@@ -259,6 +266,7 @@ export function sameContent(a: Backup, b: Backup): boolean {
       x.readerShown.map((r) => [r.sentenceId, t(r.at)]).sort(),
       x.stories.map((s) => [s.id, t(s.updatedAt)]).sort(),
       x.activeDays.map((d) => [d.day, t(d.at)]).sort(),
+      x.tutorSessions.map((s) => [s.id, t(s.updatedAt)]).sort(),
     ]);
   return norm(a) === norm(b);
 }

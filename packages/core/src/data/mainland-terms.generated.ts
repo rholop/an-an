@@ -4,6 +4,7 @@
 export interface MainlandTermEntry {
   mainland: string[];
   taiwan: string;
+  also?: string[];
   note?: string;
 }
 
@@ -23,4 +24,7 @@ export const MAINLAND_TERMS: MainlandTermEntry[] = [
   { mainland: ["打车"], taiwan: "叫計程車" },
   { mainland: ["视频通话", "視頻通話"], taiwan: "視訊通話" },
   { mainland: ["快递", "快遞"], taiwan: "宅配", note: "快遞 is understood in Taiwan for courier/express mail; 宅配 is the common home-delivery term. Flag rather than hard-replace." },
+  { mainland: ["普通话", "普通話"], taiwan: "國語", also: ["中文"], note: "普通話 is the mainland name for Mandarin; Taiwan says 國語 or 中文 (華語 in language classes)." },
+  { mainland: ["意大利面", "意大利麵"], taiwan: "義大利麵" },
+  { mainland: ["意大利"], taiwan: "義大利", note: "Italy is 義大利 in Taiwan." },
 ];

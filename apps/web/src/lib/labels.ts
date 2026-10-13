@@ -411,3 +411,39 @@ export const clozeStartLabel = (session: readonly { kind: 'card' | 'error' }[]):
 };
 /** Phase 37: a cloze retry later in the sitting. */
 export const AGAIN = 'Again';
+
+// Phase 39: tutoring classes.
+export const TUTORING = 'Tutoring';
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** "Tue 13 Oct" from the class's printed "YYYY-MM-DDTHH:MM" (its own day, never shifted by a time zone). */
+export const tutorClassDay = (date: string): string => {
+  const m = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return date || 'Unknown date';
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return `${WEEKDAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
+};
+/** "Carl · Tue 13 Oct" */
+export const tutorClassTitle = (tutor: string, date: string): string => `${tutor || 'Your tutor'} · ${tutorClassDay(date)}`;
+export const UPLOAD_CLASS_SUMMARY = 'Upload a class summary (PDF)';
+export const READING_NOTES = 'Reading your class notes…';
+export const STUDY_THIS_CLASS = 'Study this class';
+export const TUTOR_STATUS = {
+  new: 'New',
+  learned: 'Already learned',
+  mainland: 'Mainland term',
+  custom: 'Not in the word list',
+} as const;
+export const ALSO_MAINLAND = 'also said in mainland China';
+export const notesSaid = (what: string): string => `your notes said ${what}`;
+export const NOTE_ONLY = 'note only';
+export const SAVE = 'Save';
+export const DISCARD = 'Discard';
+export const TUTOR_UPDATES_EXISTING = 'You already saved this class. Saving again updates it (no duplicate cards).';
+/** The per-session limit (core `TUTOR_CONFIG.maxNewPerSession`). */
+export const tutorOverLimit = (n: number, limit: number): string =>
+  `${n} new words: ${limit} join your reviews now, the other ${n - limit} first thing in the next sessions.`;
+export const tutorAddedLine = (n: number): string =>
+  n === 0 ? 'Saved. Nothing new to add to your reviews.' : `Saved. ${n} word${n === 1 ? '' : 's'} added to your reviews, ahead of textbook words.`;
+export const TUTOR_NO_CLASSES = 'No classes yet. Upload the summary your tutor sends after a class.';
+export const NOT_PRACTISED = 'shown only, not practised';

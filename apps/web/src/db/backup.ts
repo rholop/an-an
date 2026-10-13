@@ -26,6 +26,7 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     readerShown,
     stories,
     activeDays,
+    tutorSessions,
   ] = await Promise.all([
     db.items.toArray(),
     db.evidence.toArray(),
@@ -44,6 +45,7 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     db.readerShown.toArray(),
     db.stories.toArray(),
     db.activeDays.toArray(),
+    db.tutorSessions.toArray(),
   ]);
   const stamps = (rows: { key: string; updatedAt?: Date }[]) =>
     Object.fromEntries(rows.flatMap((r) => (r.updatedAt ? [[r.key, r.updatedAt] as const] : [])));
@@ -68,6 +70,7 @@ export async function exportBackup(db: AnanDB, lexiconVersion?: string): Promise
     readerShown,
     stories,
     activeDays,
+    tutorSessions,
     settingsUpdatedAt: stamps(settings),
     metaUpdatedAt: stamps(meta),
   };
@@ -103,6 +106,7 @@ async function replaceAll(db: AnanDB, parsed: Backup): Promise<void> {
     db.readerShown,
     db.stories,
     db.activeDays,
+    db.tutorSessions,
   ];
   await db.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()));
@@ -133,6 +137,7 @@ async function replaceAll(db: AnanDB, parsed: Backup): Promise<void> {
     if (parsed.readerShown.length > 0) await db.readerShown.bulkPut(parsed.readerShown);
     if (parsed.stories.length > 0) await db.stories.bulkPut(parsed.stories);
     if (parsed.activeDays.length > 0) await db.activeDays.bulkPut(parsed.activeDays);
+    if (parsed.tutorSessions.length > 0) await db.tutorSessions.bulkPut(parsed.tutorSessions);
   });
   db.forgetMarkedDay();
 }

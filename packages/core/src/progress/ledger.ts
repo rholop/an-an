@@ -14,6 +14,8 @@ import { lessonProgress, lessonDone, type LessonProgress } from '../textbook/pro
 import type { ClassScope } from '../textbook/scope.js';
 import type { Evidence, ItemRef, Skill, Word } from '../types.js';
 import type { PriorityConfig } from '../curriculum/priority.config.js';
+import { tutorLessonItems, type TutorLesson } from '../tutor/session.js';
+import { TUTOR_CONFIG } from '../tutor/tutor.config.js';
 import { extrasCountForMastery, getStudyFocus, lessonIndex, type StudyFocus, type StudySettings } from '../study/study-focus.js';
 import { pickNewForSession } from '../study/queue.js';
 import { computeStreak, streakDays, type StreakConfig, type StreakDay, type StreakResult } from '../game/streak.js';
@@ -60,7 +62,7 @@ import {
 import { dayKey, weekRange, type WeekRange } from './time.js';
 import { vocabLadder, type VocabLadder, type VocabLadderOptions } from './vocabLadder.js';
 
-type EvidenceLike = Pick<Evidence, 'item' | 'skill' | 'kind' | 'at'>;
+type EvidenceLike = Pick<Evidence, 'item' | 'skill' | 'kind' | 'at'> & Partial<Pick<Evidence, 'context'>>;
 
 /** The queues that add new items (Phase 29 Part B.4). */
 export type NewQueue = keyof ProgressConfig['newPerQueue'];
@@ -80,6 +82,8 @@ export interface LedgerStudyInputs {
   classScope?: ClassScope;
   /** Priority config override (tests); default `PRIORITY_CONFIG`. */
   config?: PriorityConfig;
+  /** Phase 39: saved tutoring sessions (their ticked words go into study first). */
+  tutorLessons?: readonly TutorLesson[];
 }
 
 export interface LedgerInputs {
@@ -130,6 +134,14 @@ export interface ItemView {
   leech: boolean;
   /** Grammar: the progress dots (0–3), from the same tally as Mastered. */
   dots: number;
+}
+
+export interface TutorSessionView extends LearnedMastered {
+  items: ItemRef[];
+  /** Every ticked word is Learned. */
+  done: boolean;
+  /** Ticked words not Learned yet. */
+  toLearn: ItemRef[];
 }
 
 export interface SessionView {
@@ -455,7 +467,63 @@ export class Ledger {
           : n.newState === 'reduced'
             ? Math.floor(this.cfg.newFacesPerSession / 2)
             : 0;
-    return { state: n.newState, allowed: n.newAllowed, faces, ...(n.newMessage ? { message: n.newMessage } : {}) };
+    // Phase 39: tutoring words introduced this session already used the allowance (they never wait for it).
+    const allowed = Math.max(0, n.newAllowed - this.tutorIntroducedThisSession());
+    return { state: n.newState, allowed, faces, ...(n.newMessage ? { message: n.newMessage } : {}) };
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Phase 39: tutoring words (owner, 2026-10-13: added as soon as a class is uploaded)
+
+  /** Saved classes, oldest first. */
+  private tutorLessons(): TutorLesson[] {
+    return [...(this.study?.tutorLessons ?? [])].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  }
+
+  /** Tutoring words introduced in this session's count window (they count against its allowance). */
+  tutorIntroducedThisSession(): number {
+    return this.once('tutorIntroduced', () => {
+      const since = this.countWindowStart().getTime();
+      const ids = new Set<string>();
+      for (const e of this.evidence)
+        if (e.kind === 'textbook_lesson_covered' && e.context?.source === 'tutor' && e.at.getTime() >= since)
+          ids.add(itemKeyOf(e.item));
+      return ids.size;
+    });
+  }
+
+  /**
+   * The ticked tutoring words to introduce now (as New cards): not carded, Learned or removed yet,
+   * oldest class first, at most `TUTOR_CONFIG.maxNewPerSession` a session. The rest come first thing
+   * in the next session.
+   */
+  tutorToIntroduce(): Array<{ item: ItemRef; sessionId: string }> {
+    return this.once('tutorToIntroduce', () => {
+      const room = Math.max(0, TUTOR_CONFIG.maxNewPerSession - this.tutorIntroducedThisSession());
+      const out: Array<{ item: ItemRef; sessionId: string }> = [];
+      const seen = new Set<string>();
+      for (const l of this.tutorLessons())
+        for (const id of l.wordIds) {
+          const item: ItemRef = { kind: 'word', id };
+          if (out.length >= room || seen.has(id)) continue;
+          seen.add(id);
+          if (this.hasCard(item) || this.index.removed(item) || this.learned(item) || !this.resolvesItem(item)) continue;
+          out.push({ item, sessionId: l.id });
+        }
+      return out;
+    });
+  }
+
+  /** New (never answered) tutoring word cards, oldest class first: they join Review ahead of every
+   * other new word and outside the allowance. */
+  tutorNewCards(): SkillCard[] {
+    return this.once('tutorNewCards', () => {
+      const order = new Map<string, number>();
+      for (const l of this.tutorLessons()) for (const id of l.wordIds) if (!order.has(id)) order.set(id, order.size);
+      return this.newCards()
+        .filter((c) => c.skill === 'recognition' && c.item.kind === 'word' && order.has(c.item.id))
+        .sort((a, b) => order.get(a.item.id)! - order.get(b.item.id)!);
+    });
   }
 
   /** New cards (introduced, never answered, not removed) of the Review skills. */
@@ -552,6 +620,15 @@ export class Ledger {
     return { ...p, items, done, stillToMaster: unmastered.slice(0, need) };
   }
 
+  /** Phase 39: a tutoring session's numbers (its ticked words and matched grammar). Done once every
+   * word is Learned (Mastered still counts for Progress but never holds anything up). */
+  tutorSession(lesson: TutorLesson): TutorSessionView {
+    const items = tutorLessonItems(lesson).filter((i) => !this.index.removed(i));
+    const words = items.filter((i) => i.kind === 'word');
+    const toLearn = words.filter((i) => !this.index.learned(i));
+    return { ...this.index.summarize(items), items, done: words.length > 0 && toLearn.length === 0, toLearn };
+  }
+
   /** A TOCFL level's numbers (its official words, removed ones left out) and the level-up prompt. */
   level(level: Level): LevelView {
     return this.once(`level:${level}`, () => {
@@ -592,6 +669,7 @@ export class Ledger {
           settings: s.settings,
           ...(s.config ? { config: s.config } : {}),
           ...(s.myClass ? { myClass: s.myClass } : {}),
+          ...(s.tutorLessons ? { tutorLessons: s.tutorLessons } : {}),
         },
         this.now,
       );

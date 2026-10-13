@@ -75,6 +75,9 @@ const ReviewSettingsPage = lazy(() =>
 const PinyinPage = lazy(() =>
   import('./pages/PinyinPage.js').then((m) => ({ default: m.PinyinPage })),
 );
+const TutoringPage = lazy(() =>
+  import('./pages/TutoringPage.js').then((m) => ({ default: m.TutoringPage })),
+);
 const ZhuyinTestPage = lazy(() =>
   import('./pages/ZhuyinTestPage.js').then((m) => ({ default: m.ZhuyinTestPage })),
 );
@@ -95,7 +98,8 @@ export type Route =
   | 'reported'
   | 'audio-review'
   | 'zhuyin-test'
-  | 'review-settings';
+  | 'review-settings'
+  | 'tutoring';
 
 /** Phase 7 §2: the header level picker (visible on every screen). Phase 30: on a laptop it shares
  * one 48 px row with the nav (`.app-topbar`); the level-up prompt sits below that row. */
@@ -327,6 +331,7 @@ export function App() {
           {route === 'audio-review' && <AudioReviewPage />}
           {route === 'zhuyin-test' && <ZhuyinTestPage />}
           {route === 'review-settings' && <ReviewSettingsPage />}
+          {route === 'tutoring' && <TutoringPage />}
         </Suspense>
       </main>
       <ToastHost />

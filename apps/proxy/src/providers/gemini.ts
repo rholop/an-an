@@ -188,11 +188,16 @@ export class GeminiAdapter implements ProviderAdapter, SentenceGenAdapter, JsonT
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         responseSchema: req.jsonSchema as any,
       },
-    }, { timeout: this.timeoutMs });
+    }, { timeout: req.timeoutMs ?? this.timeoutMs });
 
     let result;
     try {
-      result = await model.generateContent(req.userMessage);
+      // Phase 39: page images (a tutoring PDF) go before the text, in one request.
+      result = await model.generateContent(
+        req.images && req.images.length > 0
+          ? [...req.images.map((im) => ({ inlineData: { mimeType: im.mimeType, data: im.data } })), { text: req.userMessage }]
+          : req.userMessage,
+      );
     } catch (err) {
       throw toProviderError(err);
     }

@@ -352,8 +352,15 @@ export class ChatService {
     const focus = await this.studyFocus?.().catch(() => undefined);
     const studyIds = studyTargetWordIds(focus, want);
     const studyWords = studyIds.flatMap((id) => this.lexicon.byId(id) ?? []);
-    const targets =
-      studyWords.length >= want
+    // Phase 39: a tutoring class's chat targets that class's words (not Learned yet first).
+    const classWords = scenario.tutor
+      ? [...scenarioExtraIds]
+          .sort((a, b) => Number(ledger.learned({ kind: 'word', id: a })) - Number(ledger.learned({ kind: 'word', id: b })))
+          .flatMap((id) => this.lexicon.byId(id) ?? [])
+      : [];
+    const targets = classWords.length > 0
+      ? classWords.slice(0, want)
+      : studyWords.length >= want
         ? studyWords.slice(0, want)
         : [
             ...studyWords,
@@ -380,6 +387,8 @@ export class ChatService {
       },
       scaffolding: options.scaffolding,
       englishFallback: options.englishFallback,
+      // Phase 39: a tutoring class's scenario lives with the class, not in the proxy's scenario files.
+      ...(scenario.tutor ? { scenario } : {}),
     };
 
     const analyzeCtx = await this.buildAnalyzeContext(

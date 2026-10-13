@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-13T07:00",
+  "tutor": "Carl",
+  "topics": [
+    { "zh": "食物与一日三餐", "en": "Food and Three Meals a Day" },
+    { "zh": "健康与就医", "en": "Health and Medical Treatment" },
+    { "zh": "地点与服务", "en": "Locations and Services" }
+  ],
+  "vocab": [
+    { "zh": "饼干", "pinyin": "bǐnggān", "en": "cookie; biscuit", "example": { "zh": "我喜欢吃饼干。", "en": "I like eating cookies." } },
+    { "zh": "炒面", "pinyin": "chǎomiàn", "en": "fried noodles", "example": { "zh": "我中午吃炒面。", "en": "I eat fried noodles for lunch." } },
+    { "zh": "点心", "pinyin": "diǎnxin", "en": "snack; pastry", "example": { "zh": "下午我们一起吃点心。", "en": "We eat snacks together in the afternoon." } },
+    { "zh": "宵夜", "pinyin": "xiāoyè", "en": "late-night snack", "example": { "zh": "我晚上十点吃宵夜。", "en": "I eat a late-night snack at ten o'clock at night." } },
+    { "zh": "普通话", "pinyin": "pǔtōnghuà", "en": "Mandarin Chinese", "example": { "zh": "我会说普通话。", "en": "I can speak Mandarin Chinese." } },
+    { "zh": "时间", "pinyin": "shíjiān", "en": "time", "example": { "zh": "现在是什么时间？", "en": "What time is it now?" } },
+    { "zh": "可以", "pinyin": "kěyǐ", "en": "can; may; be possible", "example": { "zh": "我可以进来吗？", "en": "May I come in?" } },
+    { "zh": "能", "pinyin": "néng", "en": "be able to; can; may", "example": { "zh": "我能说一点中文。", "en": "I can speak a little Chinese." } },
+    { "zh": "药物", "pinyin": "yàowù", "en": "medicine; medication", "example": { "zh": "请按时吃药物。", "en": "Please take the medicine on time." } },
+    { "zh": "药局", "pinyin": "yào jú", "en": "pharmacy", "example": { "zh": "我去药局买药。", "en": "I am going to the pharmacy to buy medicine." } },
+    { "zh": "邮局", "pinyin": "yóu jú", "en": "post office", "example": { "zh": "我去邮局寄信。", "en": "I am going to the post office to mail a letter." } },
+    { "zh": "警察局", "pinyin": "jǐng chá jú", "en": "police station", "example": { "zh": "警察局在学校附近。", "en": "The police station is near the school." } },
+    { "zh": "早餐", "pinyin": "zǎocān", "en": "breakfast", "example": { "zh": "我每天吃早餐。", "en": "I eat breakfast every day." } },
+    { "zh": "晚餐", "pinyin": "wǎncān", "en": "dinner", "example": { "zh": "我们一起吃晚餐。", "en": "We eat dinner together." } },
+    { "zh": "煮", "pinyin": "zhǔ", "en": "boil; cook in water", "example": { "zh": "妈妈在煮面条。", "en": "Mom is cooking noodles." } },
+    { "zh": "冰淇淋", "pinyin": "bīng qí lín", "en": "ice cream", "example": { "zh": "我喜欢吃冰淇淋。", "en": "I like eating ice cream." } },
+    { "zh": "意大利面", "pinyin": "yì dà lì miàn", "en": "pasta", "example": { "zh": "我晚上吃意大利面。", "en": "I eat pasta in the evening." } },
+    { "zh": "刚刚", "pinyin": "gāng gāng", "en": "just now", "example": { "zh": "我刚刚到家。", "en": "I just got home." } },
+    { "zh": "吃", "pinyin": "chī", "en": "eat; make a living by relying on something", "example": { "zh": "我喜欢吃苹果。", "en": "I like eating apples." } },
+    { "zh": "跟", "pinyin": "gēn", "en": "with; and; follow", "example": { "zh": "我跟朋友一起学习。", "en": "I study with my friend." } }
+  ],
+  "grammar": [
+    { "name": "刚刚在动词", "explanationEn": "刚刚在动词 is used to indicate that an action has just happened, typically describing something that occurred a very short time ago.", "example": { "zh": "我刚刚在吃饭。", "en": "I was just eating." } },
+    { "name": "还没还没有动词", "explanationEn": "“还没” or “还没有” is used to indicate that an action or state has not yet occurred or been completed. It is often used to describe the current situation and implies that it might happen or be completed in the future.", "example": { "zh": "我还没吃饭。", "en": "I haven't eaten yet." } },
+    { "name": "主语时间地点动作", "explanationEn": "In Chinese, the basic sentence structure is: Subject + Time + Place + Action. This word order helps clearly express who did what, when, and where.", "example": { "zh": "我昨天在学校学习。", "en": "I studied at school yesterday." } },
+    { "name": "的时候", "explanationEn": "“的时候” is used to indicate a specific point or period of time when something happens. It connects the main clause and the time adverbial clause, showing an action or state occurring at a certain time.", "example": { "zh": "吃饭的时候，我喜欢看电视。", "en": "When eating, I like to watch TV." } },
+    { "name": "跟人一起或动词", "explanationEn": "‘跟人一起或动词’ indicates doing something together with someone, emphasizing collaboration or joint participation. ‘跟’ means ‘with,’ and ‘一起’ means ‘together,’ followed by a verb.", "example": { "zh": "我跟朋友一起吃饭。", "en": "I eat with my friend." } },
+    { "name": "可以 vs 能不能", "explanationEn": "“可以” means permission or possibility, often used to express allowance or ability. “能不能” is an interrogative form, used to ask whether someone has the ability or is allowed to do something.", "example": { "zh": "我可以去厕所吗？", "en": "Can I go to the restroom?" } },
+    { "name": "省略成分", "explanationEn": "In sentences, omitted components refer to omitting unnecessary words or parts for simplicity or to avoid repetition. For example, when the context is clear, the subject, object, or other parts can be omitted.", "example": { "zh": "吃饭了吗？", "en": "Have you eaten?" } },
+    { "name": "什么在疑问句中的用法", "explanationEn": "“什么” is an interrogative pronoun used to ask about things, content, or information. It is typically used in interrogative sentences to mean 'what thing' or 'what matter'.", "example": { "zh": "你在看什么？", "en": "What are you looking at?" } }
+  ]
+}

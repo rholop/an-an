@@ -12,6 +12,7 @@ import {
   loadPromptTemplate,
   loadSentenceGenPromptTemplate,
   loadStoryPromptTemplates,
+  loadTutorPromptTemplates,
 } from './prompt.js';
 import { RateLimiter } from './rate-limit.js';
 import type { ScenarioStore } from './scenarios.js';
@@ -132,6 +133,8 @@ function buildApp(
     journalOrchestrator?: JsonOrchestrator;
     glossOrchestrator?: JsonOrchestrator;
     storyOrchestrator?: JsonOrchestrator;
+    /** Phase 39: the tutoring routes (absent = not configured). */
+    tutorOrchestrator?: JsonOrchestrator;
     sync?: SyncStore;
     /** Send `x-site-code: tofu` automatically (default). Pass false to test 401s. */
     autoCode?: boolean;
@@ -162,6 +165,9 @@ function buildApp(
       prompts: loadStoryPromptTemplates('v1'),
       ...(overrides.storyOrchestrator ? { orchestrator: overrides.storyOrchestrator } : {}),
     },
+    ...(overrides.tutorOrchestrator
+      ? { tutor: { prompts: loadTutorPromptTemplates('v1'), orchestrator: overrides.tutorOrchestrator } }
+      : {}),
     siteCode: 'tofu',
     sync: overrides.sync ?? new MemorySyncStore(),
     audio: new MemoryAudioStore(),
@@ -270,6 +276,19 @@ describe('POST /v1/turn', () => {
       body: JSON.stringify({ ...validTurnRequest, scenarioId: 'does-not-exist' }),
     });
     expect(res.status).toBe(404);
+  });
+
+  it('Phase 39: a tutoring class sends its own scenario (only a tutor one is accepted inline)', async () => {
+    const app = buildApp();
+    const send = (sc: Scenario) =>
+      app.request('/v1/turn', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-install-id': 'client-1' },
+        body: JSON.stringify({ ...validTurnRequest, scenarioId: sc.id, scenario: sc }),
+      });
+    const tutorScenario = { ...scenario, id: 'tutor-2026-10-13-abc-chat', tutor: { sessionId: 'tutor-2026-10-13-abc' } };
+    expect((await send(tutorScenario)).status).toBe(200);
+    expect((await send({ ...scenario, id: 'made-up' })).status).toBe(404);
   });
 
   it('enforces the per-minute rate limit', async () => {
@@ -1413,5 +1432,101 @@ describe('Phase 36: chats that listen', () => {
     const app = buildApp({ quota, chains: { journal: ['gemini-a', 'gemini-b'] } });
     const body = (await (await app.request('/v1/ai-usage')).json()) as { chains: Record<string, string[]> };
     expect(body.chains).toEqual({ journal: ['gemini-a', 'gemini-b'] });
+  });
+});
+
+describe('Phase 39 tutoring routes', () => {
+  const post = (app: ReturnType<typeof buildApp>, route: string, body: unknown) =>
+    app.request(route, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-install-id': 'c1' },
+      body: JSON.stringify(body),
+    });
+  const extraction = {
+    date: '2026-10-13T07:00',
+    tutor: 'Carl',
+    topics: [{ zh: '食物与一日三餐', en: 'Food and Three Meals a Day' }],
+    vocab: [{ zh: '饼干', pinyin: 'bǐnggān', en: 'biscuit', example: { zh: '我喜欢吃饼干。', en: 'I like biscuits.' } }],
+    grammar: [{ name: '刚刚 + 动词', explanationEn: 'just now', example: { zh: '我刚刚吃了。', en: 'I just ate.' } }],
+  };
+  const pages = [
+    { mimeType: 'image/jpeg', data: 'AAAA' },
+    { mimeType: 'image/jpeg', data: 'BBBB' },
+  ];
+  const spyAdapter = (name: string, respond: () => unknown, seen: Array<{ name: string; req: { systemPrompt: string; userMessage: string; images?: unknown } }>) => {
+    const inner = new FakeJsonAdapter(name, { kind: 'success', respond });
+    return {
+      model: name,
+      calls: () => inner.calls,
+      generateJson: <T>(r: Parameters<typeof inner.generateJson<T>>[0]) => {
+        seen.push({ name, req: r as never });
+        return inner.generateJson(r);
+      },
+    };
+  };
+
+  it('is 501 when tutoring is not configured', async () => {
+    const app = buildApp();
+    expect((await post(app, '/v1/tutor-extract', { pages })).status).toBe(501);
+    expect((await post(app, '/v1/tutor-check', { sentences: [] })).status).toBe(501);
+  });
+
+  it('extract: every page image in one call, text as printed; the same pages again come from the cache', async () => {
+    const seen: Array<{ name: string; req: { systemPrompt: string; userMessage: string; images?: unknown } }> = [];
+    const writer = spyAdapter('gemini', () => extraction, seen);
+    const app = buildApp({
+      tutorOrchestrator: createJsonOrchestrator(writer, undefined, new PromptCache<JsonTaskResult<unknown>>()),
+    });
+    const res = await post(app, '/v1/tutor-extract', { pages });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ tutor: 'Carl', vocab: [{ zh: '饼干' }] });
+    expect(seen).toHaveLength(1);
+    expect(seen[0]!.req.images).toEqual(pages);
+    expect(seen[0]!.req.systemPrompt).toMatch(/exactly as printed/i);
+    await post(app, '/v1/tutor-extract', { pages });
+    expect(seen).toHaveLength(1);
+    // other pages are another PDF
+    await post(app, '/v1/tutor-extract', { pages: pages.slice(0, 1) });
+    expect(seen).toHaveLength(2);
+    expect((await post(app, '/v1/tutor-extract', { pages: [] })).status).toBe(400);
+  });
+
+  it('check runs on the checker model; scenario gets the learner level', async () => {
+    const seen: Array<{ name: string; req: { systemPrompt: string; userMessage: string } }> = [];
+    const scenario = {
+      title: 'Ordering a late-night snack',
+      setting: 'A night market',
+      npcName: 'Carl',
+      personality: 'friendly',
+      speechStyle: 'short sentences',
+      goalSteps: [{ description: 'Order something', keywordHints: ['宵夜'] }],
+      opener: { zh: '你想吃什麼宵夜？', en: 'What late-night snack do you want?' },
+      successLine: { zh: '好吃嗎？', en: 'Is it good?' },
+    };
+    const respond = () => scenario;
+    const app = buildApp({
+      tutorOrchestrator: createJsonOrchestrator(
+        spyAdapter('gemini', respond, seen),
+        undefined,
+        new PromptCache<JsonTaskResult<unknown>>(),
+        undefined,
+        { checker: spyAdapter('gemini-check', () => ({ results: [{ id: 's1', ok: true }] }), seen) },
+      ),
+    });
+    const check = await post(app, '/v1/tutor-check', { sentences: [{ id: 's1', zh: '我喜歡吃餅乾。', en: 'I like biscuits.' }] });
+    expect(check.status).toBe(200);
+    expect(check.headers.get('x-served-by')).toBe('gemini-check');
+    expect(await check.json()).toEqual({ results: [{ id: 's1', ok: true }] });
+    const res = await post(app, '/v1/tutor-scenario', {
+      tutor: 'Carl',
+      topics: [{ zh: '食物', en: 'Food' }],
+      words: ['宵夜'],
+      grammar: ['剛剛'],
+      learnerLevel: 'N2',
+    });
+    expect(res.status).toBe(200);
+    const write = seen.find((x) => x.name === 'gemini')!;
+    expect(write.req.systemPrompt).toContain('N2');
+    expect(write.req.userMessage).toContain('宵夜');
   });
 });

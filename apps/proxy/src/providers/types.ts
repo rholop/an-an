@@ -120,6 +120,10 @@ export interface JsonTaskRequest<T> {
   jsonSchema: object;
   /** Zod-parses the raw JSON; a throw becomes ProviderRetryableError('invalid_json'). */
   parse: (raw: unknown) => T;
+  /** Phase 39: images sent before the user message (a tutoring PDF's pages). */
+  images?: ReadonlyArray<{ mimeType: string; data: string }>;
+  /** Phase 39: a longer timeout for big requests (page images). */
+  timeoutMs?: number;
 }
 
 export interface JsonTaskResult<T> {

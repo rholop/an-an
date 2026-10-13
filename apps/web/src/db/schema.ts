@@ -27,6 +27,7 @@ import type {
   SkillCard,
   StoryRecord,
   TurnToken,
+  TutorSessionRecord,
   UsedWell,
   Word,
 } from '@anan/core';
@@ -322,6 +323,9 @@ export type ActiveDayRow = ActiveDay;
 export const STREAK_BACKFILL_KEY = 'streakBackfilledAt';
 
 export type CustomWordRow = Word & { updatedAt?: Date };
+
+/** Phase 39: one tutoring class (core `TutorSessionRecord`; synced; never the PDF or its images). */
+export type TutorSessionRow = TutorSessionRecord;
 export type ErrorItemRow = ErrorItem & { updatedAt?: Date };
 
 /** Tables whose rows change in place (so need `updatedAt` for last-writer-wins). */
@@ -335,6 +339,7 @@ const STAMPED_TABLES = [
   'conversations',
   'readerShown',
   'stories',
+  'tutorSessions',
 ] as const;
 /** The stamped tables AS OF schema v5. The v5 upgrade must only touch tables
  * that exist at v5, so it uses this frozen list — never the live
@@ -369,6 +374,7 @@ const ALL_TABLES = [
   'readerShown',
   'stories',
   'activeDays',
+  'tutorSessions',
 ] as const;
 
 const newUid = (): string => globalThis.crypto.randomUUID();
@@ -443,6 +449,8 @@ export class AnanDB extends Dexie {
   stories!: EntityTable<StoryRow, 'id'>;
   /** Phase 32: active days (the streak). */
   activeDays!: EntityTable<ActiveDayRow, 'day'>;
+  /** Phase 39: tutoring sessions. */
+  tutorSessions!: EntityTable<TutorSessionRow, 'id'>;
 
   constructor(name = 'anan') {
     super(name);
@@ -620,6 +628,9 @@ export class AnanDB extends Dexie {
           table: (name) => tx.table(name),
         });
       });
+
+    // v13 (Phase 39): tutoring sessions (one row per class, synced). Purely additive.
+    this.version(13).stores({ tutorSessions: 'id, date' });
 
     this.installHooks();
   }

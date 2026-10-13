@@ -75,6 +75,11 @@ export class Lexicon {
     return this.grammarById.get(id);
   }
 
+  /** Every grammar item, in file order. */
+  allGrammar(): GrammarItem[] {
+    return [...this.grammarById.values()];
+  }
+
   get maxHeadwordLength(): number {
     return this.maxWordLen;
   }

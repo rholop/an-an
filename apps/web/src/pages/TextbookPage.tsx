@@ -75,6 +75,9 @@ import { StoryView } from './StoryView.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { canWriteStories, useStoryDifficulty, useStoryService } from '../lib/stories.js';
 import { storyErrorText } from '../lib/story-errors.js';
+import { TutoringList } from './TutoringPage.js';
+import { openTutorClass } from '../lib/tutoring/app-service.js';
+import { useTutorSessions } from '../lib/tutoring/useTutorSessions.js';
 import './TextbookPage.css';
 
 type View =
@@ -279,8 +282,16 @@ export function TextbookPage() {
           </section>
         );
       })}
+      <TutoringSection lexicon={lexicon} />
     </div>
   );
+}
+
+/** Phase 39: the Tutoring section: each class (date, tutor, topics, progress) and the upload. */
+function TutoringSection({ lexicon }: { lexicon: Lexicon }) {
+  const rows = useTutorSessions();
+  if (!rows) return null;
+  return <TutoringList rows={rows} lexicon={lexicon} embedded onOpen={(id) => openTutorClass(id)} onDraft={() => openTutorClass()} />;
 }
 
 /** Phase 21 Part C: the same "Learned · Mastered" numbers as Home, over the same lesson items. */
@@ -694,7 +705,7 @@ function StudySession({
 }
 
 /** Phase 24: the optional story step: a story using this lesson's words (a ready one when there is one). */
-function StoryStep({ lexicon, onDone }: { lexicon: Lexicon; onDone: () => void }) {
+export function StoryStep({ lexicon, onDone }: { lexicon: Lexicon; onDone: () => void }) {
   const { level } = useCurrentLevel();
   const service = useStoryService(lexicon);
   const [difficulty] = useStoryDifficulty();

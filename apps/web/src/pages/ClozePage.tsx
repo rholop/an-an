@@ -89,6 +89,7 @@ import { allChatLines, allJournalSentences } from '../db/queries.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
 import { useSentenceBank } from '../lib/useSentenceBank.js';
+import { tutorBankSentences, useTutorSessions } from '../lib/tutoring/useTutorSessions.js';
 import { getStudyBooks, useClassScope, useStudyFocus } from '../lib/study.js';
 import { sentenceBookId, sentenceOrdinal, useTextbookSentences } from '../lib/textbook-data.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
@@ -263,6 +264,8 @@ export function ClozePage() {
   const scope = useClassScope();
   const { focus: studyFocus } = useStudyFocus();
   const textbookSentences = useTextbookSentences(true);
+  // Phase 39: sentences from tutoring classes lead the pool for their words.
+  const tutorSessions = useTutorSessions();
   const [inputMode, setInputMode] = useAnswerInputMode();
   const { script } = useReadingSettings();
 
@@ -353,12 +356,17 @@ export function ClozePage() {
               studyRank(studyFocus, (i) => lessonIdx.get(`${i.kind}:${i.id}`), c.item),
           }
         : {}),
-      bankSentences: [...lessonSentences.lead, ...sentenceBankState.sentences, ...lessonSentences.rest],
+      bankSentences: [
+        ...tutorBankSentences(tutorSessions, lexiconState.lexicon).filter((x) => isUsableSentence(x.zh, excluded!)),
+        ...lessonSentences.lead,
+        ...sentenceBankState.sentences,
+        ...lessonSentences.rest,
+      ],
       errorItems: errorItems!,
       now,
     });
     return { built, seed };
-  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, newAllowed, learnerLevel]);
+  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, newAllowed, learnerLevel, tutorSessions]);
 
   function startSession() {
     if (!planned || lexiconState.status !== 'ready') return;

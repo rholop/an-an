@@ -10,6 +10,8 @@ export interface SimplifiedCharHit {
 export interface MainlandTermHit {
   matched: string; // the exact substring found
   taiwan: string;
+  /** Phase 39: other Taiwan words for it (普通話 → 國語, also 中文). */
+  also?: string[];
   note?: string;
   index: number;
 }
@@ -50,7 +52,13 @@ export function checkTaiwanness(text: string): TaiwannessResult {
       const charIdx = [...text.slice(0, idx)].length;
       const alreadyCovered = covered.slice(charIdx, charIdx + spellingChars.length).some(Boolean);
       if (!alreadyCovered) {
-        mainlandTerms.push({ matched: spelling, taiwan: entry.taiwan, note: entry.note, index: charIdx });
+        mainlandTerms.push({
+          matched: spelling,
+          taiwan: entry.taiwan,
+          ...(entry.also ? { also: entry.also } : {}),
+          note: entry.note,
+          index: charIdx,
+        });
         for (let i = charIdx; i < charIdx + spellingChars.length; i++) covered[i] = true;
       }
       fromIndex = idx + spelling.length;

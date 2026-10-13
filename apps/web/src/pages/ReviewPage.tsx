@@ -42,6 +42,7 @@ import { ListenPage, ListenRunner } from './ListenPage.js';
 import { learnerService } from '../db/instance.js';
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
 import { ensureFaceCards } from '../lib/face-cards.js';
+import { ensureTutorCards } from '../lib/tutoring/introduce.js';
 import { DueIcon, EmptySprout } from '../components/PlantIcons.js';
 import { reloadLexicon, useLexicon } from '../lib/useLexicon.js';
 import { InfoTip } from '../components/InfoTip.js';
@@ -152,6 +153,8 @@ export function ReviewPage({
       // Phase 23: the cards of this review session (morning / evening), or the next one's when
       // "Review early" was asked for between sessions.
       await ensureFaceCards(now).catch(() => 0);
+      // Phase 39: tutoring words over one session's limit join first thing in the next one.
+      await ensureTutorCards(now).catch(() => 0);
       const ledger = await getLedgerNow(now);
       const { status } = ledger;
       const inSession = ledger.session(early ? { early: true } : {});
@@ -162,6 +165,7 @@ export function ReviewPage({
         holdFaceWords: upcoming.map((c) => `${c.item.kind}:${c.item.id}`),
         due: inSession.cards,
         newCards: reviewAll ? [] : ledger.newCards(),
+        tutorCards: reviewAll ? [] : ledger.tutorNewCards(),
         doneThisSession: status.doneThisSession,
         allowance: reviewAll ? { ...allowance, allowed: 0, faces: 0 } : allowance,
         cap: status.cap,

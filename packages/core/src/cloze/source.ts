@@ -159,7 +159,7 @@ export function selectClozeSource(
     if (!excluded(s.zh) && passesCoverage(s.zh, word, opts)) {
       // Phase 21: a lesson's own sentence says which lesson ("來學華語 1 · Lesson 3 sentence").
       const home = homeLessonOfTags(s.tags ?? []);
-      const sourceLabel = home ? `${lessonBadge(home.n, home.bookId)} sentence` : 'example sentence';
+      const sourceLabel = s.sourceLabel ?? (home ? `${lessonBadge(home.n, home.bookId)} sentence` : 'example sentence');
       return { zh: s.zh, en: s.en, sourceKind: 'bank', sourceLabel };
     }
   }

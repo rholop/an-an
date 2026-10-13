@@ -33,7 +33,7 @@ export function planReviewSession<T extends { item: ItemRef }>(
 /** Words a chat turn / journal prompt should target: unmastered active-lesson items, then review lessons'. */
 export function studyTargetWordIds(focus: StudyFocus | undefined, n: number): string[] {
   if (!focus || !focus.enabled) return [];
-  const ids = [...focus.focusItems, ...focus.reviewItems].filter((i) => i.kind === 'word').map((i) => i.id);
+  const ids = [...(focus.tutorItems ?? []), ...focus.focusItems, ...focus.reviewItems].filter((i) => i.kind === 'word').map((i) => i.id);
   return [...new Set(ids)].slice(0, n);
 }
 
@@ -84,9 +84,12 @@ export function pickNewForSession<T extends SkillCard>(input: {
   const focus = input.focus?.enabled ? input.focus : undefined;
   const idx = input.lessonIdx;
   const rank = (i: ItemRef) => (focus && idx ? studyRank(focus, (x) => idx.get(key(x)), i) : 0);
+  // Phase 39: tutoring words come first (owner, 2026-10-13): their New cards lead. Their items with no
+  // card wait for the ledger's `tutorToIntroduce` (20 a session), so they are never taken here.
+  const tutor = new Set((focus?.tutorItems ?? []).map(key));
   const cards = input.newCards
     .filter((c) => isNewCard(c) && keep(c.item))
-    .map((c, i) => ({ c, i, r: rank(c.item) + (c.skill === 'production' ? 0.5 : 0) }))
+    .map((c, i) => ({ c, i, r: (tutor.has(key(c.item)) ? -1e9 : rank(c.item)) + (c.skill === 'production' ? 0.5 : 0) }))
     .sort((a, b) => a.r - b.r || a.i - b.i)
     .map((x) => x.c)
     .slice(0, n);
@@ -96,7 +99,7 @@ export function pickNewForSession<T extends SkillCard>(input: {
   for (const i of [...(focus?.newItemsAllowed ?? []), ...(input.extraItems ?? [])]) {
     if (cards.length + items.length >= n) break;
     const k = key(i);
-    if (carded.has(k) || seen.has(k) || !keep(i)) continue;
+    if (tutor.has(k) || carded.has(k) || seen.has(k) || !keep(i)) continue;
     seen.add(k);
     items.push(i);
   }

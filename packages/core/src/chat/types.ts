@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LevelSchema } from './level-schema.js';
+import { ScenarioSchema } from './scenario.js';
 import type { DefineRequest, DefineResponse } from '../gloss/schema.js';
 import type { SentenceGenRequest, SentenceGenResponse } from '../cloze/sentence.js';
 import type { OpenTurnRequest, TopicWordsRequest, TopicWordsResponse } from './openChat.js';
@@ -78,6 +79,9 @@ export const TurnRequestSchema = z.object({
   facts: z.array(z.string().max(300)).max(24).optional(),
   /** Phase 36: "What did you mean?" on the learner's last message, in their own words. */
   learnerMeaningEn: z.string().max(300).optional(),
+  /** Phase 39: a tutoring class's own scenario (stored with the session, not in the server's
+   * scenario file), sent inline. Only a scenario marked `tutor` is ever used this way. */
+  scenario: ScenarioSchema.optional(),
 });
 export type TurnRequest = z.infer<typeof TurnRequestSchema>;
 

@@ -61,8 +61,14 @@ const SUGGESTED_REPLY_CAP: Record<Scaffolding, number> = { high: 2, medium: 1, l
  * run a specific scenario inside its own flow and carry on when it ends. */
 export function ChatPage({
   initialScenarioId,
+  initialScenario,
   onExit,
-}: { initialScenarioId?: string; onExit?: () => void } = {}) {
+}: {
+  initialScenarioId?: string;
+  /** Phase 39: a scenario stored with a tutoring class (not in the scenario files). */
+  initialScenario?: Scenario;
+  onExit?: () => void;
+} = {}) {
   const lexiconState = useLexicon();
   const scenariosState = useScenarios();
   // Phase 25: background stories wait while a chat is open (the free quota goes to the chat)
@@ -214,18 +220,18 @@ export function ChatPage({
 
   const autoStarted = useRef(false);
   useEffect(() => {
-    if (
-      !initialScenarioId ||
-      autoStarted.current ||
-      !chatService ||
-      scenariosState.status !== 'ready'
-    )
+    if (autoStarted.current || !chatService) return;
+    if (initialScenario) {
+      autoStarted.current = true;
+      void startScenario(initialScenario);
       return;
+    }
+    if (!initialScenarioId || scenariosState.status !== 'ready') return;
     const s = scenariosState.scenarios.find((x) => x.id === initialScenarioId);
     if (!s) return;
     autoStarted.current = true;
     void startScenario(s);
-  }, [initialScenarioId, chatService, scenariosState]);
+  }, [initialScenarioId, initialScenario, chatService, scenariosState]);
 
   function makeOnLookup(turnId: number | undefined) {
     return async (at: AnnotatedToken, kind: 'gloss' | 'reading') => {

@@ -32,6 +32,9 @@ export default defineConfig(({ command }) => ({
         ],
       },
       workbox: {
+        // Phase 39: the PDF reader and the simplified→traditional tables (~1 MB) load only on the
+        // Tutoring screen; they are not precached for every visit (an upload needs the network anyway).
+        globIgnores: ['**/assets/pdf*', '**/assets/cn2t*'],
         // Built data files (lexicon, scenarios, per-level sentence banks —
         // all served as static JSON from public/) are too big/dynamic for
         // the precache manifest, but pages fetch() them directly, so a

@@ -23,7 +23,9 @@ export const SentenceBankEntrySchema = z.object({
    * "generated-live" = produced on demand for the reader (phase 9) and kept in
    * the learner's own profile. Kept as an enum rather than a free string so a
    * new source is a deliberate, reviewed addition here, not a silent typo. */
-  source: z.enum(['generated', 'generated-live', 'textbook']),
+  source: z.enum(['generated', 'generated-live', 'textbook', 'tutor']),
+  /** Phase 39: where the sentence came from, shown in Cloze ("from your class with Carl"). */
+  sourceLabel: z.string().optional(),
   /** Phase 4 §1's "second-pass check... flag doubtful ones" — still shipped
    * (unlike an analyzeText failure, which is dropped outright), just
    * surfaced for human review rather than silently trusted. */

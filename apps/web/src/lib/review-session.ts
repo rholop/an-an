@@ -117,6 +117,9 @@ export function pickReviewCards(input: {
   allowance: Pick<NewAllowance, 'state' | 'allowed' | 'faces' | 'message'>;
   /** Phase 23: words due in the next session too (between sessions): their new faces wait as well. */
   holdFaceWords?: Iterable<string>;
+  /** Phase 39: New tutoring word cards (`ledger.tutorNewCards()`): they lead the new cards, outside
+   * the allowance (owner, 2026-10-13). */
+  tutorCards?: readonly SkillCard[];
 }): {
   due: SkillCard[];
   /** New cards that join this session. */
@@ -142,7 +145,13 @@ export function pickReviewCards(input: {
   // Phase 23: a word's new Pick / Say it card waits while the word itself is due this session, so
   // it never pushes the due card out (a word's cards are kept apart, Phase 19).
   const dueWords = new Set([...due.map((c) => `${c.item.kind}:${c.item.id}`), ...(input.holdFaceWords ?? [])]);
-  const newCards = (input.newCards ?? []).filter((c) => c.skill === 'recognition' || !dueWords.has(`${c.item.kind}:${c.item.id}`));
+  const tutor = input.tutorCards ?? [];
+  const tutorKeys = new Set(tutor.map((c) => `${c.item.kind}:${c.item.id}|${c.skill}`));
+  const newCards = (input.newCards ?? []).filter(
+    (c) =>
+      !tutorKeys.has(`${c.item.kind}:${c.item.id}|${c.skill}`) &&
+      (c.skill === 'recognition' || !dueWords.has(`${c.item.kind}:${c.item.id}`)),
+  );
   const picked = pickNewForSession({
     newCards,
     ...(focus ? { focus } : {}),
@@ -153,7 +162,7 @@ export function pickReviewCards(input: {
   });
   return {
     due,
-    fresh: picked.cards,
+    fresh: [...tutor, ...picked.cards],
     newItems: picked.items,
     held: input.due.length - due.length,
     newPaused: allowance.allowed === 0 && allowance.state !== 'open',

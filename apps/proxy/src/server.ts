@@ -17,6 +17,7 @@ import {
   loadJournalPromptTemplates,
   loadOpenChatPromptTemplates,
   loadStoryPromptTemplates,
+  loadTutorPromptTemplates,
   loadPromptTemplate,
   loadSentenceGenPromptTemplate,
 } from './prompt.js';
@@ -113,6 +114,15 @@ const app = createApp({
   story: {
     prompts: loadStoryPromptTemplates(env.PROMPT_VERSION),
     // The checker stays a separate fresh call that never sees the prompt or the lists.
+    orchestrator: createJsonOrchestrator(chain('story'), undefined, new PromptCache<JsonTaskResult<unknown>>(), undefined, {
+      checker: chain('check'),
+      quota,
+    }),
+  },
+  // Phase 39: tutoring uploads: the story chain reads the page images (multimodal Flash models),
+  // the checker chain checks the sentences.
+  tutor: {
+    prompts: loadTutorPromptTemplates(env.PROMPT_VERSION),
     orchestrator: createJsonOrchestrator(chain('story'), undefined, new PromptCache<JsonTaskResult<unknown>>(), undefined, {
       checker: chain('check'),
       quota,

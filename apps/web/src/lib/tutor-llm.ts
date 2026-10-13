@@ -60,6 +60,16 @@ import {
   type TurnRequest,
   type TurnResponse,
   type TutorLLM,
+  TutorCheckResponseSchema,
+  TutorExtractionSchema,
+  TutorScenarioResponseSchema,
+  type TutorCheckRequest,
+  type TutorCheckResponse,
+  type TutorExtraction,
+  type TutorExtractRequest,
+  type TutoringLLM,
+  type TutorScenarioRequest,
+  type TutorScenarioResponse,
 } from '@anan/core';
 
 export { getInstallId } from './api.js';
@@ -99,7 +109,7 @@ export function aiErrorText(err: unknown): string {
 
 /** apps/web's implementation of core's TutorLLM — fetch to apps/proxy. Never
  * holds an API key (CLAUDE.md §"No LLM API keys in the browser, ever"). */
-export class FetchTutorLLM implements TutorLLM, StoryLLM {
+export class FetchTutorLLM implements TutorLLM, StoryLLM, TutoringLLM {
   constructor(private readonly base: string = proxyBase()) {}
 
   private async post(route: string, body: unknown): Promise<unknown> {
@@ -154,6 +164,19 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM {
   // blindly (CLAUDE.md: "LLM output is data to validate, never trusted").
   // Journal results additionally go through validateJournalReview() in
   // JournalService before anything is shown or stored.
+
+  // Phase 39: tutoring uploads (page images in, a draft out; the check; the class scenario).
+  async extractTutorSummary(req: TutorExtractRequest): Promise<TutorExtraction> {
+    return TutorExtractionSchema.parse(await this.post('/v1/tutor-extract', req));
+  }
+
+  async checkTutorSentences(req: TutorCheckRequest): Promise<TutorCheckResponse> {
+    return TutorCheckResponseSchema.parse(await this.post('/v1/tutor-check', req));
+  }
+
+  async writeTutorScenario(req: TutorScenarioRequest): Promise<TutorScenarioResponse> {
+    return TutorScenarioResponseSchema.parse(await this.post('/v1/tutor-scenario', req));
+  }
 
   async generateTurn(req: TurnRequest): Promise<TurnResponse> {
     return TurnResponseSchema.parse(await this.post('/v1/turn', req));

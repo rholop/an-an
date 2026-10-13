@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import type { Route } from '../App.js';
-import { HOME, PINYIN_TAB } from '../lib/labels.js';
+import { HOME, PINYIN_TAB, TUTORING } from '../lib/labels.js';
 import { BottomSheet } from './BottomSheet.js';
 import { SproutIcon } from './PlantIcons.js';
 import { ThemeToggle } from './ThemeToggle.js';
@@ -26,6 +26,7 @@ export const PRIMARY: { route: Route; label: string }[] = [
 ];
 
 export const SECONDARY: { route: Route; label: string }[] = [
+  { route: 'tutoring', label: TUTORING },
   { route: 'review-settings', label: 'Settings' },
   { route: 'placement', label: 'Placement' },
   { route: 'anki-import', label: 'Anki import' },

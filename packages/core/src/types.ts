@@ -121,7 +121,7 @@ export interface Evidence {
     | 'story_read_no_lookup';
   at: Date;
   context?: {
-    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook' | 'pinyin' | 'story';
+    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook' | 'pinyin' | 'story' | 'tutor';
     refId?: string;
     /** Phase 5: a journal_misuse the learner corrected themselves. */
     selfFixed?: boolean;

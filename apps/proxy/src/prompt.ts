@@ -359,6 +359,15 @@ export function loadStoryPromptTemplates(version: string): { write: string; chec
   };
 }
 
+/** Phase 39: tutoring sessions (extraction from page images, the sentence check, the class scenario). */
+export function loadTutorPromptTemplates(version: string): { extract: string; check: string; scenario: string } {
+  return {
+    extract: loadPromptFile(`tutor-extract.${version}.md`),
+    check: loadPromptFile(`tutor-check.${version}.md`),
+    scenario: loadPromptFile(`tutor-scenario.${version}.md`),
+  };
+}
+
 const NOVICE = new Set(['N1', 'N2']);
 
 export function buildStoryPrompt(template: string, req: StoryRequest): string {

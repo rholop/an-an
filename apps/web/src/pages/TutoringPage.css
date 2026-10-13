@@ -1,0 +1,77 @@
+/* Phase 39: tutoring classes (shares the Textbook page's layout classes). */
+.tutoring--embedded {
+  margin: 1rem 0 2rem;
+}
+.tutoring-upload {
+  box-sizing: border-box;
+  display: grid;
+  gap: 0.5rem;
+  width: fit-content;
+  padding: 0.6rem 0.9rem;
+  min-height: 44px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  max-width: 100%;
+}
+.tutoring-upload input {
+  min-width: 0;
+  max-width: 100%;
+}
+.tutoring-words,
+.tutoring-grammar {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.tutoring-words > li,
+.tutoring-grammar > li {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+}
+.tutoring-word {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  cursor: pointer;
+}
+.tutoring-word input {
+  margin-top: 0.35rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+.tutoring-word-main {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.tutoring-zh {
+  font-size: var(--zh-body);
+  font-weight: 600;
+}
+.tutoring-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.tutoring-chip--mainland {
+  color: var(--warn-text);
+}
+.tutoring-chip--learned {
+  color: var(--text-muted);
+}
+.tutoring-example {
+  margin: 0.35rem 0 0;
+  overflow-wrap: anywhere;
+}
+.tutoring-actions {
+  position: sticky;
+  bottom: 0;
+  padding: 0.75rem 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}

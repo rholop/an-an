@@ -46,6 +46,12 @@ import {
   TurnRequestSchema,
   ChatMeaningCheckRequestSchema,
   ChatMeaningCheckResponseSchema,
+  TutorCheckRequestSchema,
+  TutorCheckResponseSchema,
+  TutorExtractionSchema,
+  TutorExtractRequestSchema,
+  TutorScenarioRequestSchema,
+  TutorScenarioResponseSchema,
   type OpenChatPersona,
 } from '@anan/core';
 import type { Env } from './env.js';
@@ -72,6 +78,9 @@ import {
   STORY_JSON_SCHEMA,
   TOPIC_WORDS_JSON_SCHEMA,
   CHAT_MEANING_CHECK_JSON_SCHEMA,
+  TUTOR_CHECK_JSON_SCHEMA,
+  TUTOR_EXTRACT_JSON_SCHEMA,
+  TUTOR_SCENARIO_JSON_SCHEMA,
 } from './json-schema.js';
 import {
   buildEffectiveSystemPrompt,
@@ -195,6 +204,8 @@ export interface AppDeps {
   };
   /** Phase 24: graded stories (writer + independent checker prompts). */
   story?: { prompts: { write: string; check: string; repair: string }; orchestrator?: JsonOrchestrator };
+  /** Phase 39: tutoring sessions (page-image extraction, the sentence check, the class scenario). */
+  tutor?: { prompts: { extract: string; check: string; scenario: string }; orchestrator?: JsonOrchestrator };
   rateLimiter: RateLimiter;
   /** Phase 33: the shared free-quota tracker and each role's model chain (GET /v1/ai-usage). */
   quota?: QuotaTracker;
@@ -529,7 +540,10 @@ export function createApp(deps: AppDeps): Hono {
     }
     const turnRequest = parsed.data;
 
-    const scenario = deps.scenarioStore.get(turnRequest.scenarioId);
+    const inline = turnRequest.scenario;
+    const scenario =
+      deps.scenarioStore.get(turnRequest.scenarioId) ??
+      (inline?.tutor && inline.id === turnRequest.scenarioId ? inline : undefined);
     if (!scenario) {
       return c.json({ error: `unknown scenarioId "${turnRequest.scenarioId}"` }, 404);
     }
@@ -630,7 +644,12 @@ export function createApp(deps: AppDeps): Hono {
     requestSchema: z.ZodType<Req, z.ZodTypeDef, unknown>,
     responseSchema: z.ZodType<Res, z.ZodTypeDef, unknown>,
     jsonSchema: object,
-    build: (req: Req) => { systemPrompt: string; userMessage: string },
+    build: (req: Req) => {
+      systemPrompt: string;
+      userMessage: string;
+      images?: ReadonlyArray<{ mimeType: string; data: string }>;
+      timeoutMs?: number;
+    },
     orchestrator: JsonOrchestrator = deps.journal.orchestrator,
     /** Phase 25: the independent check runs on the checker model. */
     checker = false,
@@ -961,6 +980,67 @@ export function createApp(deps: AppDeps): Hono {
       deps.gloss.orchestrator,
     ),
   );
+
+  // ---- Phase 39: tutoring sessions --------------------------------------------------------
+  // The PDF never reaches the server: only its page images, once, for extraction (cached by their
+  // hash, so the same PDF again costs nothing). The check is a fresh call on the checker chain.
+  const TUTOR_MAX_BYTES = 24 * 1024 * 1024;
+  app.post(
+    '/v1/tutor-extract',
+    bodyLimit({ maxSize: TUTOR_MAX_BYTES, onError: (c) => c.json({ error: 'too large', limitBytes: TUTOR_MAX_BYTES }, 413) }),
+    (c) => {
+      const tu = deps.tutor;
+      if (!tu) return c.json({ error: 'tutoring is not configured' }, 501);
+      return journalRoute(
+        c,
+        '/v1/tutor-extract',
+        TutorExtractRequestSchema,
+        TutorExtractionSchema,
+        TUTOR_EXTRACT_JSON_SCHEMA,
+        (req) => ({
+          systemPrompt: tu.prompts.extract,
+          userMessage: `Class summary, ${req.pages.length} page image(s) above, in order. Pages ${createHash('sha256')
+            .update(req.pages.map((p) => p.data).join('|'))
+            .digest('hex')}.`,
+          images: req.pages,
+          timeoutMs: 90_000,
+        }),
+        tu.orchestrator,
+      );
+    },
+  );
+
+  app.post('/v1/tutor-check', (c) => {
+    const tu = deps.tutor;
+    if (!tu) return c.json({ error: 'tutoring is not configured' }, 501);
+    return journalRoute(
+      c,
+      '/v1/tutor-check',
+      TutorCheckRequestSchema,
+      TutorCheckResponseSchema,
+      TUTOR_CHECK_JSON_SCHEMA,
+      (req) => ({ systemPrompt: tu.prompts.check, userMessage: JSON.stringify({ sentences: req.sentences }) }),
+      tu.orchestrator,
+      true,
+    );
+  });
+
+  app.post('/v1/tutor-scenario', (c) => {
+    const tu = deps.tutor;
+    if (!tu) return c.json({ error: 'tutoring is not configured' }, 501);
+    return journalRoute(
+      c,
+      '/v1/tutor-scenario',
+      TutorScenarioRequestSchema,
+      TutorScenarioResponseSchema,
+      TUTOR_SCENARIO_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: fillPromptPlaceholders(tu.prompts.scenario, { learner_level: req.learnerLevel }),
+        userMessage: JSON.stringify({ tutor: req.tutor, topics: req.topics, classWords: req.words, grammar: req.grammar }),
+      }),
+      tu.orchestrator,
+    );
+  });
 
   app.post('/v1/define', (c) =>
     journalRoute(

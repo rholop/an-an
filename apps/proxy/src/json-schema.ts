@@ -488,3 +488,74 @@ export const STORY_CHECK_JSON_SCHEMA = {
   },
   required: ['natural', 'coherent', 'taiwan', 'summaryMatches', 'problems', 'correctOptions', 'glossesOk'],
 } as const;
+
+// ---- Phase 39: tutoring sessions ----------------------------------------------------------
+
+const TUTOR_EXAMPLE = {
+  type: 'object',
+  properties: { zh: { type: 'string' }, en: { type: 'string' } },
+  required: ['zh', 'en'],
+} as const;
+
+export const TUTOR_EXTRACT_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    date: { type: 'string' },
+    tutor: { type: 'string' },
+    topics: { type: 'array', items: TUTOR_EXAMPLE },
+    vocab: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { zh: { type: 'string' }, pinyin: { type: 'string' }, en: { type: 'string' }, example: TUTOR_EXAMPLE },
+        required: ['zh', 'pinyin', 'en', 'example'],
+      },
+    },
+    grammar: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { name: { type: 'string' }, explanationEn: { type: 'string' }, example: TUTOR_EXAMPLE },
+        required: ['name', 'explanationEn', 'example'],
+      },
+    },
+  },
+  required: ['date', 'tutor', 'topics', 'vocab', 'grammar'],
+} as const;
+
+export const TUTOR_CHECK_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    results: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { id: { type: 'string' }, ok: { type: 'boolean' }, fixedZh: { type: 'string' }, reason: { type: 'string' } },
+        required: ['id', 'ok'],
+      },
+    },
+  },
+  required: ['results'],
+} as const;
+
+export const TUTOR_SCENARIO_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    title: { type: 'string' },
+    setting: { type: 'string' },
+    npcName: { type: 'string' },
+    personality: { type: 'string' },
+    speechStyle: { type: 'string' },
+    goalSteps: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { description: { type: 'string' }, keywordHints: { type: 'array', items: { type: 'string' } } },
+        required: ['description', 'keywordHints'],
+      },
+    },
+    opener: TUTOR_EXAMPLE,
+    successLine: TUTOR_EXAMPLE,
+  },
+  required: ['title', 'setting', 'npcName', 'personality', 'speechStyle', 'goalSteps', 'opener', 'successLine'],
+} as const;

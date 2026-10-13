@@ -2,6 +2,7 @@ import {
   EditKindSchema,
   IssueExplanationSchema,
   LevelSchema,
+  ScenarioSchema,
   SentenceTokenSchema,
   type RawSentenceReview,
   type VerifiedSentenceRef,
@@ -144,6 +145,7 @@ export const EvidenceSchema = z.object({
         'textbook',
         'pinyin',
         'story',
+        'tutor',
       ]),
       refId: z.string().optional(),
       selfFixed: z.boolean().optional(),
@@ -520,6 +522,47 @@ export const StoryRowSchema = z.object({
   report: z.object({ reason: z.string(), note: z.string().optional(), at: z.coerce.date() }).optional(),
 });
 
+/** Phase 39: a tutoring session (core `TutorSessionRecord`). */
+const TutorExampleRow = z.object({ zh: z.string(), en: z.string() });
+export const TutorSessionRowSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  tutor: z.string(),
+  topics: z.array(TutorExampleRow),
+  words: z.array(
+    z.object({
+      wordId: z.string(),
+      zh: z.string(),
+      printed: z.string(),
+      pinyin: z.string(),
+      zhuyin: z.string(),
+      pinyinNote: z.string().optional(),
+      mainlandForm: z.string().optional(),
+      alsoTaiwan: z.array(z.string()).optional(),
+      gloss: z.string(),
+      notesGloss: z.string().optional(),
+      ticked: z.boolean(),
+      custom: z.boolean(),
+    }),
+  ),
+  grammar: z.array(
+    z.object({ name: z.string(), explanationEn: z.string(), example: TutorExampleRow, grammarId: z.string().optional() }),
+  ),
+  sentences: z.array(
+    z.object({
+      id: z.string(),
+      zh: z.string(),
+      en: z.string(),
+      wordId: z.string().optional(),
+      grammarId: z.string().optional(),
+      practice: z.boolean(),
+    }),
+  ),
+  scenario: ScenarioSchema.optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
 export const BackupSchema = z.object({
   schemaVersion: z.number().int(),
   lexiconVersion: z.string().optional(),
@@ -548,6 +591,8 @@ export const BackupSchema = z.object({
   stories: z.array(StoryRowSchema).default([]),
   // Phase 32: active days (the streak). Defaulted so older backups still import.
   activeDays: z.array(z.object({ day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), at: z.coerce.date() })).default([]),
+  // Phase 39: tutoring sessions. Defaulted so older backups still import.
+  tutorSessions: z.array(TutorSessionRowSchema).default([]),
   // Phase 8 (schemaVersion 5): when each settings/meta key last changed, so
   // two devices can keep the later edit. Absent in older backups.
   settingsUpdatedAt: z.record(z.string(), z.coerce.date()).default({}),

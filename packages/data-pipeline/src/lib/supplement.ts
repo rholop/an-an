@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import yaml from 'js-yaml';
 import { z } from 'zod';
 import type { Level } from '@anan/core';
@@ -45,6 +45,8 @@ export function loadSupplementYaml(path: string): SupplementEntry[] {
 const MainlandTermSchema = z.object({
   mainland: z.array(z.string()),
   taiwan: z.string(),
+  /** Phase 39: other Taiwan words for the same thing (普通話 → 國語, also 中文). */
+  also: z.array(z.string()).optional(),
   note: z.string().optional(),
 });
 export type MainlandTermEntry = z.infer<typeof MainlandTermSchema>;
@@ -60,4 +62,21 @@ export type SimplifiedPair = z.infer<typeof SimplifiedPairSchema>;
 export function loadSimplifiedCharsYaml(path: string): SimplifiedPair[] {
   const raw = yaml.load(readFileSync(path, 'utf8'));
   return z.array(SimplifiedPairSchema).parse(raw);
+}
+
+/** Phase 39: general grammar points (data/supplement/grammar-supplement.yaml). */
+const GrammarSupplementSchema = z.object({
+  id: z.string().regex(/^gram-[a-z0-9-]+$/),
+  pattern: z.string(),
+  level: LevelSchema.nullable(),
+  explanationEn: z.string(),
+  focus: z.array(z.string()).optional(),
+  matcher: z.string().optional(),
+});
+export type GrammarSupplementEntry = z.infer<typeof GrammarSupplementSchema>;
+
+export function loadGrammarSupplementYaml(path: string): GrammarSupplementEntry[] {
+  if (!existsSync(path)) return [];
+  const raw = yaml.load(readFileSync(path, 'utf8'));
+  return z.array(GrammarSupplementSchema).parse(raw ?? []);
 }

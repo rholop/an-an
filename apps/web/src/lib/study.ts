@@ -3,7 +3,9 @@ import {
   DEFAULT_STUDY_SETTINGS,
   lessonIndex,
   classScope,
+  tutorLessonOf,
   type ClassScope,
+  type TutorLesson,
   type Lexicon,
   type StudyFocus,
   type StudySettings,
@@ -64,9 +66,52 @@ async function load(): Promise<void> {
   notify();
 }
 
+// ---- Phase 39: the profile's tutoring sessions (their ticked words go into study at once)
+let tutorLessons: TutorLesson[] = [];
+let tutorLoading: Promise<void> | undefined;
+const tutorWatched = new WeakSet<object>();
+function loadTutorLessons(): Promise<void> {
+  const session = currentSession();
+  if (!session) return Promise.resolve();
+  if (!tutorWatched.has(session.db)) {
+    tutorWatched.add(session.db);
+    // re-read once the write is committed (a read inside the hook would miss it)
+    const changed = (tx: { on: (e: 'complete', f: () => void) => void }) =>
+      tx.on('complete', () => void reloadTutorLessons());
+    session.db.tutorSessions.hook('creating', (_k, _o, tx) => changed(tx));
+    session.db.tutorSessions.hook('updating', (_m, _k, _o, tx) => changed(tx));
+    session.db.tutorSessions.hook('deleting', (_k, _o, tx) => changed(tx));
+  }
+  tutorLoading ??= (async () => {
+    const forProfile = session.profileId;
+    try {
+      const rows = await session.db.tutorSessions.toArray();
+      if (currentSession()?.profileId !== forProfile) return;
+      tutorLessons = rows.map(tutorLessonOf);
+      markStudyDirty();
+    } catch {
+      tutorLoading = undefined;
+    }
+  })();
+  return tutorLoading;
+}
+
+/** Re-reads the saved classes (after Save, a sync merge); resolves once the study order has them. */
+export function reloadTutorLessons(): Promise<void> {
+  tutorLoading = undefined;
+  return loadTutorLessons();
+}
+
+/** The profile's tutoring sessions as the study order sees them. */
+export function peekTutorLessons(): readonly TutorLesson[] {
+  return tutorLessons;
+}
+
 onSessionChange((session) => {
   settings = { ...DEFAULT_STUDY_SETTINGS };
   loaded = false;
+  tutorLessons = [];
+  tutorLoading = undefined;
   // Phase 21: nothing from the previous profile survives a switch.
   pendingCelebrations = [];
   notify();
@@ -76,6 +121,7 @@ onSessionChange((session) => {
 /** After a sync merge replaced the database contents (called by the profile controller). */
 export function reloadStudySettings(): void {
   loaded = false;
+  void reloadTutorLessons();
   void load().then(() => markStudyDirty());
 }
 
@@ -251,7 +297,9 @@ export function currentClassScope(): ClassScope {
 }
 // Phase 29: the ledger reads the study context and settings from here.
 setLedgerStudySource({
-  load,
+  load: async () => {
+    await Promise.all([load(), loadTutorLessons()]);
+  },
   inputs: () => {
     if (!ctx) return undefined;
     const my = peekMyClass();
@@ -264,6 +312,7 @@ setLedgerStudySource({
       settings: effectiveStudySettings(),
       myClass: { enabled: my.enabled, textbookId: my.textbookId, currentLesson: my.currentLesson },
       classScope: currentClassScope(),
+      tutorLessons,
     };
   },
   knownItems: () => settings.knownItems,

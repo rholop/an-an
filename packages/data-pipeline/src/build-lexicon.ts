@@ -33,7 +33,7 @@ import { normalizeRow } from './lib/normalize.js';
 import { resolveId, type IdMap } from './lib/ids.js';
 import { MoeDictionary, resolveMoeReading } from './lib/moe.js';
 import { ReviewReport } from './lib/review-report.js';
-import { loadSupplementYaml } from './lib/supplement.js';
+import { loadGrammarSupplementYaml, loadSupplementYaml } from './lib/supplement.js';
 import { applyLexiconOverrides, loadLexiconOverrides } from './lib/lexicon-overrides.js';
 import { addLessonSenses } from './lib/lesson-senses.js';
 import { MISSING_LEVELS, readTocflWorkbook } from './lib/tocfl-source.js';
@@ -85,6 +85,11 @@ function mergeGrammar(books: Array<{ id: string; book: BookFileShape }>): Gramma
         throw new Error(`Grammar id ${g.id} appears in ${bookId} and an earlier book without reteaches: true`);
       for (const t of g.tags ?? []) if (!have.tags!.includes(t)) have.tags!.push(t);
     }
+  }
+  // Phase 39: general points no lesson teaches (tutoring classes match them).
+  for (const g of loadGrammarSupplementYaml(path.join(SUPPLEMENT_DIR, 'grammar-supplement.yaml'))) {
+    if (byId.has(g.id)) throw new Error(`Grammar id ${g.id} is in grammar-supplement.yaml and a textbook`);
+    byId.set(g.id, { ...g, examples: [], tags: ['supplement'] });
   }
   return [...byId.values()];
 }

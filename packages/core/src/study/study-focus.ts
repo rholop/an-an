@@ -14,6 +14,7 @@ import { bookTitle, courseBook, courseLessonLevel, courseOrdinal, LAIXUE_COURSE,
 import type { Lesson, Textbook } from '../textbook/types.js';
 import { lessonCoreItems, lessonCoreWordIds, lessonExtraWordIds, lessonTaughtItems, levelItems, ProgressIndex, type GrammarUse, type LearnedMastered } from '../progress/terms.js';
 import type { ItemRef } from '../types.js';
+import type { TutorLesson } from '../tutor/session.js';
 
 export type StepRef =
   | { kind: 'lesson'; bookId: string; n: number; lessonId: string; level: Level; ordinal: number }
@@ -66,6 +67,8 @@ export interface StudyProfile {
   /** Phase 29 Part A.1: the ledger's own index (the ledger always passes it, so Now studying and
    * the lesson numbers are the same Learned / Mastered). Absent only in direct unit tests. */
   index?: ProgressIndex;
+  /** Phase 39: saved tutoring sessions (their ticked words go into study as soon as they are saved). */
+  tutorLessons?: readonly TutorLesson[];
 }
 
 export interface Mastery {
@@ -117,6 +120,9 @@ export interface StudyFocus {
   reviewItems: ItemRef[];
   /** Items that may be INTRODUCED now (no card yet), in order. Empty set = nothing new beyond the active step. */
   newItemsAllowed: ItemRef[];
+  /** Phase 39: tutoring words not Learned yet (sessions oldest first). They come first in
+   * `newItemsAllowed` (ahead of textbook words, the owner's decision 2026-10-13) and in chat targets. */
+  tutorItems?: ItemRef[];
   /** false = nothing outside the active step may be introduced (aheadShare 0). */
   generalNewItemsAllowed: boolean;
   gateStatus: GateStatus;
@@ -324,6 +330,13 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
     .slice(0, Math.max(activeIndex, p))
     .filter((s): s is Extract<StepRef, { kind: 'lesson' }> => s.kind === 'lesson')
     .filter((s) => stepKey(s) !== activeKey && firstUnmasteredLevelBelow(s.level) === undefined);
+  // Phase 39: tutoring words are introduced when a class is saved (the ledger's `tutorToIntroduce`)
+  // and lead every new pick (oldest class first). They are never picked as items under the
+  // allowance; the TOCFL gate and lesson mastery are unchanged.
+  const tutorItems = [...(profile.tutorLessons ?? [])]
+    .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
+    .flatMap((l) => l.wordIds.map((id): ItemRef => ({ kind: 'word', id })))
+    .filter((i) => !idx.removed(i) && !idx.learned(i));
   const newItemsAllowed = [
     ...focusItems,
     ...reviewLessons
@@ -386,6 +399,7 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
     focusItems,
     reviewItems,
     newItemsAllowed,
+    ...(tutorItems.length > 0 ? { tutorItems } : {}),
     generalNewItemsAllowed: cfg.aheadShare > 0,
     gateStatus: gate,
     mastery: active ? stepMastery(active) : undefined,

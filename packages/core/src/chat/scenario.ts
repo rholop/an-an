@@ -37,6 +37,8 @@ export const ScenarioSchema = z.object({
   /** Phase 12: built for a textbook lesson. Hidden unless "My class" is on;
    * unlocks when the class's current lesson >= `lesson`. */
   textbook: z.object({ textbookId: z.string(), lesson: z.number().int().min(1) }).optional(),
+  /** Phase 39: a tutoring class's own chat (stored with the session, sent inline with each turn). */
+  tutor: z.object({ sessionId: z.string() }).optional(),
 });
 export type Scenario = z.infer<typeof ScenarioSchema>;
 
