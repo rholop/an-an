@@ -416,6 +416,37 @@ export function createApp(deps: AppDeps): Hono {
     }),
   );
 
+  // ---- Phase 38: the app reports cards whose word is missing from a fresh word list ----
+  // Ids, skills and sources only (no personal text); written to the server log for the owner.
+  const ClientLogSchema = z.object({
+    kind: z.literal('missing-words'),
+    lexicon: z.string().regex(/^[\w.-]{1,80}$/).optional(),
+    items: z
+      .array(
+        z.object({
+          kind: z.enum(['word', 'grammar']),
+          id: z.string().regex(/^[\w:.-]{1,80}$/),
+          skill: z.enum(['recognition', 'production', 'listening', 'reading']),
+          from: z.string().regex(/^[\w-]{1,40}$/).optional(),
+        }),
+      )
+      .min(1)
+      .max(200),
+  });
+
+  app.post('/v1/client-log', async (c) => {
+    let body: unknown;
+    try {
+      body = await c.req.json();
+    } catch {
+      return c.json({ error: 'invalid JSON body' }, 400);
+    }
+    const parsed = ClientLogSchema.safeParse(body);
+    if (!parsed.success) return c.json({ error: 'invalid client log' }, 400);
+    log({ route: 'POST /v1/client-log', ...parsed.data });
+    return c.json({ ok: true });
+  });
+
   // ---- Phase 12 textbook: the book's own text, household code required ----
   // (The /v1/* guard above already enforces the code; there is no public route.)
   app.get('/v1/textbook/:bookId/:kind', async (c) => {

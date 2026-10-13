@@ -46,9 +46,30 @@ describe('installable on an iPhone / Android home screen (phase 11)', () => {
   });
 
   it('starts downloading the lexicon immediately, and every screen is its own chunk', () => {
-    expect(html).toMatch(/rel="preload" href="\/lexicon\/lexicon\.v2\.json" as="fetch" crossorigin/);
+    // Phase 38: the data manifest names the lexicon's current (content-hashed) file; no stale preload
+    expect(html).not.toMatch(/rel="preload" href="\/lexicon\//);
+    expect(read('src/main.tsx')).toMatch(/void preloadLexicon\(\)/);
     const app = read('src/App.tsx');
     expect(app).toMatch(/const ChatPage = lazy\(/);
     expect(app).not.toMatch(/^import \{ ChatPage \}/m);
+  });
+});
+
+describe('versioned data files (phase 38)', () => {
+  const config = read('vite.config.ts');
+
+  it('the manifest is Network First; only content-hashed data files are Cache First', () => {
+    expect(config).toMatch(/data-manifest\.json'\),\s*handler: 'NetworkFirst'/);
+    expect(config).toMatch(/\\\.\[0-9a-f\]\{10\}\\\.json\$\/\.test\(url\.pathname\),\s*handler: 'CacheFirst'/);
+    // the old rule (any file under lexicon/, scenarios/, sentences/) kept a stale word list forever
+    expect(config).not.toMatch(/\/\\\/\(lexicon\|scenarios\|sentences\)\\\/\/\.test/);
+  });
+
+  it('the app fetches data files only through the manifest', () => {
+    for (const f of ['src/lib/useLexicon.ts', 'src/lib/useScenarios.ts', 'src/lib/useSentenceBank.ts', 'src/lib/textbook-data.ts']) {
+      const src = read(f);
+      expect(src).toMatch(/dataUrl\(/);
+      expect(src).not.toMatch(/BASE_URL\}(lexicon|scenarios|sentences|textbook)\//);
+    }
   });
 });

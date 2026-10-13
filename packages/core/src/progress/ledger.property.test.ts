@@ -139,7 +139,16 @@ const stateArb = fc.record({
 
 type State = typeof stateArb extends fc.Arbitrary<infer T> ? T : never;
 
-function ledgerOf(s: State, over: { book?: Textbook; config?: PriorityConfig; extra?: (now: Date) => Evidence[] } = {}): Ledger {
+function ledgerOf(
+  s: State,
+  over: {
+    book?: Textbook;
+    config?: PriorityConfig;
+    extra?: (now: Date) => Evidence[];
+    missing?: ReadonlySet<string>;
+    dropCards?: ReadonlySet<string>;
+  } = {},
+): Ledger {
   const settings: SessionSettings = { ...DEFAULT_SESSION_SETTINGS, timeZone: s.zone, capPerSession: s.cap };
   const now = zonedDate(s.day[0], s.day[1], s.day[2], s.hour, s.minute, s.zone);
   const evidence: Evidence[] = s.events
@@ -166,7 +175,7 @@ function ledgerOf(s: State, over: { book?: Textbook; config?: PriorityConfig; ex
     if (next) cards.set(key, next);
   }
   return buildLedger({
-    cards: [...cards.values()],
+    cards: [...cards.values()].filter((c) => !over.dropCards?.has(c.item.id)),
     evidence,
     knownItems: s.knownItems,
     session: settings,
@@ -174,7 +183,7 @@ function ledgerOf(s: State, over: { book?: Textbook; config?: PriorityConfig; ex
     now,
     activeDays: activeDaysFromHistory({ evidence }, s.zone).map((r) => r.day),
     study: {
-      lexicon,
+      lexicon: over.missing ? new Lexicon(WORDS.filter((w) => !over.missing!.has(w.id))) : lexicon,
       books: [over.book ?? book],
       ...(over.config ? { config: over.config } : {}),
       settings: { ...DEFAULT_STUDY_SETTINGS, enabled: false, masteryShare: s.masteryShare, knownItems: s.knownItems },
@@ -369,6 +378,47 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
         expect(added.every((id) => id === 'w10' || id === 'w11')).toBe(true);
         // an extra the learner removed (Nope) is left out, like any other item
         expect(added.length).toBeGreaterThanOrEqual(0);
+      }),
+      RUNS,
+    );
+  });
+
+  // Phase 38: a card the loaded word list can't show (a stale cached lexicon) is held: listed by
+  // unresolved(), in no session and no count, never picked as new, never shown.
+  it('a card whose word the lexicon lacks is in unresolved() and in no count', () => {
+    fc.assert(
+      fc.property(stateArb, fc.subarray(WORDS.map((w) => w.id), { minLength: 1 }), (s, ids) => {
+        const missing = new Set(ids);
+        const stale = ledgerOf(s, { missing });
+        const without = ledgerOf(s, { dropCards: missing });
+        const held = stale.unresolved();
+        for (const c of held) expect(missing.has(c.item.id)).toBe(true);
+        // every met, not removed card of a missing word is held
+        const full = ledgerOf(s);
+        const expected = full.metCards().filter((c) => missing.has(c.item.id) && isActiveCard(c));
+        expect(sorted(held.map(keyOf))).toEqual(sorted(expected.map(keyOf)));
+        // in no count: the stale ledger's numbers are those of a profile without these cards
+        expect(stale.status.sessionCards).toBe(without.status.sessionCards);
+        expect(stale.status.nextSession.count).toBe(without.status.nextSession.count);
+        expect(sorted(stale.thirstyWords())).toEqual(sorted(without.thirstyWords()));
+        const shown = [
+          ...stale.session().cards,
+          ...stale.session({ early: true }).cards,
+          ...stale.newCards(),
+          ...stale.cards,
+          ...stale.practice('listening').due,
+          ...stale.practice('reading').fresh,
+        ];
+        for (const c of shown) expect(missing.has(c.item.id)).toBe(false);
+        for (const c of held) {
+          expect(stale.needsWater(c)).toBe(false);
+          expect(stale.hasCard(c.item)).toBe(false);
+        }
+        for (const id of [...stale.learnedWordIds(), ...stale.comprehensible().ids]) expect(missing.has(id)).toBe(false);
+        for (const q of QUEUES) {
+          const picked = stale.pickNew(q, { level: 'N1', extraItems: [...missing].map((id) => ({ kind: 'word' as const, id })) });
+          for (const i of [...picked.items, ...picked.cards.map((c) => c.item)]) expect(missing.has(i.id)).toBe(false);
+        }
       }),
       RUNS,
     );

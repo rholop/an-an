@@ -58,12 +58,24 @@ export default defineConfig(({ command }) => ({
             handler: 'StaleWhileRevalidate',
             options: { cacheName: 'anan-audio-manifest' },
           },
+          // Phase 38: the data manifest maps each data file to its content-hashed name. It is
+          // always asked for fresh (offline: the cached copy), so a new build is seen at once.
           {
-            urlPattern: ({ url }) => /\/(lexicon|scenarios|sentences)\//.test(url.pathname),
+            urlPattern: ({ url }) => url.pathname.endsWith('/data-manifest.json'),
+            handler: 'NetworkFirst',
+            options: { cacheName: 'anan-data-manifest', networkTimeoutSeconds: 5 },
+          },
+          // The hashed data files never change (a new build is a new name), so Cache First is safe.
+          // The app prunes this cache to the current and previous builds (lib/data-files.ts); the
+          // plain names (scripts, tests) are not cached here.
+          {
+            urlPattern: ({ url }) =>
+              /\/(lexicon|scenarios|sentences|textbook)\/.+\.[0-9a-f]{10}\.json$/.test(url.pathname),
             handler: 'CacheFirst',
             options: {
               cacheName: 'anan-data-cache',
-              expiration: { maxEntries: 20 },
+              expiration: { maxEntries: 60 },
+              cacheableResponse: { statuses: [200] },
             },
           },
         ],

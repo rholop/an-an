@@ -54,3 +54,6 @@ apps/web/public/textbook/
 
 # Phase 33: the free-quota tracker (calls per model per day, models out of quota).
 apps/proxy/quota-data/
+
+# Phase 38: written by the sync scripts with the content-hashed data file names.
+apps/web/public/data-manifest.json

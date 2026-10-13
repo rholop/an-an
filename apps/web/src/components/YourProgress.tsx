@@ -12,7 +12,9 @@ import {
   TERM,
   thisBrowserLine,
   UNSAVED_WARNING,
+  MISSING_WORDS_TITLE,
 } from '../lib/labels.js';
+import { useMissingWordCards } from '../lib/word-list-repair.js';
 import type { SavedVersion } from '../lib/sync.js';
 
 /** This browser's own numbers, counted the same way as a saved copy (so a gap is visible). */
@@ -27,6 +29,33 @@ async function browserSummary(): Promise<SavedCopySummary> {
  * the same numbers for this browser, Save now, and the server's saved versions (Restore merges one
  * in; Replace, after a confirmation, makes it the data here and on the server).
  */
+/**
+ * Phase 38 Part B.4: cards whose word is still missing after a fresh word list (a data problem, not a
+ * stale cache). They are kept, never shown in Review, and logged to the server without personal text.
+ */
+export function MissingWordCards() {
+  const missing = useMissingWordCards();
+  if (missing.length === 0) return null;
+  return (
+    <div data-testid="missing-word-cards">
+      <h3>{MISSING_WORDS_TITLE}</h3>
+      <p className="review-settings-muted">
+        These cards are kept but not shown in Review: the word list doesn't have their words. They are reported so the word
+        list can be fixed.
+      </p>
+      <ul>
+        {missing.map((m) => (
+          <li key={`${m.item.kind}:${m.item.id}|${m.skill}`}>
+            <code>{m.item.id}</code> · {m.skill}
+            {m.addedAt && <> · added {savedWhen(m.addedAt)}</>}
+            {m.from && <> · from {m.from}</>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function YourProgress() {
   const { sync, syncTick } = useProfile();
   const [here, setHere] = useState<SavedCopySummary | null>(null);
@@ -42,6 +71,7 @@ export function YourProgress() {
       <section data-testid="your-progress">
         <h2>Your progress</h2>
         <p className="review-settings-muted">This browser keeps progress here only (saving to the server is off).</p>
+        <MissingWordCards />
       </section>
     );
   const saved = sync.savedInfo;
@@ -127,6 +157,7 @@ export function YourProgress() {
           ))}
         </ul>
       )}
+      <MissingWordCards />
     </section>
   );
 }

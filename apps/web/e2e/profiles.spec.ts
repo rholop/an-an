@@ -83,7 +83,8 @@ test.describe('household code, who are you, switching', () => {
     expect(await page.evaluate(() => window.__anan.profileId)).toBe('ron');
 
     await page.evaluate(async () => {
-      for (const id of ['x1', 'x2', 'x3']) {
+      // real lexicon ids (咖啡 吃 喝): Phase 38 holds cards the word list can't show
+      for (const id of ['tocfl-7c491838af', 'tocfl-29992340ae', 'tocfl-3361e60084']) {
         await window.__anan.learnerService.record(
           {
             item: { kind: 'word', id },

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SentenceBankFileSchema, type Level, type SentenceBankEntry } from '@anan/core';
+import { dataUrl } from './data-files.js';
 
 export type SentenceBankLoadState =
   | { status: 'loading' }
@@ -23,7 +24,7 @@ export function useSentenceBank(levels: Level[]): SentenceBankLoadState {
     Promise.all(
       wanted.map(async (level) => {
         try {
-          const res = await fetch(`${import.meta.env.BASE_URL}sentences/sentences.v1.${level}.json`);
+          const res = await fetch(await dataUrl(`sentences/sentences.v1.${level}.json`));
           if (!res.ok) return [];
           return SentenceBankFileSchema.parse(await res.json()).sentences;
         } catch {

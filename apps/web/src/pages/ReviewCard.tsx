@@ -93,6 +93,8 @@ export function ReviewCard({
   if (face === 'pick' && !options) face = 'recall';
   // Phase 25 B7: a grammar card is one exercise from the lesson step's builders (else the flip card).
   const grammarEx = useSingleGrammarExercise(grammar?.id, lexicon, `${card.item.id}|${answeredAt}`);
+  // Phase 38: a card whose word or grammar point the loaded word list lacks is never shown.
+  if (!word && !grammar) return null;
 
   return (
     <div className={`review-card review-card--${face}`} data-testid="review-card" data-face={face}>
@@ -170,7 +172,8 @@ function FlipFace({
 }) {
   const [typed, setTyped] = useState('');
   const zhFront = face === 'meaning' || face === 'say';
-  const front = grammar ? grammar.pattern : zhFront ? (word?.headword ?? '(unknown item)') : gloss || '(unknown item)';
+  // Phase 38: Review never renders a card the word list can't show, so there is no fallback text.
+  const front = grammar ? grammar.pattern : zhFront ? (word?.headword ?? '') : gloss;
   const typedOk =
     face === 'recall' && word && typed.trim()
       ? [word.headword, ...word.variants].map(normaliseAnswer).includes(normaliseAnswer(typed))

@@ -220,6 +220,11 @@ export const feedbackWrong = (answer: string, reading?: string): string =>
 
 // --- empty states ---------------------------------------------------------------------------
 export const NOTHING_DUE = 'Nothing due right now. Nice work.';
+/** Phase 38: cards whose word the loaded word list lacks (held, never shown as "(unknown item)"). */
+export const waitingForWordList = (n: number): string =>
+  `${n} card${n === 1 ? ' is' : 's are'} waiting for the latest word list`;
+export const RELOAD = 'Reload';
+export const MISSING_WORDS_TITLE = 'Cards with missing words';
 export const nothingHere = (what: string): string => `No ${what} right now.`;
 export const waitingSiblings = (n: number): string =>
   `${n} card${n === 1 ? ' is' : 's are'} waiting a few minutes so ${n === 1 ? "it isn't" : "they aren't"} next to ${n === 1 ? 'its partner' : 'their partners'}.`;

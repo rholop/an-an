@@ -61,6 +61,8 @@ export function pickNewForSession<T extends SkillCard>(input: {
   /** Phase 23: New production / reading cards (new faces of words already being learned) get
    * their own allowance instead of using the new-word one. Absent = they share `allowed`. */
   allowedFaces?: number;
+  /** Phase 38: items the loaded word list can show. Others are never picked (absent: all). */
+  resolves?: (item: ItemRef) => boolean;
 }): { cards: T[]; items: ItemRef[] } {
   if (input.allowedFaces !== undefined) {
     const isFace = (c: T) => c.skill === 'production' || c.skill === 'reading';
@@ -78,7 +80,7 @@ export function pickNewForSession<T extends SkillCard>(input: {
   const n = Math.max(0, Math.floor(input.allowed));
   if (n === 0) return { cards: [], items: [] };
   const key = (i: ItemRef) => `${i.kind}:${i.id}`;
-  const keep = (i: ItemRef) => !input.onlyItems || input.onlyItems.has(key(i));
+  const keep = (i: ItemRef) => (!input.onlyItems || input.onlyItems.has(key(i))) && (!input.resolves || input.resolves(i));
   const focus = input.focus?.enabled ? input.focus : undefined;
   const idx = input.lessonIdx;
   const rank = (i: ItemRef) => (focus && idx ? studyRank(focus, (x) => idx.get(key(x)), i) : 0);

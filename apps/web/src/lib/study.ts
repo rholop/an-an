@@ -16,6 +16,7 @@ import { catchUpClassCoverage, peekMyClass, useMyClass } from './my-class.js';
 import { registerAfterMerge } from './profile-controller.js';
 import { markStudyDirty, onStudyDirty } from './study-dirty.js';
 import { useLexicon } from './useLexicon.js';
+import { repairWordListOnce } from './word-list-repair.js';
 import { useTextbook } from './textbook-data.js';
 
 /**
@@ -191,6 +192,8 @@ export function useStudyContextRegistration(): void {
   useEffect(() => {
     if (lex.status === 'ready' && tb.status === 'ready') registerStudyContext({ lexicon: lex.lexicon, books: tb.books });
     else if (lex.status === 'ready' && tb.status === 'missing') registerStudyContext({ lexicon: lex.lexicon, books: [] });
+    // Phase 38: cards waiting for the word list? Fetch it fresh once (the rest is a data problem).
+    if (lex.status === 'ready' && tb.status !== 'loading') void repairWordListOnce();
   }, [lex, tb]);
 }
 
@@ -252,8 +255,11 @@ setLedgerStudySource({
   inputs: () => {
     if (!ctx) return undefined;
     const my = peekMyClass();
+    const lexicon = ctx.lexicon;
     return {
-      lexicon: ctx.lexicon,
+      lexicon,
+      // Phase 38: a card the loaded word list (words and grammar) can't show is held by the ledger.
+      resolves: (i) => (i.kind === 'word' ? lexicon.byId(i.id) : lexicon.grammarItemById(i.id)) !== undefined,
       books: ctx.books,
       settings: effectiveStudySettings(),
       myClass: { enabled: my.enabled, textbookId: my.textbookId, currentLesson: my.currentLesson },

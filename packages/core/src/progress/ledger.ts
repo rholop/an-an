@@ -67,6 +67,9 @@ export type NewQueue = keyof ProgressConfig['newPerQueue'];
 
 export interface LedgerStudyInputs {
   lexicon: Pick<Lexicon, 'allWords' | 'byId'>;
+  /** Phase 38: can the loaded word list (lexicon plus grammar) show this item? Absent: a word
+   * resolves when `lexicon.byId` has it, a grammar point always. */
+  resolves?: (item: ItemRef) => boolean;
   /** Imported books, in course order. */
   books: readonly Textbook[];
   settings: StudySettings;
@@ -97,6 +100,19 @@ export interface LedgerInputs {
   config?: ProgressConfig;
   /** Phase 32: the profile's active days (the synced `activeDays` table's day keys). */
   activeDays?: Iterable<string>;
+  /** Phase 38: overrides the study context's `resolves` (tests). A card that doesn't resolve is held
+   * out of every count and session and listed by `unresolved()`. */
+  resolves?: (item: ItemRef) => boolean;
+}
+
+/** Phase 38: which items the ledger can show: the study context's check, else words the study
+ * lexicon has (grammar always), else everything (no study context). */
+function resolverFor(inputs: Pick<LedgerInputs, 'resolves' | 'study'>): (item: ItemRef) => boolean {
+  if (inputs.resolves) return inputs.resolves;
+  const study = inputs.study;
+  if (!study) return () => true;
+  if (study.resolves) return study.resolves;
+  return (item) => item.kind !== 'word' || study.lexicon.byId(item.id) !== undefined;
 }
 
 /** The earliest evidence the ledger needs besides grammar answers (the session count window and
@@ -174,6 +190,8 @@ export class Ledger {
   private readonly cfg: ProgressConfig;
   private readonly index: ProgressIndex;
   private readonly allCards: readonly SkillCard[];
+  private readonly heldCards: readonly SkillCard[];
+  private readonly resolvesItem: (item: ItemRef) => boolean;
   private readonly evidence: readonly EvidenceLike[];
   private readonly study?: LedgerStudyInputs;
   private readonly storedActiveDays: ReadonlySet<string>;
@@ -186,7 +204,14 @@ export class Ledger {
     this.timeZone = inputs.session.timeZone;
     this.masteryShare = inputs.masteryShare;
     this.cfg = inputs.config ?? PROGRESS_CONFIG;
-    this.allCards = inputs.cards;
+    // Phase 38: a card whose item the loaded word list can't show (a stale cached lexicon, a custom
+    // word not merged yet) is held: it is in no count and no session until the word list has it.
+    this.resolvesItem = resolverFor(inputs);
+    const resolved: SkillCard[] = [];
+    const held: SkillCard[] = [];
+    for (const c of inputs.cards) (this.resolvesItem(c.item) ? resolved : held).push(c);
+    this.allCards = resolved;
+    this.heldCards = held;
     // The session counts read only this window (older rows, e.g. grammar answers, are for the dots).
     const since = statusEvidenceSince(inputs.now, inputs.session).getTime();
     this.evidence = inputs.evidence.filter((e) => e.at.getTime() >= since && e.at.getTime() <= inputs.now.getTime());
@@ -195,7 +220,7 @@ export class Ledger {
     // Phase 25: a grammar point's days are the profile's days.
     this.grammarUses = grammarUsesFromEvidence(inputs.evidence, this.cfg, this.timeZone);
     this.index = new ProgressIndex({
-      cards: inputs.cards,
+      cards: resolved,
       grammarUses: this.grammarUses,
       knownItems: inputs.knownItems,
       config: this.cfg,
@@ -207,9 +232,21 @@ export class Ledger {
     return this.memo.get(key) as T;
   }
 
-  /** Every card, as stored (for persistence and for session builders that order cards). */
+  /** Every card the loaded word list can show, as stored (for session builders that order cards).
+   * Held cards (`unresolved()`) are left out. */
   get cards(): readonly SkillCard[] {
     return this.allCards;
+  }
+
+  /** Phase 38: does the loaded word list have this item? */
+  resolves(item: ItemRef): boolean {
+    return this.resolvesItem(item);
+  }
+
+  /** Phase 38: met, not removed cards whose item the loaded word list lacks. They are never shown,
+   * counted, rescheduled or deleted; Review says they are waiting for the latest word list. */
+  unresolved(): SkillCard[] {
+    return this.once('unresolved', () => this.heldCards.filter((c) => c.state !== 'unseen' && isActiveCard(c)));
   }
 
   // -------------------------------------------------------------------------------------------
@@ -454,6 +491,7 @@ export class Ledger {
       allowed: Math.min(allowance.allowed, opts.allowed ?? Infinity),
       ...(opts.onlyItems ? { onlyItems: opts.onlyItems } : {}),
       extraItems: [...(opts.extraItems ?? []), ...fallback],
+      resolves: this.resolvesItem,
     });
   }
 
@@ -544,7 +582,7 @@ export class Ledger {
     return this.once('focus', () => {
       const s = this.study;
       if (!s || s.books.length === 0) return undefined;
-      return getStudyFocus(
+      const focus = getStudyFocus(
         {
           lexicon: s.lexicon,
           books: s.books,
@@ -557,6 +595,8 @@ export class Ledger {
         },
         this.now,
       );
+      // Phase 38: a word the loaded word list lacks is never introduced (no "(unknown item)" card).
+      return { ...focus, newItemsAllowed: focus.newItemsAllowed.filter(this.resolvesItem) };
     });
   }
 

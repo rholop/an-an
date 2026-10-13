@@ -9,6 +9,7 @@ import {
   type TextbookFile,
 } from '@anan/core';
 import { authHeaders, handleUnauthorized, proxyBase } from './api.js';
+import { dataUrl, onDataFilesChanged } from './data-files.js';
 
 /** The book Phase 12 shipped; the default for "My class" and the private-text calls. */
 export const TEXTBOOK_ID = 'laixue-1';
@@ -35,13 +36,27 @@ export type TextbookLoadState =
   | { status: 'missing' }
   | { status: 'ready'; data: BookData[]; books: Textbook[] };
 
-const bookBase = (id: string) => `${import.meta.env.BASE_URL}textbook/${id}`;
+/** Phase 38: the content-hashed URL of a book's file (data-manifest.json), so the book and the word
+ * list always come from the same build. */
+const bookFile = (id: string, file: 'book.json' | 'sentences.json') => dataUrl(`textbook/${id}/${file}`);
 
 let cached: Promise<BookData[]> | undefined;
+let booksVersion = 0;
+const bookListeners = new Set<() => void>();
+// Phase 38 Part A.4: a new build while the app is open replaces the books in the background.
+onDataFilesChanged((changed) => {
+  if (!changed.some((f) => f.startsWith('textbook/'))) return;
+  cached = undefined;
+  sentencesCache = undefined;
+  booksVersion++;
+  bookListeners.forEach((l) => l());
+});
+
 function loadBooks(): Promise<BookData[]> {
   cached ??= Promise.all(
     LAIXUE_COURSE.books.map((b) =>
-      fetch(`${bookBase(b.id)}/book.json`)
+      bookFile(b.id, 'book.json')
+        .then((url) => fetch(url))
         .then((r) => (r.ok ? (r.json() as Promise<BookData>) : null))
         .catch(() => null),
     ),
@@ -52,6 +67,14 @@ function loadBooks(): Promise<BookData[]> {
 /** Fetches the textbook structure once (static files with no book text). */
 export function useTextbook(): TextbookLoadState {
   const [state, setState] = useState<TextbookLoadState>({ status: 'loading' });
+  const [version, setVersion] = useState(booksVersion);
+  useEffect(() => {
+    const l = () => setVersion(booksVersion);
+    bookListeners.add(l);
+    return () => {
+      bookListeners.delete(l);
+    };
+  }, []);
   useEffect(() => {
     let cancelled = false;
     loadBooks().then((data) => {
@@ -65,7 +88,7 @@ export function useTextbook(): TextbookLoadState {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [version]);
   return state;
 }
 
@@ -76,7 +99,8 @@ let sentencesCache: Promise<SentenceBankEntry[]> | undefined;
 export function loadTextbookSentences(): Promise<SentenceBankEntry[]> {
   sentencesCache ??= Promise.all(
     LAIXUE_COURSE.books.map((b) =>
-      fetch(`${bookBase(b.id)}/sentences.json`)
+      bookFile(b.id, 'sentences.json')
+        .then((url) => fetch(url))
         .then((r) => (r.ok ? r.json() : null))
         .then((j) => (j ? SentenceBankFileSchema.parse(j).sentences : []))
         .catch(() => [] as SentenceBankEntry[]),

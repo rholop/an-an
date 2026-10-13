@@ -138,6 +138,7 @@ function buildApp(
     scenarioStore?: ScenarioStore;
     quota?: QuotaTracker;
     chains?: Record<string, string[]>;
+    log?: (entry: Record<string, unknown>) => void;
   } = {},
 ) {
   const app = createApp({
@@ -173,7 +174,7 @@ function buildApp(
       new RateLimiter({ requestsPerMinute: 100, dailyTokenBudget: 1_000_000 }),
     ...(overrides.quota ? { quota: overrides.quota } : {}),
     ...(overrides.chains ? { chains: overrides.chains } : {}),
-    log: () => {}, // silence logs in tests
+    log: overrides.log ?? (() => {}), // silence logs in tests
   });
   if (overrides.autoCode === false) return app;
   const request = app.request.bind(app);
@@ -991,6 +992,38 @@ describe('sync endpoints (phase 28): compressed, guarded, versioned', () => {
     expect(await res.json()).toEqual({ ok: true, bytes: 5 * 1024 * 1024 });
     const noCode = buildApp({ autoCode: false });
     expect((await noCode.request('/v1/sync-selftest', { method: 'PUT', body: 'x' })).status).toBe(401);
+  });
+});
+
+describe('client log (phase 38)', () => {
+  const post = (app: ReturnType<typeof buildApp>, body: unknown) =>
+    app.request('/v1/client-log', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+  it('logs the ids of cards whose word is missing from a fresh word list', async () => {
+    const entries: Record<string, unknown>[] = [];
+    const app = buildApp({ log: (e) => entries.push(e) });
+    const body = {
+      kind: 'missing-words',
+      lexicon: 'lexicon.v2.f6371ff665.json',
+      items: [{ kind: 'word', id: 'tocfl-abc', skill: 'recognition', from: 'review' }],
+    };
+    expect((await post(app, body)).status).toBe(200);
+    expect(entries).toEqual([{ route: 'POST /v1/client-log', ...body }]);
+  });
+
+  it('takes no free text, needs the household code', async () => {
+    const app = buildApp();
+    const item = { kind: 'word', id: 'tocfl-abc', skill: 'recognition' };
+    expect((await post(app, { kind: 'missing-words', items: [{ ...item, id: '我想吃 牛肉麵' }] })).status).toBe(400);
+    expect((await post(app, { kind: 'missing-words', items: [{ ...item, note: 'hello' }] })).status).toBe(200); // extra keys dropped
+    expect((await post(app, { kind: 'anything', items: [item] })).status).toBe(400);
+    expect((await post(app, { kind: 'missing-words', items: [] })).status).toBe(400);
+    const noCode = buildApp({ autoCode: false });
+    expect((await post(noCode, { kind: 'missing-words', items: [item] })).status).toBe(401);
   });
 });
 

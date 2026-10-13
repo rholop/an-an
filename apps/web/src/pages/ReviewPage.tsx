@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Evidence, SkillCard } from '@anan/core';
 import {
   keepDeferred,
@@ -17,7 +17,17 @@ import {
 } from '@anan/core';
 import { buildReviewSession, newSessionCard, pickReviewCards } from '../lib/review-session.js';
 import { useReadingScript } from '../components/AnnotatedInline.js';
-import { dueNewLine, learnedTodayLine, NOTHING_DUE, REVIEW_EARLY, sessionLine, UNDO, waitingSiblings } from '../lib/labels.js';
+import {
+  dueNewLine,
+  learnedTodayLine,
+  NOTHING_DUE,
+  RELOAD,
+  REVIEW_EARLY,
+  sessionLine,
+  UNDO,
+  waitingForWordList,
+  waitingSiblings,
+} from '../lib/labels.js';
 import { NopeToast } from '../components/Nope.js';
 import { nopeWord, wakeSnoozed } from '../lib/nope.js';
 import { getLedgerNow, useLedger } from '../lib/ledger.js';
@@ -33,7 +43,7 @@ import { learnerService } from '../db/instance.js';
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
 import { ensureFaceCards } from '../lib/face-cards.js';
 import { DueIcon, EmptySprout } from '../components/PlantIcons.js';
-import { useLexicon } from '../lib/useLexicon.js';
+import { reloadLexicon, useLexicon } from '../lib/useLexicon.js';
 import { InfoTip } from '../components/InfoTip.js';
 import './ReviewPage.css';
 
@@ -229,11 +239,31 @@ export function ReviewPage({
     // built once per session (an "Again" re-queue changes the queue, not the session)
   }, [seed, listeningOn, clips.ready]);
 
+  // Phase 38: a card the loaded word list can't show is skipped (the ledger holds such cards; this
+  // covers a list given by the garden or a lesson). It comes back once the word list has its word.
+  const lexReady = lexiconState.status === 'ready' ? lexiconState.lexicon : undefined;
+  const atCard = queue?.[index];
+  const atResolves =
+    !atCard || !lexReady || (atCard.item.kind === 'word' ? lexReady.byId(atCard.item.id) : lexReady.grammarItemById(atCard.item.id)) !== undefined;
+  useEffect(() => {
+    if (!atResolves) setIndex((i) => i + 1);
+  }, [atResolves, atCard]);
+  // Held cards whose word just arrived (a new word list, "Reload", a synced custom word) join the
+  // session: it is rebuilt once the ledger can show them.
+  const heldNow = ledgerNow?.unresolved().length;
+  const heldBefore = useRef(heldNow);
+  useEffect(() => {
+    const before = heldBefore.current;
+    heldBefore.current = heldNow;
+    if (before !== undefined && heldNow !== undefined && heldNow < before) void loadQueue();
+  }, [heldNow, loadQueue]);
+
   if (lexiconState.status === 'loading' || queue === null) return <p>Loading…</p>;
   if (lexiconState.status === 'error') return <p>Failed to load lexicon: {lexiconState.error}</p>;
 
   const lexicon = lexiconState.lexicon;
-  const current = queue[index];
+  const current = atResolves ? queue[index] : undefined;
+  const heldCards = heldNow ?? 0;
   const pendingSlot = slots.get(index);
   const listenNow = pendingSlot && !doneSlots.has(index) ? pendingSlot : undefined;
 
@@ -353,6 +383,20 @@ export function ReviewPage({
         )}
       </div>
 
+      {heldCards > 0 && (
+        <p className="review-settings-muted" data-testid="review-waiting-word-list">
+          {waitingForWordList(heldCards)} ·{' '}
+          <button
+            type="button"
+            className="link-button"
+            data-testid="review-reload-word-list"
+            onClick={() => void reloadLexicon()}
+          >
+            {RELOAD}
+          </button>
+        </p>
+      )}
+
       {nope && (
         <NopeToast
           word={nope.word}
@@ -378,7 +422,7 @@ export function ReviewPage({
           cardIds={slotCardIds}
           onFinished={() => setDoneSlots((d) => new Set(d).add(index))}
         />
-      ) : !current ? (
+      ) : !atResolves ? null : !current ? (
         <div className="review-done" data-testid="review-done">
           <EmptySprout />
           {lesson && answered.size > 0 && (

@@ -3,6 +3,18 @@
 Notable changes that affect how An'an is run. Phase-by-phase features are in the
 `CLAUDE.md` phase table.
 
+## Phase 38 (2026-10-13)
+
+- The app's data files (lexicon, scenarios, sentence banks, textbook) are published under
+  content-hashed names listed in `data-manifest.json` (written by the `sync:*` scripts). A browser
+  picks up a new build on its next visit or when the app comes back to the foreground; old cached
+  word lists no longer outlive a deploy. Plain names (`lexicon/lexicon.v2.json`) are still written
+  for scripts and tests. No server or nginx change.
+- New `POST /v1/client-log` (household code): the app reports the ids of cards whose word is
+  missing from a fresh word list. It goes to the proxy's log (`pm2 logs an-an-proxy`).
+- New CI step `pnpm audit:data`: every id in book.json, extras.yaml, the sentence banks,
+  scenarios and id-map.json must be in the lexicon.
+
 ## Phase 30 Part B (2026-10-09)
 
 - `pnpm stories:build` is safe to rerun and says so. It waits out rate limits and stops cleanly

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ScenarioFileSchema, type Scenario } from '@anan/core';
+import { dataUrl } from './data-files.js';
 
 export type ScenariosLoadState =
   | { status: 'loading' }
@@ -15,7 +16,8 @@ export function useScenarios(): ScenariosLoadState {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(`${import.meta.env.BASE_URL}scenarios/scenarios.json`)
+    dataUrl('scenarios/scenarios.json')
+      .then((url) => fetch(url))
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();

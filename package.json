@@ -22,6 +22,7 @@
     "curriculum:extras": "pnpm --filter @anan/data-pipeline curriculum:extras",
     "curriculum:content": "pnpm --filter @anan/data-pipeline curriculum:content",
     "audit:curriculum": "pnpm --filter @anan/data-pipeline audit:curriculum",
+    "audit:data": "pnpm --filter @anan/data-pipeline audit:data",
     "stories:build": "pnpm --filter @anan/data-pipeline stories:build",
     "eval:journal": "pnpm --filter @anan/proxy journal-cloze-eval",
     "eval:stories": "pnpm --filter @anan/proxy stories-eval",

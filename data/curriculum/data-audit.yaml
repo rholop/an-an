@@ -1,0 +1,22 @@
+# Phase 38 Part D: settings for `pnpm audit:data` (packages/data-pipeline/src/audit-data.ts).
+#
+# id-map.json ids that are NOT in the lexicon on purpose. The audit fails on any other missing id,
+# and on an entry here that no longer matches (the id is back in the lexicon, or gone from id-map).
+retiredIdMapIds:
+  # Minted by the Phase 12/13 textbook imports, then matched to an existing entry before any lexicon
+  # shipped them (checked with `git log -S <id> -- data/build/lexicon.v2.json`): no card can hold them.
+  tb-e3347d90f8: 姓 (laixue-1), never shipped
+  tb-6e480a2ba3: 貴姓 (laixue-1), never shipped
+  tb-fcefdec114: 他 (laixue-1), never shipped
+  tb-d0354ff9c8: 兄弟姊妹 (laixue-1), never shipped
+  tb-3c64d8b1a1: 太陽眼鏡 (laixue-2), never shipped
+  tb-a97805f112: 超級市場 (laixue-2), never shipped
+  tb-d9ad3452bf: 東方美人茶 (laixue-3), never shipped
+  tb-a71848363d: 便利商店 (laixue-4), never shipped
+  tb-7c8d51889f: 珍珠奶茶 (laixue-4), never shipped
+  # MOE compounds in the lexicon from 2026-10-03 (7da3771) to 2026-10-04 (88ab5df), replaced by the
+  # textbook's entries. A card made in those two days is listed under Settings → Your progress →
+  # "Cards with missing words" (Phase 38) instead of being shown as "(unknown item)".
+  moec-73b86e6656: 太平洋, now tb-3c14dbd5fd
+  moec-0bdfe7a75a: 明文, now tb-0a4cafd113
+  moec-cf52c127df: 阿美族, now tb-d40b2d23af

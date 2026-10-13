@@ -3,9 +3,10 @@
 // carry NO text from the book itself — dialogues and the book's own example
 // sentences stay in data/curriculum/*/private and are served only by the proxy
 // behind the household code.
-import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { publishDataFile, pruneManifest } from './data-manifest.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
@@ -20,9 +21,9 @@ for (const id of BOOKS) {
     );
     continue;
   }
-  const dest = path.join(__dirname, '../public/textbook', id);
-  mkdirSync(dest, { recursive: true });
-  copyFileSync(src, path.join(dest, 'book.json'));
-  if (existsSync(sentences)) copyFileSync(sentences, path.join(dest, 'sentences.json'));
-  console.log(`sync-textbook: copied ${id} to ${dest}`);
+  // Phase 38: plain and content-hashed copies, so the book and the word list come from one build.
+  publishDataFile(src, `textbook/${id}/book.json`);
+  if (existsSync(sentences)) publishDataFile(sentences, `textbook/${id}/sentences.json`);
+  console.log(`sync-textbook: copied ${id} to public/textbook/${id}`);
 }
+pruneManifest('textbook/');

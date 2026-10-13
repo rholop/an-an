@@ -50,6 +50,11 @@ jobs:
       - name: Curriculum audit
         run: pnpm audit:curriculum
 
+      # Phase 38: every word / grammar id in book.json, extras.yaml, the sentence banks, scenarios
+      # and id-map.json is in the lexicon (a missing one is a review card the app can't show).
+      - name: Data id audit
+        run: pnpm audit:data
+
       - name: Unit tests
         run: pnpm test
 
