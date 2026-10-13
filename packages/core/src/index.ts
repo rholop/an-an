@@ -27,6 +27,7 @@ export * from './cloze/source.js';
 export * from './cloze/grading.js';
 export * from './cloze/exercise.js';
 export * from './cloze/session.js';
+export * from './cloze/cloze.config.js';
 export * from './hash.js';
 export * from './cloze/check-journal-cloze.js';
 export * from './cloze/report.js';

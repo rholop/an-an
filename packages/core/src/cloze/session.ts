@@ -7,8 +7,9 @@ import {
   RECURRING_PATTERN_MIN,
   selectDueErrorItems,
 } from '../journal/error-bank.js';
-import type { Word } from '../types.js';
-import { isNewCard } from '../progress/terms.js';
+import type { Evidence, Word } from '../types.js';
+import { CLOZE_CONFIG } from './cloze.config.js';
+import { compareOverdue, isNewCard } from '../progress/terms.js';
 import { itemKey, orderSession, seededRng, type OrderedSession, type SessionCard } from '../session/orderSession.js';
 import {
   selectClozeSource,
@@ -19,10 +20,16 @@ import {
 export type ExerciseKind = 'word_bank' | 'multiple_choice' | 'typed';
 
 export interface SessionItem {
+  /** Phase 37: the card the exercise uses (the word's most overdue card; production on a tie). */
   card: SkillCard;
+  /** Phase 37: the word's other cards in this session (credited with the same answer when
+   * `CLOZE_CONFIG.creditAllFacesOfWord` is on). Absent or empty = the word has one card here. */
+  siblings?: SkillCard[];
   word: Word;
   exerciseKind: ExerciseKind;
   source: ClozeSourceCandidate | null;
+  /** Phase 37: a retry later in the sitting (shown with an "Again" label), not a duplicate. */
+  again?: true;
 }
 
 export interface SessionConfig {
@@ -82,6 +89,45 @@ function describeEntry(e: SessionEntry): SessionCard {
 const seedFrom = (options: BuildSessionOptions, rng: () => number) =>
   options.seed ?? `cloze-${Math.floor(rng() * 2 ** 32).toString(36)}`;
 
+/** Phase 37: what a cloze session left out, for the session log. */
+export interface ClozeSessionMeta {
+  /** Words left out because every sentence they have is already used in this session. */
+  skippedNoFreshSentence: string[];
+}
+
+const CLOZE_META = Symbol.for('anan.clozeSessionMeta');
+
+function withClozeMeta<T>(session: OrderedSession<T>, meta: ClozeSessionMeta): OrderedSession<T> {
+  Object.defineProperty(session, CLOZE_META, { value: meta, enumerable: false });
+  return session;
+}
+
+/** Phase 37: the session meta of a `buildSession` / `buildMixedSession` result. */
+export function clozeSessionMeta(session: readonly unknown[]): ClozeSessionMeta | undefined {
+  return (session as unknown as Record<symbol, ClozeSessionMeta | undefined>)[CLOZE_META];
+}
+
+/** Phase 37: one group per word; the shown card is the most overdue, production on a tie. */
+interface WordGroup {
+  card: SkillCard;
+  siblings: SkillCard[];
+}
+
+function groupByWord(cards: readonly SkillCard[]): WordGroup[] {
+  const byId = new Map<string, SkillCard[]>();
+  for (const c of cards) {
+    const list = byId.get(c.item.id) ?? [];
+    if (!list.some((x) => x.skill === c.skill)) list.push(c);
+    byId.set(c.item.id, list);
+  }
+  return [...byId.values()].map((list) => {
+    const [card, ...siblings] = [...list].sort(
+      (a, b) => compareOverdue(a, b) || Number(b.skill === 'production') - Number(a.skill === 'production'),
+    );
+    return { card: card!, siblings };
+  });
+}
+
 /**
  * Phase 4 §6 session builder: new items first (the caller's allowance), fills the rest from due
  * review/mature cards, interleaves (a plain shuffle — "across topics and
@@ -89,6 +135,9 @@ const seedFrom = (options: BuildSessionOptions, rng: () => number) =>
  * and resolves each item's cloze source (phase doc §2's priority order) so
  * the UI can show where it came from. Only word items are supported (no
  * grammar-pattern cloze yet); grammar cards in `dueCards` are skipped.
+ *
+ * Phase 37: one item per word (its recognition and production cards share it), and no sentence
+ * twice in a session: a word whose only sentences are already used is left out.
  */
 export function buildSession(dueCards: SkillCard[], options: BuildSessionOptions): OrderedSession<SessionItem> {
   // Phase 21: every random choice comes from the session seed, so a logged seed rebuilds it exactly.
@@ -96,43 +145,81 @@ export function buildSession(dueCards: SkillCard[], options: BuildSessionOptions
   const config = { ...DEFAULT_SESSION_CONFIG, ...options.config };
 
   // Phase 21: "New" is the shared definition (never answered); everything else is a due card.
-  const wordCards = dueCards.filter((c) => c.item.kind === 'word');
-  const newCards = wordCards.filter((c) => isNewCard(c));
-  const reviewCards = wordCards.filter((c) => !isNewCard(c));
+  // Phase 37: a word counts as new only when all its cards here are new.
+  const groups = groupByWord(dueCards.filter((c) => c.item.kind === 'word'));
+  const isNewGroup = (g: WordGroup) => isNewCard(g.card) && g.siblings.every((c) => isNewCard(c));
+  const newGroups = groups.filter(isNewGroup);
+  const reviewGroups = groups.filter((g) => !isNewGroup(g));
 
   // Phase 5 gap capture: unreviewed words the learner needed mid-journal go
   // to the front of the new-item allowance, ahead of the shuffled rest.
-  const isPriority = (c: SkillCard) => c.flags.priority === true;
-  const byRank = <T extends SkillCard>(cards: T[]): T[] => {
+  const isPriority = (g: WordGroup) => [g.card, ...g.siblings].some((c) => c.flags.priority === true);
+  const byRank = (list: WordGroup[]): WordGroup[] => {
     const rank = options.rank;
-    if (!rank) return cards;
-    return cards
-      .map((c, i) => ({ c, i, r: rank(c) }))
+    if (!rank) return list;
+    return list
+      .map((g, i) => ({ g, i, r: Math.min(...[g.card, ...g.siblings].map(rank)) }))
       .sort((a, b) => a.r - b.r || a.i - b.i)
-      .map((x) => x.c);
+      .map((x) => x.g);
   };
-  const cappedNew = [
-    ...shuffle(newCards.filter(isPriority), rng),
+  // Phase 29 Part B.4: the caller passes New cards already capped by the ledger's Cloze allowance.
+  const orderedNew = [
+    ...shuffle(newGroups.filter(isPriority), rng),
     ...byRank(
       shuffle(
-        newCards.filter((c) => !isPriority(c)),
+        newGroups.filter((g) => !isPriority(g)),
         rng,
       ),
     ),
-  ].slice(0, config.maxItems);
-  // Phase 29 Part B.4: the caller passes New cards already capped by the ledger's Cloze allowance.
-  const remainingSlots = Math.max(0, config.maxItems - cappedNew.length);
-  const pool = shuffle([...cappedNew, ...byRank(shuffle(reviewCards, rng)).slice(0, remainingSlots)], rng);
+  ];
+  const orderedReview = byRank(shuffle(reviewGroups, rng));
 
-  const items: SessionItem[] = [];
-  for (const card of pool) {
-    const word = options.lexicon.byId(card.item.id);
-    if (!word) continue; // stale/renamed id — skip rather than crash a whole session
-    const source = selectClozeSource(word, options);
-    items.push({ card, word, exerciseKind: exerciseKindForRung(card.clozeRung), source });
-  }
-  // Phase 19: the shared order — a word's recognition and production clozes never side by side.
-  return orderSession(items, describeItem, { seed: seedFrom(options, rng), recent: options.recent });
+  const usedZh = new Set<string>();
+  const skippedNoFreshSentence: string[] = [];
+  const take = (list: WordGroup[], max: number): SessionItem[] => {
+    const out: SessionItem[] = [];
+    for (const g of list) {
+      if (out.length >= max) break;
+      const word = options.lexicon.byId(g.card.item.id);
+      if (!word) continue; // stale/renamed id — skip rather than crash a whole session
+      const source = selectClozeSource(word, { ...options, usedZh });
+      if (!source && usedZh.size > 0 && selectClozeSource(word, options)) {
+        skippedNoFreshSentence.push(word.id); // its only sentences are already in this session
+        continue;
+      }
+      if (source) usedZh.add(source.zh.trim());
+      out.push({
+        card: g.card,
+        ...(g.siblings.length ? { siblings: g.siblings } : {}),
+        word,
+        exerciseKind: exerciseKindForRung(g.card.clozeRung),
+        source,
+      });
+    }
+    return out;
+  };
+  const newItems = take(orderedNew, config.maxItems);
+  const reviewItems = take(orderedReview, Math.max(0, config.maxItems - newItems.length));
+  const items = shuffle([...newItems, ...reviewItems], rng);
+  // Phase 19: the shared order (a word's items, e.g. an Again retry, never side by side).
+  const ordered = orderSession(items, describeItem, { seed: seedFrom(options, rng), recent: options.recent });
+  return withClozeMeta(ordered, { skippedNoFreshSentence });
+}
+
+export type ClozeEvidenceKind = 'cloze_correct_nohint' | 'cloze_correct_hint' | 'cloze_wrong';
+
+/**
+ * Phase 37: the evidence one cloze answer records: the shown card, then (with
+ * `creditAllFacesOfWord`) each of the word's other cards in this session, same rating.
+ */
+export function clozeAnswerEvidence(
+  item: Pick<SessionItem, 'card' | 'siblings'>,
+  kind: ClozeEvidenceKind,
+  at: Date,
+  config: { creditAllFacesOfWord: boolean } = CLOZE_CONFIG,
+): Evidence[] {
+  const cards = [item.card, ...(config.creditAllFacesOfWord ? (item.siblings ?? []) : [])];
+  return cards.map((c) => ({ item: c.item, skill: c.skill, kind, at }));
 }
 
 export type SessionEntry =
@@ -174,9 +261,10 @@ export function buildMixedSession(
     ...rest.map((error) => ({ e: { kind: 'error', error } as SessionEntry, band: 1 })),
   ];
   const bandOf = new Map(entries.map((x) => [x.e, x.band]));
-  return orderSession(
+  const ordered = orderSession(
     entries.map((x) => x.e),
     (e) => ({ ...describeEntry(e), band: bandOf.get(e) ?? 1 }),
     { seed: seedFrom(options, rng), recent: options.recent },
   );
+  return withClozeMeta(ordered, clozeSessionMeta(cards) ?? { skippedNoFreshSentence: [] });
 }

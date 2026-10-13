@@ -74,6 +74,15 @@ export function overdueDaysAt(c: Pick<SkillCard, 'state' | 'card'> | undefined, 
   return Math.max(0, (at.getTime() - new Date(c.card.due).getTime()) / 86_400_000);
 }
 
+/** Phase 37: sort order "most overdue first" (earliest due; New and unseen cards last). */
+export function compareOverdue(a: Pick<SkillCard, 'state' | 'card'>, b: Pick<SkillCard, 'state' | 'card'>): number {
+  const dueAt = (c: Pick<SkillCard, 'state' | 'card'>) =>
+    c.state === 'unseen' || c.state === 'introduced' ? Infinity : new Date(c.card.due).getTime();
+  const da = dueAt(a);
+  const db = dueAt(b);
+  return da === db ? 0 : da < db ? -1 : 1;
+}
+
 /** Answered at least once and not removed by Nope: the card takes part in review sessions. */
 export function isScheduledCard(c: Pick<SkillCard, 'state' | 'card' | 'flags'>): boolean {
   return c.state !== 'unseen' && c.card.reps > 0 && isActiveCard(c);

@@ -51,6 +51,9 @@ export interface SelectClozeSourceOptions {
    * `new_context` treatment (learner/leech.ts) to force a sentence the
    * learner hasn't already seen for this item. */
   excludeZh?: ReadonlySet<string>;
+  /** Phase 37: sentences already used in this session. Skipped in favour of the word's next
+   * candidate, so no sentence is shown twice in one session. */
+  usedZh?: ReadonlySet<string>;
 }
 
 function containsWord(zh: string, word: Word): boolean {
@@ -122,7 +125,7 @@ export function selectClozeSource(
   word: Word,
   opts: SelectClozeSourceOptions,
 ): ClozeSourceCandidate | null {
-  const excluded = (zh: string) => !isUsableSentence(zh, opts.excludeZh);
+  const excluded = (zh: string) => !isUsableSentence(zh, opts.excludeZh) || (opts.usedZh?.has(zh.trim()) ?? false);
 
   for (const j of opts.journalSentences ?? []) {
     if (!excluded(j.zh) && containsWord(j.zh, word) && passesCoverage(j.zh, word, opts)) {

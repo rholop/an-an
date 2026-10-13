@@ -180,7 +180,7 @@ test.describe('numbers agree (Phase 29)', () => {
       await open(page, 'cloze');
       const start = page.getByTestId('cloze-start');
       await expect(start.or(page.getByTestId('cloze-empty'))).toBeVisible();
-      const clozeItems = (await start.isVisible()) ? await num(start, /\((\d+) items?\)/) : 0;
+      const clozeItems = (await start.isVisible()) ? await num(start, /\((\d+) words?\)/) : 0;
       expect(clozeItems).toBeLessThanOrEqual(want.session + 5);
       if (want.session > 0) expect(clozeItems).toBeGreaterThan(0);
 

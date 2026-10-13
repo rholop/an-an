@@ -18,6 +18,7 @@ import { DEFAULT_SESSION_SETTINGS, zonedDate, type SessionSettings } from './rev
 import { isActiveCard, isNewCard, levelItems } from './terms.js';
 import { activeDaysFromHistory } from './active-days.js';
 import { computeStreak } from '../game/streak.js';
+import { buildSession, clozeAnswerEvidence } from '../cloze/session.js';
 
 const HEADWORDS = [...'貓狗魚鳥馬牛羊雞鴨豬茶水書筆車船門窗山河'];
 const word = (hw: string, i: number): Word => ({
@@ -138,7 +139,7 @@ const stateArb = fc.record({
 
 type State = typeof stateArb extends fc.Arbitrary<infer T> ? T : never;
 
-function ledgerOf(s: State, over: { book?: Textbook; config?: PriorityConfig } = {}): Ledger {
+function ledgerOf(s: State, over: { book?: Textbook; config?: PriorityConfig; extra?: (now: Date) => Evidence[] } = {}): Ledger {
   const settings: SessionSettings = { ...DEFAULT_SESSION_SETTINGS, timeZone: s.zone, capPerSession: s.cap };
   const now = zonedDate(s.day[0], s.day[1], s.day[2], s.hour, s.minute, s.zone);
   const evidence: Evidence[] = s.events
@@ -156,6 +157,7 @@ function ledgerOf(s: State, over: { book?: Textbook; config?: PriorityConfig } =
       } as Evidence;
     })
     .concat(ITEMS.flatMap((item, i) => seedEvidence(item, s.seeds[i]!, now)))
+    .concat(over.extra?.(now) ?? [])
     .sort((a, b) => a.at.getTime() - b.at.getTime());
   const cards = new Map<string, SkillCard>();
   for (const ev of evidence) {
@@ -369,6 +371,32 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
         expect(added.length).toBeGreaterThanOrEqual(0);
       }),
       RUNS,
+    );
+  });
+});
+
+describe('Phase 37: one cloze per word, credited on every card of the word in session', () => {
+  it('a correct cloze answer drops Review\'s session by 2 (flag on) or 1 (flag off)', () => {
+    fc.assert(
+      fc.property(stateArb, fc.boolean(), (s0, creditAll) => {
+        // w0 seeded overdue (recognition, production, reading) and a cap that never binds.
+        const s = { ...s0, cap: 80, seeds: ['overdue' as Seed, ...s0.seeds.slice(1)] };
+        const before = ledgerOf(s);
+        const inSession = before.session().cards.filter((c) => c.item.id === 'w0' && c.skill !== 'reading');
+        fc.pre(inSession.length === 2);
+        const session = buildSession(
+          before.session().cards.filter((c) => c.skill !== 'reading'),
+          { lexicon, knownIds: new Set(), learnerLevel: 'L5', seed: 'p37', config: { maxItems: 100 } },
+        );
+        // One question per word: never the same word twice.
+        expect(new Set(session.map((i) => i.word.id)).size).toBe(session.length);
+        const item = session.find((i) => i.word.id === 'w0')!;
+        const after = ledgerOf(s, {
+          extra: (now) => clozeAnswerEvidence(item, 'cloze_correct_nohint', now, { creditAllFacesOfWord: creditAll }),
+        });
+        expect(before.session().cards.length - after.session().cards.length).toBe(creditAll ? 2 : 1);
+      }),
+      { numRuns: 150 },
     );
   });
 });

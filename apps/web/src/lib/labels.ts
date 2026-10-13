@@ -393,3 +393,16 @@ export const STREAK_KEEP_GROWING = 'Water something today to keep it growing';
 /** The bar's spoken label: the whole sentence, and where tapping goes. */
 export const streakAria = (current: number, best: number, activeToday: boolean): string =>
   `${current}-day streak, best ${best}. ${activeToday ? 'Today counts already.' : `${STREAK_KEEP_GROWING}.`} Open Progress.`;
+
+/** Phase 37: Cloze's start button counts words (one question each) and journal sentences. */
+export const clozeStartLabel = (session: readonly { kind: 'card' | 'error' }[]): string => {
+  const words = session.filter((e) => e.kind === 'card').length;
+  const sentences = session.length - words;
+  const parts = [
+    ...(words ? [`${words} word${words === 1 ? '' : 's'}`] : []),
+    ...(sentences ? [`${sentences} journal sentence${sentences === 1 ? '' : 's'}`] : []),
+  ];
+  return `Start session (${parts.join(', ')})`;
+};
+/** Phase 37: a cloze retry later in the sitting. */
+export const AGAIN = 'Again';

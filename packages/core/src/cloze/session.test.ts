@@ -4,7 +4,9 @@ import { emptyCard } from '../learner/fsrs-instance.js';
 import type { SkillCard } from '../learner/types.js';
 import type { Word } from '../types.js';
 import type { ChatLineSource } from './source.js';
-import { buildSession, type BuildSessionOptions } from './session.js';
+import { buildSession, clozeAnswerEvidence, clozeSessionMeta, type BuildSessionOptions, type SessionItem } from './session.js';
+import { CLOZE_CONFIG } from './cloze.config.js';
+import { requeueAgain } from '../session/orderSession.js';
 
 function word(partial: Partial<Word> & Pick<Word, 'id' | 'headword'>): Word {
   return {
@@ -137,5 +139,108 @@ describe('Phase 14: textbook-first rank', () => {
   it('without a rank nothing is forced', () => {
     const items = buildSession(cards, opts);
     expect(items).toHaveLength(3);
+  });
+});
+
+describe('Phase 37: one cloze per word, no sentence twice', () => {
+  const filler = word({ id: 'filler', headword: '好' });
+  const CHARS = ['書', '筆', '燈', '椅', '窗', '門'];
+  const words = CHARS.map((hw, i) => word({ id: `w${i}`, headword: hw }));
+  const lexicon = new Lexicon([filler, ...words]);
+  const bankSentences = words.map((w, i) => ({
+    id: `s${i}`,
+    zh: `好${w.headword}`,
+    en: '',
+    targetWordId: w.id,
+    level: 'N1' as const,
+    source: 'generated' as const,
+  })) as unknown as BuildSessionOptions['bankSentences'];
+  const opts: BuildSessionOptions = { lexicon, knownIds: new Set(['filler']), learnerLevel: 'N1', bankSentences, seed: 'p37' };
+  const due = (days: number) => ({ ...emptyCard(NOW), due: new Date(NOW.getTime() - days * 86_400_000), reps: 3 });
+
+  it("owner's case: 6 words with recognition and production in session give 6 questions, each its own sentence", () => {
+    const cards = words.flatMap((w) => [card(w), card(w, { skill: 'production' })]);
+    const items = buildSession(cards, opts);
+    expect(items).toHaveLength(6);
+    expect(new Set(items.map((i) => i.word.id)).size).toBe(6);
+    expect(new Set(items.map((i) => i.source?.zh)).size).toBe(6);
+    for (const i of items) expect(i.siblings).toHaveLength(1);
+  });
+
+  it('the exercise uses the most overdue card; production on a tie', () => {
+    const [a, b] = words;
+    const items = buildSession(
+      [
+        card(a!, { card: due(5) }),
+        card(a!, { skill: 'production', card: due(1) }),
+        card(b!, { card: due(2) }),
+        card(b!, { skill: 'production', card: due(2) }),
+      ],
+      opts,
+    );
+    const byWord = new Map(items.map((i) => [i.word.id, i]));
+    expect(byWord.get(a!.id)!.card.skill).toBe('recognition');
+    expect(byWord.get(a!.id)!.siblings!.map((c) => c.skill)).toEqual(['production']);
+    expect(byWord.get(b!.id)!.card.skill).toBe('production');
+  });
+
+  it('a word with a review card and a new card counts once (as a review word)', () => {
+    const [a] = words;
+    const items = buildSession([card(a!, { card: due(1) }), card(a!, { skill: 'production', state: 'introduced' })], opts);
+    expect(items).toHaveLength(1);
+    expect(items[0]!.card.skill).toBe('recognition');
+  });
+
+  it('two words whose only sentence is the same: one gets it, the other is left out (logged in the meta)', () => {
+    const x = word({ id: 'x', headword: '貓' });
+    const y = word({ id: 'y', headword: '狗' });
+    const lex = new Lexicon([filler, x, y]);
+    const shared = [
+      { id: 'sx', zh: '貓狗', en: '', targetWordId: 'x', level: 'N1', source: 'generated' },
+      { id: 'sy', zh: '貓狗', en: '', targetWordId: 'y', level: 'N1', source: 'generated' },
+    ] as unknown as BuildSessionOptions['bankSentences'];
+    const items = buildSession([card(x), card(y)], { ...opts, lexicon: lex, knownIds: new Set(['x', 'y', 'filler']), bankSentences: shared });
+    expect(items).toHaveLength(1);
+    expect(items[0]!.source?.zh).toBe('貓狗');
+    const left = items[0]!.word.id === 'x' ? 'y' : 'x';
+    expect(clozeSessionMeta(items)?.skippedNoFreshSentence).toEqual([left]);
+  });
+
+  it('two words sharing one sentence: the second uses its next candidate', () => {
+    const x = word({ id: 'x', headword: '貓' });
+    const y = word({ id: 'y', headword: '狗' });
+    const lex = new Lexicon([filler, x, y]);
+    const bank = [
+      { id: 'sx', zh: '貓狗', en: '', targetWordId: 'x', level: 'N1', source: 'generated' },
+      { id: 'sy', zh: '貓狗', en: '', targetWordId: 'y', level: 'N1', source: 'generated' },
+      { id: 'sy2', zh: '好狗', en: '', targetWordId: 'y', level: 'N1', source: 'generated' },
+      { id: 'sx2', zh: '好貓', en: '', targetWordId: 'x', level: 'N1', source: 'generated' },
+    ] as unknown as BuildSessionOptions['bankSentences'];
+    const items = buildSession([card(x), card(y)], { ...opts, lexicon: lex, knownIds: new Set(['x', 'y', 'filler']), bankSentences: bank });
+    expect(items).toHaveLength(2);
+    expect(new Set(items.map((i) => i.source?.zh)).size).toBe(2);
+    expect(clozeSessionMeta(items)?.skippedNoFreshSentence).toEqual([]);
+  });
+
+  it('crediting: one evidence row per card of the word in this session (flag on), only the shown card (flag off)', () => {
+    const [a] = words;
+    const [item] = buildSession([card(a!), card(a!, { skill: 'production' })], opts);
+    const on = clozeAnswerEvidence(item!, 'cloze_correct_nohint', NOW, { creditAllFacesOfWord: true });
+    expect(on.map((e) => e.skill).sort()).toEqual(['production', 'recognition']);
+    expect(on.every((e) => e.kind === 'cloze_correct_nohint' && e.item.id === a!.id)).toBe(true);
+    const off = clozeAnswerEvidence(item!, 'cloze_correct_nohint', NOW, { creditAllFacesOfWord: false });
+    expect(off).toEqual([{ item: item!.card.item, skill: item!.card.skill, kind: 'cloze_correct_nohint', at: NOW }]);
+    expect(CLOZE_CONFIG.creditAllFacesOfWord).toBe(true);
+  });
+
+  it('a wrong answer still requeues once ("Again"), never side by side', () => {
+    const cards = words.flatMap((w) => [card(w), card(w, { skill: 'production' })]);
+    const items = buildSession(cards, opts);
+    const describe = (i: SessionItem) => ({ keys: [`word:${i.word.id}`] });
+    const after = requeueAgain(items, 0, describe);
+    expect(after).toHaveLength(items.length + 1);
+    const again = after.map((x, i) => [x.word.id, i] as const).filter(([id]) => id === items[0]!.word.id);
+    expect(again).toHaveLength(2);
+    expect(again[1]![1] - again[0]![1]).toBeGreaterThan(1);
   });
 });

@@ -18,6 +18,8 @@ import {
   buildReorderExercise,
   buildMixedSession,
   buildWordBankOptions,
+  clozeAnswerEvidence,
+  clozeSessionMeta,
   gradeClozeAnswer,
   reviewErrorItem,
   selectDueErrorItems,
@@ -101,6 +103,8 @@ import {
   NEXT,
   NOTHING_DUE,
   UNDO,
+  AGAIN,
+  clozeStartLabel,
   feedbackWrong,
 } from '../lib/labels.js';
 import { glossFor } from '@anan/core';
@@ -168,7 +172,9 @@ export function ClozePage() {
   function requeueStep(replace: SessionEntry): SessionEntry[] | undefined {
     if (!session) return undefined;
     const prev = session;
-    setSession(requeueInSitting(session, index, describeClozeEntry, { replace }));
+    // Phase 37: the retry copy says "Again" (the card just answered stays as it was shown).
+    const next = requeueInSitting(session, index, describeClozeEntry, { replace });
+    setSession(next.map((e, i) => (i !== index && e === replace && e.kind === 'card' ? { ...e, item: { ...e.item, again: true as const } } : e)));
     return prev;
   }
   // Phase 21: a missed error-bank item comes back once later in the session ("Again", as in Review).
@@ -358,6 +364,9 @@ export function ClozePage() {
     if (!planned || lexiconState.status !== 'ready') return;
     const { built, seed } = planned;
     logSessionOrder('cloze', seed, built.length, sessionMeta(built)?.deferred.length ?? 0);
+    // Phase 37: words left out because their only sentences were already in this session.
+    const skipped = clozeSessionMeta(built)?.skippedNoFreshSentence ?? [];
+    if (skipped.length) console.info(`[session] cloze left out (no fresh sentence): ${skipped.join(', ')}`);
     answered.current.clear();
     sessionRunning.current = true;
     setUndoable(null);
@@ -411,22 +420,23 @@ export function ClozePage() {
   async function recordOutcome(item: SessionItem, outcome: Outcome) {
     const now = new Date();
     noteShown(describeClozeEntry({ kind: 'card', item }).keys, now);
-    const evidence = {
-      item: item.card.item,
-      skill: item.card.skill,
-      kind: evidenceKindFor(outcome),
-      at: now,
-    };
-    const handle = await learnerService.recordUndoable(evidence, now);
+    // Phase 37: one cloze per word; the answer counts for each of the word's cards in this session.
+    const [evidence, ...others] = clozeAnswerEvidence(item, evidenceKindFor(outcome), now);
+    const handle = await learnerService.recordUndoable(evidence!, now);
+    const otherHandles: { undo: () => Promise<void> }[] = [];
+    for (const e of others) otherHandles.push(await learnerService.recordUndoable(e, now));
     const prevSession = stepInSitting(handle.card, now)
       ? requeueStep({ kind: 'card', item: { ...item, card: handle.card! } })
       : undefined;
     answered.current.set(index, {
       outcome,
       ...(prevSession ? { prevSession } : {}),
-      undo: handle.undo,
+      undo: async () => {
+        for (const h of [...otherHandles].reverse()) await h.undo();
+        await handle.undo();
+      },
       redo: async () => {
-        await learnerService.record(evidence, now);
+        for (const e of [evidence!, ...others]) await learnerService.record(e, now);
       },
     });
     setTally((t) => ({
@@ -643,7 +653,7 @@ export function ClozePage() {
               </p>
             )}
             <button className="btn-primary" onClick={startSession} data-testid="cloze-start">
-              Start session ({planned.built.length} item{planned.built.length === 1 ? '' : 's'})
+              {clozeStartLabel(planned.built)}
             </button>
           </>
         )}
@@ -763,6 +773,7 @@ export function ClozePage() {
             {index + 1} of {session.length}
           </span>
           {undoEl}
+        {item.again && <span className="cloze-badge" data-testid="cloze-again">{AGAIN}</span>}
         <span className="cloze-badge">Rung {item.card.clozeRung}</span>
         <span className="cloze-badge">{item.card.skill}</span>
       </div>
