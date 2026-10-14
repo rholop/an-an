@@ -19,7 +19,7 @@ import {
 } from '@anan/core';
 import type { AnanDB, TutorSessionRow } from '../../db/schema.js';
 import { markStudyDirty } from '../study-dirty.js';
-import type { TaiwanConverters } from './opencc.js';
+import type { TaiwanConverters } from '../opencc.js';
 
 export interface DraftResult {
   draft: TutorDraft;

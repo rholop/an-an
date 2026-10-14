@@ -5,7 +5,7 @@ import { getLedgerNow } from '../ledger.js';
 import { reloadTutorLessons } from '../study.js';
 import { FetchTutorLLM } from '../tutor-llm.js';
 import { ensureTutorCards } from './introduce.js';
-import { loadTaiwanConverters } from './opencc.js';
+import { loadTaiwanConverters } from '../opencc.js';
 import { TutoringService, type DraftResult } from './tutoring-service.js';
 
 export function appTutoringService(lexicon: Lexicon): TutoringService {

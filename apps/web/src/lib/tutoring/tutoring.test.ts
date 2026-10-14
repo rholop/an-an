@@ -20,7 +20,7 @@ import { exportBackup } from '../../db/backup.js';
 import { mergeBackups } from '../../db/merge.js';
 import { ledgerFrom } from '../ledger.js';
 import { ProxyTurnError } from '../tutor-llm.js';
-import { loadTaiwanConverters } from './opencc.js';
+import { loadTaiwanConverters } from '../opencc.js';
 import { TutoringService } from './tutoring-service.js';
 import { ensureTutorCards } from './introduce.js';
 import { DexieLearnerRepo } from '../../db/learner-repo.js';

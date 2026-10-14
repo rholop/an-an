@@ -90,6 +90,22 @@ describe('Phase 21 architecture', () => {
     expect(bad).toEqual([]);
   });
 
+  it('the simplified hint is on flashcards only (Phase 41): never in Cloze, chat, the Reader, stories, journal or lessons', () => {
+    const users = FILES.filter((f) => /\bWithSimplified\b|components\/SimplifiedHint\.js/.test(f.text)).map((f) => f.rel);
+    expect(users.sort()).toEqual(
+      [
+        'apps/web/src/components/SimplifiedHint.tsx',
+        'apps/web/src/pages/ReviewCard.tsx', // Review and Water all
+        'apps/web/src/pages/ReviewSettingsPage.tsx', // the setting only
+      ].sort(),
+    );
+    // the settings page only reads the setting key, it never renders the hint
+    const settings = FILES.find((f) => f.rel === 'apps/web/src/pages/ReviewSettingsPage.tsx')!;
+    expect(settings.text).not.toMatch(/<WithSimplified/);
+    // and nothing else converts to simplified
+    expect(offenders(/\bloadSimplifier\b|opencc-js\/t2cn/, (rel) => ['apps/web/src/lib/opencc.ts', 'apps/web/src/components/SimplifiedHint.tsx'].includes(rel))).toEqual([]);
+  });
+
   it('every colour is a theme token (Phase 22): none written outside src/theme.css', () => {
     const colour = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(|\b(Canvas|CanvasText|ButtonFace|ButtonText|GrayText)\b/;
     const css: { rel: string; text: string }[] = [];

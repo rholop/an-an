@@ -248,6 +248,8 @@ export const NOT_WHAT_I_MEANT = 'Not what I meant';
 export const WORDS_FROM_THIS_CHAT = 'Words from this chat';
 export const IN_REVIEW = 'in review';
 export const SHOW_CORRECTIONS = 'Show corrections';
+/** Phase 41: Settings → Review. */
+export const SHOW_SIMPLIFIED = 'Show simplified characters on flashcards';
 export const chatWordsCount = (n: number): string => `📚 ${n}`;
 export const CHAT_WORD_SOURCE: Record<'gap' | 'lookup' | 'glossed' | 'corrected', string> = {
   gap: 'your gap',

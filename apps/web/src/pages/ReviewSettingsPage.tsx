@@ -15,7 +15,8 @@ import { markStudyDirty } from '../lib/study-dirty.js';
 import { NOPE_LABELS, nopeSnapshot } from '../lib/nope.js';
 import { applyCleanup, cleanupPreview, removedWords } from '../lib/review-cleanup.js';
 import { updateReviewSettings, useReviewSettings } from '../lib/review-settings.js';
-import { SESSION_NAME, SHOW_CORRECTIONS } from '../lib/labels.js';
+import { SESSION_NAME, SHOW_CORRECTIONS, SHOW_SIMPLIFIED } from '../lib/labels.js';
+import { SIMPLIFIED_HINT_SETTING } from '../components/SimplifiedHint.js';
 import { useSetting } from '../lib/useSetting.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { ReadingControls } from '../components/ReadingControls.js';
@@ -136,6 +137,8 @@ export function ReviewSettingsPage() {
   const lexiconState = useLexicon();
   const { level } = useCurrentLevel();
   const settings = useReviewSettings();
+  // Phase 41: per profile and synced, on by default
+  const [showSimplified, setShowSimplified] = useSetting(SIMPLIFIED_HINT_SETTING, true);
   const [cards, setCards] = useState<SkillCard[] | null>(null);
   const [tick, setTick] = useState(0);
   const refresh = () => {
@@ -163,6 +166,24 @@ export function ReviewSettingsPage() {
       <YourProgress />
       <SharedSettings />
       <h2 className="review-settings-group">Review</h2>
+
+      <section data-testid="settings-simplified">
+        <h2>Flashcards</h2>
+        <label className="review-settings-radio">
+          <input
+            type="checkbox"
+            checked={showSimplified}
+            onChange={(e) => void setShowSimplified(e.target.checked)}
+            data-testid="show-simplified"
+          />{' '}
+          {SHOW_SIMPLIFIED}
+        </label>
+        <p className="review-settings-muted">
+          Small simplified characters above the traditional word, only when they differ (
+          <span lang="zh-Hans">饼干</span> above <span lang="zh-Hant">餅乾</span>). On Pick and Recall cards they
+          show only with the answer.
+        </p>
+      </section>
 
       <section data-testid="session-settings">
         <h2>Review sessions</h2>

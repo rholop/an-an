@@ -142,6 +142,8 @@
   --zh-body: calc(1.375rem * var(--zh-scale));
   /* chips and lists */
   --zh-small: calc(1.25rem * var(--zh-scale));
+  /* Phase 41: the simplified hint above a flashcard's word, about 0.4× the hero, never below 12 px */
+  --zh-hint: max(12px, calc(var(--zh-hero) * 0.4));
 }
 
 /* Nunito (SIL OFL 1.1), served from this site: English headings only. */
