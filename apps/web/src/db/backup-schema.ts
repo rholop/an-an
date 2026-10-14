@@ -1,4 +1,5 @@
 import {
+  TOPIC_TAGS,
   EditKindSchema,
   IssueExplanationSchema,
   LevelSchema,
@@ -180,6 +181,9 @@ const WordSchema = z.object({
   chars: z.array(z.string()),
   tags: z.array(z.string()),
   freqRank: z.number().optional(),
+  // Phase 40 Part A: a level estimate (custom tutoring words)
+  estimatedLevel: LevelSchema.optional(),
+  levelSource: z.enum(['tocfl', 'tbcl', 'chars', 'model']).optional(),
   updatedAt: z.coerce.date().optional(),
 });
 
@@ -543,6 +547,8 @@ export const TutorSessionRowSchema = z.object({
       notesGloss: z.string().optional(),
       ticked: z.boolean(),
       custom: z.boolean(),
+      estimatedLevel: LevelSchema.optional(),
+      levelSource: z.literal('model').optional(),
     }),
   ),
   grammar: z.array(
@@ -559,6 +565,10 @@ export const TutorSessionRowSchema = z.object({
     }),
   ),
   scenario: ScenarioSchema.optional(),
+  // Phase 40: topics, audio state, the last re-check
+  topicTags: z.array(z.enum(TOPIC_TAGS)).optional(),
+  audio: z.object({ status: z.enum(['ok', 'waiting_key', 'error']), at: z.coerce.date(), made: z.number().optional() }).optional(),
+  recheckedAt: z.coerce.date().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

@@ -1,3 +1,4 @@
+import { displayLevel } from '../level-estimate.js';
 import type { SentenceBankEntry, SentenceGenRequest } from '../cloze/sentence.js';
 import { chatSourceLabel, type ChatLineSource, type JournalSentenceSource } from '../cloze/source.js';
 import { splitSentences } from '../journal/sentences.js';
@@ -409,7 +410,7 @@ export function buildReaderGenRequest(
     word: {
       headword: word.headword,
       pinyin: word.pinyin,
-      level: word.level ?? state.learnerLevel,
+      level: displayLevel(word) ?? state.learnerLevel,
       glossEn: word.glossEn,
     },
     allowedVocab: allowed,

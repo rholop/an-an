@@ -90,6 +90,8 @@ export interface OpenChatProfile {
   books: readonly Textbook[];
   /** Phase 14, when built and enabled. Phase 21: the only source of "upcoming" (it follows My class). */
   studyFocus?: StudyFocus;
+  /** Phase 40 Part E.4: the latest tutoring classes' words (the ledger's `recentTutorWordIds()`). */
+  tutorWordIds?: readonly string[];
 }
 
 export interface OpenChatTopic {
@@ -136,11 +138,13 @@ export function upcomingContent(
 }
 
 function upcomingOf(ladder: VocabLadder, config: Pick<OpenChatConfig, 'upcomingLessons'>): Upcoming {
-  if (ladder.source === 'none') return NONE;
+  // Phase 40 Part E.4: the latest tutoring classes' words lead the targets, with or without a textbook.
+  const tutor = ladder.tutorWordIds ?? [];
+  if (ladder.source === 'none') return tutor.length > 0 ? { ...NONE, wordIds: [...tutor] } : NONE;
   const lessons = [ladder.lessons.active, ladder.lessons.next, ladder.lessons.after]
     .filter((l): l is UpcomingLesson => !!l)
     .slice(0, config.upcomingLessons);
-  return { source: ladder.source, lessons, wordIds: ladder.upcomingWordIds, grammarIds: ladder.grammar.upcoming };
+  return { source: ladder.source, lessons, wordIds: [...new Set([...tutor, ...ladder.upcomingWordIds])], grammarIds: ladder.grammar.upcoming };
 }
 
 // ---- tiers -------------------------------------------------------------------

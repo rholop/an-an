@@ -24,7 +24,7 @@ import { useReadingScript } from '../components/AnnotatedInline.js';
 import { BottomSheet } from '../components/BottomSheet.js';
 import { JournalProgress } from '../components/JournalProgress.js';
 import { db, gameService, learnerService } from '../db/instance.js';
-import { getLedgerNow } from '../lib/ledger.js';
+import { getLedgerNow, useLedger } from '../lib/ledger.js';
 import { useReviewSettings } from '../lib/review-settings.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import type { JournalEntryRow, JournalReviewRow } from '../db/schema.js';
@@ -72,7 +72,15 @@ export function JournalPage({
   lesson,
   bookId,
   onDone,
-}: { initialPromptId?: string; lesson?: number; bookId?: string; onDone?: () => void } = {}) {
+  tutorPrompt,
+}: {
+  initialPromptId?: string;
+  lesson?: number;
+  bookId?: string;
+  onDone?: () => void;
+  /** Phase 40 Part D.3: a tutoring class's Journal step (its prompt leads; the class label above it). */
+  tutorPrompt?: { label: string; prompt: JournalPromptLike };
+} = {}) {
   const lexiconState = useLexicon();
   const script = useReadingScript();
   const [useFakeLLM, setUseFakeLLM] = useState(false);
@@ -97,6 +105,9 @@ export function JournalPage({
   );
 
   const { level: learnerLevel } = useCurrentLevel();
+  const ledger = useLedger();
+  // Phase 40: recent tutoring words not Learned yet (a string, so the chips don't move on every answer).
+  const tutorChipKey = (ledger?.recentTutorWordIds() ?? []).filter((id) => !ledger?.learned({ kind: 'word', id })).slice(0, 3).join(',');
   const [dueCards, setDueCards] = useState<SkillCard[]>([]);
   const [entry, setEntry] = useState<JournalEntryRow | null>(null);
   const [review, setReview] = useState<JournalReviewRow | null>(null);
@@ -114,6 +125,7 @@ export function JournalPage({
   // Phase 21: each group of prompts sits under its own lesson's label (the active study lesson's
   // first, then your class's lesson); lessons are found by their number, never by position.
   const promptGroups = useMemo((): Array<{ label: string; prompts: JournalPromptLike[] }> => {
+    if (tutorPrompt) return [{ label: tutorPrompt.label, prompts: [tutorPrompt.prompt] }];
     if (textbookState.status !== 'ready') return [];
     const lessonOf = (b: string, n: number) =>
       textbookState.books.find((x) => x.id === b)?.lessons.find((l) => l.n === n);
@@ -139,7 +151,7 @@ export function JournalPage({
       if (rest.length) groups.push({ label: yourClassLabel(myClass.currentLesson, myClass.textbookId), prompts: rest });
     }
     return groups;
-  }, [myClass, textbookState, lesson, promptBook, learnerLevel, studyFocus]);
+  }, [myClass, textbookState, lesson, promptBook, learnerLevel, studyFocus, tutorPrompt]);
   const classPrompts = useMemo(() => promptGroups.flatMap((g) => g.prompts), [promptGroups]);
   const [donePromptIds, setDonePromptIds] = useState<Set<string>>(new Set());
   const [chosenId, setChosenId] = useState<string | null>(initialPromptId ?? null);
@@ -168,14 +180,18 @@ export function JournalPage({
     if (lexiconState.status !== 'ready') return [];
     if (chosenClass)
       return chosenClass.useWords.flatMap((id) => lexiconState.lexicon.byId(id) ?? []);
-    // Phase 14: with the study order on, the 3 words come from unmastered textbook items first.
-    const study = studyTargetWordIds(studyFocus, 3).flatMap((id) => lexiconState.lexicon.byId(id) ?? []);
+    // Phase 40 Part E.4: the latest tutoring classes' words not Learned yet lead the chips; then (Phase
+    // 14, study order on) unmastered textbook items.
+    const tutor = tutorChipKey ? tutorChipKey.split(',') : [];
+    const study = [...new Set([...tutor, ...studyTargetWordIds(studyFocus, 3)])]
+      .flatMap((id) => lexiconState.lexicon.byId(id) ?? [])
+      .slice(0, 3);
     if (study.length >= 3) return study;
     const rest = pickPromptWords(dueCards, lexiconState.lexicon, new Date(), 3, learnerLevel).filter(
       (w) => !study.some((s) => s.id === w.id),
     );
     return [...study, ...rest].slice(0, 3);
-  }, [lexiconState, dueCards, learnerLevel, chosenClass, studyFocus]);
+  }, [lexiconState, dueCards, learnerLevel, chosenClass, studyFocus, tutorChipKey]);
   const grammarHints = useMemo(
     () =>
       lexiconState.status === 'ready' && chosenClass

@@ -8,9 +8,12 @@ export const TUTOR_CONFIG = {
   scenarioTargetWords: 12,
   /** The label of a session's sentences in Cloze: "from your class with …" in Cloze. */
   clozeLabelPrefix: 'from your class with',
-  /** Phase 39 safety valve: tutoring words introduced per review session (the rest wait for the
-   * next session, first thing). They are never held back by the new-word allowance. */
-  maxNewPerSession: 20,
+  /** Phase 40 Part E.4: the latest classes whose words are rung 2 of the vocabulary ladder (open
+   * chat, stories, chat targets) and lead the journal's word chips. (Phase 39's 20-a-session limit is
+   * gone: every ticked word is introduced at Save.) */
+  recentClasses: 3,
+  /** Phase 40 Part E.4: a new class shows on Home for this many days. */
+  homeDays: 3,
 };
 
 /**

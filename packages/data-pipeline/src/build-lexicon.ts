@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { applyLevelEstimates, loadTbcl, renderLevelReport } from './lib/level-estimates.js';
 import { gzipSync } from 'node:zlib';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -486,6 +487,11 @@ async function main(): Promise<void> {
   for (const w of words) w.pinyinNumeric = toPinyinNumeric(w.pinyin || '?');
 
   words.sort((a, b) => a.id.localeCompare(b.id));
+
+  // Phase 40 Part A: every word without an official level gets an estimate (TBCL, then characters).
+  const levelStats = applyLevelEstimates(words, loadTbcl(RAW_DIR));
+  writeFileSync(path.join(REPO_ROOT, 'docs/level-estimates.md'), renderLevelReport(levelStats, words), 'utf8');
+  console.log(`Level estimates: ${levelStats.bySource.tbcl} TBCL, ${levelStats.bySource.chars} from characters, ${levelStats.none} none`);
 
   const charIndex: Record<string, string[]> = {};
   for (const w of words) {

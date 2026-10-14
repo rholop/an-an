@@ -21,6 +21,8 @@ export interface AnnotatedToken {
   token: Token;
   reading: ReadingResult;
   level: Level | null;
+  /** Phase 40: `level` is an estimate (the word has no official TOCFL level): shown "≈ L1". */
+  levelEstimated?: boolean;
   gloss: string;
   /** The lexicon Word id this token resolved to, if any — needed to turn a
    * lookup into learner-model evidence (Phase 2 §7). */
@@ -270,7 +272,7 @@ function Popover({
       )}
       {(at.level || at.textbookHome !== undefined) && (
         <div className="an-popover-level" lang="zh-Hant" data-testid={at.textbookHome ? 'textbook-badge' : undefined}>
-          {wordSourceLabel(at.level, at.textbookHome)}
+          {wordSourceLabel(at.level, at.textbookHome, at.levelEstimated)}
         </div>
       )}
       {at.wordId && <AddToReview wordId={at.wordId} />}
@@ -395,7 +397,7 @@ export function AnnotatedText({
             title={
               isOpen || isNew
                 ? undefined
-                : [at.gloss, above ? `${at.level} — above your level (${currentLevel})` : undefined]
+                : [at.gloss, above ? `${at.levelEstimated ? '≈ ' : ''}${at.level} — above your level (${currentLevel})` : undefined]
                     .filter(Boolean)
                     .join(' · ') || undefined
             }

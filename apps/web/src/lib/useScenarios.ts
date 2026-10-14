@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { ScenarioFileSchema, type Scenario } from '@anan/core';
+import { ScenarioFileSchema, withTutorExtras, type Scenario } from '@anan/core';
 import { dataUrl } from './data-files.js';
+import { peekTutorLessons } from './study.js';
+import { onStudyDirty } from './study-dirty.js';
 
 export type ScenariosLoadState =
   | { status: 'loading' }
@@ -13,6 +15,10 @@ export type ScenariosLoadState =
  * from outside this module. */
 export function useScenarios(): ScenariosLoadState {
   const [state, setState] = useState<ScenariosLoadState>({ status: 'loading' });
+  const [built, setBuilt] = useState<Scenario[] | null>(null);
+  // Phase 40 Part C.3: tutoring words join the scenarios whose topics match their class.
+  const [tutorTick, setTutorTick] = useState(0);
+  useEffect(() => onStudyDirty(() => setTutorTick((n) => n + 1)), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -25,7 +31,7 @@ export function useScenarios(): ScenariosLoadState {
       .then((data) => {
         if (cancelled) return;
         const parsed = ScenarioFileSchema.parse(data);
-        setState({ status: 'ready', scenarios: parsed.scenarios });
+        setBuilt(parsed.scenarios);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -35,6 +41,10 @@ export function useScenarios(): ScenariosLoadState {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (built) setState({ status: 'ready', scenarios: withTutorExtras(built, peekTutorLessons()) });
+  }, [built, tutorTick]);
 
   return state;
 }

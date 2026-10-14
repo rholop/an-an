@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  displayLevel,
   groupPlots,
   isTextbookTagged,
   wiltingCards,
@@ -133,7 +134,8 @@ export function GardenPage() {
     // "Textbook only" replaces the level filter: the book's words span levels.
     if (textbookOnly) return word ? isTextbookTagged(word.tags) : false;
     if (levelFilter.length === 0) return true;
-    return word?.level ? levelFilter.includes(word.level) : false;
+    const lv = word ? displayLevel(word) : null;
+    return lv ? levelFilter.includes(lv) : false;
   };
   const hasTextbookWords =
     !!lexicon && snapshot.plants.some((p) => isTextbookTagged(lexicon.byId(p.wordId)?.tags ?? []));

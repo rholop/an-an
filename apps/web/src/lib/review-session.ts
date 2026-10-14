@@ -47,8 +47,11 @@ export function buildReviewSession(input: {
   lessonIdx?: ReadonlyMap<string, string>;
   seed: string;
   recent?: readonly (readonly string[])[];
+  /** Phase 40 Part E.4: tutoring words' cards lead with the new items (band 0). */
+  tutorWordIds?: ReadonlySet<string>;
 }): OrderedSession<SkillCard> {
   const fresh = new Set(input.fresh ?? []);
+  const tutor = input.tutorWordIds ?? new Set<string>();
   const focus = input.focus?.enabled ? input.focus : undefined;
   const idx = input.lessonIdx;
   const rank = (item: ItemRef) =>
@@ -57,7 +60,10 @@ export function buildReviewSession(input: {
   // the new items, in Review as well as Cloze.
   return orderSession(
     [...(input.fresh ?? []), ...input.due],
-    (c) => describeSkillCard(c, { band: fresh.has(c) ? 0 : c.flags.priority ? 1 : 2 + rank(c.item) }),
+    (c) =>
+      describeSkillCard(c, {
+        band: fresh.has(c) || (c.item.kind === 'word' && tutor.has(c.item.id)) ? 0 : c.flags.priority ? 1 : 2 + rank(c.item),
+      }),
     { seed: input.seed, recent: input.recent },
   );
 }
@@ -117,9 +123,11 @@ export function pickReviewCards(input: {
   allowance: Pick<NewAllowance, 'state' | 'allowed' | 'faces' | 'message'>;
   /** Phase 23: words due in the next session too (between sessions): their new faces wait as well. */
   holdFaceWords?: Iterable<string>;
-  /** Phase 39: New tutoring word cards (`ledger.tutorNewCards()`): they lead the new cards, outside
-   * the allowance (owner, 2026-10-13). */
-  tutorCards?: readonly SkillCard[];
+  /** Phase 40 Part E.2: tutoring words (`ledger.tutorWordIds()`): their cards in `due` are never
+   * dropped by the cap (they come first; the cap applies to everything else). */
+  tutorWordIds?: ReadonlySet<string>;
+  /** Reviews left under the cap for the other cards (`status.capLeft`); default cap − done. */
+  capLeft?: number;
 }): {
   due: SkillCard[];
   /** New cards that join this session. */
@@ -134,23 +142,27 @@ export function pickReviewCards(input: {
   const idx = input.lessonIdx;
   const rank =
     focus && idx ? (c: SkillCard) => studyRank(focus, (i) => idx.get(`${i.kind}:${i.id}`), c.item) : undefined;
-  const remaining = Math.max(0, input.cap - input.doneThisSession);
-  const due = capMixedCards(input.due, { remaining, now: input.now, ...(rank ? { rank } : {}) });
+  const remaining = input.capLeft ?? Math.max(0, input.cap - input.doneThisSession);
+  const isTutor = (c: SkillCard) => c.item.kind === 'word' && !!input.tutorWordIds?.has(c.item.id);
+  const tutorDue = input.due.filter(isTutor);
+  const due = [
+    ...tutorDue,
+    ...capMixedCards(
+      input.due.filter((c) => !isTutor(c)),
+      { remaining, now: input.now, ...(rank ? { rank } : {}) },
+    ),
+  ];
   // Phase 29 Part B.4: the one new-word allowance (the ledger's): paused only when more is due now
   // than the whole cap, and "this session's limit" once the cap is used up (not a backlog).
   const allowance = input.allowance;
-  const roomForNew = Math.max(0, remaining - due.length);
+  const roomForNew = Math.max(0, remaining - (due.length - tutorDue.length));
   // One "new" rule for every session (core `pickNewForSession`): New cards and study-order items
   // together, never more than the allowance (Phase 20) — My class cards are no longer uncapped.
   // Phase 23: a word's new Pick / Say it card waits while the word itself is due this session, so
   // it never pushes the due card out (a word's cards are kept apart, Phase 19).
   const dueWords = new Set([...due.map((c) => `${c.item.kind}:${c.item.id}`), ...(input.holdFaceWords ?? [])]);
-  const tutor = input.tutorCards ?? [];
-  const tutorKeys = new Set(tutor.map((c) => `${c.item.kind}:${c.item.id}|${c.skill}`));
   const newCards = (input.newCards ?? []).filter(
-    (c) =>
-      !tutorKeys.has(`${c.item.kind}:${c.item.id}|${c.skill}`) &&
-      (c.skill === 'recognition' || !dueWords.has(`${c.item.kind}:${c.item.id}`)),
+    (c) => !isTutor(c) && (c.skill === 'recognition' || !dueWords.has(`${c.item.kind}:${c.item.id}`)),
   );
   const picked = pickNewForSession({
     newCards,
@@ -162,7 +174,7 @@ export function pickReviewCards(input: {
   });
   return {
     due,
-    fresh: [...tutor, ...picked.cards],
+    fresh: picked.cards,
     newItems: picked.items,
     held: input.due.length - due.length,
     newPaused: allowance.allowed === 0 && allowance.state !== 'open',

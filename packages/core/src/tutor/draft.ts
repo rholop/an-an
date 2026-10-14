@@ -8,7 +8,9 @@ import type { Lexicon } from '../lexicon.js';
 import { pinyinToZhuyin, toPinyinNumeric } from '../pinyin.js';
 import { isAlwaysAllowedWord } from '../progress/terms.js';
 import { segment } from '../segment.js';
-import { checkTaiwanness } from '../taiwanness.js';
+import { checkTaiwanness, replaceSimplifiedChars } from '../taiwanness.js';
+import { charLevelIndex, estimateWordLevel, type CharLevelIndex } from '../level-estimate.js';
+import { topicTagsFor, topicWordTag, type TopicTag } from '../topics.js';
 import type { GrammarItem, ItemRef, Word } from '../types.js';
 import type { TutorCheckResponse, TutorExtraction } from './schema.js';
 import { TUTOR_CONFIG, TUTOR_GRAMMAR_RULES } from './tutor.config.js';
@@ -23,6 +25,11 @@ export interface TutorDraftDeps {
   learned: (ref: ItemRef) => boolean;
   /** The ledger's comprehensible words (Learned ∪ in session ∪ learning). */
   comprehensibleIds: ReadonlySet<string>;
+  /** Phase 40 Part B: "This tutor is from Taiwan" (default on): no "mainland" chip, the Taiwan form
+   * is used (the swap still happens: the AI summary writes simplified characters). */
+  tutorFromTaiwan?: boolean;
+  /** Phase 40 Part A: the character levels for estimates (default: built from the lexicon). */
+  charLevels?: CharLevelIndex;
 }
 
 export type TutorWordStatus = 'new' | 'learned' | 'mainland' | 'custom';
@@ -94,6 +101,10 @@ export interface TutorDraft {
   date: string;
   tutor: string;
   topics: Array<{ zh: string; en: string; printed: string }>;
+  /** Phase 40 Part C: the app's topic tags the class's topics map to (by the table). */
+  topicTags: TopicTag[];
+  /** Topics the table doesn't know (the one model call at Save maps them). */
+  unmappedTopics: Array<{ zh: string; en: string }>;
   words: TutorDraftWord[];
   grammar: TutorDraftGrammar[];
 }
@@ -216,7 +227,7 @@ function draftSentence(
   sessionIds: ReadonlySet<string>,
   extra: Pick<TutorDraftSentence, 'wordId' | 'grammarId'>,
 ): TutorDraftSentence {
-  let zh = deps.toTaiwan(printed.zh).trim();
+  let zh = replaceSimplifiedChars(deps.toTaiwan(printed.zh).trim());
   // The class's own mainland words are taught in their Taiwan form, so their examples use it too.
   for (const [mainland, taiwan] of swaps) zh = zh.split(mainland).join(taiwan);
   const base = { id, printed: printed.zh, zh, en: printed.en.trim(), ...extra };
@@ -252,19 +263,26 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
   const { lexicon } = deps;
 
   const swaps = new Map<string, string>();
+  const fromTaiwan = deps.tutorFromTaiwan !== false;
+  let charLevels = deps.charLevels;
+  const topics = extraction.topics.map((t) => ({ printed: t.zh, zh: replaceSimplifiedChars(deps.toTaiwan(t.zh).trim()), en: t.en.trim() }));
+  const topicTags = [...new Set(topics.flatMap((t) => topicTagsFor(t)))];
+  const unmappedTopics = topics.filter((t) => topicTagsFor(t).length === 0).map((t) => ({ zh: t.zh, en: t.en }));
   const drafted: Array<{ word: Omit<TutorDraftWord, 'example'>; example: { zh: string; en: string } }> = [];
   const seen = new Set<string>();
   extraction.vocab.forEach((v, i) => {
     const printed = v.zh.trim();
-    const trad = deps.toTraditional(printed).trim();
-    const tw = deps.toTaiwan(printed).trim();
+    // OpenCC (deterministic), then any simplified character it left replaced from the table: a card
+    // never shows simplified characters.
+    const trad = replaceSimplifiedChars(deps.toTraditional(printed).trim());
+    const tw = replaceSimplifiedChars(deps.toTaiwan(printed).trim());
     const swap = mainlandSwap(tw) ?? mainlandSwap(trad);
     const zh = swap?.taiwan ?? tw;
-    const mainlandForm = zh !== trad ? trad : undefined;
-    if (mainlandForm) {
-      swaps.set(mainlandForm, zh);
-      if (tw !== zh && tw !== mainlandForm) swaps.set(tw, zh);
-    }
+    // Phase 40 Part B: "mainland" only for a real mainland word (the Taiwanness table has it:
+    // 普通话 → 國語). A character variant (炒麪 / 炒麵, 裏 / 裡) is corrected silently.
+    const mainlandForm = swap && zh !== trad ? trad : undefined;
+    if (zh !== trad) swaps.set(trad, zh);
+    if (tw !== zh && tw !== trad) swaps.set(tw, zh);
     if (seen.has(zh)) return;
     seen.add(zh);
     const candidates = lexicon.lookup(zh);
@@ -272,7 +290,7 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
     const notesPinyin = swap ? '' : v.pinyin;
     const word = pickWord(candidates, notesPinyin, v.en);
     const statuses: TutorWordStatus[] = [];
-    if (mainlandForm) statuses.push('mainland');
+    if (mainlandForm && !fromTaiwan) statuses.push('mainland');
     let entry: Omit<TutorDraftWord, 'example' | 'ticked' | 'statuses'>;
     if (word) {
       const differs = notesPinyin && squash(notesPinyin) !== squash(word.pinyin);
@@ -295,11 +313,14 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
     } else {
       const syllables = splitPinyinForChars(v.pinyin, [...zh].length);
       const pinyin = syllables ? syllables.join(' ') : v.pinyin.trim();
+      charLevels ??= charLevelIndex(lexicon.allWords());
+      const estimate = estimateWordLevel({ headword: zh, level: null }, { chars: charLevels });
       const custom: Word = {
         ...buildCustomWord(zh, pinyin, v.en.trim()),
         pinyinNumeric: syllables ? toPinyinNumeric(pinyin) : '',
         zhuyin: syllables ? pinyinToZhuyin(pinyin) : '',
-        tags: ['tutor', `tutor:${sessionId}`],
+        tags: ['tutor', `tutor:${sessionId}`, ...topicTags.map(topicWordTag)],
+        ...(estimate ?? {}),
       };
       statuses.push('custom');
       entry = {
@@ -333,7 +354,7 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
   });
 
   const grammar: TutorDraftGrammar[] = extraction.grammar.map((g, i) => {
-    const name = deps.toTaiwan(g.name).trim();
+    const name = replaceSimplifiedChars(deps.toTaiwan(g.name).trim());
     const match = matchTutorGrammar(name, lexicon);
     return {
       key: `g${i}`,
@@ -349,7 +370,9 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
     sessionId,
     date,
     tutor,
-    topics: extraction.topics.map((t) => ({ printed: t.zh, zh: deps.toTaiwan(t.zh).trim(), en: t.en.trim() })),
+    topics,
+    topicTags,
+    unmappedTopics,
     words,
     grammar,
   };

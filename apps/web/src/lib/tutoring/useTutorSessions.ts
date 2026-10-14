@@ -1,6 +1,6 @@
 // Phase 39: the saved tutoring classes of this profile (newest first), refreshed after Save and sync.
 import { useEffect, useState } from 'react';
-import { tutorClozeSentences, type Lexicon, type SentenceBankEntry } from '@anan/core';
+import { displayLevel, tutorClozeSentences, type Lexicon, type SentenceBankEntry } from '@anan/core';
 import { db } from '../../db/instance.js';
 import type { TutorSessionRow } from '../../db/schema.js';
 
@@ -36,5 +36,5 @@ export function useTutorSessions(): TutorSessionRow[] | null {
 
 /** Part D.3: every class's kept, checked sentences for Cloze ("from your class with Carl"). */
 export function tutorBankSentences(rows: readonly TutorSessionRow[] | null, lexicon: Lexicon): SentenceBankEntry[] {
-  return (rows ?? []).flatMap((r) => tutorClozeSentences(r, (id) => lexicon.byId(id)?.level));
+  return (rows ?? []).flatMap((r) => tutorClozeSentences(r, (id) => { const w = lexicon.byId(id); return w ? displayLevel(w) : null; }));
 }

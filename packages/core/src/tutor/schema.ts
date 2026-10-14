@@ -100,9 +100,30 @@ export const TutorScenarioResponseSchema = z.object({
 });
 export type TutorScenarioResponse = z.infer<typeof TutorScenarioResponseSchema>;
 
+/**
+ * Phase 40: POST /v1/tutor-classify (checker chain, at Save, only when needed): the TOCFL band of
+ * words with no official level or estimate, and the app's topic tags for class topics the table
+ * doesn't know. Both answers are validated against their enums in code.
+ */
+export const TutorClassifyRequestSchema = z.object({
+  words: z.array(z.object({ zh: z.string().min(1).max(20), en: z.string().max(200) })).max(60),
+  topics: z.array(z.object({ zh: z.string().max(60), en: z.string().max(120) })).max(12),
+  /** The topic tags the answer may use. */
+  tags: z.array(z.string().max(30)).max(40),
+});
+export type TutorClassifyRequest = z.infer<typeof TutorClassifyRequestSchema>;
+
+export const TutorClassifyResponseSchema = z.object({
+  words: z.array(z.object({ zh: z.string().max(20), level: z.string().max(10) })).max(60),
+  topics: z.array(z.object({ zh: z.string().max(60), tags: z.array(z.string().max(30)).max(6) })).max(12),
+});
+export type TutorClassifyResponse = z.infer<typeof TutorClassifyResponseSchema>;
+
 /** The three model calls a tutoring upload makes (apps/web implements them over the proxy). */
 export interface TutoringLLM {
   extractTutorSummary(req: TutorExtractRequest): Promise<TutorExtraction>;
   checkTutorSentences(req: TutorCheckRequest): Promise<TutorCheckResponse>;
   writeTutorScenario(req: TutorScenarioRequest): Promise<TutorScenarioResponse>;
+  /** Phase 40: levels and topics the code couldn't work out (optional: older fakes lack it). */
+  classifyTutorWords?(req: TutorClassifyRequest): Promise<TutorClassifyResponse>;
 }

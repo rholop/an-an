@@ -132,12 +132,12 @@ export class StoryService {
 
   // ---- the ladder and the request --------------------------------------------------
 
-  async ladderFor(level: Level, now: Date): Promise<{ ladder: VocabLadder; sets: WordSets }> {
+  async ladderFor(level: Level, now: Date): Promise<{ ladder: VocabLadder; sets: WordSets & { tutorIds: string[] } }> {
     // Phase 29: the ladder and the comprehensible sets are the ledger's.
     const ledger = await this.learnerService.ledger(now);
     const studyFocus = await this.env.studyFocus?.().catch(() => undefined);
     const ladder = ledger.ladder(level, {}, { books: this.env.books(), ...(studyFocus ? { focus: studyFocus } : {}) });
-    return { ladder, sets: ledger.comprehensible() };
+    return { ladder, sets: { ...ledger.comprehensible(), tutorIds: ledger.recentTutorWordIds() } };
   }
 
   /** The lesson theme (the default topic), as the prompt and the page show it. */
@@ -192,6 +192,7 @@ export class StoryService {
       rng: this.rng,
       topic,
       topicWords,
+      ...(sets.tutorIds.length > 0 ? { priorityIds: sets.tutorIds } : {}),
     });
     const pattern = (id: string) => this.lexicon.grammarItemById(id)?.pattern;
     const prev = ask.kind === 'continue' ? ask.continueFrom : undefined;

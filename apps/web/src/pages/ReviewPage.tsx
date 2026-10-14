@@ -145,6 +145,7 @@ export function ReviewPage({
     const focus = focusCards ? undefined : await getStudyFocusNow(now);
     let due: SkillCard[];
     let fresh: SkillCard[] = [];
+    let tutorIds: ReadonlySet<string> = new Set();
     if (focusCards) {
       due = focusCards.filter((c) => !c.flags.excluded && !c.flags.snoozed);
       fresh = (freshCards ?? []).filter((c) => !c.flags.excluded && !c.flags.snoozed);
@@ -153,10 +154,11 @@ export function ReviewPage({
       // Phase 23: the cards of this review session (morning / evening), or the next one's when
       // "Review early" was asked for between sessions.
       await ensureFaceCards(now).catch(() => 0);
-      // Phase 39: tutoring words over one session's limit join first thing in the next one.
+      // Phase 40: a tutoring word's faces still missing (a class saved before Phase 40) join now.
       await ensureTutorCards(now).catch(() => 0);
       const ledger = await getLedgerNow(now);
       const { status } = ledger;
+      tutorIds = ledger.tutorWordIds();
       const inSession = ledger.session(early ? { early: true } : {});
       // between sessions, the next session's words keep their new faces for that session
       const upcoming = status.session === 'between' && !early ? ledger.session({ early: true }).cards : [];
@@ -165,7 +167,8 @@ export function ReviewPage({
         holdFaceWords: upcoming.map((c) => `${c.item.kind}:${c.item.id}`),
         due: inSession.cards,
         newCards: reviewAll ? [] : ledger.newCards(),
-        tutorCards: reviewAll ? [] : ledger.tutorNewCards(),
+        tutorWordIds: ledger.tutorWordIds(),
+        capLeft: status.capLeft,
         doneThisSession: status.doneThisSession,
         allowance: reviewAll ? { ...allowance, allowed: 0, faces: 0 } : allowance,
         cap: status.cap,
@@ -187,6 +190,7 @@ export function ReviewPage({
       fresh,
       ...(focus ? { focus } : {}),
       lessonIdx: lessonIndex(getStudyBooks()),
+      tutorWordIds: tutorIds,
       seed: sessionSeed,
       recent: recentShown(now),
     });

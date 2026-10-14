@@ -538,6 +538,22 @@ export const TUTOR_CHECK_JSON_SCHEMA = {
   required: ['results'],
 } as const;
 
+/** Phase 40: POST /v1/tutor-classify. */
+export const TUTOR_CLASSIFY_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    words: {
+      type: 'array',
+      items: { type: 'object', properties: { zh: { type: 'string' }, level: { type: 'string', enum: ['N1', 'N2', 'L1', 'L2', 'L3', 'L4', 'L5'] } }, required: ['zh', 'level'] },
+    },
+    topics: {
+      type: 'array',
+      items: { type: 'object', properties: { zh: { type: 'string' }, tags: { type: 'array', items: { type: 'string' } } }, required: ['zh', 'tags'] },
+    },
+  },
+  required: ['words', 'topics'],
+} as const;
+
 export const TUTOR_SCENARIO_JSON_SCHEMA = {
   type: 'object',
   properties: {

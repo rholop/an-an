@@ -8,8 +8,10 @@ import { courseOrdinal, LAIXUE_COURSE } from '../textbook/course.js';
 import type { Lesson, Textbook } from '../textbook/types.js';
 import type { StudyFocus } from '../study/study-focus.js';
 import { lessonCoreWordIds } from './terms.js';
+import { displayLevel } from '../level-estimate.js';
 
-/** 1 learned / in session / learning (comprehensible) · 2 this lesson and catch-up words not met yet ·
+/** 1 learned / in session / learning (comprehensible) · 2 the latest tutoring classes' words (Phase 40),
+ * this lesson and catch-up words not met yet ·
  * 3 next lesson · 4 the lesson after ·
  * 5 the picked TOCFL level (and the ones below it) · 6 anything else. */
 export type VocabRung = 1 | 2 | 3 | 4 | 5 | 6;
@@ -39,6 +41,8 @@ export interface VocabLadderInput {
   books: readonly Textbook[];
   /** Phase 14/21: the study focus (it follows My class and applies the TOCFL gate). */
   studyFocus?: StudyFocus;
+  /** Phase 40 Part E.4: the words of the latest tutoring classes: rung 2, next to the active lesson. */
+  tutorWordIds?: readonly string[];
 }
 
 export interface VocabLadderOptions {
@@ -60,6 +64,8 @@ export interface VocabLadder {
   lessons: { active?: LadderLesson; next?: LadderLesson; after?: LadderLesson };
   /** Core words of the active lesson and the two after it, in that order (Phase 18 "upcoming"). */
   upcomingWordIds: string[];
+  /** Phase 40: the latest tutoring classes' words not met yet (rung 2): chat and story targets first. */
+  tutorWordIds: string[];
   /** Grammar item ids: learned and active lessons (allowed), and the next lesson's (once at most). */
   grammar: { allowed: string[]; next: string[]; upcoming: string[] };
   /** Proper nouns of the lessons up to the active one (names the learner has met). */
@@ -129,14 +135,18 @@ export function vocabLadder(input: VocabLadderInput, options: Partial<VocabLadde
   const place = (ids: Iterable<string>, rungIdx: 1 | 2 | 3) => {
     for (const id of ids) if (!sets.slice(0, rungIdx).some((s) => s.has(id))) sets[rungIdx].add(id);
   };
+  // Phase 40: tutoring words first (owner, 2026-10-14: "the words that are more important to me").
+  place(input.tutorWordIds ?? [], 1);
   if (source === 'level-step') place(levelWords, 1);
   window.forEach((w, i) => place(lessonCoreWordIds(w.lesson), (i + 1) as 1 | 2 | 3));
   place(catchUp, 1);
 
   const picked = levelIndex(input.level);
   for (const w of input.lexicon.allWords()) {
-    if (w.source !== 'tocfl' || w.level === null) continue;
-    const li = levelIndex(w.level);
+    // Phase 40: a word's shown level (an estimate for words with no official one) places it here.
+    const lv = displayLevel(w);
+    if (!lv) continue;
+    const li = levelIndex(lv);
     if (!(opts.rung5IncludesLowerLevels ? li <= picked : li === picked)) continue;
     if (sets.slice(0, 4).some((s) => s.has(w.id))) continue;
     sets[4].add(w.id);
@@ -153,6 +163,7 @@ export function vocabLadder(input: VocabLadderInput, options: Partial<VocabLadde
     source,
     lessons,
     upcomingWordIds,
+    tutorWordIds: (input.tutorWordIds ?? []).filter((id) => sets[1].has(id)),
     grammar: {
       allowed: [...new Set(grammarAllowed)],
       next: window[1]?.lesson.grammar ?? [],

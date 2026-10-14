@@ -347,20 +347,29 @@ export class ChatService {
       .flatMap((t) => segment(t.zh, this.lexicon))
       .filter((tok) => tok.kind === 'word')
       .flatMap((tok) => this.lexicon.lookup(tok.text).map((w) => w.id));
-    const dueWordIds = [...sets.dueIds];
+    // Phase 40 Part E.4: tutoring words lead the due words the NPC is asked to reuse.
+    const isTutorWord = (id: string) => ledger.isTutorCard({ item: { kind: 'word', id } });
+    const dueAll = [...sets.dueIds];
+    const dueTutor = dueAll.filter(isTutorWord);
+    const dueWordIds = dueAll.filter((id) => !isTutorWord(id));
     const want = this.config.newTargetsPerTurn;
     const focus = await this.studyFocus?.().catch(() => undefined);
     const studyIds = studyTargetWordIds(focus, want);
     const studyWords = studyIds.flatMap((id) => this.lexicon.byId(id) ?? []);
     // Phase 39: a tutoring class's chat targets that class's words (not Learned yet first).
+    // Phase 40 Part C.3 / E.4: in any other scenario, the tutoring words its topics brought in
+    // (not Learned yet) come first.
     const classWords = scenario.tutor
       ? [...scenarioExtraIds]
           .sort((a, b) => Number(ledger.learned({ kind: 'word', id: a })) - Number(ledger.learned({ kind: 'word', id: b })))
           .flatMap((id) => this.lexicon.byId(id) ?? [])
-      : [];
-    const targets = classWords.length > 0
+      : [...scenarioExtraIds]
+          .filter((id) => isTutorWord(id) && !ledger.learned({ kind: 'word', id }))
+          .flatMap((id) => this.lexicon.byId(id) ?? [])
+          .slice(0, Math.ceil(this.config.newTargetsPerTurn / 2));
+    const targets = scenario.tutor && classWords.length > 0
       ? classWords.slice(0, want)
-      : studyWords.length >= want
+      : [...classWords, ...(studyWords.length >= want
         ? studyWords.slice(0, want)
         : [
             ...studyWords,
@@ -368,7 +377,9 @@ export class ChatService {
             ...newWordIds(ledger.pickNew('review', { scenarioTags: [scenario.id], level: options.learnerLevel }))
               .filter((id) => !studyIds.includes(id))
               .flatMap((id) => this.lexicon.byId(id) ?? []),
-          ].slice(0, want);
+          ].slice(0, want))]
+          .filter((w, i, all) => all.findIndex((x) => x.id === w.id) === i)
+          .slice(0, want);
     const targetIds = targets.map((w) => w.id);
 
     const req: TurnRequest = {
@@ -380,7 +391,10 @@ export class ChatService {
         knownSample: this.headwordsOf(
           sample([...knownCards], this.config.knownSampleSize, this.rng),
         ),
-        due: this.headwordsOf(sample(dueWordIds, this.config.dueSampleSize, this.rng)),
+        due: this.headwordsOf([
+          ...sample(dueTutor, this.config.dueSampleSize, this.rng),
+          ...sample(dueWordIds, Math.max(0, this.config.dueSampleSize - dueTutor.length), this.rng),
+        ]),
         targets: this.headwordsOf(targetIds),
         allowedExtras: this.headwordsOf(allowedExtraIds),
         senseOptions: this.senseOptionsFor([...targetIds, ...allowedExtraIds]),

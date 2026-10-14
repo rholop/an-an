@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  displayLevel,
   describePlanItem,
   describeSkillCard,
   itemKey,
@@ -103,7 +104,8 @@ export function WaterAllPage({ onExit }: { onExit: () => void }) {
     if (!due || lexiconState.status !== 'ready') return [];
     const out = new Set<Level>();
     for (const c of due) {
-      const l = lexiconState.lexicon.byId(c.item.id)?.level;
+      const w = lexiconState.lexicon.byId(c.item.id);
+      const l = w ? displayLevel(w) : null;
       if (l) out.add(l);
     }
     return [...out];

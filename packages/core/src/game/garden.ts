@@ -4,6 +4,7 @@ import type { Lexicon } from '../lexicon.js';
 import type { Scenario } from '../chat/scenario.js';
 import type { Level, Word } from '../types.js';
 import { isLevel, levelIndex, levelLabel, LEVEL_IDS } from '../levels.config.js';
+import { displayLevel } from '../level-estimate.js';
 import { isPracticeSkill, isReviewSkill, retrievabilityOf } from '../progress/terms.js';
 import type { SessionName } from '../progress/review-sessions.js';
 import type { Ledger } from '../progress/ledger.js';
@@ -151,7 +152,9 @@ export function groupPlots(
     const s = owner.get(p.wordId);
     if (s) add(`scenario:${s.id}`, s.title, 'scenario', p);
     else {
-      const level: Level | null = (lexicon.byId(p.wordId) as Word | undefined)?.level ?? null;
+      // Phase 40: an estimated level puts a word in its level's plot ("Other" is only for words with none).
+      const w = lexicon.byId(p.wordId) as Word | undefined;
+      const level: Level | null = w ? displayLevel(w) : null;
       add(`level:${level ?? 'other'}`, level ? levelLabel(level) : 'Other words', 'level', p);
     }
   }

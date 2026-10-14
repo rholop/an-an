@@ -1,15 +1,28 @@
 // Phase 39: tutoring classes. Upload the summary PDF a tutor sends after a class, check what was read
-// (Part C), Save, and the class becomes a lesson-like page: Vocab, Grammar, Story (optional), Chat.
+// (Part C), Save, and the class becomes a lesson-like page. Phase 40: the same depth as a textbook
+// lesson (Vocab, Grammar, Listening, Chat, Journal, Story), each word with its level, topics, 🔊 and
+// card faces; the words are in review the moment the class is saved ("Review these N words now").
 import { useEffect, useMemo, useState } from 'react';
 import {
+  displayLevel,
   glossFor,
-  TUTOR_CONFIG,
+  isEstimatedLevel,
+  levelShort,
+  tutorJournalPrompt,
   tutorLessonOf,
+  type Ledger,
+  type Level,
   type Lexicon,
   type SkillCard,
+  type TopicTag,
   type TutorDraft,
   type TutorDraftSentence,
 } from '@anan/core';
+import { SpeakerButton } from '../components/SpeakerButton.js';
+import { useListeningClips, useListeningEnabled } from '../lib/listening.js';
+import { useSetting } from '../lib/useSetting.js';
+import { JournalPage } from './JournalPage.js';
+import { ListenPage } from './ListenPage.js';
 import { learnerService } from '../db/instance.js';
 import type { TutorSessionRow } from '../db/schema.js';
 import { LearnedMastered } from '../components/LearnedMastered.js';
@@ -32,8 +45,17 @@ import { pdfToPageImages } from '../lib/tutoring/pdf-pages.js';
 import { notifyTutorSessionsChanged, useTutorSessions } from '../lib/tutoring/useTutorSessions.js';
 import type { DraftResult } from '../lib/tutoring/tutoring-service.js';
 import {
-  ALSO_MAINLAND,
+  AUDIO_FAILED,
+  AUDIO_WAITING_KEY,
   DISCARD,
+  estimatedLevelLabel,
+  FACE_NAMES,
+  notesMainlandLine,
+  reviewTheseNow,
+  topicName,
+  TUTOR_FROM_TAIWAN,
+  TUTOR_FROM_TAIWAN_HINT,
+  tutorAudioLine,
   NEXT,
   NOT_PRACTISED,
   NOTE_ONLY,
@@ -48,7 +70,6 @@ import {
   TUTORING,
   tutorAddedLine,
   tutorClassTitle,
-  tutorOverLimit,
   UPLOAD_CLASS_SUMMARY,
 } from '../lib/labels.js';
 import { ChatPage } from './ChatPage.js';
@@ -58,7 +79,12 @@ import { StoryStep } from './TextbookPage.js';
 import './TextbookPage.css';
 import './TutoringPage.css';
 
-type View = { kind: 'list' } | { kind: 'check' } | { kind: 'class'; id: string } | { kind: 'study'; id: string };
+type View =
+  | { kind: 'list' }
+  | { kind: 'check' }
+  | { kind: 'class'; id: string }
+  | { kind: 'study'; id: string }
+  | { kind: 'now'; id: string };
 
 export function TutoringPage() {
   const lexiconState = useLexicon();
@@ -94,7 +120,8 @@ export function TutoringPage() {
       />
     );
   }
-  const rec = view.kind === 'class' || view.kind === 'study' ? rows.find((r) => r.id === view.id) : undefined;
+  const rec = view.kind !== 'list' ? rows.find((r) => r.id === view.id) : undefined;
+  if (rec && view.kind === 'now') return <TutorReviewNow rec={rec} onExit={() => setView({ kind: 'class', id: rec.id })} />;
   if (rec && view.kind === 'study')
     return <TutorStudy rec={rec} lexicon={lexicon} onExit={() => setView({ kind: 'class', id: rec.id })} />;
   if (rec)
@@ -108,6 +135,7 @@ export function TutoringPage() {
           setView({ kind: 'list' });
         }}
         onStudy={() => setView({ kind: 'study', id: rec.id })}
+        onReviewNow={() => setView({ kind: 'now', id: rec.id })}
       />
     );
   return <TutoringList rows={rows} lexicon={lexicon} onOpen={(id) => setView({ kind: 'class', id })} onDraft={() => setView({ kind: 'check' })} />;
@@ -222,6 +250,49 @@ export function TutoringList({
 // Part C: the check screen. Nothing is introduced or created before Save.
 // ---------------------------------------------------------------------------
 
+/** Phase 40 Part B: tutors whose "This tutor is from Taiwan" is off (lower-case names). */
+const NOT_FROM_TAIWAN_KEY = 'tutorsNotFromTaiwan';
+
+/** A word's shown level: its official one, else an estimate (lexicon, custom word or the model). */
+function draftLevel(
+  w: { wordId: string; custom?: { level: Level | null; estimatedLevel?: Level } | boolean; estimatedLevel?: Level },
+  lexicon: Lexicon,
+): { level: Level; estimated: boolean } | undefined {
+  const word = lexicon.byId(w.wordId) ?? (typeof w.custom === 'object' ? w.custom : undefined);
+  const lv = word ? displayLevel(word) : null;
+  if (word && lv) return { level: lv, estimated: isEstimatedLevel(word) };
+  return w.estimatedLevel ? { level: w.estimatedLevel, estimated: true } : undefined;
+}
+
+/** The chips: "Mainland term" only for a real mainland word, and only when the tutor isn't from Taiwan. */
+function shownStatuses(w: TutorDraft['words'][number], fromTaiwan: boolean): TutorDraft['words'][number]['statuses'] {
+  const rest = w.statuses.filter((s) => s !== 'mainland');
+  if (fromTaiwan || !w.mainlandForm) return rest;
+  const at = rest.indexOf('custom');
+  return at < 0 ? [...rest, 'mainland'] : [...rest.slice(0, at), 'mainland', ...rest.slice(at)];
+}
+
+function LevelChip({ level }: { level: { level: Level; estimated: boolean } | undefined }) {
+  if (!level) return null;
+  return (
+    <span className="textbook-chip textbook-chip--soft" data-testid="tutor-word-level">
+      {level.estimated ? estimatedLevelLabel(level.level) : levelShort(level.level)}
+    </span>
+  );
+}
+
+function TopicChips({ tags }: { tags: readonly TopicTag[] }) {
+  return (
+    <p className="tutoring-chips" data-testid="tutor-topics">
+      {tags.map((t) => (
+        <span key={t} className="textbook-chip textbook-chip--soft">
+          {topicName(t)}
+        </span>
+      ))}
+    </p>
+  );
+}
+
 function SentenceLine({ s }: { s: TutorDraftSentence }) {
   if (!s.zh) return null;
   return (
@@ -250,6 +321,9 @@ function TutorCheckScreen({
 }) {
   const { level } = useCurrentLevel();
   const [draft, setDraft] = useState<TutorDraft>(pending.draft);
+  const [notFromTaiwan, setNotFromTaiwan] = useSetting<string[]>(NOT_FROM_TAIWAN_KEY, []);
+  const tutorKey = draft.tutor.trim().toLowerCase();
+  const fromTaiwan = !notFromTaiwan.includes(tutorKey);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ticked = draft.words.filter((w) => w.ticked).length;
@@ -288,16 +362,30 @@ function TutorCheckScreen({
       )}
       {pending.existing && <p role="status">{TUTOR_UPDATES_EXISTING}</p>}
 
+      {draft.topicTags.length > 0 && <TopicChips tags={draft.topicTags} />}
+      <label className="tutoring-from-taiwan">
+        <input
+          type="checkbox"
+          checked={fromTaiwan}
+          data-testid="tutor-from-taiwan"
+          onChange={(e) =>
+            setNotFromTaiwan(e.target.checked ? notFromTaiwan.filter((t) => t !== tutorKey) : [...notFromTaiwan, tutorKey])
+          }
+        />{' '}
+        {TUTOR_FROM_TAIWAN} <small className="textbook-muted">{TUTOR_FROM_TAIWAN_HINT}</small>
+      </label>
+
       <h2>Words ({draft.words.length})</h2>
-      <p className="textbook-muted">Ticked words join your reviews when you save, ahead of textbook words.</p>
-      {ticked > TUTOR_CONFIG.maxNewPerSession && (
-        <p role="status" data-testid="tutor-over-limit">
-          {tutorOverLimit(ticked, TUTOR_CONFIG.maxNewPerSession)}
-        </p>
-      )}
+      <p className="textbook-muted">
+        Ticked words ({ticked}) are in your review the moment you save, with every card face, ahead of everything else.
+      </p>
       <ul className="tutoring-words">
         {draft.words.map((w) => (
-          <li key={w.key} data-testid="tutor-word" data-status={w.statuses.join(' ')}>
+          <li
+            key={w.key}
+            data-testid="tutor-word"
+            data-status={shownStatuses(w, fromTaiwan).join(' ')}
+          >
             <label className="tutoring-word">
               <input type="checkbox" checked={w.ticked} onChange={() => toggle(w.key)} aria-label={`Study ${w.zh}`} />
               <span className="tutoring-word-main">
@@ -310,24 +398,19 @@ function TutorCheckScreen({
                 <span>{w.gloss}</span>
                 {w.notesGloss && <small className="textbook-muted"> · also: {w.notesGloss}</small>}
                 {w.mainlandForm && (
-                  <small className="textbook-muted">
+                  <small className="textbook-muted" data-testid="tutor-notes-mainland">
                     <br />
-                    <span lang="zh-Hant">{w.mainlandForm}</span>: {ALSO_MAINLAND}
-                  </small>
-                )}
-                {w.alsoTaiwan && w.alsoTaiwan.length > 0 && (
-                  <small className="textbook-muted">
-                    {' '}
-                    · also <span lang="zh-Hant">{w.alsoTaiwan.join('、')}</span>
+                    <span lang="zh-Hant">{notesMainlandLine(w.printed, [w.zh, ...(w.alsoTaiwan ?? [])])}</span>
                   </small>
                 )}
               </span>
               <span className="tutoring-chips">
-                {w.statuses.map((s) => (
-                  <span key={s} className={`textbook-chip textbook-chip--soft tutoring-chip--${s}`}>
-                    {TUTOR_STATUS[s]}
-                  </span>
-                ))}
+                <LevelChip level={draftLevel(w, lexicon)} />
+                {shownStatuses(w, fromTaiwan).map((s) => (
+                    <span key={s} className={`textbook-chip textbook-chip--soft tutoring-chip--${s}`}>
+                      {TUTOR_STATUS[s]}
+                    </span>
+                  ))}
               </span>
             </label>
             <SentenceLine s={w.example} />
@@ -377,16 +460,25 @@ function TutorClassPage({
   note,
   onBack,
   onStudy,
+  onReviewNow,
 }: {
   rec: TutorSessionRow;
   lexicon: Lexicon;
   note: string | null;
   onBack: () => void;
   onStudy: () => void;
+  onReviewNow: () => void;
 }) {
   const ledger = useLedger();
   const script = useReadingScript();
+  const clips = useListeningClips();
   const p = ledger?.tutorSession(tutorLessonOf(rec));
+  const nowCards = ledger?.tutorClassNow(rec.id) ?? [];
+  const nowWords = new Set(nowCards.map((c) => c.item.id)).size;
+  // Phase 40: faces a class saved before Phase 40 is missing join now (Save does this for new ones).
+  useEffect(() => {
+    void ensureTutorCards().catch(() => 0);
+  }, [rec.id]);
   const sentenceFor = (pred: (s: TutorSessionRow['sentences'][number]) => boolean) => rec.sentences.find(pred);
   return (
     <div className="textbook-page" data-testid="tutor-class-page">
@@ -395,15 +487,22 @@ function TutorClassPage({
       </button>
       <h1>{tutorClassTitle(rec.tutor, rec.date)}</h1>
       <p className="textbook-muted">{rec.topics.map((t) => `${t.zh} ${t.en}`).join(' · ')}</p>
+      {rec.topicTags && rec.topicTags.length > 0 && <TopicChips tags={rec.topicTags} />}
       {note && <p role="status">{note}</p>}
       {p && (
         <div className="textbook-progress" aria-label="Class progress" data-testid="tutor-class-progress">
           <LearnedMastered p={p} compact />
         </div>
       )}
-      <button type="button" className="textbook-study-btn btn-primary" onClick={onStudy} data-testid="study-tutor-class">
+      {nowWords > 0 && (
+        <button type="button" className="btn-primary" onClick={onReviewNow} data-testid="tutor-review-now">
+          {reviewTheseNow(nowWords)}
+        </button>
+      )}{' '}
+      <button type="button" className="textbook-study-btn" onClick={onStudy} data-testid="study-tutor-class">
         {STUDY_THIS_CLASS}
       </button>
+      <AudioLine rec={rec} />
 
       <h2>Words ({rec.words.filter((w) => w.ticked).length})</h2>
       <ul className="textbook-words">
@@ -413,20 +512,23 @@ function TutorClassPage({
             const word = lexicon.byId(w.wordId);
             const ex = sentenceFor((s) => s.wordId === w.wordId);
             return (
-              <li key={w.wordId}>
-                <span lang="zh-Hant">{w.zh}</span> {w.pinyin}{' '}
+              <li key={w.wordId} data-testid="tutor-class-word">
+                <span lang="zh-Hant">{w.zh}</span> {w.pinyin} <SpeakerButton kind="word" id={w.wordId} />{' '}
+                <LevelChip level={draftLevel(w, lexicon)} />{' '}
                 <span className="textbook-muted">{word ? glossFor(word) : w.gloss}</span>
                 {w.mainlandForm && (
                   <small className="textbook-muted">
                     {' '}
-                    (<span lang="zh-Hant">{w.mainlandForm}</span>: {ALSO_MAINLAND})
+                    (<span lang="zh-Hant">{notesMainlandLine(w.printed, [w.zh, ...(w.alsoTaiwan ?? [])])}</span>)
                   </small>
                 )}
+                {ledger && <WordFaces ledger={ledger} wordId={w.wordId} hasClip={clips.hasClip('word', w.wordId)} />}
                 {ex && (
                   <p className="tutoring-example">
                     <span lang="zh-Hant">
                       <AnnotatedInline text={ex.zh} lexicon={lexicon} script={script} />
-                    </span>
+                    </span>{' '}
+                    <SpeakerButton kind="sentence" id={ex.id} text={ex.zh} />
                     <br />
                     <small className="textbook-muted">{ex.en}</small>
                   </p>
@@ -462,21 +564,113 @@ function TutorClassPage({
   );
 }
 
-type Step = 'vocab' | 'grammar' | 'story' | 'chat';
+/** Phase 40 Part D.1: what the server said about the class's clips. */
+function AudioLine({ rec }: { rec: TutorSessionRow }) {
+  if (!rec.audio) return null;
+  const text =
+    rec.audio.status === 'waiting_key' ? AUDIO_WAITING_KEY : rec.audio.status === 'error' ? AUDIO_FAILED : tutorAudioLine(rec.audio.made ?? 0);
+  return (
+    <p className="textbook-muted" data-testid="tutor-audio-status">
+      {text}
+    </p>
+  );
+}
+
+/** Phase 40 Part D.5: "Meaning ✓ · Pick · Recall ✓ · Say it · Listening", from the ledger. */
+function WordFaces({ ledger, wordId, hasClip }: { ledger: Ledger; wordId: string; hasClip: boolean }) {
+  const faces = ledger.wordFaces(wordId).filter((f) => f.carded || (f.skill === 'listening' && hasClip));
+  if (faces.length === 0) return null;
+  return (
+    <small className="textbook-muted tutoring-faces" data-testid="tutor-word-faces">
+      {' · '}
+      {faces.map((f, i) => (
+        <span key={f.skill} data-face={f.skill} data-answered={f.answered ? 'yes' : 'no'}>
+          {i > 0 && ' · '}
+          {FACE_NAMES[f.skill]}
+          {f.learned ? ' ✓' : ''}
+        </span>
+      ))}
+    </small>
+  );
+}
+
+/** Phase 40 Part E.1: this class's cards in review now, at any time of day (not "Review early"). */
+function TutorReviewNow({ rec, onExit }: { rec: TutorSessionRow; onExit: () => void }) {
+  const [cards, setCards] = useState<SkillCard[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const now = new Date();
+      await ensureTutorCards(now).catch(() => 0);
+      const ledger = await getLedgerNow(now);
+      if (!cancelled) setCards(ledger.tutorClassNow(rec.id));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [rec.id]);
+  if (!cards) return <p>Loading…</p>;
+  if (cards.length === 0)
+    return (
+      <p data-testid="tutor-vocab-empty">
+        Nothing from this class to review right now.{' '}
+        <button type="button" onClick={onExit}>
+          {NEXT}
+        </button>
+      </p>
+    );
+  return (
+    <ReviewPage
+      focusCards={cards}
+      keepEvery
+      onExit={onExit}
+      exitLabel={`← ${tutorClassTitle(rec.tutor, rec.date)}`}
+      title={`${tutorClassTitle(rec.tutor, rec.date)} vocabulary`}
+    />
+  );
+}
+
+type Step = 'vocab' | 'grammar' | 'listening' | 'chat' | 'journal' | 'story';
+// Phase 40 Part D.3: the textbook lesson's steps (a class's chat is its scenario step).
 const STEPS: Array<{ id: Step; label: string }> = [
   { id: 'vocab', label: 'Vocabulary review' },
   { id: 'grammar', label: 'Grammar practice' },
-  { id: 'story', label: 'A short story (optional)' },
+  { id: 'listening', label: 'Listening round' },
   { id: 'chat', label: 'Chat about the class' },
+  { id: 'journal', label: 'Journal prompt' },
+  { id: 'story', label: 'A short story (optional)' },
 ];
 
 function TutorStudy({ rec, lexicon, onExit }: { rec: TutorSessionRow; lexicon: Lexicon; onExit: () => void }) {
+  const clips = useListeningClips();
+  const listeningOn = useListeningEnabled();
+  const ledger = useLedger();
+  const wordIds = useMemo(() => tutorLessonOf(rec).wordIds, [rec]);
   const steps = useMemo(
     () =>
       STEPS.filter((s) =>
-        s.id === 'grammar' ? rec.grammar.length > 0 : s.id === 'story' ? canWriteStories() : s.id === 'chat' ? !!rec.scenario : true,
+        s.id === 'grammar'
+          ? rec.grammar.length > 0
+          : s.id === 'listening'
+            ? listeningOn && clips.ready && wordIds.some((id) => clips.hasClip('word', id))
+            : s.id === 'story'
+              ? canWriteStories()
+              : s.id === 'chat'
+                ? !!rec.scenario
+                : s.id === 'journal'
+                  ? wordIds.length > 0
+                  : true,
       ),
-    [rec],
+    // the step list is fixed when the session starts
+    [rec.id, clips.ready, listeningOn],
+  );
+  const journal = useMemo(
+    () => ({
+      label: tutorClassTitle(rec.tutor, rec.date),
+      prompt: { ...tutorJournalPrompt(rec, (id) => !!ledger?.learned({ kind: 'word', id })), lessonId: rec.id },
+    }),
+    // built once per class
+    [rec.id],
   );
   const [i, setI] = useState(0);
   const step = steps[i];
@@ -489,7 +683,7 @@ function TutorStudy({ rec, lexicon, onExit }: { rec: TutorSessionRow; lexicon: L
   return (
     <div className="textbook-study" data-testid="tutor-study">
       <div className="textbook-study-bar">
-        <strong>
+        <strong data-testid="tutor-study-step">
           {tutorClassTitle(rec.tutor, rec.date)} · Step {i + 1} of {steps.length}: {step.label}
         </strong>
         <span>
@@ -503,25 +697,37 @@ function TutorStudy({ rec, lexicon, onExit }: { rec: TutorSessionRow; lexicon: L
       </div>
       {step.id === 'vocab' && <TutorVocabStep rec={rec} onDone={next} />}
       {step.id === 'grammar' && <TutorGrammarStep rec={rec} lexicon={lexicon} onDone={next} />}
-      {step.id === 'story' && <StoryStep lexicon={lexicon} onDone={next} />}
+      {step.id === 'listening' && (
+        <ListenPage
+          key={`listen-${rec.id}`}
+          title={`${tutorClassTitle(rec.tutor, rec.date)} — listening`}
+          size={6}
+          onlyWordIds={new Set(wordIds)}
+          onExit={next}
+          exitLabel={NEXT}
+        />
+      )}
       {step.id === 'chat' && rec.scenario && <ChatPage key={rec.scenario.id} initialScenario={rec.scenario} onExit={next} />}
+      {step.id === 'journal' && (
+        <JournalPage key={`journal-${rec.id}`} tutorPrompt={journal} initialPromptId={journal.prompt.id} onDone={next} />
+      )}
+      {step.id === 'story' && <StoryStep lexicon={lexicon} onDone={next} />}
     </div>
   );
 }
 
-/** The class's words in this review session, then its New cards (they never wait for the allowance). */
+/** The class's cards in review now (every face, at any time of day), then nothing else. */
 function TutorVocabStep({ rec, onDone }: { rec: TutorSessionRow; onDone: () => void }) {
-  const [plan, setPlan] = useState<{ due: SkillCard[]; fresh: SkillCard[] } | null>(null);
+  const [plan, setPlan] = useState<{ due: SkillCard[] } | null>(null);
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const now = new Date();
       await ensureTutorCards(now).catch(() => 0);
       const ledger = await getLedgerNow(now);
-      const mine = new Set(tutorLessonOf(rec).wordIds);
-      const due = ledger.session().cards.filter((c) => c.item.kind === 'word' && mine.has(c.item.id) && c.skill !== 'reading');
-      const fresh = ledger.tutorNewCards().filter((c) => mine.has(c.item.id));
-      if (!cancelled) setPlan({ due, fresh });
+      // Phase 23: reading (Say it) cards stay in Review and Pinyin & tones, as in a textbook lesson.
+      const due = ledger.tutorClassNow(rec.id).filter((c) => c.skill !== 'reading');
+      if (!cancelled) setPlan({ due });
     })();
     return () => {
       cancelled = true;
@@ -529,7 +735,7 @@ function TutorVocabStep({ rec, onDone }: { rec: TutorSessionRow; onDone: () => v
     // built once per class (later changes must not rebuild the running session)
   }, [rec.id]);
   if (!plan) return <p>Loading…</p>;
-  if (plan.due.length + plan.fresh.length === 0)
+  if (plan.due.length === 0)
     return (
       <p data-testid="tutor-vocab-empty">
         Nothing from this class to review this session.{' '}
@@ -541,7 +747,6 @@ function TutorVocabStep({ rec, onDone }: { rec: TutorSessionRow; onDone: () => v
   return (
     <ReviewPage
       focusCards={plan.due}
-      freshCards={plan.fresh}
       onExit={onDone}
       exitLabel="Done with vocabulary →"
       title={`${tutorClassTitle(rec.tutor, rec.date)} vocabulary`}

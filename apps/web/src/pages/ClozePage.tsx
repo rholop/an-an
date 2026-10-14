@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useKeyboardShortcut } from '../lib/keyboard-shortcuts.js';
 import {
+  displayLevel,
   isUsableSentence,
   levelIndex,
   lessonIndex,
@@ -215,6 +216,7 @@ export function ClozePage() {
       // Phase 23: reading cards (pinyin and tones) are practised in Review's Say it and their own tab.
       setDueCards(ledger.session().cards.filter((c) => c.skill !== 'reading'));
       setNewCards(ledger.newCards());
+      setTutorIds(ledger.tutorWordIds());
       setNewAllowed(ledger.newAllowance('cloze').allowed);
       // Phase 29 Part B.10: cloze coverage uses the one comprehensible set.
       setKnownIds(ledger.comprehensible().ids);
@@ -254,7 +256,8 @@ export function ClozePage() {
     for (const card of dueCards) {
       if (card.item.kind !== 'word') continue;
       const word = lexiconState.lexicon.byId(card.item.id);
-      if (word?.level) levels.add(word.level);
+      const lv = word ? displayLevel(word) : null;
+      if (lv) levels.add(lv);
     }
     return [...levels];
   }, [dueCards, lexiconState]);
@@ -270,6 +273,8 @@ export function ClozePage() {
   const { script } = useReadingSettings();
 
   const [session, setSession] = useState<SessionEntry[] | null>(null);
+  // Phase 40 Part E.4: tutoring words lead the pool.
+  const [tutorIds, setTutorIds] = useState<ReadonlySet<string>>(new Set());
   // Phase 20: the last Nope in this session (Undo / Change).
   const [nope, setNope] = useState<{ handle: NopeHandle; item: SkillCard['item']; word: string; prev: SessionEntry[]; prevIndex: number } | null>(null);
   const [index, setIndex] = useState(0);
@@ -350,10 +355,15 @@ export function ClozePage() {
       chatLines: chatLines!,
       excludeZh: excluded!,
       // Phase 14: textbook-first picks, and sentences tagged with the active lesson lead the bank.
-      ...(studyFocus?.enabled
+      // Phase 40: tutoring words before everything else.
+      ...(studyFocus?.enabled || tutorIds.size > 0
         ? {
             rank: (c: SkillCard) =>
-              studyRank(studyFocus, (i) => lessonIdx.get(`${i.kind}:${i.id}`), c.item),
+              c.item.kind === 'word' && tutorIds.has(c.item.id)
+                ? -1e6
+                : studyFocus?.enabled
+                  ? studyRank(studyFocus, (i) => lessonIdx.get(`${i.kind}:${i.id}`), c.item)
+                  : 0,
           }
         : {}),
       bankSentences: [
@@ -366,7 +376,7 @@ export function ClozePage() {
       now,
     });
     return { built, seed };
-  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, newAllowed, learnerLevel, tutorSessions]);
+  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, newAllowed, learnerLevel, tutorSessions, tutorIds]);
 
   function startSession() {
     if (!planned || lexiconState.status !== 'ready') return;

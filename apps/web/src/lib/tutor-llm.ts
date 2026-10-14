@@ -61,6 +61,9 @@ import {
   type TurnResponse,
   type TutorLLM,
   TutorCheckResponseSchema,
+  TutorClassifyResponseSchema,
+  type TutorClassifyRequest,
+  type TutorClassifyResponse,
   TutorExtractionSchema,
   TutorScenarioResponseSchema,
   type TutorCheckRequest,
@@ -176,6 +179,11 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM, TutoringLLM {
 
   async writeTutorScenario(req: TutorScenarioRequest): Promise<TutorScenarioResponse> {
     return TutorScenarioResponseSchema.parse(await this.post('/v1/tutor-scenario', req));
+  }
+
+  /** Phase 40: levels and topics the code couldn't work out (checker chain). */
+  async classifyTutorWords(req: TutorClassifyRequest): Promise<TutorClassifyResponse> {
+    return TutorClassifyResponseSchema.parse(await this.post('/v1/tutor-classify', req));
   }
 
   async generateTurn(req: TurnRequest): Promise<TurnResponse> {

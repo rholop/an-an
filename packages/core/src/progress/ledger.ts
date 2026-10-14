@@ -14,7 +14,7 @@ import { lessonProgress, lessonDone, type LessonProgress } from '../textbook/pro
 import type { ClassScope } from '../textbook/scope.js';
 import type { Evidence, ItemRef, Skill, Word } from '../types.js';
 import type { PriorityConfig } from '../curriculum/priority.config.js';
-import { tutorLessonItems, type TutorLesson } from '../tutor/session.js';
+import { recentTutorWordIds, tutorLessonItems, TUTOR_FACES, type TutorLesson } from '../tutor/session.js';
 import { TUTOR_CONFIG } from '../tutor/tutor.config.js';
 import { extrasCountForMastery, getStudyFocus, lessonIndex, type StudyFocus, type StudySettings } from '../study/study-focus.js';
 import { pickNewForSession } from '../study/queue.js';
@@ -389,8 +389,18 @@ export class Ledger {
         settings: this.settings,
         baseNew: this.cfg.newPerQueue.review,
         newHalfShare: this.cfg.newHalfShare,
+        ...(this.tutorWordIds().size > 0 ? { tutor: this.tutorCardTest() } : {}),
       }),
     );
+  }
+
+  /** Phase 40 Part E: is this card one of a tutoring word's (any saved class, ticked)? */
+  isTutorCard(card: Pick<SkillCard, 'item'>): boolean {
+    return card.item.kind === 'word' && this.tutorWordIds().has(card.item.id);
+  }
+
+  private tutorCardTest(): (c: Pick<SkillCard, 'item'>) => boolean {
+    return (c) => this.isTutorCard(c);
   }
 
   /** This session's cards (or with `early`, between sessions, the next session's). */
@@ -402,6 +412,7 @@ export class Ledger {
         now: this.now,
         settings: this.settings,
         ...(opts.early ? { early: true } : {}),
+        ...(this.tutorWordIds().size > 0 ? { tutor: this.tutorCardTest() } : {}),
       });
       const words = [...new Set(picked.cards.filter((c) => c.item.kind === 'word').map((c) => c.item.id))];
       return { status: this.status, ...picked, words };
@@ -453,7 +464,8 @@ export class Ledger {
   newAllowance(queue: NewQueue): NewAllowance {
     const st = this.status;
     const n = newWordState({
-      dueNow: st.sessionCards,
+      // Phase 40: tutoring cards never hold the other new words back (they're outside the cap).
+      dueNow: st.sessionCards - st.tutorCards,
       capLeft: st.capLeft,
       cap: st.cap,
       baseNew: this.cfg.newPerQueue[queue],
@@ -467,9 +479,9 @@ export class Ledger {
           : n.newState === 'reduced'
             ? Math.floor(this.cfg.newFacesPerSession / 2)
             : 0;
-    // Phase 39: tutoring words introduced this session already used the allowance (they never wait for it).
-    const allowed = Math.max(0, n.newAllowed - this.tutorIntroducedThisSession());
-    return { state: n.newState, allowed, faces, ...(n.newMessage ? { message: n.newMessage } : {}) };
+    // Phase 40 Part E: tutoring words are added on top of the textbook order, never in place of it, so
+    // they no longer use up the allowance (Phase 39 counted them against it).
+    return { state: n.newState, allowed: n.newAllowed, faces, ...(n.newMessage ? { message: n.newMessage } : {}) };
   }
 
   // -------------------------------------------------------------------------------------------
@@ -480,7 +492,36 @@ export class Ledger {
     return [...(this.study?.tutorLessons ?? [])].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
   }
 
-  /** Tutoring words introduced in this session's count window (they count against its allowance). */
+  /** Every ticked word of a saved class. */
+  tutorWordIds(): ReadonlySet<string> {
+    return this.once('tutorWordIds', () => new Set(this.tutorLessons().flatMap((l) => l.wordIds)));
+  }
+
+  /** Phase 40 Part E.4: the ticked words of the last `n` classes (default 3), newest class first. */
+  recentTutorWordIds(n = TUTOR_CONFIG.recentClasses): string[] {
+    return this.once(`recentTutor:${n}`, () => recentTutorWordIds(this.tutorLessons(), n));
+  }
+
+  /** Phase 40 Part E.1: this class's cards in the session now ("Review these N words now"). */
+  tutorClassNow(sessionId: string): SkillCard[] {
+    const lesson = this.tutorLessons().find((l) => l.id === sessionId);
+    if (!lesson) return [];
+    const ids = new Set(lesson.wordIds);
+    return this.session().cards.filter((c) => c.item.kind === 'word' && ids.has(c.item.id));
+  }
+
+  /** Phase 40 Part D.5: a word's faces so far (the class page's "Meaning ✓ · Pick ✓ · Recall · Say
+   * it · Listening"). `answered`: the face's card was answered at least once here. */
+  wordFaces(wordId: string): Array<{ skill: Skill; carded: boolean; answered: boolean; learned: boolean }> {
+    const mine = this.allCards.filter((c) => c.item.kind === 'word' && c.item.id === wordId && c.state !== 'unseen');
+    return (['recognition', 'production', 'reading', 'listening'] as const).map((skill) => {
+      const c = mine.find((x) => x.skill === skill);
+      return { skill, carded: !!c, answered: !!c && !isNewCard(c), learned: !!c && isLearnedCard(c) };
+    });
+  }
+
+  /** Tutoring words introduced in this session's count window (shown on the class page; Phase 40:
+   * they no longer count against the allowance). */
   tutorIntroducedThisSession(): number {
     return this.once('tutorIntroduced', () => {
       const since = this.countWindowStart().getTime();
@@ -493,22 +534,23 @@ export class Ledger {
   }
 
   /**
-   * The ticked tutoring words to introduce now (as New cards): not carded, Learned or removed yet,
-   * oldest class first, at most `TUTOR_CONFIG.maxNewPerSession` a session. The rest come first thing
-   * in the next session.
+   * Phase 40 Part E.2–E.3: the ticked tutoring words' faces to introduce now (New cards, in the
+   * session at once): every face in `TUTOR_FACES` the word has no card for yet, for every word not
+   * Learned or removed, oldest class first. No per-session limit (owner, 2026-10-14).
    */
-  tutorToIntroduce(): Array<{ item: ItemRef; sessionId: string }> {
+  tutorToIntroduce(): Array<{ item: ItemRef; sessionId: string; skills: Skill[] }> {
     return this.once('tutorToIntroduce', () => {
-      const room = Math.max(0, TUTOR_CONFIG.maxNewPerSession - this.tutorIntroducedThisSession());
-      const out: Array<{ item: ItemRef; sessionId: string }> = [];
+      const out: Array<{ item: ItemRef; sessionId: string; skills: Skill[] }> = [];
       const seen = new Set<string>();
+      const carded = new Set(this.allCards.filter((c) => c.item.kind === 'word').map((c) => `${c.skill}|${c.item.id}`));
       for (const l of this.tutorLessons())
         for (const id of l.wordIds) {
           const item: ItemRef = { kind: 'word', id };
-          if (out.length >= room || seen.has(id)) continue;
+          if (seen.has(id)) continue;
           seen.add(id);
-          if (this.hasCard(item) || this.index.removed(item) || this.learned(item) || !this.resolvesItem(item)) continue;
-          out.push({ item, sessionId: l.id });
+          if (this.index.removed(item) || this.learned(item) || !this.resolvesItem(item)) continue;
+          const skills = TUTOR_FACES.filter((s) => !carded.has(`${s}|${id}`));
+          if (skills.length > 0) out.push({ item, sessionId: l.id, skills });
         }
       return out;
     });
@@ -700,6 +742,7 @@ export class Ledger {
         learningIds: sets.learningIds,
         books: context.books ?? this.study?.books ?? [],
         ...(focus ? { studyFocus: focus } : {}),
+        ...(this.recentTutorWordIds().length > 0 ? { tutorWordIds: this.recentTutorWordIds() } : {}),
       },
       options,
     );

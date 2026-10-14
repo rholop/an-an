@@ -47,6 +47,8 @@ import {
   ChatMeaningCheckRequestSchema,
   ChatMeaningCheckResponseSchema,
   TutorCheckRequestSchema,
+  TutorClassifyRequestSchema,
+  TutorClassifyResponseSchema,
   TutorCheckResponseSchema,
   TutorExtractionSchema,
   TutorExtractRequestSchema,
@@ -79,6 +81,7 @@ import {
   TOPIC_WORDS_JSON_SCHEMA,
   CHAT_MEANING_CHECK_JSON_SCHEMA,
   TUTOR_CHECK_JSON_SCHEMA,
+  TUTOR_CLASSIFY_JSON_SCHEMA,
   TUTOR_EXTRACT_JSON_SCHEMA,
   TUTOR_SCENARIO_JSON_SCHEMA,
 } from './json-schema.js';
@@ -205,7 +208,7 @@ export interface AppDeps {
   /** Phase 24: graded stories (writer + independent checker prompts). */
   story?: { prompts: { write: string; check: string; repair: string }; orchestrator?: JsonOrchestrator };
   /** Phase 39: tutoring sessions (page-image extraction, the sentence check, the class scenario). */
-  tutor?: { prompts: { extract: string; check: string; scenario: string }; orchestrator?: JsonOrchestrator };
+  tutor?: { prompts: { extract: string; check: string; scenario: string; classify?: string }; orchestrator?: JsonOrchestrator };
   rateLimiter: RateLimiter;
   /** Phase 33: the shared free-quota tracker and each role's model chain (GET /v1/ai-usage). */
   quota?: QuotaTracker;
@@ -1046,6 +1049,23 @@ export function createApp(deps: AppDeps): Hono {
         userMessage: JSON.stringify({ tutor: req.tutor, topics: req.topics, classWords: req.words, grammar: req.grammar }),
       }),
       tu.orchestrator,
+    );
+  });
+
+  // Phase 40: levels and topics the code couldn't work out (checker chain; validated in code).
+  app.post('/v1/tutor-classify', (c) => {
+    const tu = deps.tutor;
+    if (!tu?.prompts.classify) return c.json({ error: 'tutoring is not configured' }, 501);
+    const prompt = tu.prompts.classify;
+    return journalRoute(
+      c,
+      '/v1/tutor-classify',
+      TutorClassifyRequestSchema,
+      TutorClassifyResponseSchema,
+      TUTOR_CLASSIFY_JSON_SCHEMA,
+      (req) => ({ systemPrompt: prompt, userMessage: JSON.stringify({ words: req.words, topics: req.topics, tags: req.tags }) }),
+      tu.orchestrator,
+      true,
     );
   });
 

@@ -22,6 +22,7 @@ import {
   TutorExtractionSchema,
   TutorCheckResponseSchema,
   TutorScenarioResponseSchema,
+  TutorClassifyResponseSchema,
 } from '@anan/core';
 import type { z } from 'zod';
 import {
@@ -48,6 +49,7 @@ import {
   TUTOR_EXTRACT_JSON_SCHEMA,
   TUTOR_CHECK_JSON_SCHEMA,
   TUTOR_SCENARIO_JSON_SCHEMA,
+  TUTOR_CLASSIFY_JSON_SCHEMA,
 } from './json-schema.js';
 
 /** Phase 25: every route that asks a model for JSON, with the zod check its answer must pass and
@@ -100,4 +102,5 @@ export const JSON_ROUTES: ReadonlyArray<{ route: string; zod: z.ZodTypeAny; json
   { route: '/v1/tutor-extract', zod: TutorExtractionSchema, json: TUTOR_EXTRACT_JSON_SCHEMA },
   { route: '/v1/tutor-check', zod: TutorCheckResponseSchema, json: TUTOR_CHECK_JSON_SCHEMA },
   { route: '/v1/tutor-scenario', zod: TutorScenarioResponseSchema, json: TUTOR_SCENARIO_JSON_SCHEMA },
+  { route: '/v1/tutor-classify', zod: TutorClassifyResponseSchema, json: TUTOR_CLASSIFY_JSON_SCHEMA },
 ];

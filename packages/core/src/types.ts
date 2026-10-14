@@ -24,6 +24,12 @@ export interface Word {
   chars: string[];
   tags: string[];
   freqRank?: number;
+  /** Phase 40 Part A: the level shown for a word with no official TOCFL `level` (TBCL, its
+   * characters, or a checked model call). Never used by the TOCFL gate or level mastery: read it
+   * through `displayLevel`. */
+  estimatedLevel?: Level;
+  /** Where `estimatedLevel` came from ('tocfl' only on custom words that matched an official word). */
+  levelSource?: 'tocfl' | 'tbcl' | 'chars' | 'model';
   /** Phase 7: every sense worth showing, primary first. `glossEn` stays the
    * primary sense's gloss for back-compat. Absent on custom/legacy words. */
   senses?: Sense[];

@@ -1,4 +1,5 @@
 import {
+  displayLevel,
   bankEntryToReaderSentence,
   DEFAULT_STUDY_SETTINGS,
   buildReaderGenRequest,
@@ -275,7 +276,7 @@ export class ReaderService {
         zh,
         en: candidate.en,
         targetWordId: word.id,
-        level: word.level ?? state.learnerLevel,
+        level: displayLevel(word) ?? state.learnerLevel,
         tokens: candidate.tokens,
         source: 'generated-live',
         doubtful: false,

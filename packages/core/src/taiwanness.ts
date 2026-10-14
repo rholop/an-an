@@ -22,6 +22,13 @@ export interface TaiwannessResult {
   isClean: boolean;
 }
 
+/** Phase 40 (owner, 2026-10-14: never simplified characters in review): every simplified-only
+ * character left in `text` replaced by its traditional form from the same table `checkTaiwanness`
+ * uses. Deterministic, no model; run after OpenCC as a last pass. */
+export function replaceSimplifiedChars(text: string): string {
+  return [...text].map((ch) => SIMPLIFIED_ONLY_CHARS[ch] ?? ch).join('');
+}
+
 export function isSimplifiedOnly(ch: string): boolean {
   return ch in SIMPLIFIED_ONLY_CHARS;
 }

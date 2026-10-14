@@ -20,6 +20,7 @@ import {
   stepName,
   tocflLabel,
   type Level,
+  type Word,
 } from '@anan/core';
 
 export { bookTitle, levelLabel, levelShort, stepName, tocflLabel };
@@ -42,10 +43,18 @@ export const yourClassLabel = (n: number, bookId?: string): string =>
 /** "Current lesson" only ever means the active study lesson. */
 export const CURRENT_LESSON = 'Current lesson';
 /** Word popover source line: "TOCFL L1 · 來學華語 2 · Lesson 3". */
-export function wordSourceLabel(level: Level | null | undefined, home?: { n: number; bookId: string }): string {
-  return [level ? tocflLabel(level) : undefined, home ? lessonBadge(home.n, home.bookId) : undefined]
+export function wordSourceLabel(level: Level | null | undefined, home?: { n: number; bookId: string }, estimated = false): string {
+  return [level ? (estimated ? estimatedLevelLabel(level) : tocflLabel(level)) : undefined, home ? lessonBadge(home.n, home.bookId) : undefined]
     .filter(Boolean)
     .join(' · ');
+}
+/** Phase 40 Part A: an estimated level ("≈ L1"): the word has no official TOCFL level. */
+export const estimatedLevelLabel = (level: Level): string => `≈ ${levelShort(level)}`;
+/** A word's level chip: "L1" (official) or "≈ L1" (estimate), or undefined. */
+export function wordLevelChip(w: Pick<Word, 'level'> & Partial<Pick<Word, 'estimatedLevel'>>): string | undefined {
+  const lv = w.level ?? w.estimatedLevel;
+  if (!lv) return undefined;
+  return w.level ? levelShort(lv) : estimatedLevelLabel(lv);
 }
 /** Header picker: "Your level". */
 export const YOUR_LEVEL = 'Your level';
@@ -442,10 +451,28 @@ export const NOTE_ONLY = 'note only';
 export const SAVE = 'Save';
 export const DISCARD = 'Discard';
 export const TUTOR_UPDATES_EXISTING = 'You already saved this class. Saving again updates it (no duplicate cards).';
-/** The per-session limit (core `TUTOR_CONFIG.maxNewPerSession`). */
-export const tutorOverLimit = (n: number, limit: number): string =>
-  `${n} new words: ${limit} join your reviews now, the other ${n - limit} first thing in the next sessions.`;
 export const tutorAddedLine = (n: number): string =>
-  n === 0 ? 'Saved. Nothing new to add to your reviews.' : `Saved. ${n} word${n === 1 ? '' : 's'} added to your reviews, ahead of textbook words.`;
+  n === 0 ? 'Saved. Nothing new to add to your reviews.' : `Saved. ${n} word${n === 1 ? ' is' : 's are'} in your review now, ahead of everything else.`;
+/** Phase 40 Part E.1: opens Review on just this class's words, at any time of day. */
+export const reviewTheseNow = (n: number): string => `Review these ${n} word${n === 1 ? '' : 's'} now`;
+/** Phase 40 Part B: the notes (an AI summary) used a mainland word; never said about the tutor. */
+export const notesMainlandLine = (printed: string, taiwan: readonly string[]): string =>
+  `The notes wrote ${printed} (mainland usage) · Taiwan: ${taiwan.join(' / ')}`;
+export const TUTOR_FROM_TAIWAN = 'This tutor is from Taiwan';
+export const TUTOR_FROM_TAIWAN_HINT = 'Uses the Taiwan form without a "mainland" chip (the notes are written in simplified characters either way).';
+/** Phase 40 Part D.1 */
+export const AUDIO_WAITING_KEY = "Audio: waiting for the server's speech key";
+export const AUDIO_FAILED = "Audio: couldn't be made this time";
+export const tutorAudioLine = (made: number): string => `Audio: ${made} clip${made === 1 ? '' : 's'} made for this class`;
+/** Phase 40 Part D.5: a word's card faces, in order. */
+export const FACE_NAMES = { recognition: 'Meaning', production: 'Pick · Recall', reading: 'Say it', listening: 'Listening' } as const;
+/** Phase 40 Part E.4: Home, for a class saved in the last days. */
+export const tutorHomeLine = (tutor: string, words: number): string =>
+  `From your class with ${tutor || 'your tutor'} · ${words} word${words === 1 ? '' : 's'}`;
+export const RECHECK_LEVELS = 'Re-check levels and topics';
+export const recheckDone = (n: number): string =>
+  n === 0 ? 'Levels and topics are up to date.' : `Updated ${n} class${n === 1 ? '' : 'es'}.`;
+/** Topic tag names (core `TOPIC_TAGS`). */
+export const topicName = (t: string): string => t.charAt(0).toUpperCase() + t.slice(1);
 export const TUTOR_NO_CLASSES = 'No classes yet. Upload the summary your tutor sends after a class.';
 export const NOT_PRACTISED = 'shown only, not practised';

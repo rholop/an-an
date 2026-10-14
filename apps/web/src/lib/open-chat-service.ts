@@ -201,8 +201,10 @@ export class OpenChatService {
 
   async buildProfile(level: Level, now: Date): Promise<OpenChatProfile> {
     // Phase 29: the one comprehensible set (the ledger's; the same as scenario chat and the reader).
-    const { knownIds: known, dueIds: due, learningIds: learning } = (await this.learnerService.ledger(now)).comprehensible();
+    const ledger = await this.learnerService.ledger(now);
+    const { knownIds: known, dueIds: due, learningIds: learning } = ledger.comprehensible();
     const studyFocus = await this.env.studyFocus?.().catch(() => undefined);
+    const tutorWordIds = ledger.recentTutorWordIds();
     return {
       lexicon: this.lexicon,
       level,
@@ -211,6 +213,7 @@ export class OpenChatService {
       learningIds: learning,
       books: this.env.books(),
       ...(studyFocus ? { studyFocus } : {}),
+      ...(tutorWordIds.length > 0 ? { tutorWordIds } : {}),
     };
   }
 

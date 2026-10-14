@@ -17,7 +17,7 @@ import {
   type SessionSettings,
   type SessionWindow,
 } from './review-sessions.js';
-import { isDueBefore, isScheduledCard } from './terms.js';
+import { isActiveCard, isDueBefore, isNewCard, isScheduledCard } from './terms.js';
 
 /** Evidence kinds that are a review answer (they count toward the session cap). */
 export const REVIEW_ANSWER_KINDS: ReadonlySet<string> = new Set([
@@ -72,6 +72,9 @@ export interface ReviewStatus {
   /** Phase 27: the cards of this session (`sessionCardKey`): the one set that makes a plant thirsty,
    * fills Water all, a plot's button, the lesson page and the badge. Empty between sessions. */
   sessionCardKeys: string[];
+  /** Phase 40 Part E: tutoring cards among `sessionCards` (in the session at any time of day, outside
+   * the cap; the cap, `capLeft` and the new-word state are about the other cards). */
+  tutorCards: number;
   /** Phase 27: the next session's cards and words (faint droplets, "N words in the evening session"). */
   nextSessionCardKeys: string[];
   nextSessionWordIds: string[];
@@ -128,16 +131,55 @@ export function newWordState(input: {
 export const sessionCardKey = (c: Pick<SkillCard, 'item' | 'skill'>): string => `${c.item.kind}:${c.item.id}|${c.skill}`;
 const cardKey = sessionCardKey;
 
-/** Distinct cards answered in Review between `since` and `now` (from already-active evidence). */
-export function distinctReviewedSince(evidence: readonly EvidenceLike[], since: Date, now: Date): number {
+/** Distinct cards answered in Review between `since` and `now` (from already-active evidence).
+ * `skip`: cards left out of the count (Phase 40: tutoring cards don't use the cap). */
+export function distinctReviewedSince(
+  evidence: readonly EvidenceLike[],
+  since: Date,
+  now: Date,
+  skip?: (e: Pick<SkillCard, 'item' | 'skill'>) => boolean,
+): number {
   const seen = new Set<string>();
   for (const e of evidence) {
     if (!REVIEW_ANSWER_KINDS.has(e.kind)) continue;
     const t = e.at.getTime();
     if (t < since.getTime() || t > now.getTime()) continue;
+    if (skip?.(e)) continue;
     seen.add(cardKey(e));
   }
   return seen.size;
+}
+
+/** Cards with a rated answer since `since` (finished or not). */
+function touchedSince(evidence: readonly EvidenceLike[], since: Date, now: Date): Set<string> {
+  const out = new Set<string>();
+  for (const e of evidence) {
+    if (!RATED_KINDS.has(e.kind)) continue;
+    const t = e.at.getTime();
+    if (t >= since.getTime() && t <= now.getTime()) out.add(cardKey(e));
+  }
+  return out;
+}
+
+/**
+ * Phase 40 Part E (owner, 2026-10-14: "I want them added instantly to my review"): a tutoring card
+ * is in the session whatever the time of day while it is New, due now, or was answered Again in this
+ * count window and not finished. (A finished one follows FSRS into later sessions as usual.)
+ */
+function tutorNowFilter(
+  input: Pick<SessionInput, 'evidence' | 'now' | 'tutor'>,
+  since: Date,
+): (c: SkillCard) => boolean {
+  const isTutor = input.tutor;
+  if (!isTutor) return () => false;
+  const touched = touchedSince(input.evidence, since, input.now);
+  const now = input.now.getTime();
+  return (c) =>
+    inReviewQueue(c) &&
+    isTutor(c) &&
+    c.state !== 'unseen' &&
+    isActiveCard(c) &&
+    (isNewCard(c) || (isScheduledCard(c) && c.card.due.getTime() <= now) || touched.has(cardKey(c)));
 }
 
 /** Cards finished since `since`: answered, and the last answer wasn't Again. Learning steps are
@@ -169,6 +211,8 @@ interface SessionInput {
   evidence: readonly EvidenceLike[];
   now: Date;
   settings?: SessionSettings;
+  /** Phase 40 Part E: is this a tutoring card? (They join the session at once and skip the cap.) */
+  tutor?: (c: Pick<SkillCard, 'item' | 'skill'>) => boolean;
 }
 
 /**
@@ -179,12 +223,16 @@ export function sessionCards(input: SessionInput & { early?: boolean }): { cards
   const s = input.settings ?? DEFAULT_SESSION_SETTINGS;
   const pos = sessionAt(input.now, s);
   const window = pos.current ?? (input.early ? pos.next : undefined);
-  if (!window) return { cards: [] };
   const finished = finishedSince(input.evidence, countWindowStart(pos), input.now);
+  const tutorNow = tutorNowFilter(input, countWindowStart(pos));
+  // Phase 40: tutoring cards due now are in the session even between sessions.
+  if (!window) return { cards: input.cards.filter((c) => tutorNow(c) && !finished.has(cardKey(c))) };
   // Review early: a card answered since the last session ended and moved to the next session's start
   // (a learning step, Phase 27) still belongs to it.
   const keep = pos.current ? (c: SkillCard) => !finished.has(cardKey(c)) : (c: SkillCard) => stillAhead(c, finished, input.now);
-  const cards = input.cards.filter((c) => inReviewQueue(c) && isDueBefore(c, window.cutoff) && keep(c));
+  const cards = input.cards.filter(
+    (c) => inReviewQueue(c) && ((isDueBefore(c, window.cutoff) && keep(c)) || (tutorNow(c) && !finished.has(cardKey(c)))),
+  );
   return { cards, window };
 }
 
@@ -210,22 +258,27 @@ export function reviewStatus(
   const live = input.cards.filter((c) => inReviewQueue(c) && !finished.has(cardKey(c)));
 
   const current = pos.current;
-  const inCurrent = current ? live.filter((c) => isDueBefore(c, current.cutoff)) : [];
+  const tutorNow = tutorNowFilter(input, since);
+  const inCurrent = live.filter((c) => (current && isDueBefore(c, current.cutoff)) || tutorNow(c));
+  const isTutor = input.tutor ?? (() => false);
+  const tutorCount = inCurrent.filter((c) => isTutor(c)).length;
   const thirsty = new Set(inCurrent.filter((c) => c.item.kind === 'word').map((c) => c.item.id));
   const inNext = input.cards.filter(
     (c) =>
       inReviewQueue(c) &&
       stillAhead(c, finished, now) &&
       isDueBefore(c, pos.next.cutoff) &&
-      !(current && isDueBefore(c, current.cutoff)),
+      !(current && isDueBefore(c, current.cutoff)) &&
+      !(tutorNow(c) && !finished.has(cardKey(c))),
   );
   const nextCount = inNext.length;
   const left = live.filter((c) => isDueBefore(c, pos.previous.endsAt)).length;
 
   const doneThisSession = distinctReviewedSince(input.evidence, since, now);
-  const capLeft = Math.max(0, cap - doneThisSession);
+  // Phase 40: the cap is about the other cards (tutoring cards are never pushed out by it).
+  const capLeft = Math.max(0, cap - (input.tutor ? distinctReviewedSince(input.evidence, since, now, input.tutor) : doneThisSession));
   const n = newWordState({
-    dueNow: inCurrent.length,
+    dueNow: inCurrent.length - tutorCount,
     capLeft,
     cap,
     baseNew: input.baseNew ?? 0,
@@ -241,10 +294,11 @@ export function reviewStatus(
     doneThisSession,
     cap,
     capLeft,
-    reviewAll: Math.min(inCurrent.length, capLeft),
+    reviewAll: Math.min(inCurrent.length - tutorCount, capLeft) + tutorCount,
     thirstyWords: thirsty.size,
     thirstyWordIds: [...thirsty],
     sessionCardKeys: inCurrent.map(cardKey),
+    tutorCards: tutorCount,
     nextSessionCardKeys: inNext.map(cardKey),
     nextSessionWordIds: [...new Set(inNext.filter((c) => c.item.kind === 'word').map((c) => c.item.id))],
     ...n,

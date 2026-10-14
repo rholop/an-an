@@ -52,6 +52,8 @@ export interface StoryPromptInput {
   /** Phase 26: the story's topic and the topic's words (Phase 18's cached list): matching words go first. */
   topic?: string;
   topicWords?: readonly string[];
+  /** Phase 40 Part E.4: the latest tutoring classes' words: they lead rung 1 (before the topic words). */
+  priorityIds?: readonly string[];
 }
 
 /** Phase 26: the groups the prompt shows (rung 2 first, then rung 1 by kind). */
@@ -127,12 +129,13 @@ export function storyPromptLists(input: StoryPromptInput): { rungs: StoryRequest
   };
   const r1 = input.ladder.ids[1];
   const rng = input.rng ?? Math.random;
+  const priority = (input.priorityIds ?? []).filter((id) => r1.has(id));
   const topical = [...r1].filter(onTopic);
   const lead = [...(input.dueIds ?? [])].filter((id) => r1.has(id));
   const recent = (input.recentIds ?? []).filter((id) => r1.has(id));
-  const first = new Set([...topical, ...lead, ...recent]);
+  const first = new Set([...priority, ...topical, ...lead, ...recent]);
   const rest = shuffle([...r1].filter((id) => !first.has(id)), rng);
-  const r1Words = uniqueHeadwords([...topical, ...lead, ...recent, ...rest]).slice(0, STORY_CONFIG.promptRung1Max);
+  const r1Words = uniqueHeadwords([...priority, ...topical, ...lead, ...recent, ...rest]).slice(0, STORY_CONFIG.promptRung1Max);
   const r2Words = uniqueHeadwords(input.ladder.ids[2]);
   const r5Words = uniqueHeadwords([...input.ladder.ids[5]].filter(onTopic)).slice(0, STORY_CONFIG.promptRung5Max);
   const item = (w: Word) => ({ zh: w.headword, en: shortGloss(w) });

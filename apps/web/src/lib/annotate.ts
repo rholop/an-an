@@ -1,5 +1,7 @@
 import {
+  displayLevel,
   homeLessonOfTags,
+  isEstimatedLevel,
   Lexicon,
   readingDisplay,
   resolveReading,
@@ -41,7 +43,8 @@ export function annotate(
     let sense: Sense | undefined;
     if (token.kind === 'word') {
       const matched = lexicon.preferred(token.text, reading.pinyin);
-      level = matched?.level ?? null;
+      // Phase 40: estimates show too ("≈ L1"); the official level is still `word.level`.
+      level = matched ? displayLevel(matched) : null;
       wordId = matched?.id;
       word = matched;
       // Phase 21: the one gloss rule (core `senseFor`).
@@ -56,7 +59,7 @@ export function annotate(
       gloss = sense?.glossEn ?? matched?.glossEn ?? '';
     }
     const textbookHome = word ? homeLessonOfTags(word.tags) : undefined;
-    return { token, reading, level, gloss, wordId, word, sense, textbookHome };
+    return { token, reading, level, ...(word && isEstimatedLevel(word) ? { levelEstimated: true } : {}), gloss, wordId, word, sense, textbookHome };
   });
 }
 
@@ -91,7 +94,8 @@ export function annotateWord(word: Word, opts: { textbook?: boolean } = {}): Ann
   return {
     token: { text: word.headword, start: 0, end: length, kind: 'word' },
     reading: { pinyin: word.pinyin, zhuyin: word.zhuyin, confidence: 'high' },
-    level: word.level,
+    level: displayLevel(word),
+    ...(isEstimatedLevel(word) ? { levelEstimated: true } : {}),
     gloss: sense?.glossEn ?? word.glossEn,
     wordId: word.id,
     word,
