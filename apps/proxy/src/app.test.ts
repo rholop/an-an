@@ -2,6 +2,7 @@ import { gunzipSync, gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import type { Scenario, SentenceGenRequest, TurnRequest } from '@anan/core';
 import { createApp } from './app.js';
+import { constraintSize, MAX_CONSTRAINT_SIZE } from './zod-limits.js';
 import { MemoryAudioStore } from './audio-store.js';
 import { QuotaTracker } from './quota.js';
 import { MemoryTextbookStore } from './textbook-store.js';
@@ -1489,6 +1490,23 @@ describe('Phase 39 tutoring routes', () => {
     await post(app, '/v1/tutor-extract', { pages: pages.slice(0, 1) });
     expect(seen).toHaveLength(2);
     expect((await post(app, '/v1/tutor-extract', { pages: [] })).status).toBe(400);
+  });
+
+  it('extract: the schema sent is small enough for Gemini, and a list entry past its limits is dropped', async () => {
+    // Live, both models answered 400 to the extract schema with every zod limit written in.
+    const seen: Array<{ name: string; req: { jsonSchema?: Record<string, unknown> } }> = [];
+    const answer = {
+      ...extraction,
+      vocab: [...extraction.vocab, { zh: '一個太長太長太長太長太長太長太長太長太長太長的詞', pinyin: '', en: 'too long', example: { zh: '', en: '' } }],
+    };
+    const writer = spyAdapter('gemini', () => answer, seen as never);
+    const app = buildApp({ tutorOrchestrator: createJsonOrchestrator(writer, undefined, new PromptCache<JsonTaskResult<unknown>>()) });
+    const res = await post(app, '/v1/tutor-extract', { pages });
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { vocab: unknown[] }).vocab).toHaveLength(1);
+    const sent = seen[0]!.req.jsonSchema!;
+    expect(constraintSize(sent)).toBeLessThanOrEqual(MAX_CONSTRAINT_SIZE);
+    expect(JSON.stringify(sent)).not.toMatch(/maxLength|maxItems/);
   });
 
   it('check runs on the checker model; scenario gets the learner level', async () => {

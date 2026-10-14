@@ -131,3 +131,37 @@ export function trimToLimits(raw: unknown, json: Json): unknown {
   }
   return raw;
 }
+
+/**
+ * Phase 39 fix: how big a constraint Gemini has to build from a schema. Every `maxLength` and
+ * `maxItems` becomes counted states in its decoder, multiplied through nested arrays; past a size
+ * Gemini answers 400 ("too many states for serving") on every model. The story schema (≈32k) is
+ * the largest known to work live.
+ */
+export function constraintSize(json: Json, mult = 1): number {
+  if (json.type === 'array') return constraintSize((json.items as Json) ?? {}, mult * ((json.maxItems as number) ?? 1));
+  if (json.type === 'object')
+    return Object.values((json.properties as Record<string, Json>) ?? {}).reduce((a, p) => a + constraintSize(p, mult), 0);
+  if (json.type === 'string') return mult * ((json.maxLength as number) ?? 0);
+  return 0;
+}
+
+/** Largest `constraintSize` a route may send (the story schema's, which Gemini accepts). */
+export const MAX_CONSTRAINT_SIZE = 35_000;
+
+/**
+ * For routes whose limits are too big to send (Phase 39 tutor extract and check): a top-level
+ * list entry that breaks its zod limits is dropped instead of failing the whole answer.
+ */
+export function dropInvalidEntries(raw: unknown, zod: AnyZod): unknown {
+  const d = def(unwrap(zod));
+  if (d.typeName !== 'ZodObject' || !raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  const shape = typeof d.shape === 'function' ? d.shape() : (d.shape as unknown as Record<string, AnyZod>);
+  return Object.fromEntries(
+    Object.entries(raw as Record<string, unknown>).map(([k, v]) => {
+      const field = shape[k] ? def(unwrap(shape[k]!)) : undefined;
+      if (field?.typeName !== 'ZodArray' || !Array.isArray(v)) return [k, v];
+      return [k, v.filter((x) => field.type!.safeParse(x).success)];
+    }),
+  );
+}

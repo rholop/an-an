@@ -427,6 +427,8 @@ export const tutorClassDay = (date: string): string => {
 export const tutorClassTitle = (tutor: string, date: string): string => `${tutor || 'Your tutor'} · ${tutorClassDay(date)}`;
 export const UPLOAD_CLASS_SUMMARY = 'Upload a class summary (PDF)';
 export const READING_NOTES = 'Reading your class notes…';
+/** A failed extraction that isn't the free quota: plain words, never the proxy's error body. */
+export const TUTOR_EXTRACT_FAILED = "Gemini couldn't read the class notes this time. Try again in a few minutes.";
 export const STUDY_THIS_CLASS = 'Study this class';
 export const TUTOR_STATUS = {
   new: 'New',

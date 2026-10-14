@@ -137,3 +137,18 @@ for (const theme of ['light', 'dark'] as const) {
     });
   }
 }
+
+test('tutoring: a failed reading shows plain words, never the server reply', async ({ page }) => {
+  await page.route('**/v1/tutor-extract', (route) =>
+    route.fulfill({
+      status: 502,
+      json: { error: 'tutor_extract_failed', attempts: [{ model: 'gemini-2.5-flash', reason: 'bad_request' }] },
+    }),
+  );
+  await page.goto('/?page=tutoring');
+  await expect(page.getByRole('heading', { name: 'Tutoring' })).toBeVisible({ timeout: 20_000 });
+  await page.getByTestId('tutor-upload').setInputFiles({ name: 'summary.pdf', mimeType: 'application/pdf', buffer: tinyPdf() });
+  const error = page.getByTestId('tutor-upload-error');
+  await expect(error).toContainText("Gemini couldn't read the class notes", { timeout: 30_000 });
+  await expect(error).not.toContainText('tutor_extract_failed');
+});

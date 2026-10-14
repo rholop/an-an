@@ -19,7 +19,7 @@ import { useCurrentLevel } from '../lib/current-level.js';
 import { getLedgerNow, useLedger } from '../lib/ledger.js';
 import { saveProgressNow } from '../lib/save-progress.js';
 import { canWriteStories } from '../lib/stories.js';
-import { aiErrorText } from '../lib/tutor-llm.js';
+import { aiErrorText, ProxyTurnError } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import {
   appTutoringService,
@@ -39,6 +39,7 @@ import {
   NOTE_ONLY,
   notesSaid,
   READING_NOTES,
+  TUTOR_EXTRACT_FAILED,
   SAVE,
   STUDY_THIS_CLASS,
   TUTOR_NO_CLASSES,
@@ -147,7 +148,7 @@ export function TutoringList({
       setPendingDraft(result);
       onDraft();
     } catch (err) {
-      setError(aiErrorText(err));
+      setError(err instanceof ProxyTurnError && !err.quota ? TUTOR_EXTRACT_FAILED : aiErrorText(err));
     } finally {
       setBusy(false);
     }

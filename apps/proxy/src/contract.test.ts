@@ -6,7 +6,7 @@ import { createJsonOrchestrator } from './orchestrator.js';
 import { GeminiAdapter } from './providers/gemini.js';
 import { ModelsFailedError, type JsonTaskRequest } from './providers/types.js';
 import { failureBody } from './app.js';
-import { applyZodLimits, schemaAt, trimToLimits, zodLimits } from './zod-limits.js';
+import { applyZodLimits, constraintSize, MAX_CONSTRAINT_SIZE, schemaAt, trimToLimits, zodLimits } from './zod-limits.js';
 
 /**
  * Phase 25: contract tests for every JSON route against the REAL Gemini adapter (no network: the
@@ -141,6 +141,11 @@ describe('JSON route contracts (Phase 25, Gemini only)', () => {
     expect(schemaAt(s, '/questions[]/options')).toMatchObject({ minItems: 2, maxItems: 5 });
     expect(schemaAt(s, '/paragraphs[]/zh')).toMatchObject({ maxLength: 600 });
     expect(schemaAt(s, '/glosses')).toMatchObject({ maxItems: 6 });
+  });
+
+  it('Phase 39 fix: only the tutor extract is too big to send its limits (Gemini 400s past the story size)', () => {
+    const tooBig = JSON_ROUTES.filter((r) => constraintSize(applyZodLimits(r.json, r.zod)) > MAX_CONSTRAINT_SIZE).map((r) => r.route);
+    expect(tooBig).toEqual(['/v1/tutor-extract']);
   });
 
   it('harmless overruns are trimmed (7 questions → 6) instead of failing the route', () => {

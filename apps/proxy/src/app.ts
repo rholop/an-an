@@ -127,7 +127,7 @@ import {
 import type { RateLimiter } from './rate-limit.js';
 import { ModelsFailedError, QuotaExhaustedError } from './providers/types.js';
 import type { QuotaTracker } from './quota.js';
-import { applyZodLimits, trimToLimits } from './zod-limits.js';
+import { applyZodLimits, constraintSize, dropInvalidEntries, MAX_CONSTRAINT_SIZE, trimToLimits } from './zod-limits.js';
 
 /** Phase 25: '/v1/story-check' → {"error":"story_check_failed","attempts":[{"model":"gemini-…","reason":"rate_limited"}, …]}.
  * Names which model failed and why; never a key or a prompt. Sent with MODEL_FAILURE_STATUS (503):
@@ -684,6 +684,10 @@ export function createApp(deps: AppDeps): Hono {
       );
 
     const limited = applyZodLimits(jsonSchema, responseSchema);
+    // Phase 39 fix: limits too big for Gemini to build (a 400 on every model, as the tutor
+    // extract hit) are not sent; lists are still trimmed, and a list entry past its limits is
+    // dropped rather than failing the whole answer.
+    const sendLimits = constraintSize(limited) <= MAX_CONSTRAINT_SIZE;
     const pr = runPriority(c);
     if ('bad' in pr) return c.json({ error: pr.bad }, 400);
     try {
@@ -691,8 +695,11 @@ export function createApp(deps: AppDeps): Hono {
         {
           task: route,
           // Phase 25: the schema the model sees carries the zod limits; small overruns are trimmed
-          jsonSchema: limited,
-          parse: (raw) => responseSchema.parse(trimToLimits(raw, limited)),
+          jsonSchema: sendLimits ? limited : jsonSchema,
+          parse: (raw) =>
+            responseSchema.parse(
+              sendLimits ? trimToLimits(raw, limited) : dropInvalidEntries(trimToLimits(raw, limited), responseSchema),
+            ),
           ...build(parsed.data),
         },
         { checker, noCache: noCache(parsed.data), ...pr },
