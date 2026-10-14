@@ -14,7 +14,7 @@ import { lessonProgress, lessonDone, type LessonProgress } from '../textbook/pro
 import type { ClassScope } from '../textbook/scope.js';
 import type { Evidence, ItemRef, Skill, Word } from '../types.js';
 import type { PriorityConfig } from '../curriculum/priority.config.js';
-import { knownFaceKeys, faceGateOpen } from './face-order.js';
+import { faceGateOpen, faceStage, knownFaceKeys } from './face-order.js';
 import { recentTutorWordIds, tutorLessonItems, TUTOR_FACES, type TutorLesson } from '../tutor/session.js';
 import { TUTOR_CONFIG } from '../tutor/tutor.config.js';
 import { extrasCountForMastery, getStudyFocus, lessonIndex, type StudyFocus, type StudySettings } from '../study/study-focus.js';
@@ -588,6 +588,28 @@ export class Ledger {
         .filter((c) => c.skill === 'recognition' && c.item.kind === 'word' && order.has(c.item.id))
         .sort((a, b) => order.get(a.item.id)! - order.get(b.item.id)!);
     });
+  }
+
+  /**
+   * Phase 42 "Rate your words": the cards already seen (answered or imported, any of Meaning /
+   * production / Say it) that the learner has not rated themselves yet, a word's faces together.
+   * A rated card (in Review or on that screen) has `knownFace` set and drops out.
+   */
+  faceRatingQueue(): SkillCard[] {
+    return this.once('faceRatingQueue', () =>
+      this.allCards
+        .filter(
+          (c) =>
+            c.item.kind === 'word' &&
+            (['recognition', 'production', 'reading'] as readonly string[]).includes(c.skill) &&
+            c.state !== 'unseen' &&
+            !isNewCard(c) &&
+            isActiveCard(c) &&
+            c.flags.knownFace === undefined &&
+            this.resolvesItem(c.item),
+        )
+        .sort((a, b) => a.item.id.localeCompare(b.item.id) || faceStage(a) - faceStage(b)),
+    );
   }
 
   /** Phase 42: the New cards Review may introduce now: a Pick card waits for its word's Meaning to be

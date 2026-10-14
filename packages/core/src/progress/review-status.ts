@@ -20,6 +20,7 @@ import {
 import { knownFaceKeys, faceGateOpen } from './face-order.js';
 import { zonedStartOfDay } from './time.js';
 import { TUTOR_CONFIG } from '../tutor/tutor.config.js';
+import { recheckDue } from './easy-ratings.js';
 import { inAppAnswers, isActiveCard, isDueBefore, isNewCard, isScheduledCard } from './terms.js';
 
 /** Evidence kinds that are a review answer (they count toward the session cap). */
@@ -263,13 +264,15 @@ export function sessionCards(input: SessionInput & { early?: boolean }): { cards
   const window = pos.current ?? (input.early ? pos.next : undefined);
   const finished = finishedSince(input.evidence, countWindowStart(pos), input.now);
   const tutorNow = tutorNowFilter(input, countWindowStart(pos));
+  // Phase 42: a Mastered card's re-check is in the session once it is due, like a tutoring card.
+  const extraNow = (c: SkillCard) => (tutorNow(c) || recheckDue(c, input.now)) && isActiveCard(c);
   // Phase 40: tutoring cards due now are in the session even between sessions.
-  if (!window) return { cards: input.cards.filter((c) => tutorNow(c) && !finished.has(cardKey(c))) };
+  if (!window) return { cards: input.cards.filter((c) => inReviewQueue(c) && extraNow(c) && !finished.has(cardKey(c))) };
   // Review early: a card answered since the last session ended and moved to the next session's start
   // (a learning step, Phase 27) still belongs to it.
   const keep = pos.current ? (c: SkillCard) => !finished.has(cardKey(c)) : (c: SkillCard) => stillAhead(c, finished, input.now);
   const cards = input.cards.filter(
-    (c) => inReviewQueue(c) && ((isDueBefore(c, window.cutoff) && keep(c)) || (tutorNow(c) && !finished.has(cardKey(c)))),
+    (c) => inReviewQueue(c) && ((isDueBefore(c, window.cutoff) && keep(c)) || (extraNow(c) && !finished.has(cardKey(c)))),
   );
   return { cards, window };
 }
@@ -297,7 +300,8 @@ export function reviewStatus(
 
   const current = pos.current;
   const tutorNow = tutorNowFilter(input, since);
-  const inCurrent = live.filter((c) => (current && isDueBefore(c, current.cutoff)) || tutorNow(c));
+  const extraNow = (c: SkillCard) => tutorNow(c) || (isActiveCard(c) && recheckDue(c, now));
+  const inCurrent = live.filter((c) => (current && isDueBefore(c, current.cutoff)) || extraNow(c));
   const isTutor = input.tutor ?? (() => false);
   const tutorCount = inCurrent.filter((c) => isTutor(c)).length;
   const thirsty = new Set(inCurrent.filter((c) => c.item.kind === 'word').map((c) => c.item.id));
@@ -307,7 +311,7 @@ export function reviewStatus(
       stillAhead(c, finished, now) &&
       isDueBefore(c, pos.next.cutoff) &&
       !(current && isDueBefore(c, current.cutoff)) &&
-      !(tutorNow(c) && !finished.has(cardKey(c))),
+      !(extraNow(c) && !finished.has(cardKey(c))),
   );
   const nextCount = inNext.length;
   const left = live.filter((c) => isDueBefore(c, pos.previous.endsAt)).length;

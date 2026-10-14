@@ -171,6 +171,20 @@ describe('Phase 40: tutoring words are in review the moment a class is saved', (
   });
 });
 
+describe('Phase 42: the Rate your words queue', () => {
+  it('lists seen cards the learner has not rated, a word\'s faces together; rating drops them', () => {
+    const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(2), grammarIds: [] }];
+    const r = (id: string, kind: Evidence['kind'], skill: Evidence['skill'] = 'recognition'): Evidence => ({ item: { kind: 'word', id }, skill, kind, at: ny(13, 8, 10) });
+    let ev = save(ny(13, 8), [], tutor);
+    // t0 answered Hard in Review (seen, no Good/Easy marker); t1 never answered (New: not listed)
+    ev = [...ev, r('t0', 'review_hard')];
+    expect(ledgerAt(ny(13, 9), ev, tutor).faceRatingQueue().map((c) => `${c.item.id}|${c.skill}`)).toEqual(['t0|recognition']);
+    // rated Good on the screen: it leaves the queue
+    ev = [...ev, r('t0', 'face_rating_good')];
+    expect(ledgerAt(ny(13, 9), ev, tutor).faceRatingQueue()).toHaveLength(0);
+  });
+});
+
 describe('Phase 40 Tests 4: level estimates never change level mastery', () => {
   it('the same learner, with and without estimates on unlevelled words, has the same level numbers', () => {
     const extra = Array.from({ length: 10 }, (_, i) => `x${i}`);

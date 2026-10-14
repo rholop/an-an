@@ -126,6 +126,10 @@ const EvidenceKindSchema = z.enum([
   'reading_tone_wrong',
   'reading_wrong',
   'reading_unlocked',
+  // Phase 42
+  'face_rating_good',
+  'face_rating_easy',
+  'face_rating_not_yet',
 ]);
 
 export const EvidenceSchema = z.object({

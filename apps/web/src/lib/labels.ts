@@ -71,7 +71,7 @@ export const TERM = {
   leech: 'Tricky word',
 } as const;
 export const PROGRESS_INFO =
-  "Learned: you've got it right in review. Mastered: you'd still remember it in about 3 weeks and can produce it from English.";
+  "Learned: you've got it right in review. Mastered: you rated Meaning and the Mandarin card Easy 3 times; it comes back once about 2 weeks later to check.";
 export const pct = (share: number): string => `${Math.round(share * 100)}%`;
 /** "Learned 40% · Mastered 12%" */
 export const learnedMasteredLine = (p: { learnedShare: number; masteredShare: number }): string =>
@@ -483,3 +483,13 @@ export const TUTOR_NO_CLASSES = 'No classes yet. Upload the summary your tutor s
 export const NOT_PRACTISED = 'shown only, not practised';
 export const TUTORING_ONLY = 'Tutoring only';
 export const REVIEW_NOW = 'Review now';
+
+// Phase 42: "Rate your words" (a one-time pass over cards already seen, whenever there's time).
+export const RATE_WORDS = 'Rate your words';
+export const RATE_NOT_YET = 'Not yet';
+export const RATE_GOOD = 'Good';
+export const RATE_EASY = 'Easy';
+export const rateWordsLeft = (left: number): string => `${left} card${left === 1 ? '' : 's'} left`;
+export const RATE_WORDS_INTRO =
+  'Go through the cards you have already seen and say honestly how well you know each one. Good or Easy means "I know this" and lets the next kind of card for that word join Review; Easy also counts as one of the 3 Easy ratings a word needs to be Mastered. Not yet keeps it as it is. Rating here never changes when a card is due.';
+export const RATE_WORDS_DONE = 'All your seen cards are rated. New ones will appear here after you start them.';

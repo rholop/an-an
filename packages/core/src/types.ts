@@ -124,7 +124,12 @@ export interface Evidence {
     /** Phase 23: the recognition card reached learning, so the word's reading card is created (New). */
     | 'reading_unlocked'
     /** Phase 24: a due or learning word read in a story without a lookup (weak, like chat_read_no_lookup). */
-    | 'story_read_no_lookup';
+    | 'story_read_no_lookup'
+    /** Phase 42 "Rate your words": the learner's own rating of a card already seen, Good / Easy / Not
+     * yet. Sets the "I know this" marker only (Easy also counts as one Easy); never moves the FSRS card. */
+    | 'face_rating_good'
+    | 'face_rating_easy'
+    | 'face_rating_not_yet';
   at: Date;
   context?: {
     source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook' | 'pinyin' | 'story' | 'tutor';

@@ -22,10 +22,11 @@ const PREVIOUS_FACE: Partial<Record<SkillCard['skill'], SkillCard['skill']>> = {
   reading: 'production',
 };
 
-/** The learner has said they know this card: rated Good or Easy once (`flags.knownFace`), or, for a
- * card from before Phase 42, Learned. */
+/** The learner has said they know this card: rated Good or Easy once (`flags.knownFace`; "Not yet"
+ * on the Rate your words screen sets it false), or, for a card from before Phase 42 with no rating,
+ * Learned. */
 export const knownFace = (c: SkillCard): boolean =>
-  c.state !== 'unseen' && !isNewCard(c) && (!!c.flags.knownFace || isLearnedCard(c));
+  c.state !== 'unseen' && !isNewCard(c) && (c.flags.knownFace ?? isLearnedCard(c));
 
 /** `skill|wordId` of every word card the learner knows (`knownFace`). */
 export function knownFaceKeys(cards: readonly SkillCard[]): Set<string> {
