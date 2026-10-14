@@ -17,7 +17,7 @@ import {
   type SessionSettings,
   type SessionWindow,
 } from './review-sessions.js';
-import { answeredFaceKeys, faceGateOpen } from './face-order.js';
+import { knownFaceKeys, faceGateOpen } from './face-order.js';
 import { zonedStartOfDay } from './time.js';
 import { TUTOR_CONFIG } from '../tutor/tutor.config.js';
 import { inAppAnswers, isActiveCard, isDueBefore, isNewCard, isScheduledCard } from './terms.js';
@@ -190,7 +190,7 @@ function tutorNowFilter(
  * Phase 42 (owner, 2026-10-14: at most 25 new words a day, then spread out): which New tutoring cards
  * may be in the session. A word's Meaning card enters while fewer than `newWordsPerDay` tutoring
  * words were first answered today (oldest class first); its Pick card waits for Meaning to be
- * answered, and its Say it card for Pick (`faceGateOpen`). Answered cards are never held.
+ * rated Good or Easy, and its Say it card for Pick (`faceGateOpen`). Answered cards are never held.
  */
 function tutorNewAllowed(
   input: Pick<SessionInput, 'cards' | 'evidence' | 'now' | 'settings' | 'tutorOrder'> & Required<Pick<SessionInput, 'tutor'>>,
@@ -214,8 +214,8 @@ function tutorNewAllowed(
     .filter((c) => isNewCard(c) && inReviewQueue(c) && isActiveCard(c))
     .sort((a, b) => order(a) - order(b));
   const today = new Set(waiting.slice(0, room).map((c) => c.item.id));
-  const answered = answeredFaceKeys(input.cards);
-  return (c) => (c.skill === 'recognition' ? today.has(c.item.id) : faceGateOpen(c, answered));
+  const known = knownFaceKeys(input.cards);
+  return (c) => (c.skill === 'recognition' ? today.has(c.item.id) : faceGateOpen(c, known));
 }
 
 /** Cards finished since `since`: answered, and the last answer wasn't Again. Learning steps are

@@ -74,6 +74,9 @@ export interface SkillCard {
     knownCheckedAt?: Date;
     /** Lapses when the check passed (a later lapse contradicts it). */
     knownCheckLapses?: number;
+    /** Phase 42: rated Good or Easy at least once ("I know this"): releases the word's next face
+     * (Meaning → Pick → Say it). Cards from before it count when Learned (`progress/face-order.ts`). */
+    knownFace?: boolean;
     /** Phase 20 "Never show this": out of review, new items, cloze, chat targets, journal prompts. */
     excluded?: boolean;
     /** Phase 20 "Not now": back to the unstudied pool until its level/lesson becomes active. */

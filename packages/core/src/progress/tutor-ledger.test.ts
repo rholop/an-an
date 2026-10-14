@@ -1,11 +1,14 @@
 // Phase 39 Tests 2 / Phase 40 Tests 7 (owner, 2026-10-14): a saved class's words are in review at once,
-// every face, at any time of day, outside the new-word allowance and the session cap.
+// at any time of day, outside the new-word allowance and the session cap. Phase 42: at most
+// `newWordsPerDay` words start a day, and a word's faces follow Meaning → Pick → Say it, each released
+// by a Good or Easy on the face before.
 import { describe, expect, it } from 'vitest';
 import { applyEvidence } from '../learner/apply-evidence.js';
 import type { SkillCard } from '../learner/types.js';
 import { Lexicon } from '../lexicon.js';
 import { DEFAULT_STUDY_SETTINGS } from '../study/study-focus.js';
 import type { Lesson, Textbook } from '../textbook/types.js';
+import { TUTOR_CONFIG } from '../tutor/tutor.config.js';
 import { tutorIntroduceEvidence, type TutorLesson } from '../tutor/session.js';
 import type { Evidence, Word } from '../types.js';
 import { buildLedger, type Ledger } from './ledger.js';
@@ -77,17 +80,17 @@ function save(now: Date, evidence: Evidence[], tutorLessons: TutorLesson[], lex:
 }
 
 const base = PROGRESS_CONFIG.newPerQueue.review;
-const FACES = ['recognition', 'production', 'reading'] as const;
 
 describe('Phase 40: tutoring words are in review the moment a class is saved', () => {
-  it('6 new words: every face of all 6 is in this session, and the textbook keeps its whole allowance', () => {
+  it('6 new words: their Meaning cards are in this session, and the textbook keeps its whole allowance', () => {
     const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(6), grammarIds: [] }];
     const ev = save(ny(13, 8), [], tutor);
     const ledger = ledgerAt(ny(13, 8, 5), ev, tutor);
     expect(ledger.tutorNewCards().map((c) => c.item.id)).toEqual(tutorIds(6));
     expect(ledger.tutorIntroducedThisSession()).toBe(6);
     const inSession = ledger.session().cards.filter((c) => c.item.id.startsWith('t'));
-    expect(inSession).toHaveLength(6 * FACES.length);
+    expect(inSession).toHaveLength(6);
+    expect(inSession.every((c) => c.skill === 'recognition')).toBe(true);
     // tutoring words never use up the textbook's new words
     expect(ledger.newAllowance('review').allowed).toBe(base);
     const picked = ledger.pickNew('review');
@@ -95,16 +98,57 @@ describe('Phase 40: tutoring words are in review the moment a class is saved', (
     expect([...picked.cards.map((c) => c.item.id), ...picked.items.map((x) => x.id)].some((id) => tutorIds(6).includes(id))).toBe(false);
   });
 
-  it('a 30-word class saved at 13:00 (between sessions): every face of every word is in review now', () => {
+  it('a 30-word class saved at 13:00 (between sessions): 25 Meaning cards are in review now, oldest first', () => {
     const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(30), grammarIds: [] }];
     const ev = save(ny(13, 13), [], tutor);
     const ledger = ledgerAt(ny(13, 13, 1), ev, tutor);
-    expect(ledger.tutorToIntroduce()).toHaveLength(0); // no limit: everything joined at Save
+    expect(ledger.tutorToIntroduce()).toHaveLength(0); // every word has its Meaning card from Save
     const cards = ledger.session().cards;
-    expect(cards).toHaveLength(30 * FACES.length);
-    for (const id of tutorIds(30)) for (const f of FACES) expect(cards.some((c) => c.item.id === id && c.skill === f)).toBe(true);
-    expect(ledger.status.reviewAll).toBe(30 * FACES.length);
-    expect(ledger.tutorClassNow('tutor-x')).toHaveLength(30 * FACES.length);
+    const max = TUTOR_CONFIG.newWordsPerDay;
+    expect(cards).toHaveLength(max);
+    expect(cards.every((c) => c.skill === 'recognition')).toBe(true);
+    expect(cards.map((c) => c.item.id).sort()).toEqual(tutorIds(max).sort());
+    expect(ledger.status.reviewAll).toBe(max);
+  });
+
+  it('a word\'s Pick card waits for a Good or Easy on Meaning; Again and Hard do not release it', () => {
+    const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(4), grammarIds: [] }];
+    const rate = (id: string, kind: Evidence['kind']): Evidence => ({ item: { kind: 'word', id }, skill: 'recognition', kind, at: ny(13, 8, 10) });
+    let ev = save(ny(13, 8), [], tutor);
+    ev = [...ev, rate('t0', 'review_again'), rate('t1', 'review_hard'), rate('t2', 'review_good'), rate('t3', 'review_easy')];
+    ev = save(ny(13, 8, 20), ev, tutor);
+    const ledger = ledgerAt(ny(13, 8, 21), ev, tutor);
+    const pick = ledger.session().cards.filter((c) => c.skill === 'production' && c.state !== 'unseen' && c.card.reps === 0);
+    expect(pick.map((c) => c.item.id).sort()).toEqual(['t2', 't3']);
+    // no Say it card yet: Pick has not been rated
+    expect(ledger.session().cards.some((c) => c.skill === 'reading')).toBe(false);
+  });
+
+  it('a Say it card waits for a Good or Easy on Pick', () => {
+    const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(2), grammarIds: [] }];
+    const r = (id: string, skill: Evidence['skill'], kind: Evidence['kind'], m: number): Evidence => ({ item: { kind: 'word', id }, skill, kind, at: ny(13, 8, m) });
+    let ev = save(ny(13, 8), [], tutor);
+    ev = [...ev, r('t0', 'recognition', 'review_good', 10), r('t1', 'recognition', 'review_good', 10)];
+    ev = save(ny(13, 8, 15), ev, tutor);
+    ev = [...ev, r('t0', 'production', 'review_good', 20), r('t1', 'production', 'review_again', 20)];
+    ev = save(ny(13, 8, 25), ev, tutor);
+    const ledger = ledgerAt(ny(13, 8, 26), ev, tutor);
+    const say = ledger.session({}).cards.filter((c) => c.skill === 'reading').map((c) => c.item.id);
+    expect(say).toEqual(['t0']);
+  });
+
+  it('only 25 words start a day: after starting 25, the rest wait until tomorrow', () => {
+    const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(30), grammarIds: [] }];
+    const ids = tutorIds(25);
+    const ev = [
+      ...save(ny(13, 8), [], tutor),
+      ...ids.map((id): Evidence => ({ item: { kind: 'word', id }, skill: 'recognition', kind: 'review_good', at: ny(13, 8, 10) })),
+    ];
+    const today = ledgerAt(ny(13, 8, 30), ev, tutor).session().cards.filter((c) => c.skill === 'recognition' && c.card.reps === 0);
+    expect(today).toHaveLength(0);
+    // next morning the budget is back: the other 5 words start
+    const tomorrow = ledgerAt(ny(14, 8, 0), ev, tutor).session().cards.filter((c) => c.skill === 'recognition' && c.card.reps === 0);
+    expect(tomorrow.map((c) => c.item.id).sort()).toEqual(tutorIds(30).slice(25).sort());
   });
 
   it('the session cap never pushes tutoring cards out: other cards are dropped first', () => {
@@ -115,8 +159,8 @@ describe('Phase 40: tutoring words are in review the moment a class is saved', (
     const ev = save(ny(13, 8), old, tutor, lex);
     const ledger = ledgerAt(ny(13, 8, 1), ev, tutor, lex);
     const cap = DEFAULT_SESSION_SETTINGS.capPerSession;
-    // every tutoring card is in, and the other cards fill only the cap
-    expect(ledger.status.reviewAll).toBe(30 * FACES.length + cap);
+    // every tutoring Meaning card of the day is in, and the other cards fill only the cap
+    expect(ledger.status.reviewAll).toBe(TUTOR_CONFIG.newWordsPerDay + cap);
   });
 
   it('nothing is introduced for a word already carded, Learned or removed', () => {

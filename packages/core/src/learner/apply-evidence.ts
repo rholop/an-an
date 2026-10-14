@@ -60,8 +60,11 @@ function applyFsrsRating(
 ): ModelUpdate {
   const base = current ?? blankSkillCard(evidence, emptyCard(now), now);
   const { card } = fsrsInstance.next(base.card, now, grade);
+  const next = withCard(base, card, now, config);
+  // Phase 42: Good or Easy once is "I know this", the signal that releases the word's next face.
+  const knew = grade === Rating.Good || grade === Rating.Easy;
   return {
-    card: withCard(base, card, now, config),
+    card: knew && !next.flags.knownFace ? { ...next, flags: { ...next.flags, knownFace: true } } : next,
     appliedEffect: `fsrs:${Rating[grade].toLowerCase()}`,
   };
 }
