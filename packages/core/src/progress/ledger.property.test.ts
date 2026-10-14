@@ -370,10 +370,12 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
             new Date(now.getTime() - minutesAgo * 60_000),
           );
         const ledger = ledgerOf(s, { tutorLessons, extra });
-        // never a Learned or removed word, only faces with no card yet
+        // never a removed word, only faces with no card yet; a Learned word only for faces that follow
+        // its own ratings (Phase 42), never one known by the quick check, an import or placement
         for (const { item, skills } of ledger.tutorToIntroduce()) {
           expect(tutorKeys.has(`word:${item.id}`)).toBe(true);
-          expect(ledger.learned(item) || ledger.removed(item)).toBe(false);
+          expect(ledger.removed(item)).toBe(false);
+          if (ledger.learned(item)) expect(skills).not.toContain('recognition');
           expect(skills.length).toBeGreaterThan(0);
         }
         // every tutoring New card is in this session, whatever the time of day (Phase 40 Part E.1)

@@ -166,7 +166,7 @@ export function ReviewPage({
       const picked = pickReviewCards({
         holdFaceWords: upcoming.map((c) => `${c.item.kind}:${c.item.id}`),
         due: inSession.cards,
-        newCards: reviewAll ? [] : ledger.newCards(),
+        newCards: reviewAll ? [] : ledger.reviewNewCards(),
         tutorWordIds: ledger.tutorWordIds(),
         capLeft: status.capLeft,
         doneThisSession: status.doneThisSession,

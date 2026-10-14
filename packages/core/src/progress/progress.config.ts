@@ -8,6 +8,12 @@ export const PROGRESS_CONFIG = {
   /** FSRS stability (days) at which a card's ItemState becomes 'mature'. */
   matureStabilityDays: 21,
   mastered: {
+    /** Phase 42: Easy ratings every mastery card needs for a word to be Mastered. */
+    easyRatings: 3,
+    /** Phase 42: days after earning them that each such card comes back once to be re-checked. */
+    recheckDays: 14,
+    /** Phase 42: the cards a word's Mastered counts (Say it stays practice, Phase 23). */
+    faces: ['recognition', 'production'] as const,
     /** Recognition stability (days) a mastered word needs ("you'd still remember it in about 3 weeks"). */
     recognitionStabilityDays: 21,
     /** Production stability (days) a mastered word needs ("and can produce it from English"). */

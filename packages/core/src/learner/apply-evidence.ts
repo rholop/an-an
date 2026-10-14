@@ -5,6 +5,7 @@ import { buildFsrs, computeItemState, emptyCard } from './fsrs-instance.js';
 import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 import { REVIEW_PILE_CONFIG } from './review-pile.config.js';
 import { cardSourceFor } from './review-pile.js';
+import { nextEasyFlags } from '../progress/easy-ratings.js';
 import { fsrsDue, isInReview, isScheduledCard } from '../progress/terms.js';
 import { nextProductionRung } from '../review/faces.js';
 import {
@@ -60,8 +61,22 @@ function applyFsrsRating(
 ): ModelUpdate {
   const base = current ?? blankSkillCard(evidence, emptyCard(now), now);
   const { card } = fsrsInstance.next(base.card, now, grade);
+  const next = withCard(base, card, now, config);
+  // Phase 42: Good or Easy once is "I know this", the signal that releases the word's next face.
+  const knew = grade === Rating.Good || grade === Rating.Easy;
+  const { easyCount, easyAt, rechecked } = nextEasyFlags(current, grade, now);
+  const { easyCount: _c, easyAt: _a, rechecked: _r, ...flags } = next.flags;
   return {
-    card: withCard(base, card, now, config),
+    card: {
+      ...next,
+      flags: {
+        ...flags,
+        ...(knew || next.flags.knownFace ? { knownFace: true } : {}),
+        ...(easyCount !== undefined ? { easyCount } : {}),
+        ...(easyAt ? { easyAt } : {}),
+        ...(rechecked ? { rechecked } : {}),
+      },
+    },
     appliedEffect: `fsrs:${Rating[grade].toLowerCase()}`,
   };
 }
@@ -339,6 +354,33 @@ function applyKnownCheck(current: SkillCard | undefined, evidence: Evidence, now
   };
 }
 
+/**
+ * Phase 42 "Rate your words": the learner's own rating of a card they've seen. Good or Easy sets the
+ * "I know this" marker (Easy also counts as one of the 3 Easy ratings toward Mastered); Not yet clears
+ * the marker and the Easy count. The FSRS card is untouched: this says what they feel, not a review.
+ */
+function applyFaceRating(current: SkillCard | undefined, kind: 'good' | 'easy' | 'not_yet', now: Date): ModelUpdate {
+  if (!current) return { card: undefined, appliedEffect: 'ignored:no-card' };
+  const { easyCount: _c, easyAt: _a, rechecked: _r, ...flags } = current.flags;
+  if (kind === 'not_yet')
+    return { card: { ...current, flags: { ...flags, knownFace: false, easyCount: 0 }, updatedAt: now }, appliedEffect: 'face-rating:not-yet' };
+  const e = kind === 'easy' ? nextEasyFlags(current, Rating.Easy, now) : { easyCount: current.flags.easyCount, easyAt: current.flags.easyAt, rechecked: current.flags.rechecked };
+  return {
+    card: {
+      ...current,
+      flags: {
+        ...flags,
+        knownFace: true,
+        ...(e.easyCount !== undefined ? { easyCount: e.easyCount } : {}),
+        ...(e.easyAt ? { easyAt: e.easyAt } : {}),
+        ...(e.rechecked ? { rechecked: true } : {}),
+      },
+      updatedAt: now,
+    },
+    appliedEffect: `face-rating:${kind}`,
+  };
+}
+
 /** Phase 21 production_unlocked / listening_unlocked (Phase 23: reading_unlocked): create the card (New, due now) if missing. */
 function applyUnlock(current: SkillCard | undefined, evidence: Evidence, now: Date): ModelUpdate {
   // eslint-disable-next-line anan/progress-from-ledger -- persistence: an unlock only creates a missing card
@@ -470,6 +512,9 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   reading_tone_wrong: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Hard, cfg, f),
   reading_wrong: (c, e, n, cfg, f) => applyFsrsRating(c, e, n, Rating.Again, cfg, f),
   reading_unlocked: (c, e, n) => applyUnlock(c, e, n),
+  face_rating_good: (c, _e, n) => applyFaceRating(c, 'good', n),
+  face_rating_easy: (c, _e, n) => applyFaceRating(c, 'easy', n),
+  face_rating_not_yet: (c, _e, n) => applyFaceRating(c, 'not_yet', n),
 };
 
 /**

@@ -224,10 +224,11 @@ describe('Tutoring sessions (phase 39), the owner\'s PDF', () => {
     expect(introduced).toBe(17);
     const ledger = await ledgerNow(NOW);
     expect(ledger.tutorNewCards().map((c) => c.item.id).sort()).toEqual(rec.words.filter((w) => w.ticked).map((w) => w.wordId).sort());
-    // Phase 40: in review now with every face, outside the textbook's new-word allowance
+    // Phase 42: in review now with their Meaning cards (Pick and Say it follow a Good/Easy), outside the textbook's new-word allowance
     const inSession = new Set(ledger.session().cards.map((c) => `${c.item.id}|${c.skill}`));
     for (const w of rec.words.filter((x) => x.ticked))
-      for (const f of ['recognition', 'production', 'reading']) expect(inSession.has(`${w.wordId}|${f}`)).toBe(true);
+      expect(inSession.has(`${w.wordId}|recognition`)).toBe(true);
+    expect([...inSession].some((k) => k.endsWith('|production') || k.endsWith('|reading'))).toBe(false);
     expect(ledger.newAllowance('review').allowed).toBeGreaterThan(0);
   });
 

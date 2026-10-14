@@ -62,6 +62,8 @@ export {
   type WordSets,
 } from './terms.js';
 
+export { faceGateOpen, faceStage, knownFace, knownFaceKeys } from './face-order.js';
+
 // Phase 27: learning steps finish in the sitting (one rule for every flashcard sitting).
 export {
   inShortStep,

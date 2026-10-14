@@ -74,6 +74,15 @@ export interface SkillCard {
     knownCheckedAt?: Date;
     /** Lapses when the check passed (a later lapse contradicts it). */
     knownCheckLapses?: number;
+    /** Phase 42: rated Good or Easy at least once ("I know this"): releases the word's next face
+     * (Meaning → Pick → Say it). Cards from before it count when Learned (`progress/face-order.ts`). */
+    knownFace?: boolean;
+    /** Phase 42: Easy ratings toward Mastered (Again resets it); absent on older cards (`progress/easy-ratings.ts`). */
+    easyCount?: number;
+    /** When the card reached its Easy ratings (its re-check is due `recheckDays` later). */
+    easyAt?: Date;
+    /** The re-check was passed (Easy): the card stays Mastered. */
+    rechecked?: boolean;
     /** Phase 20 "Never show this": out of review, new items, cloze, chat targets, journal prompts. */
     excluded?: boolean;
     /** Phase 20 "Not now": back to the unstudied pool until its level/lesson becomes active. */

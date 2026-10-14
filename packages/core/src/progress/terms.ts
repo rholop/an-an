@@ -3,6 +3,7 @@
 // Every tab, count and validator imports from here (an architecture test enforces it).
 // Pure functions; time is always injected.
 
+import { easyEnough } from './easy-ratings.js';
 import type { SkillCard } from '../learner/types.js';
 import type { Level } from '../levels.config.js';
 import type { Lesson } from '../textbook/types.js';
@@ -421,7 +422,7 @@ export class ProgressIndex {
     return !!r && isLearnedCard(r);
   }
 
-  /** **Mastered**: recognition ≥ 21 d and production ≥ 7 d, not a leech; or passed the check and not
+  /** **Mastered**: Meaning and production each rated Easy 3 times (Phase 42), not a leech; or passed the check and not
    * contradicted since. Grammar: 3 correct uses (the dots), the last one correct and on a later day
    * than the first (Phase 25), never a leech (Phase 29). */
   mastered(i: ItemRef): boolean {
@@ -440,13 +441,9 @@ export class ProgressIndex {
       !(c.card.last_review && c.flags.markedKnownAt && new Date(c.card.last_review) > new Date(c.flags.markedKnownAt));
     if (unproven(r) || unproven(pr)) return false;
     if (this.checkedKnown(r) && (!pr || this.checkedKnown(pr) || isInReview(pr))) return true;
-    if (
-      r &&
-      pr &&
-      r.card.stability >= this.cfg.mastered.recognitionStabilityDays &&
-      pr.card.stability >= this.cfg.mastered.productionStabilityDays
-    )
-      return true;
+    // Phase 42: every mastery card rated Easy three times (older cards that met the old stability
+    // rule count as done); `recheckDue` sends each back once about two weeks later.
+    if (this.cfg.mastered.faces.every((f) => { const c = this.card(i, f); return !!c && easyEnough(c, this.cfg); })) return true;
     return this.legacyKnown(i);
   }
 
