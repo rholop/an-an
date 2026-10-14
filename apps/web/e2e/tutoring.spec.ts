@@ -216,7 +216,8 @@ test('Phase 40: the class page shows levels, topics and faces; 6 steps; Listenin
   const zaocan = rows.filter({ hasText: '早餐' });
   await expect(zaocan.getByTestId('tutor-word-level')).toBeVisible();
   await expect(zaocan.getByTestId('tutor-word-faces')).toContainText('Meaning');
-  await expect(zaocan.getByTestId('tutor-word-faces')).toContainText('Say it');
+  // Phase 42: Pick and Say it join once the face before was rated Good or Easy, so a new word has Meaning only
+  await expect(zaocan.getByTestId('tutor-word-faces')).not.toContainText('Say it');
   await expect(rows.filter({ hasText: '義大利麵' }).getByTestId('tutor-word-level')).toBeVisible();
   await expect(classPage.getByText(/Review these \d+ words now/)).toBeVisible();
 
