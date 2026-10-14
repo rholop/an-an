@@ -137,6 +137,8 @@ most:
 | `QUOTA_FILE` | no | The quota tracker's state (default `apps/proxy/quota-data/quota.json`). |
 | `SITE_CODE` | **yes** (server won't start without it) | The household code; see below. |
 | `SYNC_DIR` | no | Where per-profile saved copies go (default `apps/proxy/sync-data`). |
+| `AZURE_SPEECH_KEY` / `AZURE_SPEECH_REGION` | no | Phase 40: tutoring audio (`POST /v1/tutor-audio`, Azure zh-TW). Unset: that route answers 503 `speech_not_configured`. Region default `eastus`. Never sent to the browser (docs/audio.md). |
+| `TUTOR_AUDIO_DIR` | no | Where tutoring clips go, one folder per profile (default `apps/proxy/tutor-audio`). |
 
 A failure (503) names each model that was tried and why, never a key or a prompt:
 `{"error":"story_check_failed","attempts":[{"model":"gemini-…","reason":"rate_limited"}]}`.

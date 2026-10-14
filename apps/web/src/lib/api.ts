@@ -34,6 +34,7 @@ let activeProfile: ProfileId | null = null;
 export const setActiveProfileForApi = (id: ProfileId | null): void => {
   activeProfile = id;
 };
+export const getActiveProfileForApi = (): ProfileId | null => activeProfile;
 
 /** Headers every proxy request carries: the household code and
  * `installId:profileId` (phase 8 §7). */

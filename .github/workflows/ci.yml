@@ -31,6 +31,9 @@ jobs:
       - name: Typecheck (data-pipeline)
         run: pnpm --filter @anan/data-pipeline exec tsc --noEmit -p tsconfig.json
 
+      - name: Typecheck (audio-build)
+        run: pnpm --filter @anan/audio-build exec tsc --noEmit -p tsconfig.json
+
       - name: Typecheck (web)
         run: pnpm --filter @anan/web exec tsc --noEmit -p tsconfig.json
 

@@ -59,6 +59,7 @@ import {
 import type { Env } from './env.js';
 import { renderFlaggedMarkdown, type AudioStore } from './audio-store.js';
 import { requireSiteCode } from './site-code.js';
+import { registerTutorAudioRoutes, type TutorAudioDeps } from './tutor-audio.js';
 import type { SyncStore } from './sync-store.js';
 import type { TextbookPrivateKind, TextbookStore } from './textbook-store.js';
 import {
@@ -209,6 +210,9 @@ export interface AppDeps {
   story?: { prompts: { write: string; check: string; repair: string }; orchestrator?: JsonOrchestrator };
   /** Phase 39: tutoring sessions (page-image extraction, the sentence check, the class scenario). */
   tutor?: { prompts: { extract: string; check: string; scenario: string; classify?: string }; orchestrator?: JsonOrchestrator };
+  /** Phase 40 D.1: Azure Speech clips for tutoring words and sentences (POST /v1/tutor-audio).
+   * Absent, or `client: null` (no speech key): 503 speech_not_configured. */
+  tutorAudio?: TutorAudioDeps;
   rateLimiter: RateLimiter;
   /** Phase 33: the shared free-quota tracker and each role's model chain (GET /v1/ai-usage). */
   quota?: QuotaTracker;
@@ -429,6 +433,9 @@ export function createApp(deps: AppDeps): Hono {
       'content-type': 'text/markdown; charset=utf-8',
     }),
   );
+
+  // ---- Phase 40 D.1: tutoring audio (household code, like everything under /v1) ----
+  registerTutorAudioRoutes(app, deps.tutorAudio, log);
 
   // ---- Phase 38: the app reports cards whose word is missing from a fresh word list ----
   // Ids, skills and sources only (no personal text); written to the server log for the owner.

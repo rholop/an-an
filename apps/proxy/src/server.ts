@@ -26,6 +26,8 @@ import { FileAudioStore } from './audio-store.js';
 import { FileTextbookStore } from './textbook-store.js';
 import { FileSyncStore } from './sync-store.js';
 import { loadOpenChatPersona, loadScenarioStore } from './scenarios.js';
+import { lazyLexicon } from './tutor-audio.js';
+import { AzureSpeechClient } from '@anan/audio-build';
 
 // Load apps/proxy/.env if present (src/ and dist/ are both one level below it).
 // Real environment variables win; loadEnvFile never overrides existing ones.
@@ -136,11 +138,20 @@ const app = createApp({
   textbook: new FileTextbookStore(
     env.TEXTBOOK_DIR ?? fileURLToPath(new URL('../../../data/curriculum', import.meta.url)),
   ),
+  // Phase 40 D.1: tutoring clips. The speech key stays here; without it the route answers 503.
+  tutorAudio: {
+    client: env.AZURE_SPEECH_KEY ? new AzureSpeechClient({ key: env.AZURE_SPEECH_KEY, region: env.AZURE_SPEECH_REGION }) : null,
+    dir: env.TUTOR_AUDIO_DIR ?? fileURLToPath(new URL('../tutor-audio', import.meta.url)),
+    lexicon: lazyLexicon(fileURLToPath(new URL('../../../data/build/lexicon.v2.json', import.meta.url))),
+  },
   rateLimiter: new RateLimiter({
     requestsPerMinute: env.RATE_LIMIT_PER_MINUTE,
     dailyTokenBudget: env.DAILY_TOKEN_BUDGET,
   }),
 });
+
+if (!env.AZURE_SPEECH_KEY)
+  console.warn('[an-an-proxy] No Azure speech key: tutoring audio waits for it (docs/audio.md).');
 
 serve({ fetch: app.fetch, port: env.PORT }, (info) => {
   console.log(`[an-an-proxy] listening on http://localhost:${info.port}`);

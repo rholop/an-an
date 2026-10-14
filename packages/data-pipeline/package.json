@@ -27,6 +27,7 @@
     "pipeline:levels": "tsx src/estimate-levels.ts"
   },
   "dependencies": {
+    "@anan/audio-build": "workspace:*",
     "@anan/core": "workspace:*",
     "js-yaml": "^4.1.0",
     "xlsx": "^0.18.5",

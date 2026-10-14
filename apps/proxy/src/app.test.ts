@@ -16,6 +16,13 @@ import {
   loadTutorPromptTemplates,
 } from './prompt.js';
 import { RateLimiter } from './rate-limit.js';
+import type { TutorAudioDeps, TutorAudioResponse } from './tutor-audio.js';
+import type { SpeechClient } from '@anan/audio-build';
+import { mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { buildFixtureLexicon } from '../../../packages/core/src/test-fixtures/lexicon-fixture.js';
+import { pinyinToZhuyin } from '@anan/core';
 import type { ScenarioStore } from './scenarios.js';
 import {
   createJsonOrchestrator,
@@ -142,6 +149,8 @@ function buildApp(
     scenarioStore?: ScenarioStore;
     quota?: QuotaTracker;
     chains?: Record<string, string[]>;
+    /** Phase 40 D.1: tutoring audio (absent = no speech key). */
+    tutorAudio?: TutorAudioDeps;
     log?: (entry: Record<string, unknown>) => void;
   } = {},
 ) {
@@ -181,6 +190,7 @@ function buildApp(
       new RateLimiter({ requestsPerMinute: 100, dailyTokenBudget: 1_000_000 }),
     ...(overrides.quota ? { quota: overrides.quota } : {}),
     ...(overrides.chains ? { chains: overrides.chains } : {}),
+    ...(overrides.tutorAudio ? { tutorAudio: overrides.tutorAudio } : {}),
     log: overrides.log ?? (() => {}), // silence logs in tests
   });
   if (overrides.autoCode === false) return app;
@@ -1546,5 +1556,151 @@ describe('Phase 39 tutoring routes', () => {
     const write = seen.find((x) => x.name === 'gemini')!;
     expect(write.req.systemPrompt).toContain('N2');
     expect(write.req.userMessage).toContain('宵夜');
+  });
+});
+
+describe('tutoring audio (Phase 40 D.1)', () => {
+  /** A fake Azure: the "clip" is the SSML; speech-to-text hears the text back unless told otherwise. */
+  class FakeSpeech implements SpeechClient {
+    usage = { billedChars: 0, ttsCalls: 0, sttCalls: 0 };
+    mishear = new Map<string, string>();
+    failOn: string | null = null;
+    async synthesize(ssml: string) {
+      if (this.failOn && ssml.includes(this.failOn)) throw new Error('boom');
+      this.usage.ttsCalls++;
+      return Buffer.from(ssml);
+    }
+    async transcribe(ssml: string) {
+      this.usage.sttCalls++;
+      const text = ssml.replace(/<[^>]*>/g, '');
+      return this.mishear.get(text) ?? text;
+    }
+  }
+
+  const lexicon = buildFixtureLexicon();
+  const setup = (opts: { client?: SpeechClient | null; autoCode?: boolean } = {}) => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'tutor-audio-'));
+    const client = opts.client === undefined ? new FakeSpeech() : opts.client;
+    const tutorAudio: TutorAudioDeps = { client, dir, lexicon: async () => lexicon };
+    return { dir, client, app: buildApp({ tutorAudio, ...(opts.autoCode === false ? { autoCode: false } : {}) }) };
+  };
+  const word = (id: string, text: string, pinyin: string) => ({ kind: 'word', id, text, zhuyin: pinyinToZhuyin(pinyin) });
+  const body = {
+    profileId: 'ron',
+    sessionId: 'tutor-2026-10-13-abc',
+    items: [
+      word('tocfl-jiche', '機車', 'jī chē'),
+      // a custom tutoring word the base list doesn't have
+      word('custom-zaocan', '早餐', 'zǎo cān'),
+      { kind: 'sentence', id: 'tutor-2026-10-13-abc:w1', text: '我喜歡機車。' },
+      { kind: 'sentence', id: 'tutor-2026-10-13-abc:w2', text: '我吃早餐。' },
+    ],
+  };
+  const post = (app: ReturnType<typeof buildApp>, b: object = body) =>
+    app.request('/v1/tutor-audio', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(b),
+    });
+
+  it('makes a clip per word and per kept sentence, each checked by speech-to-text', async () => {
+    const { app, client, dir } = setup();
+    const res = await post(app);
+    expect(res.status).toBe(200);
+    const out = (await res.json()) as TutorAudioResponse;
+    expect(out.counts).toMatchObject({ requested: 4, made: 4, unchanged: 0, suspect: 0, failed: 0, skipped: 0, pending: 0 });
+    expect(Object.keys(out.entries.words).sort()).toEqual(['custom-zaocan', 'tocfl-jiche']);
+    expect(Object.keys(out.entries.sentences).sort()).toEqual(['tutor-2026-10-13-abc:w1', 'tutor-2026-10-13-abc:w2']);
+    expect(out.entries.words['tocfl-jiche']).toMatchObject({ status: 'auto_ok', text: '機車', file: 'words/tocfl-jiche.mp3' });
+    // ':' never reaches a file name
+    expect(out.entries.sentences['tutor-2026-10-13-abc:w1']!.file).toMatch(/^sentences\/[\w.-]+\.mp3$/);
+    expect((client as FakeSpeech).usage).toMatchObject({ ttsCalls: 4, sttCalls: 4 });
+    // the per-profile manifest on disk has the usual shape
+    const manifest = JSON.parse(readFileSync(path.join(dir, 'ron', 'manifest.json'), 'utf8'));
+    expect(manifest.words['custom-zaocan'].zhuyin).toBe(pinyinToZhuyin('zǎo cān'));
+  });
+
+  it('a clip speech-to-text hears differently is suspect (kept, like every other clip)', async () => {
+    const fake = new FakeSpeech();
+    fake.mishear.set('機車', '雞車');
+    const { app } = setup({ client: fake });
+    const out = (await (await post(app)).json()) as TutorAudioResponse;
+    expect(out.counts.suspect).toBe(1);
+    expect(out.entries.words['tocfl-jiche']).toMatchObject({ status: 'suspect', heard: '雞車' });
+    expect(out.entries.words['custom-zaocan']!.status).toBe('auto_ok');
+  });
+
+  it('is not remade when nothing changed; a changed reading is', async () => {
+    const fake = new FakeSpeech();
+    const { app } = setup({ client: fake });
+    await post(app);
+    const again = (await (await post(app)).json()) as TutorAudioResponse;
+    expect(again.counts).toMatchObject({ made: 0, unchanged: 4 });
+    expect(fake.usage.ttsCalls).toBe(4);
+    const changed = { ...body, items: [word('tocfl-jiche', '機車', 'jī chè')] };
+    const third = (await (await post(app, changed)).json()) as TutorAudioResponse;
+    expect(third.counts).toMatchObject({ made: 1, unchanged: 0 });
+  });
+
+  it('a failure is reported and not stored; a reading that does not fit is skipped', async () => {
+    const fake = new FakeSpeech();
+    fake.failOn = '早餐';
+    const { app } = setup({ client: fake });
+    const b = { ...body, items: [...body.items, word('w-bad', '機車', 'jī')] };
+    const out = (await (await post(app, b)).json()) as TutorAudioResponse;
+    expect(out.failed.map((f) => f.id).sort()).toEqual(['custom-zaocan', 'tutor-2026-10-13-abc:w2']);
+    expect(out.entries.words['custom-zaocan']).toBeUndefined();
+    expect(out.skipped).toEqual([expect.objectContaining({ id: 'w-bad', kind: 'word' })]);
+  });
+
+  it('serves the manifest and the files only with the household code', async () => {
+    const { app, dir } = setup();
+    const out = (await (await post(app)).json()) as TutorAudioResponse;
+    const m = await app.request('/v1/tutor-audio/manifest?profileId=ron');
+    expect(m.status).toBe(200);
+    const { configured, manifest } = (await m.json()) as { configured: boolean; manifest: { words: Record<string, unknown> } };
+    expect(configured).toBe(true);
+    expect(Object.keys(manifest.words).sort()).toEqual(['custom-zaocan', 'tocfl-jiche']);
+    const file = out.entries.sentences['tutor-2026-10-13-abc:w1']!.file;
+    const clip = await app.request(`/v1/tutor-audio/file/ron/${file}`);
+    expect(clip.status).toBe(200);
+    expect(clip.headers.get('content-type')).toBe('audio/mpeg');
+    expect(Buffer.from(await clip.arrayBuffer()).toString()).toContain('我喜歡機車');
+    // the other profile's folder, odd names and climbing out are not served
+    expect((await app.request(`/v1/tutor-audio/file/guanyu/${file}`)).status).toBe(404);
+    expect((await app.request('/v1/tutor-audio/file/ron/words/..%2Fmanifest.json')).status).toBe(404);
+    expect((await app.request('/v1/tutor-audio/file/ron/other/x.mp3')).status).toBe(404);
+
+    const noCode = buildApp({ tutorAudio: { client: new FakeSpeech(), dir, lexicon: async () => lexicon }, autoCode: false });
+    expect((await post(noCode)).status).toBe(401);
+    expect((await noCode.request('/v1/tutor-audio/manifest?profileId=ron')).status).toBe(401);
+    expect((await noCode.request(`/v1/tutor-audio/file/ron/${file}`)).status).toBe(401);
+    expect((await noCode.request(`/v1/tutor-audio/file/ron/${file}`, { headers: { 'x-site-code': 'tofu' } })).status).toBe(200);
+  });
+
+  it('without the speech key: 503 speech_not_configured, and the manifest says so', async () => {
+    const { app } = setup({ client: null });
+    const res = await post(app);
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'speech_not_configured' });
+    const m = (await (await app.request('/v1/tutor-audio/manifest?profileId=ron')).json()) as { configured: boolean };
+    expect(m.configured).toBe(false);
+    // no tutorAudio deps at all behaves the same
+    expect((await post(buildApp())).status).toBe(503);
+  });
+
+  it('rejects bad requests', async () => {
+    const { app } = setup();
+    expect((await post(app, { ...body, profileId: 'mallory' })).status).toBe(400);
+    expect((await post(app, { ...body, items: [] })).status).toBe(400);
+    expect((await post(app, { ...body, items: [{ kind: 'word', id: 'x', text: 'hello', zhuyin: 'ㄏ' }] })).status).toBe(400);
+    expect((await post(app, { ...body, items: [{ kind: 'word', id: '../x', text: '機車' }] })).status).toBe(400);
+  });
+
+  it('stops at its time budget and reports the rest as pending', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'tutor-audio-'));
+    const app = buildApp({ tutorAudio: { client: new FakeSpeech(), dir, lexicon: async () => lexicon, timeBudgetMs: -1 } });
+    const out = (await (await post(app)).json()) as TutorAudioResponse;
+    expect(out.counts).toMatchObject({ made: 0, pending: 4 });
   });
 });

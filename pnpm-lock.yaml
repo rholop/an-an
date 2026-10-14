@@ -38,6 +38,9 @@ importers:
 
   apps/proxy:
     dependencies:
+      '@anan/audio-build':
+        specifier: workspace:*
+        version: link:../../packages/audio-build
       '@anan/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -122,6 +125,19 @@ importers:
         specifier: ^2.1.4
         version: 2.1.9(@types/node@22.20.4)(terser@5.51.2)
 
+  packages/audio-build:
+    dependencies:
+      '@anan/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.9.0
+        version: 22.20.4
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
   packages/core:
     dependencies:
       ts-fsrs:
@@ -143,6 +159,9 @@ importers:
 
   packages/data-pipeline:
     dependencies:
+      '@anan/audio-build':
+        specifier: workspace:*
+        version: link:../audio-build
       '@anan/core':
         specifier: workspace:*
         version: link:../core
