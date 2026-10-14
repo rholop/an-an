@@ -5,7 +5,7 @@ import { getLedgerNow } from '../ledger.js';
 import { reloadTutorLessons } from '../study.js';
 import { FetchTutorLLM } from '../tutor-llm.js';
 import { ensureTutorCards } from './introduce.js';
-import { loadTaiwanConverters } from './opencc.js';
+import { loadTaiwanConverters } from '../opencc.js';
 import { getActiveProfileForApi } from '../api.js';
 import { readSetting } from '../useSetting.js';
 import { requestTutorAudio } from './tutor-audio.js';

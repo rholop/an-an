@@ -193,6 +193,11 @@ for (const theme of THEMES) {
             const front = card.locator('.review-card-front');
             const px = await front.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
             expect(px, `${face} front font size`).toBeGreaterThanOrEqual(44);
+            // Phase 41: 老師 and 喜歡 carry their simplified form above, small but never below 12 px
+            const hint = card.getByTestId('simplified-hint');
+            await expect(hint, `${face} simplified hint`).toBeVisible();
+            const hintPx = await hint.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+            expect(hintPx, `${face} hint font size`).toBeGreaterThanOrEqual(12);
           }
           if (face === 'pick') {
             await expectFits(page, 'pick', page.getByTestId('review-pick-option'), `review-pick-${tag}`);

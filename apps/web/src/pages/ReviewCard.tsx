@@ -15,6 +15,7 @@ import { AnnotatedInline } from '../components/AnnotatedInline.js';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { NopeButton } from '../components/Nope.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
+import { WithSimplified } from '../components/SimplifiedHint.js';
 import { FACE_LABEL, FEEDBACK_CORRECT, feedbackWrong, lessonLabel, NEXT } from '../lib/labels.js';
 import { readingText } from '../lib/reading.js';
 import { GrammarExerciseCard, useSingleGrammarExercise } from './GrammarStep.js';
@@ -113,7 +114,7 @@ export function ReviewCard({
       ) : grammar && grammarEx ? (
         <>
           <div className="review-card-front review-card-front--small" lang="zh-Hant">
-            {grammar.pattern}
+            <WithSimplified text={grammar.pattern}>{grammar.pattern}</WithSimplified>
           </div>
           <GrammarExerciseCard ex={grammarEx} lexicon={lexicon} script={script} onDone={(ok) => onRate(ok ? 'good' : 'again', { face: 'grammar' })} />
           <div className="review-actions">
@@ -190,7 +191,8 @@ function FlipFace({
   return (
     <>
       <div className="review-card-front" lang={grammar || zhFront ? 'zh-Hant' : undefined}>
-        {front}
+        {/* Phase 41: a Chinese front shows its simplified form from the start; an English one never */}
+        {grammar || zhFront ? <WithSimplified text={front}>{front}</WithSimplified> : front}
       </div>
       {face === 'say' && !revealed && <p className="review-card-ask">Say it aloud: what are the pinyin and tones?</p>}
       {face === 'recall' && !revealed && (
@@ -225,7 +227,10 @@ function FlipFace({
               <>
                 {word ? (
                   <span lang="zh-Hant">
-                    <AnnotatedInline text={word.headword} lexicon={lexicon} script={script} />
+                    {/* Phase 41: Recall shows the simplified form only now, with the answer */}
+                    <WithSimplified text={word.headword}>
+                      <AnnotatedInline text={word.headword} lexicon={lexicon} script={script} />
+                    </WithSimplified>
                   </span>
                 ) : null}{' '}
                 ({reading})
@@ -323,7 +328,14 @@ function PickFace({
               data-testid="review-pick-option"
               data-right={o.id === word.id ? 'true' : undefined}
             >
-              <span className="review-pick-zh">{o.headword}</span>
+              {/* Phase 41: after answering, the right word shows its simplified form */}
+              {picked && o.id === word.id ? (
+                <WithSimplified text={o.headword}>
+                  <span className="review-pick-zh">{o.headword}</span>
+                </WithSimplified>
+              ) : (
+                <span className="review-pick-zh">{o.headword}</span>
+              )}
               {picked && (
                 <span className="review-pick-info" lang="en">
                   {readingText(o, script)} · {glossFor(o)}

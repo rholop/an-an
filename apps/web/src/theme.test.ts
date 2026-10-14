@@ -158,6 +158,8 @@ describe('Chinese text size tokens (Phase 30)', () => {
     expect(CSS).toMatch(/--zh-hero:\s*calc\(clamp\(2\.75rem,[^;]*\*\s*var\(--zh-scale\)\)/);
     expect(CSS).toMatch(/--zh-body:\s*calc\([^;]*var\(--zh-scale\)\)/);
     expect(CSS).toMatch(/--zh-small:\s*calc\([^;]*var\(--zh-scale\)\)/);
+    // Phase 41: the simplified hint on flashcards follows the hero size and is never below 12 px
+    expect(CSS).toMatch(/--zh-hint:\s*max\(12px,\s*calc\(var\(--zh-hero\)\s*\*\s*0\.4\)\)/);
   });
 
   it('Chinese text classes size their text only with --zh-* tokens', () => {
@@ -170,7 +172,7 @@ describe('Chinese text size tokens (Phase 30)', () => {
         zh.forEach((c) => seen.add(c));
         // an English front of the review card keeps its own size; its Chinese form is [lang|='zh']
         if (/review-card-front(--small)?$/.test(selector)) continue;
-        if (!/var\(--zh-(hero|body|small)\)/.test(value) && value !== 'inherit')
+        if (!/var\(--zh-(hero|body|small|hint)\)/.test(value) && value !== 'inherit')
           bad.push(`${path.basename(file)}: ${selector} { font-size: ${value} }`);
       }
     }
