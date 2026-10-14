@@ -83,6 +83,13 @@ describe('Phase 21 architecture', () => {
     );
   });
 
+  it('no .mjs file is fetched by URL (Phase 39): the live nginx serves .mjs as application/octet-stream', () => {
+    // A `?url` import keeps the .mjs name in the build, and browsers refuse it as a module script.
+    // Bundle it instead (e.g. `new Worker(new URL('./x.ts', import.meta.url))`), so it ships as .js.
+    const bad = sources().filter((f) => /\.mjs\?url['"]/.test(f.text)).map((f) => f.rel);
+    expect(bad).toEqual([]);
+  });
+
   it('every colour is a theme token (Phase 22): none written outside src/theme.css', () => {
     const colour = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(|\b(Canvas|CanvasText|ButtonFace|ButtonText|GrayText)\b/;
     const css: { rel: string; text: string }[] = [];

@@ -11,9 +11,16 @@ export async function pdfToPageImages(file: Blob): Promise<TutorPageImage[]> {
   // The legacy build: the modern one needs very new JS (Map.getOrInsertComputed) that Safari on
   // the owner's iPhones and current Chrome don't have yet.
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  const worker = await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url');
-  pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
-  const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  // Our own worker file (see pdf.worker.ts), started here and ended when the pages are done.
+  const worker = new Worker(new URL('./pdf.worker.ts', import.meta.url), { type: 'module' });
+  const port = pdfjs.PDFWorker.create({ port: worker });
+  const doc = await pdfjs
+    .getDocument({ data: new Uint8Array(await file.arrayBuffer()), worker: port })
+    .promise.catch((err: unknown) => {
+      port.destroy();
+      worker.terminate();
+      throw err;
+    });
   const pages: TutorPageImage[] = [];
   try {
     for (let n = 1; n <= Math.min(doc.numPages, MAX_PAGES); n++) {
@@ -33,7 +40,10 @@ export async function pdfToPageImages(file: Blob): Promise<TutorPageImage[]> {
       page.cleanup();
     }
   } finally {
-    void doc.destroy();
+    void doc.destroy().finally(() => {
+      port.destroy();
+      worker.terminate();
+    });
   }
   return pages;
 }
