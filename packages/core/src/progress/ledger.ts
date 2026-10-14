@@ -14,6 +14,7 @@ import { lessonProgress, lessonDone, type LessonProgress } from '../textbook/pro
 import type { ClassScope } from '../textbook/scope.js';
 import type { Evidence, ItemRef, Skill, Word } from '../types.js';
 import type { PriorityConfig } from '../curriculum/priority.config.js';
+import { answeredFaceKeys, faceGateOpen } from './face-order.js';
 import { recentTutorWordIds, tutorLessonItems, TUTOR_FACES, type TutorLesson } from '../tutor/session.js';
 import { TUTOR_CONFIG } from '../tutor/tutor.config.js';
 import { extrasCountForMastery, getStudyFocus, lessonIndex, type StudyFocus, type StudySettings } from '../study/study-focus.js';
@@ -389,7 +390,7 @@ export class Ledger {
         settings: this.settings,
         baseNew: this.cfg.newPerQueue.review,
         newHalfShare: this.cfg.newHalfShare,
-        ...(this.tutorWordIds().size > 0 ? { tutor: this.tutorCardTest() } : {}),
+        ...(this.tutorWordIds().size > 0 ? { tutor: this.tutorCardTest(), tutorOrder: this.tutorOrder() } : {}),
       }),
     );
   }
@@ -397,6 +398,15 @@ export class Ledger {
   /** Phase 40 Part E: is this card one of a tutoring word's (any saved class, ticked)? */
   isTutorCard(card: Pick<SkillCard, 'item'>): boolean {
     return card.item.kind === 'word' && this.tutorWordIds().has(card.item.id);
+  }
+
+  /** Tutoring word id → place in class order (oldest class first). */
+  private tutorOrder(): ReadonlyMap<string, number> {
+    return this.once('tutorOrder', () => {
+      const order = new Map<string, number>();
+      for (const l of this.tutorLessons()) for (const id of l.wordIds) if (!order.has(id)) order.set(id, order.size);
+      return order;
+    });
   }
 
   private tutorCardTest(): (c: Pick<SkillCard, 'item'>) => boolean {
@@ -412,7 +422,7 @@ export class Ledger {
         now: this.now,
         settings: this.settings,
         ...(opts.early ? { early: true } : {}),
-        ...(this.tutorWordIds().size > 0 ? { tutor: this.tutorCardTest() } : {}),
+        ...(this.tutorWordIds().size > 0 ? { tutor: this.tutorCardTest(), tutorOrder: this.tutorOrder() } : {}),
       });
       const words = [...new Set(picked.cards.filter((c) => c.item.kind === 'word').map((c) => c.item.id))];
       return { status: this.status, ...picked, words };
@@ -543,13 +553,17 @@ export class Ledger {
       const out: Array<{ item: ItemRef; sessionId: string; skills: Skill[] }> = [];
       const seen = new Set<string>();
       const carded = new Set(this.allCards.filter((c) => c.item.kind === 'word').map((c) => `${c.skill}|${c.item.id}`));
+      // Phase 42: faces enter in order (Meaning, Pick, Say it): a face is added once the one before
+      // it has been answered. (Which New cards are in the session is `tutorNowFilter`'s daily limit.)
+      const answered = answeredFaceKeys(this.allCards);
+      const ready = (s: Skill, id: string) => s === 'recognition' || answered.has(`${s === 'production' ? 'recognition' : 'production'}|${id}`);
       for (const l of this.tutorLessons())
         for (const id of l.wordIds) {
           const item: ItemRef = { kind: 'word', id };
           if (seen.has(id)) continue;
           seen.add(id);
           if (this.index.removed(item) || this.learned(item) || !this.resolvesItem(item)) continue;
-          const skills = TUTOR_FACES.filter((s) => !carded.has(`${s}|${id}`));
+          const skills = TUTOR_FACES.filter((s) => !carded.has(`${s}|${id}`) && ready(s, id));
           if (skills.length > 0) out.push({ item, sessionId: l.id, skills });
         }
       return out;
@@ -565,6 +579,15 @@ export class Ledger {
       return this.newCards()
         .filter((c) => c.skill === 'recognition' && c.item.kind === 'word' && order.has(c.item.id))
         .sort((a, b) => order.get(a.item.id)! - order.get(b.item.id)!);
+    });
+  }
+
+  /** Phase 42: the New cards Review may introduce now: a Pick card waits for its word's Meaning to be
+   * answered, a Say it card for Pick (lesson words and tutoring words alike). */
+  reviewNewCards(): SkillCard[] {
+    return this.once('reviewNewCards', () => {
+      const answered = answeredFaceKeys(this.allCards);
+      return this.newCards().filter((c) => faceGateOpen(c, answered));
     });
   }
 

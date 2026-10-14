@@ -4,6 +4,7 @@ import {
   lessonTaughtItems,
   pickNewForSession,
   describeSkillCard,
+  faceStage,
   orderSession,
   studyRank,
   type ItemRef,
@@ -62,7 +63,13 @@ export function buildReviewSession(input: {
     [...(input.fresh ?? []), ...input.due],
     (c) =>
       describeSkillCard(c, {
-        band: fresh.has(c) || (c.item.kind === 'word' && tutor.has(c.item.id)) ? 0 : c.flags.priority ? 1 : 2 + rank(c.item),
+        // Phase 42: new and tutoring cards lead in face order: Meaning, Pick, Say it, Recall.
+        band:
+          fresh.has(c) || (c.item.kind === 'word' && tutor.has(c.item.id))
+            ? faceStage(c) * 0.1
+            : c.flags.priority
+              ? 1
+              : 2 + rank(c.item),
       }),
     { seed: input.seed, recent: input.recent },
   );

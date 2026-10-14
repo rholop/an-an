@@ -5,6 +5,7 @@ import type { ItemRef } from '../types.js';
 import { orderDueCards, studyRank, type StudyFocus } from './study-focus.js';
 import type { SkillCard } from '../learner/types.js';
 import { isNewCard } from '../progress/terms.js';
+import { faceStage } from '../progress/face-order.js';
 
 export interface ReviewPlan<T> {
   ordered: T[];
@@ -89,7 +90,7 @@ export function pickNewForSession<T extends SkillCard>(input: {
   const tutor = new Set((focus?.tutorItems ?? []).map(key));
   const cards = input.newCards
     .filter((c) => isNewCard(c) && keep(c.item))
-    .map((c, i) => ({ c, i, r: (tutor.has(key(c.item)) ? -1e9 : rank(c.item)) + (c.skill === 'production' ? 0.5 : 0) }))
+    .map((c, i) => ({ c, i, r: (tutor.has(key(c.item)) ? -1e9 : rank(c.item)) + faceStage(c) * 0.25 }))
     .sort((a, b) => a.r - b.r || a.i - b.i)
     .map((x) => x.c)
     .slice(0, n);

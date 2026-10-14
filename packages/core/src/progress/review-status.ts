@@ -17,7 +17,10 @@ import {
   type SessionSettings,
   type SessionWindow,
 } from './review-sessions.js';
-import { isActiveCard, isDueBefore, isNewCard, isScheduledCard } from './terms.js';
+import { answeredFaceKeys, faceGateOpen } from './face-order.js';
+import { zonedStartOfDay } from './time.js';
+import { TUTOR_CONFIG } from '../tutor/tutor.config.js';
+import { inAppAnswers, isActiveCard, isDueBefore, isNewCard, isScheduledCard } from './terms.js';
 
 /** Evidence kinds that are a review answer (they count toward the session cap). */
 export const REVIEW_ANSWER_KINDS: ReadonlySet<string> = new Set([
@@ -167,19 +170,52 @@ function touchedSince(evidence: readonly EvidenceLike[], since: Date, now: Date)
  * count window and not finished. (A finished one follows FSRS into later sessions as usual.)
  */
 function tutorNowFilter(
-  input: Pick<SessionInput, 'evidence' | 'now' | 'tutor'>,
+  input: Pick<SessionInput, 'cards' | 'evidence' | 'now' | 'tutor' | 'tutorOrder' | 'settings'>,
   since: Date,
 ): (c: SkillCard) => boolean {
   const isTutor = input.tutor;
   if (!isTutor) return () => false;
   const touched = touchedSince(input.evidence, since, input.now);
   const now = input.now.getTime();
+  const open = tutorNewAllowed({ ...input, tutor: isTutor });
   return (c) =>
     inReviewQueue(c) &&
     isTutor(c) &&
     c.state !== 'unseen' &&
     isActiveCard(c) &&
-    (isNewCard(c) || (isScheduledCard(c) && c.card.due.getTime() <= now) || touched.has(cardKey(c)));
+    ((isNewCard(c) && open(c)) || (!isNewCard(c) && isScheduledCard(c) && c.card.due.getTime() <= now) || touched.has(cardKey(c)));
+}
+
+/**
+ * Phase 42 (owner, 2026-10-14: at most 25 new words a day, then spread out): which New tutoring cards
+ * may be in the session. A word's Meaning card enters while fewer than `newWordsPerDay` tutoring
+ * words were first answered today (oldest class first); its Pick card waits for Meaning to be
+ * answered, and its Say it card for Pick (`faceGateOpen`). Answered cards are never held.
+ */
+function tutorNewAllowed(
+  input: Pick<SessionInput, 'cards' | 'evidence' | 'now' | 'settings' | 'tutorOrder'> & Required<Pick<SessionInput, 'tutor'>>,
+): (c: SkillCard) => boolean {
+  const s = input.settings ?? DEFAULT_SESSION_SETTINGS;
+  const dayStart = zonedStartOfDay(input.now, s.timeZone).getTime();
+  const ratedToday = new Map<string, number>();
+  for (const e of input.evidence) {
+    if (!RATED_KINDS.has(e.kind) || e.at.getTime() < dayStart || e.at.getTime() > input.now.getTime()) continue;
+    ratedToday.set(cardKey(e), (ratedToday.get(cardKey(e)) ?? 0) + 1);
+  }
+  const tutorRecognition = input.cards.filter((c) => c.skill === 'recognition' && c.item.kind === 'word' && input.tutor(c));
+  // first answered today: every answer the card has was given today
+  const startedToday = tutorRecognition.filter((c) => {
+    const n = inAppAnswers(c);
+    return n > 0 && n <= (ratedToday.get(cardKey(c)) ?? 0);
+  }).length;
+  const room = Math.max(0, TUTOR_CONFIG.newWordsPerDay - startedToday);
+  const order = (c: SkillCard) => input.tutorOrder?.get(c.item.id) ?? Number.MAX_SAFE_INTEGER;
+  const waiting = tutorRecognition
+    .filter((c) => isNewCard(c) && inReviewQueue(c) && isActiveCard(c))
+    .sort((a, b) => order(a) - order(b));
+  const today = new Set(waiting.slice(0, room).map((c) => c.item.id));
+  const answered = answeredFaceKeys(input.cards);
+  return (c) => (c.skill === 'recognition' ? today.has(c.item.id) : faceGateOpen(c, answered));
 }
 
 /** Cards finished since `since`: answered, and the last answer wasn't Again. Learning steps are
@@ -213,6 +249,8 @@ interface SessionInput {
   settings?: SessionSettings;
   /** Phase 40 Part E: is this a tutoring card? (They join the session at once and skip the cap.) */
   tutor?: (c: Pick<SkillCard, 'item' | 'skill'>) => boolean;
+  /** Phase 42: tutoring word id → class order (oldest class first), for the daily new-word limit. */
+  tutorOrder?: ReadonlyMap<string, number>;
 }
 
 /**
