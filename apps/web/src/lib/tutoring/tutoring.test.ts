@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   DEFAULT_SESSION_SETTINGS,
   DEFAULT_STUDY_SETTINGS,
+  checkTaiwanness,
+  displayLevel,
   tutorLessonOf,
   Lexicon,
   type GrammarItem,
@@ -21,6 +23,7 @@ import { mergeBackups } from '../../db/merge.js';
 import { ledgerFrom } from '../ledger.js';
 import { ProxyTurnError } from '../tutor-llm.js';
 import { loadTaiwanConverters } from './opencc.js';
+import { notesMainlandLine } from '../labels.js';
 import { TutoringService } from './tutoring-service.js';
 import { ensureTutorCards } from './introduce.js';
 import { DexieLearnerRepo } from '../../db/learner-repo.js';
@@ -221,7 +224,11 @@ describe('Tutoring sessions (phase 39), the owner\'s PDF', () => {
     expect(introduced).toBe(17);
     const ledger = await ledgerNow(NOW);
     expect(ledger.tutorNewCards().map((c) => c.item.id).sort()).toEqual(rec.words.filter((w) => w.ticked).map((w) => w.wordId).sort());
-    expect(ledger.newAllowance('review').allowed).toBe(0);
+    // Phase 40: in review now with every face, outside the textbook's new-word allowance
+    const inSession = new Set(ledger.session().cards.map((c) => `${c.item.id}|${c.skill}`));
+    for (const w of rec.words.filter((x) => x.ticked))
+      for (const f of ['recognition', 'production', 'reading']) expect(inSession.has(`${w.wordId}|${f}`)).toBe(true);
+    expect(ledger.newAllowance('review').allowed).toBeGreaterThan(0);
   });
 
   it('a quota stop during the upload saves nothing; one at Save gets the plain scenario', async () => {
@@ -262,5 +269,94 @@ describe('Tutoring sessions (phase 39), the owner\'s PDF', () => {
       other.close();
       await other.delete();
     }
+  });
+});
+
+describe('Phase 40: levels, topics and Taiwan wording (the owner\'s PDF)', () => {
+  it('早餐, 晚餐, 藥局 and 警察局 have a level (none in "Other"); 義大利麵 gets an estimate and the food topic', async () => {
+    const svc = service(new FakeTutoringLLM());
+    const { draft } = await svc.draftFromExtraction(EXTRACTION, NOW);
+    for (const zh of ['早餐', '晚餐', '藥局', '警察局']) {
+      const w = draft.words.find((x) => x.zh === zh)!;
+      expect(displayLevel(lexicon.byId(w.wordId)!), zh).not.toBeNull();
+    }
+    expect(draft.topicTags).toEqual(expect.arrayContaining(['food', 'health', 'places']));
+    const { record } = await svc.save(draft, 'N1', NOW);
+    expect(record.topicTags).toEqual(expect.arrayContaining(['food', 'health', 'places']));
+    const pasta = (await db.customWords.toArray()).find((w) => w.headword === '義大利麵')!;
+    expect(pasta.level).toBeNull();
+    expect(pasta.estimatedLevel).toBeTruthy();
+    expect(pasta.tags).toContain('topic:food');
+  });
+
+  it('炒面 → 炒麵 has no mainland label; 普通话 is labelled with 國語 / 中文', async () => {
+    const { draft } = await service(new FakeTutoringLLM()).draftFromExtraction(EXTRACTION, NOW);
+    const chaomian = draft.words.find((w) => w.zh === '炒麵')!;
+    expect(chaomian.statuses).not.toContain('mainland');
+    expect(chaomian.mainlandForm).toBeUndefined();
+    const guoyu = draft.words.find((w) => w.printed === '普通话')!;
+    expect(guoyu.statuses).toContain('mainland');
+    expect(notesMainlandLine(guoyu.printed, [guoyu.zh, ...(guoyu.alsoTaiwan ?? [])])).toBe(
+      'The notes wrote 普通话 (mainland usage) · Taiwan: 國語 / 中文',
+    );
+  });
+
+  it('a sentence that differs only by character variants stays practice', async () => {
+    const one: TutorExtraction = {
+      ...EXTRACTION,
+      vocab: [{ zh: '炒面', pinyin: 'chǎomiàn', en: 'fried noodles', example: { zh: '我吃炒面。', en: 'I eat fried noodles.' } }],
+      grammar: [],
+    };
+    const { draft } = await service(new FakeTutoringLLM()).draftFromExtraction(one, NOW);
+    expect(draft.words[0]!.example).toMatchObject({ zh: '我吃炒麵。', practice: true });
+  });
+
+  it('nothing saved from tutoring contains a simplified character', async () => {
+    const svc = service(new FakeTutoringLLM());
+    const { draft } = await svc.draftFromExtraction(EXTRACTION, NOW);
+    const { record } = await svc.save(draft, 'N1', NOW);
+    const conv = await loadTaiwanConverters();
+    const saved = [
+      ...record.words.filter((w) => w.ticked).map((w) => w.zh),
+      ...record.sentences.filter((x) => x.practice).map((x) => x.zh),
+      ...(await db.customWords.toArray()).flatMap((w) => [w.headword, ...w.variants]),
+    ];
+    for (const text of saved) {
+      expect(checkTaiwanness(text).simplifiedChars, text).toEqual([]);
+      expect(conv.toTraditional(text), text).toBe(text);
+    }
+  });
+
+  it('"Re-check levels and topics" is idempotent', async () => {
+    const svc = service(new FakeTutoringLLM());
+    const { draft } = await svc.draftFromExtraction(EXTRACTION, NOW);
+    await svc.save(draft, 'N1', NOW);
+    // a class saved before Phase 40: no topics, no estimates on its custom word
+    const [rec] = await db.tutorSessions.toArray();
+    await db.tutorSessions.update(rec!.id, { topicTags: undefined });
+    const pasta = (await db.customWords.toArray())[0]!;
+    await db.customWords.put({ ...pasta, estimatedLevel: undefined, levelSource: undefined, tags: ['tutor'] } as never);
+    expect(await svc.recheckLevelsAndTopics(NOW)).toBe(1);
+    const after = (await db.customWords.toArray())[0]!;
+    expect(after.estimatedLevel).toBeTruthy();
+    expect(after.tags).toContain('topic:food');
+    expect((await db.tutorSessions.toArray())[0]!.topicTags).toEqual(expect.arrayContaining(['food']));
+    expect(await svc.recheckLevelsAndTopics(NOW)).toBe(0);
+  });
+
+  it('a class saved with simplified characters is fixed by the re-check (OpenCC, no AI)', async () => {
+    const svc = service(new FakeTutoringLLM());
+    const { draft } = await svc.draftFromExtraction(EXTRACTION, NOW);
+    await svc.save(draft, 'N1', NOW);
+    const [rec] = await db.tutorSessions.toArray();
+    const words = rec!.words.map((w) => (w.zh === '餅乾' ? { ...w, zh: '饼干' } : w));
+    const sentences = rec!.sentences.map((x, i) => (i === 0 ? { ...x, zh: '我们吃饭。' } : x));
+    await db.tutorSessions.update(rec!.id, { words, sentences });
+    expect(await svc.recheckLevelsAndTopics(NOW)).toBe(1);
+    const after = (await db.tutorSessions.toArray())[0]!;
+    expect(after.words.find((w) => w.printed === rec!.words.find((x) => x.zh === '餅乾')!.printed)!.zh).toBe('餅乾');
+    expect(after.sentences[0]!.zh).toBe('我們吃飯。');
+    // traditional text is never touched
+    expect(after.words.map((w) => w.zh).filter((zh) => zh !== '餅乾')).toEqual(rec!.words.map((w) => w.zh).filter((zh) => zh !== '餅乾'));
   });
 });

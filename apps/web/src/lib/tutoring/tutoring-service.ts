@@ -11,6 +11,7 @@ import {
   draftSentencesToCheck,
   estimateWordLevel,
   finalizeTutorSession,
+  replaceSimplifiedChars,
   topicTagsFor,
   tutorClassifyRequest,
   tutorCustomWord,
@@ -89,7 +90,11 @@ export class TutoringService {
    * Part C "Save": the class scenario (one call; a plain one when the quota is out), then the
    * session and its custom words in one transaction. The same class again replaces its record.
    */
-  async save(draft: TutorDraft, level: Level, now: Date = new Date()): Promise<{ record: TutorSessionRow; introduced: number }> {
+  async save(
+    draft: TutorDraft,
+    level: Level,
+    now: Date = new Date(),
+  ): Promise<{ record: TutorSessionRow; introduced: number; audio: Promise<TutorSessionRow> }> {
     let res: TutorScenarioResponse | undefined;
     try {
       res = await this.llm.writeTutorScenario(tutorScenarioRequest(draft, level));
@@ -123,8 +128,9 @@ export class TutoringService {
     this.options.lexiconChanged?.();
     // Owner, 2026-10-14: the class's words are in review the moment it is saved, every face.
     const introduced = await this.introduce(now);
-    const record = await this.withAudio(saved!);
-    return { record, introduced };
+    // the clips take a while (several server rounds): Save doesn't wait for them
+    const record = saved!;
+    return { record, introduced, audio: this.withAudio(record) };
   }
 
   /** Phase 40 Part D.1: the class's clips (made on the server); the answer is kept on the record. */
@@ -148,6 +154,11 @@ export class TutoringService {
     if (sessions.length === 0) return 0;
     const custom = new Map((await this.db.customWords.toArray()).map((w) => [w.id, w]));
     const chars = charLevelIndex(this.lexicon.allWords());
+    // Phase 40 Part B: classes saved earlier lose any simplified character, by OpenCC (cn → tw) and
+    // the character table, never AI. Text with no character OpenCC would change is left as it is.
+    const conv = await this.converters();
+    const fix = (t: string): string =>
+      replaceSimplifiedChars([...t].some((c) => conv.toTraditional(c) !== c) ? conv.toTraditional(t) : t);
     let changed = 0;
     for (const s of sessions) {
       const unmapped = s.topics.filter((t) => topicTagsFor(t).length === 0);
@@ -159,7 +170,12 @@ export class TutoringService {
         const cw = custom.get(w.wordId);
         const lexWord = this.lexicon.byId(w.wordId);
         if (cw) {
-          let next: Word = cw as Word;
+          // Phase 40 Part B: a word saved before the character table pass loses any simplified character
+          let next: Word = {
+            ...(cw as Word),
+            headword: fix(cw.headword),
+            variants: cw.variants.map(fix),
+          };
           if (!next.level && !next.estimatedLevel) {
             const e = estimateWordLevel({ headword: next.headword, level: null }, { chars });
             if (e) next = { ...next, ...e };
@@ -186,8 +202,14 @@ export class TutoringService {
         }
       }
       const words = s.words.map((w) => {
+        const zh = fix(w.zh);
+        const fixed = zh === w.zh ? w : { ...w, zh };
         const lv = modelLevels.get(w.wordId);
-        return lv && !custom.has(w.wordId) && !w.estimatedLevel ? { ...w, estimatedLevel: lv, levelSource: 'model' as const } : w;
+        return lv && !custom.has(w.wordId) && !w.estimatedLevel ? { ...fixed, estimatedLevel: lv, levelSource: 'model' as const } : fixed;
+      });
+      const sentences = s.sentences.map((x) => {
+        const zh = fix(x.zh);
+        return zh === x.zh ? x : { ...x, zh };
       });
       const customRows: CustomWordRow[] = [];
       for (const [id, w] of updates) {
@@ -201,13 +223,15 @@ export class TutoringService {
       }
       const sameTags = JSON.stringify([...(s.topicTags ?? [])].sort()) === JSON.stringify([...topicTags].sort());
       const sameWords = JSON.stringify(words) === JSON.stringify(s.words);
-      if (customRows.length === 0 && sameTags && sameWords) continue;
+      const sameSentences = JSON.stringify(sentences) === JSON.stringify(s.sentences);
+      if (customRows.length === 0 && sameTags && sameWords && sameSentences) continue;
       changed++;
       await this.db.transaction('rw', this.db.tutorSessions, this.db.customWords, async () => {
         if (customRows.length > 0) await this.db.customWords.bulkPut(customRows);
         await this.db.tutorSessions.update(s.id, {
           ...(topicTags.length > 0 ? { topicTags } : {}),
           words,
+          sentences,
           recheckedAt: now,
           updatedAt: now,
         });

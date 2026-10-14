@@ -76,11 +76,20 @@ function loadTutorLessons(): Promise<void> {
   if (!tutorWatched.has(session.db)) {
     tutorWatched.add(session.db);
     // re-read once the write is committed (a read inside the hook would miss it)
-    const changed = (tx: { on: (e: 'complete', f: () => void) => void }) =>
+    // The hooks must return nothing: an 'updating' hook's return value is merged into the row (and
+    // `tx.on` returns the transaction), a 'creating' hook's becomes the key.
+    const changed = (tx: { on: (e: 'complete', f: () => void) => unknown }): void => {
       tx.on('complete', () => void reloadTutorLessons());
-    session.db.tutorSessions.hook('creating', (_k, _o, tx) => changed(tx));
-    session.db.tutorSessions.hook('updating', (_m, _k, _o, tx) => changed(tx));
-    session.db.tutorSessions.hook('deleting', (_k, _o, tx) => changed(tx));
+    };
+    session.db.tutorSessions.hook('creating', (_k, _o, tx) => {
+      changed(tx);
+    });
+    session.db.tutorSessions.hook('updating', (_m, _k, _o, tx) => {
+      changed(tx);
+    });
+    session.db.tutorSessions.hook('deleting', (_k, _o, tx) => {
+      changed(tx);
+    });
   }
   tutorLoading ??= (async () => {
     const forProfile = session.profileId;

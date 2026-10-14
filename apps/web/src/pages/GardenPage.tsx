@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import {
   displayLevel,
   groupPlots,
+  tutorLessonOf,
+  tutorPlots,
+  TUTOR_CONFIG,
   isTextbookTagged,
   wiltingCards,
   type GrowthStage,
@@ -19,7 +22,7 @@ import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { LevelChips } from '../components/LevelPicker.js';
 import { db } from '../db/instance.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
-import { allWateredLine, NOTHING_DUE, nextSessionTip, TERM } from '../lib/labels.js';
+import { allWateredLine, NOTHING_DUE, nextSessionTip, TERM, tutorClassTitle, tutorHomeLine, TUTORING_ONLY, REVIEW_NOW } from '../lib/labels.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -29,6 +32,7 @@ import { NowStudying } from '../components/NowStudying.js';
 import { DueForecast, HomeReviewActions } from '../components/DueForecast.js';
 import { EmptySprout, NextDropIcon, PlantLegend, StageIcon } from '../components/PlantIcons.js';
 import { useLedger } from '../lib/ledger.js';
+import { useTutorSessions } from '../lib/tutoring/useTutorSessions.js';
 import { StreakBar } from '../components/StreakBar.js';
 import { WaterAllPage } from './WaterAllPage.js';
 import { HomeStoryLine } from './StoriesSection.js';
@@ -64,6 +68,9 @@ export function GardenPage() {
   useEffect(() => setLevelFilter([level]), [level]);
   // Phase 12: only words from the class textbook (offered once any exist in the garden).
   const [textbookOnly, setTextbookOnly] = useState(false);
+  // Phase 40 Part C: only words from tutoring classes, one plot per class.
+  const [tutoringOnly, setTutoringOnly] = useState(false);
+  const tutorRows = useTutorSessions();
   const [focus, setFocus] = useState<SkillCard[] | null>(null);
   // Phase 22: Home's "Water all", "Review all" and "Review early" (Phase 23: the next session now).
   const [session, setSession] = useState<'water-all' | 'review-all' | 'review-early' | { story: StoryRecord } | null>(null);
@@ -128,10 +135,12 @@ export function GardenPage() {
   }
 
   const lexicon = lexiconState.status === 'ready' ? lexiconState.lexicon : null;
+  const tutorIds = ledger?.tutorWordIds() ?? new Set<string>();
   const inFilter = (p: Plant) => {
     if (!lexicon) return true;
     const word = lexicon.byId(p.wordId);
-    // "Textbook only" replaces the level filter: the book's words span levels.
+    // "Tutoring only" and "Textbook only" replace the level filter: their words span levels.
+    if (tutoringOnly) return tutorIds.has(p.wordId);
     if (textbookOnly) return word ? isTextbookTagged(word.tags) : false;
     if (levelFilter.length === 0) return true;
     const lv = word ? displayLevel(word) : null;
@@ -140,8 +149,12 @@ export function GardenPage() {
   const hasTextbookWords =
     !!lexicon && snapshot.plants.some((p) => isTextbookTagged(lexicon.byId(p.wordId)?.tags ?? []));
   const shownPlants = snapshot.plants.filter(inFilter);
-  const plots =
-    lexicon && scenariosState.status === 'ready'
+  const plots = tutoringOnly
+    ? tutorPlots(
+        shownPlants,
+        (tutorRows ?? []).map((r) => ({ ...tutorLessonOf(r), title: tutorClassTitle(r.tutor, r.date) })),
+      )
+    : lexicon && scenariosState.status === 'ready'
       ? groupPlots(shownPlants, scenariosState.scenarios, lexicon)
       : snapshot.plots;
   const wilting = shownPlants.filter((p) => p.wilt !== 'healthy').length;
@@ -158,6 +171,26 @@ export function GardenPage() {
         onReviewEarly={() => setSession('review-early')}
       />
       <StreakBar ledger={ledger} />
+      {ledger &&
+        (tutorRows ?? [])
+          .filter((r) => ledger.withinDays(r.createdAt, TUTOR_CONFIG.homeDays))
+          .map((r) => {
+            const words = tutorLessonOf(r).wordIds.length;
+            const now = ledger.tutorClassNow(r.id);
+            return (
+              <p key={r.id} className="garden-meta" data-testid="home-tutor-class">
+                {tutorHomeLine(r.tutor, words)}
+                {now.length > 0 && (
+                  <>
+                    {' · '}
+                    <button type="button" onClick={() => setFocus(now)}>
+                      {REVIEW_NOW}
+                    </button>
+                  </>
+                )}
+              </p>
+            );
+          })}
       {stories && <HomeStoryLine service={stories} level={level} onOpen={(story) => setSession({ story })} />}
       <DueForecast ledger={ledger} />
       {snapshot.plants.length === 0 && <EmptySprout />}
@@ -183,6 +216,17 @@ export function GardenPage() {
             onChange={(e) => setTextbookOnly(e.target.checked)}
           />{' '}
           Textbook only <span lang="zh-Hant">(來學華語)</span>
+        </label>
+      )}
+      {(tutorIds.size > 0 || tutoringOnly) && (
+        <label className="garden-textbook-filter">
+          <input
+            type="checkbox"
+            checked={tutoringOnly}
+            onChange={(e) => setTutoringOnly(e.target.checked)}
+            data-testid="garden-tutoring-only"
+          />{' '}
+          {TUTORING_ONLY}
         </label>
       )}
       {hiddenWilting > 0 && (
@@ -228,7 +272,7 @@ function PlotView({
     >
       <header>
         <h2 lang={plot.kind === 'level' ? 'zh-Hant' : undefined}>{plot.title}</h2>
-        <span className="garden-plot-count">{plot.kind === 'scenario' ? 'scenario' : 'level'}</span>
+        <span className="garden-plot-count">{plot.kind === 'scenario' ? 'scenario' : plot.kind === 'tutor' ? 'class' : 'level'}</span>
       </header>
       <div className="garden-tiles">
         {plot.plants.map((p) => (

@@ -91,10 +91,12 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(check.getByTestId('tutor-grammar')).toHaveCount(8);
       const guoyu = check.getByTestId('tutor-word').filter({ hasText: '國語' });
       await expect(guoyu).toContainText('Mainland term');
-      await expect(guoyu).toContainText('also said in mainland China');
+      await expect(guoyu).toContainText('The notes wrote 普通话 (mainland usage)');
+      // Phase 40 Part B: a character variant is corrected silently
+      await expect(check.getByTestId('tutor-word').filter({ hasText: '炒麵' })).not.toContainText('Mainland term');
       await expect(check.getByTestId('tutor-word').filter({ hasText: '義大利麵' })).toContainText('Not in the word list');
       await expect(check.getByTestId('tutor-grammar').filter({ hasText: '省略成分' })).toContainText('note only');
-      expect(calls).toEqual(['extract', 'check']);
+      expect(calls.filter((c) => c !== 'audio')).toEqual(['extract', 'check']);
       // nothing is stored before Save
       expect(await page.evaluate(() => (window as unknown as { __anan: { db: { tutorSessions: { count: () => Promise<number> } } } }).__anan.db.tutorSessions.count())).toBe(0);
       if (size.viewport.width === 390) {
@@ -106,7 +108,7 @@ for (const theme of ['light', 'dark'] as const) {
       const classPage = page.getByTestId('tutor-class-page');
       await expect(classPage).toBeVisible({ timeout: 20_000 });
       expect(calls).toContain('scenario');
-      await expect(classPage.getByRole('status')).toContainText('added to your reviews');
+      await expect(classPage.getByRole('status')).toContainText('in your review now');
       await expect(classPage.getByTestId('tutor-class-progress')).toContainText('Learned');
       await expect(classPage.getByTestId('tutor-grammar-note')).toHaveCount(1);
 
@@ -151,4 +153,81 @@ test('tutoring: a failed reading shows plain words, never the server reply', asy
   const error = page.getByTestId('tutor-upload-error');
   await expect(error).toContainText("Gemini couldn't read the class notes", { timeout: 30_000 });
   await expect(error).not.toContainText('tutor_extract_failed');
+});
+
+test('Phase 40: the class page shows levels, topics and faces; 6 steps; Listening plays a class clip', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors: string[] = [];
+  page.on('pageerror', (err) => errors.push(String(err)));
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript(() => {
+    localStorage.removeItem('anan.listening.disabled');
+    (window as unknown as { __plays: number }).__plays = 0;
+    HTMLMediaElement.prototype.play = function () {
+      (window as unknown as { __plays: number }).__plays++;
+      return Promise.resolve();
+    };
+  });
+  await page.route('**/v1/tutor-extract', (route) => route.fulfill({ json: EXTRACTION }));
+  await page.route('**/v1/tutor-check', (route) => {
+    const { sentences } = route.request().postDataJSON() as { sentences: { id: string }[] };
+    return route.fulfill({ json: { results: sentences.map((s) => ({ id: s.id, ok: true })) } });
+  });
+  await page.route('**/v1/tutor-scenario', (route) => route.fulfill({ json: SCENARIO }));
+  await page.route('**/v1/tutor-classify', (route) => {
+    const req = route.request().postDataJSON() as { words: { zh: string }[]; topics: { zh: string }[] };
+    return route.fulfill({ json: { words: req.words.map((w) => ({ zh: w.zh, level: 'L1' })), topics: req.topics.map((t) => ({ zh: t.zh, tags: ['food'] })) } });
+  });
+  // Part D.1: the proxy makes a clip for every word (faked here)
+  const entry = (file: string, text: string) => ({ file, voice: 'v', hash: `h-${file}`, status: 'auto_ok', text, zhuyin: '' });
+  await page.route('**/v1/tutor-audio/manifest*', (route) =>
+    route.fulfill({ json: { configured: true, manifest: { meta: { version: 1, builtAt: '2026-10-14T00:00:00Z', voice: 'v' }, words: {}, sentences: {} } } }),
+  );
+  await page.route('**/v1/tutor-audio/file/**', (route) =>
+    route.fulfill({ contentType: 'audio/mpeg', body: Buffer.from([0xff, 0xfb, 0x90, 0x00]) }),
+  );
+  await page.route('**/v1/tutor-audio', (route) => {
+    const { items } = route.request().postDataJSON() as { items: { kind: string; id: string; text: string }[] };
+    const words = Object.fromEntries(items.filter((i) => i.kind === 'word').map((i) => [i.id, entry(`words/${i.id}.mp3`, i.text)]));
+    return route.fulfill({
+      json: {
+        entries: { words, sentences: {} },
+        counts: { requested: items.length, made: Object.keys(words).length, unchanged: 0, suspect: 0, failed: 0, skipped: 0, pending: 0 },
+        failed: [],
+        skipped: items.filter((i) => i.kind === 'sentence').map((i) => ({ kind: 'sentence', id: i.id, reason: 'not in this fake' })),
+      },
+    });
+  });
+
+  await page.goto('/?page=tutoring');
+  await expect(page.getByRole('heading', { name: 'Tutoring' })).toBeVisible({ timeout: 20_000 });
+  await page.getByTestId('tutor-upload').setInputFiles({ name: 'summary.pdf', mimeType: 'application/pdf', buffer: tinyPdf() });
+  const check = page.getByTestId('tutor-check');
+  await expect(check).toBeVisible({ timeout: 30_000 });
+  await expect(check.getByTestId('tutor-topics')).toContainText('Food');
+  await page.getByTestId('tutor-save').click();
+
+  const classPage = page.getByTestId('tutor-class-page');
+  await expect(classPage).toBeVisible({ timeout: 20_000 });
+  await expect(classPage.getByTestId('tutor-topics')).toContainText('Food');
+  await expect(classPage.getByTestId('tutor-audio-status')).toContainText('clips made', { timeout: 20_000 });
+  const rows = classPage.getByTestId('tutor-class-word');
+  await expect(rows).toHaveCount(20);
+  const zaocan = rows.filter({ hasText: '早餐' });
+  await expect(zaocan.getByTestId('tutor-word-level')).toBeVisible();
+  await expect(zaocan.getByTestId('tutor-word-faces')).toContainText('Meaning');
+  await expect(zaocan.getByTestId('tutor-word-faces')).toContainText('Say it');
+  await expect(rows.filter({ hasText: '義大利麵' }).getByTestId('tutor-word-level')).toBeVisible();
+  await expect(classPage.getByText(/Review these \d+ words now/)).toBeVisible();
+
+  await page.getByTestId('study-tutor-class').click();
+  const study = page.getByTestId('tutor-study');
+  await expect(study.getByTestId('tutor-study-step')).toContainText('Step 1 of 6');
+  await study.getByTestId('study-skip').click(); // Vocab
+  await study.getByTestId('study-skip').click(); // Grammar
+  await expect(study.getByTestId('tutor-study-step')).toContainText('Listening');
+  await expect(study.getByTestId('listen-exercise').first()).toBeVisible({ timeout: 20_000 });
+  await study.getByTestId('listen-play').first().click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __plays: number }).__plays)).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
 });

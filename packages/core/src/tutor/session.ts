@@ -20,6 +20,8 @@ export interface TutorSessionWord {
   pinyinNote?: string;
   mainlandForm?: string;
   alsoTaiwan?: string[];
+  /** Phase 40 Part B: OpenCC's Taiwan phrasing, when the tutor's own word was kept. */
+  alsoSaid?: string[];
   gloss: string;
   notesGloss?: string;
   /** Ticked on the check screen: a lesson item of this session (introduced by the study order). */
@@ -185,6 +187,7 @@ export function finalizeTutorSession(
     ...(w.pinyinNote ? { pinyinNote: w.pinyinNote } : {}),
     ...(w.mainlandForm ? { mainlandForm: w.mainlandForm } : {}),
     ...(w.alsoTaiwan ? { alsoTaiwan: w.alsoTaiwan } : {}),
+    ...(w.alsoSaid ? { alsoSaid: w.alsoSaid } : {}),
     gloss: w.gloss,
     ...(w.notesGloss ? { notesGloss: w.notesGloss } : {}),
     ticked: w.ticked,

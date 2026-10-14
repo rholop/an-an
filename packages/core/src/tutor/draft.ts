@@ -25,8 +25,8 @@ export interface TutorDraftDeps {
   learned: (ref: ItemRef) => boolean;
   /** The ledger's comprehensible words (Learned ∪ in session ∪ learning). */
   comprehensibleIds: ReadonlySet<string>;
-  /** Phase 40 Part B: "This tutor is from Taiwan" (default on): no "mainland" chip, the Taiwan form
-   * is used (the swap still happens: the AI summary writes simplified characters). */
+  /** Phase 40 Part B: "This tutor is from Taiwan" (default on): the tutor's word is kept (traditional
+   * characters) unless the Taiwanness table flags it; off, OpenCC's Taiwan phrasing is used too. */
   tutorFromTaiwan?: boolean;
   /** Phase 40 Part A: the character levels for estimates (default: built from the lexicon). */
   charLevels?: CharLevelIndex;
@@ -65,6 +65,8 @@ export interface TutorDraftWord {
   mainlandForm?: string;
   /** Other Taiwan words for it (普通話 → 國語, also 中文). */
   alsoTaiwan?: string[];
+  /** Phase 40 Part B: OpenCC's Taiwan phrasing, when the tutor's own word was kept. */
+  alsoSaid?: string[];
   wordId: string;
   /** Present when the word list doesn't have it: saved as a custom word on Save. */
   custom?: Word;
@@ -277,9 +279,11 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
     const trad = replaceSimplifiedChars(deps.toTraditional(printed).trim());
     const tw = replaceSimplifiedChars(deps.toTaiwan(printed).trim());
     const swap = mainlandSwap(tw) ?? mainlandSwap(trad);
-    const zh = swap?.taiwan ?? tw;
     // Phase 40 Part B: "mainland" only for a real mainland word (the Taiwanness table has it:
-    // 普通话 → 國語). A character variant (炒麪 / 炒麵, 裏 / 裡) is corrected silently.
+    // 普通话 → 國語). A character variant (炒麪 / 炒麵, 裏 / 裡) is corrected silently. A tutor from
+    // Taiwan keeps their own word; OpenCC's Taiwan phrasing is then only "also said".
+    const zh = swap?.taiwan ?? (fromTaiwan ? trad : tw);
+    const alsoSaid = !swap && fromTaiwan && tw && tw !== trad ? [tw] : undefined;
     const mainlandForm = swap && zh !== trad ? trad : undefined;
     if (zh !== trad) swaps.set(trad, zh);
     if (tw !== zh && tw !== trad) swaps.set(tw, zh);
@@ -290,7 +294,7 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
     const notesPinyin = swap ? '' : v.pinyin;
     const word = pickWord(candidates, notesPinyin, v.en);
     const statuses: TutorWordStatus[] = [];
-    if (mainlandForm && !fromTaiwan) statuses.push('mainland');
+    if (mainlandForm) statuses.push('mainland');
     let entry: Omit<TutorDraftWord, 'example' | 'ticked' | 'statuses'>;
     if (word) {
       const differs = notesPinyin && squash(notesPinyin) !== squash(word.pinyin);
@@ -302,6 +306,7 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
         zh,
         ...(mainlandForm ? { mainlandForm } : {}),
         ...(swap?.also ? { alsoTaiwan: swap.also } : {}),
+        ...(alsoSaid ? { alsoSaid } : {}),
         wordId: word.id,
         pinyin: word.pinyin,
         zhuyin: word.zhuyin,
@@ -330,6 +335,7 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
         zh,
         ...(mainlandForm ? { mainlandForm } : {}),
         ...(swap?.also ? { alsoTaiwan: swap.also } : {}),
+        ...(alsoSaid ? { alsoSaid } : {}),
         wordId: custom.id,
         custom,
         pinyin: custom.pinyin,

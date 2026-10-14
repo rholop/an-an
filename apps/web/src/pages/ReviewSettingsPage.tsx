@@ -21,6 +21,7 @@ import { useLexicon } from '../lib/useLexicon.js';
 import { ReadingControls } from '../components/ReadingControls.js';
 import { YourProgress } from '../components/YourProgress.js';
 import { AiUsage } from '../components/AiUsage.js';
+import { TutoringSettings } from '../components/TutoringSettings.js';
 import { useAnswerInputMode, type AnswerInputMode } from '../lib/reading.js';
 import { readTargetRetention, RETENTION_MAX, RETENTION_MIN, setTargetRetention } from '../lib/retention.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
@@ -250,6 +251,7 @@ export function ReviewSettingsPage() {
           <Removed cards={cards!} lexicon={lexicon!} onDone={refresh} />
         </>
       )}
+      <TutoringSettings lexicon={lexiconState.status === 'ready' ? lexiconState.lexicon : undefined} />
       <AiUsage />
     </div>
   );

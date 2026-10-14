@@ -459,7 +459,10 @@ export const reviewTheseNow = (n: number): string => `Review these ${n} word${n 
 export const notesMainlandLine = (printed: string, taiwan: readonly string[]): string =>
   `The notes wrote ${printed} (mainland usage) · Taiwan: ${taiwan.join(' / ')}`;
 export const TUTOR_FROM_TAIWAN = 'This tutor is from Taiwan';
-export const TUTOR_FROM_TAIWAN_HINT = 'Uses the Taiwan form without a "mainland" chip (the notes are written in simplified characters either way).';
+export const TUTOR_FROM_TAIWAN_HINT =
+  "On: the tutor's own words are kept (in traditional characters); only real mainland words are swapped. Off: common Taiwan phrasing is swapped in too. Applies to the next upload.";
+/** Phase 40 Part B: an OpenCC Taiwan phrasing the word list doesn't confirm as the only one. */
+export const alsoSaidLine = (alts: readonly string[]): string => `also said: ${alts.join(' / ')}`;
 /** Phase 40 Part D.1 */
 export const AUDIO_WAITING_KEY = "Audio: waiting for the server's speech key";
 export const AUDIO_FAILED = "Audio: couldn't be made this time";
@@ -476,3 +479,5 @@ export const recheckDone = (n: number): string =>
 export const topicName = (t: string): string => t.charAt(0).toUpperCase() + t.slice(1);
 export const TUTOR_NO_CLASSES = 'No classes yet. Upload the summary your tutor sends after a class.';
 export const NOT_PRACTISED = 'shown only, not practised';
+export const TUTORING_ONLY = 'Tutoring only';
+export const REVIEW_NOW = 'Review now';

@@ -2,7 +2,7 @@
 // (Part C), Save, and the class becomes a lesson-like page. Phase 40: the same depth as a textbook
 // lesson (Vocab, Grammar, Listening, Chat, Journal, Story), each word with its level, topics, 🔊 and
 // card faces; the words are in review the moment the class is saved ("Review these N words now").
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   displayLevel,
   glossFor,
@@ -20,7 +20,6 @@ import {
 } from '@anan/core';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { useListeningClips, useListeningEnabled } from '../lib/listening.js';
-import { useSetting } from '../lib/useSetting.js';
 import { JournalPage } from './JournalPage.js';
 import { ListenPage } from './ListenPage.js';
 import { learnerService } from '../db/instance.js';
@@ -43,6 +42,7 @@ import {
 import { ensureTutorCards } from '../lib/tutoring/introduce.js';
 import { pdfToPageImages } from '../lib/tutoring/pdf-pages.js';
 import { notifyTutorSessionsChanged, useTutorSessions } from '../lib/tutoring/useTutorSessions.js';
+import { useTutorSpeechState } from '../lib/tutoring/tutor-audio.js';
 import type { DraftResult } from '../lib/tutoring/tutoring-service.js';
 import {
   AUDIO_FAILED,
@@ -51,10 +51,9 @@ import {
   estimatedLevelLabel,
   FACE_NAMES,
   notesMainlandLine,
+  alsoSaidLine,
   reviewTheseNow,
   topicName,
-  TUTOR_FROM_TAIWAN,
-  TUTOR_FROM_TAIWAN_HINT,
   tutorAudioLine,
   NEXT,
   NOT_PRACTISED,
@@ -251,8 +250,6 @@ export function TutoringList({
 // ---------------------------------------------------------------------------
 
 /** Phase 40 Part B: tutors whose "This tutor is from Taiwan" is off (lower-case names). */
-const NOT_FROM_TAIWAN_KEY = 'tutorsNotFromTaiwan';
-
 /** A word's shown level: its official one, else an estimate (lexicon, custom word or the model). */
 function draftLevel(
   w: { wordId: string; custom?: { level: Level | null; estimatedLevel?: Level } | boolean; estimatedLevel?: Level },
@@ -262,14 +259,6 @@ function draftLevel(
   const lv = word ? displayLevel(word) : null;
   if (word && lv) return { level: lv, estimated: isEstimatedLevel(word) };
   return w.estimatedLevel ? { level: w.estimatedLevel, estimated: true } : undefined;
-}
-
-/** The chips: "Mainland term" only for a real mainland word, and only when the tutor isn't from Taiwan. */
-function shownStatuses(w: TutorDraft['words'][number], fromTaiwan: boolean): TutorDraft['words'][number]['statuses'] {
-  const rest = w.statuses.filter((s) => s !== 'mainland');
-  if (fromTaiwan || !w.mainlandForm) return rest;
-  const at = rest.indexOf('custom');
-  return at < 0 ? [...rest, 'mainland'] : [...rest.slice(0, at), 'mainland', ...rest.slice(at)];
 }
 
 function LevelChip({ level }: { level: { level: Level; estimated: boolean } | undefined }) {
@@ -321,9 +310,6 @@ function TutorCheckScreen({
 }) {
   const { level } = useCurrentLevel();
   const [draft, setDraft] = useState<TutorDraft>(pending.draft);
-  const [notFromTaiwan, setNotFromTaiwan] = useSetting<string[]>(NOT_FROM_TAIWAN_KEY, []);
-  const tutorKey = draft.tutor.trim().toLowerCase();
-  const fromTaiwan = !notFromTaiwan.includes(tutorKey);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ticked = draft.words.filter((w) => w.ticked).length;
@@ -338,8 +324,13 @@ function TutorCheckScreen({
     setBusy(true);
     setError(null);
     try {
-      const { record, introduced } = await appTutoringService(lexicon).save(draft, level);
+      const { record, introduced, audio } = await appTutoringService(lexicon).save(draft, level);
       saveProgressNow();
+      void audio
+        .then(() => {
+          saveProgressNow();
+          notifyTutorSessionsChanged();
+        }).catch(() => undefined);
       onSaved(record, introduced);
     } catch (err) {
       setError(aiErrorText(err));
@@ -363,17 +354,6 @@ function TutorCheckScreen({
       {pending.existing && <p role="status">{TUTOR_UPDATES_EXISTING}</p>}
 
       {draft.topicTags.length > 0 && <TopicChips tags={draft.topicTags} />}
-      <label className="tutoring-from-taiwan">
-        <input
-          type="checkbox"
-          checked={fromTaiwan}
-          data-testid="tutor-from-taiwan"
-          onChange={(e) =>
-            setNotFromTaiwan(e.target.checked ? notFromTaiwan.filter((t) => t !== tutorKey) : [...notFromTaiwan, tutorKey])
-          }
-        />{' '}
-        {TUTOR_FROM_TAIWAN} <small className="textbook-muted">{TUTOR_FROM_TAIWAN_HINT}</small>
-      </label>
 
       <h2>Words ({draft.words.length})</h2>
       <p className="textbook-muted">
@@ -384,7 +364,7 @@ function TutorCheckScreen({
           <li
             key={w.key}
             data-testid="tutor-word"
-            data-status={shownStatuses(w, fromTaiwan).join(' ')}
+            data-status={w.statuses.join(' ')}
           >
             <label className="tutoring-word">
               <input type="checkbox" checked={w.ticked} onChange={() => toggle(w.key)} aria-label={`Study ${w.zh}`} />
@@ -403,10 +383,16 @@ function TutorCheckScreen({
                     <span lang="zh-Hant">{notesMainlandLine(w.printed, [w.zh, ...(w.alsoTaiwan ?? [])])}</span>
                   </small>
                 )}
+                {w.alsoSaid && (
+                  <small className="textbook-muted">
+                    {' · '}
+                    <span lang="zh-Hant">{alsoSaidLine(w.alsoSaid)}</span>
+                  </small>
+                )}
               </span>
               <span className="tutoring-chips">
                 <LevelChip level={draftLevel(w, lexicon)} />
-                {shownStatuses(w, fromTaiwan).map((s) => (
+                {w.statuses.map((s) => (
                     <span key={s} className={`textbook-chip textbook-chip--soft tutoring-chip--${s}`}>
                       {TUTOR_STATUS[s]}
                     </span>
@@ -479,6 +465,18 @@ function TutorClassPage({
   useEffect(() => {
     void ensureTutorCards().catch(() => 0);
   }, [rec.id]);
+  // Part D.1: a class with no clips yet (saved before Phase 40, or the speech key came later) asks once.
+  const speech = useTutorSpeechState();
+  const askedAudio = useRef(new Set<string>());
+  useEffect(() => {
+    if (speech !== 'configured' || askedAudio.current.has(rec.id)) return;
+    if (rec.audio && rec.audio.status === 'ok') return;
+    askedAudio.current.add(rec.id);
+    void appTutoringService(lexicon)
+      .withAudio(rec)
+      .then(() => notifyTutorSessionsChanged())
+      .catch(() => undefined);
+  }, [rec, speech, lexicon]);
   const sentenceFor = (pred: (s: TutorSessionRow['sentences'][number]) => boolean) => rec.sentences.find(pred);
   return (
     <div className="textbook-page" data-testid="tutor-class-page">
@@ -502,7 +500,7 @@ function TutorClassPage({
       <button type="button" className="textbook-study-btn" onClick={onStudy} data-testid="study-tutor-class">
         {STUDY_THIS_CLASS}
       </button>
-      <AudioLine rec={rec} />
+      <AudioLine rec={rec} speech={speech} />
 
       <h2>Words ({rec.words.filter((w) => w.ticked).length})</h2>
       <ul className="textbook-words">
@@ -565,10 +563,10 @@ function TutorClassPage({
 }
 
 /** Phase 40 Part D.1: what the server said about the class's clips. */
-function AudioLine({ rec }: { rec: TutorSessionRow }) {
-  if (!rec.audio) return null;
+function AudioLine({ rec, speech }: { rec: TutorSessionRow; speech: 'unknown' | 'configured' | 'not_configured' }) {
+  if (!rec.audio && speech !== 'not_configured') return null;
   const text =
-    rec.audio.status === 'waiting_key' ? AUDIO_WAITING_KEY : rec.audio.status === 'error' ? AUDIO_FAILED : tutorAudioLine(rec.audio.made ?? 0);
+    !rec.audio || rec.audio.status === 'waiting_key' ? AUDIO_WAITING_KEY : rec.audio.status === 'error' ? AUDIO_FAILED : tutorAudioLine(rec.audio.made ?? 0);
   return (
     <p className="textbook-muted" data-testid="tutor-audio-status">
       {text}

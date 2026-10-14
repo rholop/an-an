@@ -595,7 +595,8 @@ export class Ledger {
     const fallback = general ? this.levelCandidates(opts.scenarioTags, opts.level) : [];
     return pickNewForSession({
       // New words only: new faces (Pick / Say it) of words already learned have Review's own allowance.
-      newCards: this.newCards().filter((c) => c.skill === 'recognition'),
+      // Phase 40: tutoring words are in the session already, outside the allowance.
+      newCards: this.newCards().filter((c) => c.skill === 'recognition' && !this.isTutorCard(c)),
       ...(focus ? { focus } : {}),
       ...(this.lessonIdx() ? { lessonIdx: this.lessonIdx()! } : {}),
       allowed: Math.min(allowance.allowed, opts.allowed ?? Infinity),
@@ -791,6 +792,13 @@ export class Ledger {
   }
 
   /** This week: Monday to Sunday in the profile's zone. */
+  /** Phase 40 Part E.4: `at` falls on today or one of the `days - 1` days before it (profile zone). */
+  withinDays(at: Date, days: number): boolean {
+    const key = dayKey(at, this.timeZone);
+    for (let i = 0; i < days; i++) if (dayKey(new Date(this.now.getTime() - i * 86_400_000), this.timeZone) === key) return true;
+    return false;
+  }
+
   weekRange(): WeekRange {
     return weekRange(this.now, this.timeZone);
   }

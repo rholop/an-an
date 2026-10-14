@@ -70,6 +70,7 @@ const ladder: VocabLadder = {
   ids: { 1: ids(1), 2: ids(2), 3: ids(3), 4: ids(4), 5: ids(5) },
   source: 'study-order',
   lessons: {},
+  tutorWordIds: [],
   upcomingWordIds: [],
   grammar: { allowed: [], next: [], upcoming: [] },
   properNounIds: [],

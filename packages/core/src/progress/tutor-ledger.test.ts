@@ -1,5 +1,5 @@
-// Phase 39 Tests 2 (owner, 2026-10-13): tutoring words are added as soon as a class is saved, ahead of
-// textbook words and outside the new-word allowance; 20 a session at most; the textbook gets what's left.
+// Phase 39 Tests 2 / Phase 40 Tests 7 (owner, 2026-10-14): a saved class's words are in review at once,
+// every face, at any time of day, outside the new-word allowance and the session cap.
 import { describe, expect, it } from 'vitest';
 import { applyEvidence } from '../learner/apply-evidence.js';
 import type { SkillCard } from '../learner/types.js';
@@ -47,7 +47,7 @@ const lesson: Lesson = {
 const book: Textbook = { id: 'book', titleZh: '', titleEn: '', lessons: [lesson] };
 const lexicon = new Lexicon([...lesson.vocab, ...tutorIds(30)].map(word));
 
-function ledgerAt(now: Date, evidence: Evidence[], tutorLessons: TutorLesson[]): Ledger {
+function ledgerAt(now: Date, evidence: Evidence[], tutorLessons: TutorLesson[], lex: Lexicon = lexicon): Ledger {
   const cards = new Map<string, SkillCard>();
   for (const ev of [...evidence].sort((a, b) => a.at.getTime() - b.at.getTime())) {
     const key = `${ev.item.kind}:${ev.item.id}|${ev.skill}`;
@@ -62,7 +62,7 @@ function ledgerAt(now: Date, evidence: Evidence[], tutorLessons: TutorLesson[]):
     masteryShare: 0.8,
     now,
     study: {
-      lexicon,
+      lexicon: lex,
       books: [book],
       myClass: { enabled: true, textbookId: 'book', currentLesson: 1 },
       settings: { ...DEFAULT_STUDY_SETTINGS, enabled: true },
@@ -72,47 +72,51 @@ function ledgerAt(now: Date, evidence: Evidence[], tutorLessons: TutorLesson[]):
 }
 
 /** What Save does: introduce what the ledger says, now. */
-function save(now: Date, evidence: Evidence[], tutorLessons: TutorLesson[]): Evidence[] {
-  return [...evidence, ...tutorIntroduceEvidence(ledgerAt(now, evidence, tutorLessons).tutorToIntroduce(), now)];
+function save(now: Date, evidence: Evidence[], tutorLessons: TutorLesson[], lex: Lexicon = lexicon): Evidence[] {
+  return [...evidence, ...tutorIntroduceEvidence(ledgerAt(now, evidence, tutorLessons, lex).tutorToIntroduce(), now)];
 }
 
 const base = PROGRESS_CONFIG.newPerQueue.review;
+const FACES = ['recognition', 'production', 'reading'] as const;
 
-describe('Phase 39: tutoring words are added right away', () => {
-  it('6 new words: all 6 join this session ahead of textbook words, even with the allowance used up', () => {
+describe('Phase 40: tutoring words are in review the moment a class is saved', () => {
+  it('6 new words: every face of all 6 is in this session, and the textbook keeps its whole allowance', () => {
     const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(6), grammarIds: [] }];
-    const at = ny(13, 8);
-    const ev = save(at, [], tutor);
+    const ev = save(ny(13, 8), [], tutor);
     const ledger = ledgerAt(ny(13, 8, 5), ev, tutor);
     expect(ledger.tutorNewCards().map((c) => c.item.id)).toEqual(tutorIds(6));
     expect(ledger.tutorIntroducedThisSession()).toBe(6);
-    // textbook words get only the allowance left (5 − 6 → none this session)
-    expect(ledger.newAllowance('review').allowed).toBe(Math.max(0, base - 6));
-    expect(ledger.pickNew('review').items.filter((i) => i.id.startsWith('b'))).toHaveLength(0);
-    // and the next session's allowance is whole again
-    expect(ledgerAt(ny(13, 17), ev, tutor).newAllowance('review').allowed).toBe(base);
-  });
-
-  it('2 new words: the textbook gets the 3 left', () => {
-    const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(2), grammarIds: [] }];
-    const ev = save(ny(13, 8), [], tutor);
-    const ledger = ledgerAt(ny(13, 8, 5), ev, tutor);
-    expect(ledger.newAllowance('review').allowed).toBe(base - 2);
+    const inSession = ledger.session().cards.filter((c) => c.item.id.startsWith('t'));
+    expect(inSession).toHaveLength(6 * FACES.length);
+    // tutoring words never use up the textbook's new words
+    expect(ledger.newAllowance('review').allowed).toBe(base);
     const picked = ledger.pickNew('review');
-    expect(picked.cards.map((c) => c.item.id).slice(0, 2)).toEqual(tutorIds(2));
-    expect(picked.cards.length + picked.items.length).toBe(base - 2);
+    expect(picked.cards.length + picked.items.length).toBe(base);
+    expect([...picked.cards.map((c) => c.item.id), ...picked.items.map((x) => x.id)].some((id) => tutorIds(6).includes(id))).toBe(false);
   });
 
-  it('30 new words: 20 now, the other 10 first thing in the next session', () => {
+  it('a 30-word class saved at 13:00 (between sessions): every face of every word is in review now', () => {
     const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(30), grammarIds: [] }];
-    const ev = save(ny(13, 12), [], tutor); // between sessions
-    const now = ledgerAt(ny(13, 12, 5), ev, tutor);
-    expect(now.tutorNewCards()).toHaveLength(20);
-    expect(now.tutorToIntroduce()).toHaveLength(0); // nothing more this session
-    const evening = ledgerAt(ny(13, 16, 1), ev, tutor);
-    expect(evening.tutorToIntroduce().map((x) => x.item.id)).toEqual(tutorIds(30).slice(20));
-    const after = save(ny(13, 16, 1), ev, tutor);
-    expect(ledgerAt(ny(13, 16, 2), after, tutor).tutorNewCards()).toHaveLength(30);
+    const ev = save(ny(13, 13), [], tutor);
+    const ledger = ledgerAt(ny(13, 13, 1), ev, tutor);
+    expect(ledger.tutorToIntroduce()).toHaveLength(0); // no limit: everything joined at Save
+    const cards = ledger.session().cards;
+    expect(cards).toHaveLength(30 * FACES.length);
+    for (const id of tutorIds(30)) for (const f of FACES) expect(cards.some((c) => c.item.id === id && c.skill === f)).toBe(true);
+    expect(ledger.status.reviewAll).toBe(30 * FACES.length);
+    expect(ledger.tutorClassNow('tutor-x')).toHaveLength(30 * FACES.length);
+  });
+
+  it('the session cap never pushes tutoring cards out: other cards are dropped first', () => {
+    const others = Array.from({ length: 100 }, (_, i) => `c${i}`);
+    const lex = new Lexicon([...lesson.vocab, ...tutorIds(30), ...others].map(word));
+    const tutor: TutorLesson[] = [{ id: 'tutor-x', date: '2026-10-13T07:00', wordIds: tutorIds(30), grammarIds: [] }];
+    const old: Evidence[] = others.map((id) => ({ item: { kind: 'word', id }, skill: 'recognition', kind: 'review_good', at: ny(1, 8) }));
+    const ev = save(ny(13, 8), old, tutor, lex);
+    const ledger = ledgerAt(ny(13, 8, 1), ev, tutor, lex);
+    const cap = DEFAULT_SESSION_SETTINGS.capPerSession;
+    // every tutoring card is in, and the other cards fill only the cap
+    expect(ledger.status.reviewAll).toBe(30 * FACES.length + cap);
   });
 
   it('nothing is introduced for a word already carded, Learned or removed', () => {
@@ -120,5 +124,19 @@ describe('Phase 39: tutoring words are added right away', () => {
     const known: Evidence = { item: { kind: 'word', id: 'b0' }, skill: 'recognition', kind: 'known_check_passed', at: ny(1, 8) };
     const ledger = ledgerAt(ny(13, 8), [known], tutor);
     expect(ledger.tutorToIntroduce().map((x) => x.item.id)).toEqual(['t0']);
+  });
+});
+
+describe('Phase 40 Tests 4: level estimates never change level mastery', () => {
+  it('the same learner, with and without estimates on unlevelled words, has the same level numbers', () => {
+    const extra = Array.from({ length: 10 }, (_, i) => `x${i}`);
+    const plain = new Lexicon([...lesson.vocab, ...tutorIds(30)].map(word).concat(extra.map((id) => ({ ...word(id), level: null }))));
+    const est = new Lexicon(
+      [...lesson.vocab, ...tutorIds(30)].map(word).concat(extra.map((id) => ({ ...word(id), level: null, estimatedLevel: 'N1' as const, levelSource: 'chars' as const }))),
+    );
+    const ev: Evidence[] = [...extra, 't0', 't1'].map((id) => ({ item: { kind: 'word', id }, skill: 'recognition', kind: 'review_good', at: ny(1, 8) }));
+    const a = ledgerAt(ny(13, 8), ev, [], plain);
+    const b = ledgerAt(ny(13, 8), ev, [], est);
+    for (const lv of ['N1', 'N2', 'L1'] as const) expect(JSON.stringify(b.level(lv))).toBe(JSON.stringify(a.level(lv)));
   });
 });

@@ -119,7 +119,7 @@ export function buildPlants(
 export interface Plot {
   id: string;
   title: string;
-  kind: 'scenario' | 'level';
+  kind: 'scenario' | 'level' | 'tutor';
   plants: Plant[];
   wiltingCount: number;
   /** Phase 27: plants whose cards are in the next session (no button: Review early waters them). */
@@ -168,6 +168,27 @@ export function groupPlots(
       Number(a.kind === 'level') - Number(b.kind === 'level') ||
       (a.kind === 'level' ? levelRank(a) - levelRank(b) : a.title.localeCompare(b.title)),
   );
+}
+
+/**
+ * Phase 40 Part C: Garden → "Tutoring only": one plot per class (newest first), a word in the newest
+ * class it was ticked in. Plants of no class are left out (the filter shows only tutoring words).
+ */
+export function tutorPlots(
+  plants: readonly Plant[],
+  classes: ReadonlyArray<{ id: string; title: string; date: string; wordIds: readonly string[] }>,
+): Plot[] {
+  const sorted = [...classes].sort((a, b) => b.date.localeCompare(a.date));
+  const out: Plot[] = sorted.map((c) => ({ id: `tutor:${c.id}`, title: c.title, kind: 'tutor', plants: [], wiltingCount: 0, nextCount: 0 }));
+  for (const p of plants) {
+    const i = sorted.findIndex((c) => c.wordIds.includes(p.wordId));
+    if (i < 0) continue;
+    const plot = out[i]!;
+    plot.plants.push(p);
+    if (p.wilt !== 'healthy') plot.wiltingCount++;
+    else if (p.nextSession) plot.nextCount++;
+  }
+  return out.filter((p) => p.plants.length > 0);
 }
 
 /** Cards to focus-review for a plot ("Water N words"): exactly its plants' cards in this session. */

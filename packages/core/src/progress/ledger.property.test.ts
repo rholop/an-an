@@ -289,6 +289,7 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
     );
   });
 
+  // (Phase 40: a tutoring word's New cards are the one exception, tested below; this state has none.)
   it('a New card is never in a session; a New or removed card never gets read credit', () => {
     fc.assert(
       fc.property(stateArb, (s) => {
@@ -354,7 +355,7 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
 
   // Phase 39 (owner, 2026-10-13): tutoring words go into study as soon as a class is saved, ahead of
   // the textbook's, outside the allowance (20 a session at most); the textbook gets what is left.
-  it('tutoring words: first in every pick, 20 a session, and the allowance counts them', () => {
+  it('tutoring words: in the session at once (any time of day), outside the allowance and the picks', () => {
     const tutorIds = ['w14', 'w15', 'w16', 'w17', 'w18', 'w19'];
     const tutorLessons: TutorLesson[] = [
       { id: 'tutor-b', date: '2026-10-13', wordIds: tutorIds.slice(3), grammarIds: [] },
@@ -369,33 +370,25 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
             new Date(now.getTime() - minutesAgo * 60_000),
           );
         const ledger = ledgerOf(s, { tutorLessons, extra });
-        const plain = ledgerOf(s);
-        const introduced = ledger.tutorIntroducedThisSession();
-        expect(introduced).toBeLessThanOrEqual(k);
-        // the allowance counts the tutoring words introduced this session
-        for (const q of QUEUES)
-          expect(ledger.newAllowance(q).allowed).toBe(Math.max(0, plain.newAllowance(q).allowed - introduced));
-        // the valve: never more than 20 a session; never a carded, Learned or removed word
-        expect(ledger.tutorToIntroduce().length + introduced).toBeLessThanOrEqual(Math.max(20, introduced));
-        for (const { item } of ledger.tutorToIntroduce()) {
+        // never a Learned or removed word, only faces with no card yet
+        for (const { item, skills } of ledger.tutorToIntroduce()) {
           expect(tutorKeys.has(`word:${item.id}`)).toBe(true);
-          expect(ledger.hasCard(item) || ledger.learned(item) || ledger.removed(item)).toBe(false);
+          expect(ledger.learned(item) || ledger.removed(item)).toBe(false);
+          expect(skills.length).toBeGreaterThan(0);
         }
-        // tutoring New cards join Review outside the allowance, and are never Learned
+        // every tutoring New card is in this session, whatever the time of day (Phase 40 Part E.1)
+        const inSession = new Set(ledger.session().cards.map(keyOf));
         for (const c of ledger.tutorNewCards()) {
           expect(tutorKeys.has(`word:${c.item.id}`)).toBe(true);
           expect(ledger.learned(c.item)).toBe(false);
+          expect(inSession.has(keyOf(c))).toBe(true);
         }
+        // the badge is the session's size, tutoring cards included
+        expect(ledger.status.sessionCards).toBe(ledger.session().cards.length);
+        // the textbook's new words never wait for tutoring words, and never pick one
         for (const q of QUEUES) {
           const picked = ledger.pickNew(q, { level: 'N1' });
-          const order = [...picked.cards.map((c) => c.item), ...picked.items];
-          // no tutoring word is picked as an item with no card (they are introduced, 20 a session)
-          for (const i of picked.items) expect(tutorKeys.has(`${i.kind}:${i.id}`)).toBe(false);
-          // anything else is picked only when every tutoring New card that could be is picked too
-          if (order.some((i) => !tutorKeys.has(`${i.kind}:${i.id}`))) {
-            const ids = new Set(order.map((i) => i.id));
-            for (const c of ledger.pickNew(q, { level: 'N1', onlyItems: tutorKeys }).cards) expect(ids.has(c.item.id)).toBe(true);
-          }
+          for (const c of picked.cards) expect(tutorKeys.has(keyOf(c).split('|')[0]!)).toBe(false);
         }
       }),
       RUNS,

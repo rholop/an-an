@@ -27,6 +27,7 @@ import { LEVEL, levelLabel, levelShort, navTextbookLabel, pct, UNSAVED_WARNING }
 import './lib/retention.js';
 import './lib/audio-slow.js';
 import './App.css';
+import { migrateTutorLevelsOnce } from './lib/tutoring/app-service.js';
 import './components/LevelPicker.css';
 import './components/ProfileGate.css';
 import './mobile.css';
@@ -113,7 +114,10 @@ function LevelHeader({ onOpenShortcuts }: { onOpenShortcuts: () => void }) {
   const classLesson = myClassHint.currentLesson;
 
   useEffect(() => {
-    if (lexiconState.status === 'ready') void initCurrentLevelIfUnset(lexiconState.lexicon);
+    if (lexiconState.status === 'ready') {
+      void initCurrentLevelIfUnset(lexiconState.lexicon);
+      void migrateTutorLevelsOnce(lexiconState.lexicon).catch(() => undefined);
+    }
   }, [lexiconState]);
 
   return (

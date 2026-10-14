@@ -543,6 +543,7 @@ export const TutorSessionRowSchema = z.object({
       pinyinNote: z.string().optional(),
       mainlandForm: z.string().optional(),
       alsoTaiwan: z.array(z.string()).optional(),
+      alsoSaid: z.array(z.string()).optional(),
       gloss: z.string(),
       notesGloss: z.string().optional(),
       ticked: z.boolean(),

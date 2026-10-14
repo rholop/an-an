@@ -166,4 +166,27 @@ describe('every session builder uses orderSession (Phase 19)', () => {
   it('lesson quick check', () => {
     expect(isOrderedSession(buildQuickCheck(lesson, lex, [], [], 'x'))).toBe(true);
   });
+
+  it('Phase 40 Tests 7: a 30-word class is in review with every face, first; the cap drops other cards first', () => {
+    const tutorWordIds = new Set(Array.from({ length: 30 }, (_, i) => `t${i}`));
+    const tutorCards = [...tutorWordIds].flatMap((id) => (['recognition', 'production', 'reading'] as const).map((f) => card(id, f)));
+    const others = Array.from({ length: 100 }, (_, i) => card(`o${i}`, 'recognition', 3));
+    const r = pickReviewCards({
+      due: [...others, ...tutorCards],
+      doneThisSession: 0,
+      cap: 80,
+      capLeft: 80,
+      now: NOW,
+      allowance: { state: 'open', allowed: 5, faces: 8 },
+      tutorWordIds,
+    });
+    expect(r.due.filter((c) => tutorWordIds.has(c.item.id))).toHaveLength(90);
+    expect(r.due.filter((c) => !tutorWordIds.has(c.item.id))).toHaveLength(80);
+    const ordered = buildReviewSession({ due: r.due, fresh: r.fresh, seed: 'tutor', tutorWordIds });
+    // the tutoring cards lead (the spacing rule may slip a word's last face a few places at the seam)
+    const firstOther = ordered.findIndex((c) => !tutorWordIds.has(c.item.id));
+    const lastTutor = ordered.map((c) => tutorWordIds.has(c.item.id)).lastIndexOf(true);
+    expect(firstOther).toBeGreaterThan(80);
+    expect(lastTutor).toBeLessThan(96);
+  });
 });
