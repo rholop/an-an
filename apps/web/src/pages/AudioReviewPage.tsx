@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { clipKey, type AudioKind, type AudioManifestEntry } from '@anan/core';
 import { useProfile } from '../components/ProfileGate.js';
-import { audioBase, getSlow, markClip, playUrl, stopAudio, useAudioState } from '../lib/audio.js';
+import { clipUrl, getSlow, markClip, playUrl, stopAudio, useAudioState } from '../lib/audio.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import './AudioReviewPage.css';
 
@@ -62,7 +62,7 @@ export function AudioReviewPage() {
     setError(null);
     try {
       await playUrl(
-        `${audioBase()}${item.entry.file}?v=${item.entry.hash.slice(0, 10)}`,
+        `${clipUrl(item.entry.file)}?v=${item.entry.hash.slice(0, 10)}`,
         getSlow(),
       );
     } catch {

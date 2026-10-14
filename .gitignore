@@ -42,6 +42,9 @@ apps/proxy/sync-data/
 # Phase 10: household audio marks written by the proxy at runtime.
 apps/proxy/audio-data/
 
+# Phase 40: tutoring clips made by the proxy at runtime (TUTOR_AUDIO_DIR).
+apps/proxy/tutor-audio/
+
 # Phase 10: copy of data/build/audio (`pnpm sync:audio`).
 apps/web/public/audio/
 

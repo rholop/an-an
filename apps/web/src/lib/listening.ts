@@ -12,7 +12,7 @@ import {
 import { db, learnerService } from '../db/instance.js';
 import type { AnanDB } from '../db/schema.js';
 import { allTouchedCards } from '../db/queries.js';
-import { audioBase, useAudioState } from './audio.js';
+import { clipUrl, fetchClip, useAudioState } from './audio.js';
 import { useSetting } from './useSetting.js';
 
 /** Phase 15: clips for listening. Only verified/auto_ok (tone exercises: verified) — never the
@@ -23,7 +23,7 @@ export function useListeningClips() {
     const hasClip: ClipLookup = makeClipLookup(audio.manifest, audio.marks);
     const urlFor = (kind: AudioKind, id: string, verifiedOnly = false): string | null => {
       const c = listeningClip(audio.manifest, audio.marks, kind, id, { verifiedOnly });
-      return c ? `${audioBase()}${c.url}` : null;
+      return c ? clipUrl(c.url) : null;
     };
     const clipInfo = (kind: AudioKind, id: string) => {
       const c = listeningClip(audio.manifest, audio.marks, kind, id);
@@ -93,7 +93,7 @@ export async function recordListeningEvidence(
 
 /** Warm the service-worker cache so a Listen session works offline (best effort). */
 export function prefetchClips(urls: readonly string[]): void {
-  for (const u of urls) void fetch(u).catch(() => undefined);
+  for (const u of urls) void fetchClip(u).catch(() => undefined);
 }
 
 export type { Lexicon };

@@ -37,7 +37,7 @@ export default [
   },
   {
     // packages/data-pipeline, apps/proxy, and config scripts run under Node.
-    files: ['packages/data-pipeline/**/*.ts', 'apps/proxy/**/*.ts', '**/*.config.ts'],
+    files: ['packages/data-pipeline/**/*.ts', 'packages/audio-build/**/*.ts', 'apps/proxy/**/*.ts', '**/*.config.ts'],
     languageOptions: { globals: globals.node },
   },
   {

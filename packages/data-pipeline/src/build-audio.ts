@@ -6,6 +6,9 @@
 // Textbook words (any book) and lesson practice sentences are always included, whatever their level.
 // --fix-suspect: 3 different tries (other voice, explicit readings, both) per suspect clip;
 //   a failed fix keeps the current clip and is not retried unless --again.
+// --tutor [--profile=ron] [--url=https://holop.dev/an-an/api] [--code=…] (Phase 40): only the
+//   ticked words and practice sentences of the profile's tutoring classes, read from its saved copy
+//   through the proxy (household code from --code or SITE_CODE), into the same static audio output.
 // --retry-suspect: a plain re-roll of suspect clips with the same voice and SSML
 //   (Azure usually returns the same audio; prefer --fix-suspect).
 // Needs AZURE_SPEECH_KEY (+ AZURE_SPEECH_REGION, default eastus) from this
@@ -15,18 +18,23 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { AUDIO_VOICES, Lexicon, AudioMarkSchema, type AudioMark, type Level } from '@anan/core';
 import { z } from 'zod';
-import { AzureSpeechClient, billableChars } from './lib/audio/azure.js';
-import { buildAudio, fixFlagged, fixSuspect, FIX_ATTEMPTS, loadManifest, suspectsToFix } from './lib/audio/build.js';
 import {
-  DEFAULT_LEVELS,
-  loadBankSentences,
-  loadLessonSentences,
-  loadLiveSentences,
+  AzureSpeechClient,
+  billableChars,
+  buildAudio,
+  fixFlagged,
+  fixSuspect,
+  FIX_ATTEMPTS,
+  loadManifest,
   sentenceJobs,
+  suspectsToFix,
   wordJobs,
+  tutorJobs,
   type AudioJob,
-} from './lib/audio/inputs.js';
+} from '@anan/audio-build';
+import { DEFAULT_LEVELS, loadBankSentences, loadLessonSentences, loadLiveSentences } from './lib/audio/inputs.js';
 import { renderReviewReport } from './lib/audio/report.js';
+import { pullTutorItems } from './lib/audio/tutor-pull.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../../..');
@@ -46,6 +54,46 @@ const syncDir = arg('sync-dir') ?? path.join(ROOT, 'apps/proxy/sync-data');
 
 const raw = JSON.parse(readFileSync(path.join(BUILD_DIR, 'lexicon.v2.json'), 'utf8'));
 const lexicon = new Lexicon(raw.words, raw.grammar);
+
+function speechClient(): AzureSpeechClient {
+  const key = process.env.AZURE_SPEECH_KEY;
+  if (!key) {
+    console.error('AZURE_SPEECH_KEY is not set (put it in packages/data-pipeline/.env). See docs/audio.md.');
+    process.exit(1);
+  }
+  return new AzureSpeechClient({ key, region: process.env.AZURE_SPEECH_REGION ?? 'eastus' });
+}
+
+if (flag('tutor')) {
+  // Phase 40 D.1: the offline route for tutoring clips (the proxy makes them at Save when it has the key).
+  const profileId = arg('profile') ?? 'ron';
+  const { sessions, items } = await pullTutorItems({
+    url: arg('url') ?? process.env.AUDIO_PROXY_URL ?? 'http://localhost:3002',
+    code: arg('code') ?? process.env.SITE_CODE ?? '',
+    profileId,
+  });
+  const { jobs: tJobs, skipped: tSkipped } = tutorJobs(lexicon, items, { acceptMedium: flag('accept-medium') });
+  console.log(`audio:build --tutor ${profileId}: ${sessions} classes, ${tJobs.length} clips to check, ${tSkipped.length} skipped (uncertain reading)`);
+  for (const s of tSkipped) console.log(`  skipped ${s.kind} ${s.id} "${s.text}": ${s.reason}`);
+  if (flag('dry-run')) {
+    console.log(`dry run: at most ~${tJobs.reduce((n, j) => n + billableChars(j.text), 0)} billed characters if every clip were new.`);
+    process.exit(0);
+  }
+  const client = speechClient();
+  const res = await buildAudio(tJobs, {
+    outDir: OUT_DIR,
+    client,
+    voice,
+    now: new Date(),
+    maxChars: arg('max-chars') ? Number(arg('max-chars')) : undefined,
+    log: (m: string) => console.log(m),
+  });
+  console.log(`made ${res.made}, unchanged ${res.unchanged}, suspect ${res.suspect}, failed ${res.failed}`);
+  if (res.stoppedEarly) console.log(`stopped: ${res.stoppedEarly}`);
+  console.log(`Azure usage this run: ${client.usage.ttsCalls} TTS + ${client.usage.sttCalls} STT calls, ${client.usage.billedChars} billed characters.`);
+  console.log('Then: pnpm --filter @anan/web sync:audio (or deploy) so the app picks the clips up.');
+  process.exit(0);
+}
 
 const words = wordJobs(lexicon, levels);
 // Phase 35: lesson practice sentences come first and at any level (never private/ text)
@@ -83,12 +131,7 @@ if (flag('dry-run')) {
   process.exit(0);
 }
 
-const key = process.env.AZURE_SPEECH_KEY;
-if (!key) {
-  console.error('AZURE_SPEECH_KEY is not set (put it in packages/data-pipeline/.env). See docs/audio.md.');
-  process.exit(1);
-}
-const client = new AzureSpeechClient({ key, region: process.env.AZURE_SPEECH_REGION ?? 'eastus' });
+const client = speechClient();
 const opts = {
   outDir: OUT_DIR,
   client,

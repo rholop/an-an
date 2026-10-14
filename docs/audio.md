@@ -21,7 +21,9 @@ AZURE_SPEECH_KEY=<KEY 1 from the portal>
 AZURE_SPEECH_REGION=eastus
 ```
 
-It must never be set for the proxy or the web build. `pnpm check:azure-key` (run in CI and on deploy) fails if `AZURE_SPEECH` appears in the web bundle/source or proxy, or if the real key value is found there.
+Phase 40: the proxy reads the same two variables from **its** `.env` for tutoring audio (below). The key is never sent to the browser and never set for the web build. `pnpm check:azure-key` (run in CI and on deploy) fails if `AZURE_SPEECH` appears anywhere in the web bundle or web source, if a `VITE_*` variable mentions Azure, or if the real key value is found in the web app, the proxy's source or bundle, or `@anan/audio-build`.
+
+The Azure engine (client, build, speech-to-text check, jobs) is the workspace package `packages/audio-build` (`@anan/audio-build`), shared by `audio:build` and the proxy.
 
 Free tier: 0.5M neural characters/month, and Azure counts each Chinese character as **2**. The build prints billed characters per run (`--max-chars=N` stops cleanly at a budget; `--dry-run` estimates without calling Azure). Free-tier request limits are ~20/minute per endpoint, so the client waits ~3.2 s between calls and backs off on 429; a build is slow but resumable.
 
@@ -106,3 +108,15 @@ mastery and is excluded from plain review/cloze due lists, `knownSet` and foreca
 - **Settings:** Credits → Audio → Listening practice (default on when audio is on). E2E: `localStorage anan.listening.disabled=1`.
 - Nothing ever autoplays; a Listen session works offline once clips are cached (`prefetchClips`).
 - Sentence clips and verified marks are currently absent, so sentence dictation, listen & understand, tone check and tone pairs appear only once such clips exist.
+
+## Phase 40 — Tutoring audio
+
+A tutoring class's ticked words and checked practice sentences get clips at Save, made **by the proxy** with the same engine as `audio:build` (`@anan/audio-build`): Azure zh-TW, the same SSML rules, the words' MOE zhuyin (as saved with the class), the same sentence reading rules (a heteronym below high confidence = no clip), the same speech-to-text check and suspect policy (`auto_ok` / `suspect`; a failure is reported and nothing is stored, so it is tried again next time).
+
+**For the owner:** add `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` to the server `.env` (`/home/an-an/apps/proxy/.env`, the same values as `packages/data-pipeline/.env`), then `pm2 restart an-an-proxy`. Until then the class page says "Audio: waiting for the server's speech key" and everything else works. Optional: `TUTOR_AUDIO_DIR` (default `apps/proxy/tutor-audio`, gitignored).
+
+- `POST /v1/tutor-audio` (household code) `{ profileId, sessionId, items: [{ kind: 'word' | 'sentence', id, text, zhuyin? }] }` (up to 200 items; words need `zhuyin`). A clip whose SSML hash is unchanged is not remade (zero Azure calls). One request spends at most ~40 s making clips (nginx times out at 60 s); the rest come back as `counts.pending` and the app asks again for those. Answers `{ entries: { words, sentences }, counts: { requested, made, unchanged, suspect, failed, skipped, pending }, failed: [...], skipped: [...] }`; `503 { error: 'speech_not_configured' }` without the key; `502 { error: 'speech_error' }` for a wrong key or region.
+- Clips are stored under `TUTOR_AUDIO_DIR/<profileId>/` (`manifest.json` in the usual manifest shape, `words/<wordId>.mp3`, `sentences/<safe id>.mp3`; sentence ids hold `:`, so their file name is the id made safe plus a short hash).
+- `GET /v1/tutor-audio/manifest?profileId=` → `{ configured, manifest }`; `GET /v1/tutor-audio/file/<profileId>/<words|sentences>/<name>.mp3`. Both need the household code. An `<audio src>` can't send the `x-site-code` header, so the app fetches the clip with it and plays a blob URL (every clip is already played that way).
+- In the app (`apps/web/src/lib/audio.ts`, `lib/tutoring/tutor-audio.ts`): `requestTutorAudio(session, profileId)` asks for a class's clips (skipping anything the static build already has); `loadTutorAudio(profileId)` merges the profile's tutoring manifest into the audio state (also done automatically for the active profile), keyed by word id and sentence id, and sentences by text. The static manifest wins a clash. Speaker buttons, `findClip`, `useListeningClips().hasClip/urlFor` and listening cards work for tutoring words as for any other; marks ("OK" / "Sounds wrong") use the same `/v1/audio/mark`.
+- **Offline route** (an owner who prefers building clips on their own computer): `pnpm --filter @anan/data-pipeline audio:build --tutor --profile=ron --url=https://holop.dev/an-an/api` (household code from `SITE_CODE` or `--code=`; `--dry-run`, `--max-chars` work as usual). It reads the profile's tutoring classes from its saved copy through the proxy and builds their ticked words and practice sentences into the normal static output (`data/build/audio`), which wins over the proxy's clips once deployed (`sync:audio`).

@@ -26,6 +26,7 @@
     "patch:grammar": "tsx src/patch-lexicon-grammar.ts"
   },
   "dependencies": {
+    "@anan/audio-build": "workspace:*",
     "@anan/core": "workspace:*",
     "js-yaml": "^4.1.0",
     "xlsx": "^0.18.5",

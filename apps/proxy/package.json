@@ -21,6 +21,7 @@
     "chat-eval": "tsx scripts/chat-eval.ts"
   },
   "dependencies": {
+    "@anan/audio-build": "workspace:*",
     "@anan/core": "workspace:*",
     "@google/generative-ai": "^0.21.0",
     "@hono/node-server": "^1.13.7",

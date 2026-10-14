@@ -1,5 +1,5 @@
 import type { AudioManifest, AudioMark } from '@anan/core';
-import type { SkippedClip } from './inputs.js';
+import type { SkippedClip } from '@anan/audio-build';
 
 /** data/build/audio-review.md: everything a person should look at. */
 export function renderReviewReport(

@@ -3,11 +3,21 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AUDIO_VOICES, buildFixtureLexiconForTests } from './test-support.js';
-import { buildAudio, fixFlagged, fixSuspect, loadManifest, suspectsToFix } from './build.js';
-import { recognisedMatches } from './compare.js';
-import { loadLessonSentences, sentenceJobs, wordJobs } from './inputs.js';
+import {
+  buildAudio,
+  fixFlagged,
+  fixSuspect,
+  loadManifest,
+  recognisedMatches,
+  sentenceJobs,
+  suspectsToFix,
+  tutorJobs,
+  wordJobs,
+  type SpeechClient,
+} from '@anan/audio-build';
+import { loadLessonSentences } from './inputs.js';
+import { pullTutorItems } from './tutor-pull.js';
 import { renderReviewReport } from './report.js';
-import type { SpeechClient } from './azure.js';
 import { Lexicon, type SentenceBankEntry, type Word } from '@anan/core';
 
 class FakeClient implements SpeechClient {
@@ -292,3 +302,54 @@ describe('lesson practice sentences (Phase 35)', () => {
 });
 
 void readFileSync;
+
+describe('audio:build --tutor (Phase 40 D.1)', () => {
+  it('pulls the ticked words and practice sentences of a profile through the proxy with the household code', async () => {
+    const seen: { url: string; code: string }[] = [];
+    const fetchFn = (async (url: string, init: RequestInit) => {
+      seen.push({ url, code: (init.headers as Record<string, string>)['x-site-code']! });
+      return new Response(
+        JSON.stringify({
+          rev: 3,
+          data: {
+            tutorSessions: [
+              {
+                id: 'tutor-a',
+                words: [
+                  { wordId: 'custom-zaocan', zh: '早餐', zhuyin: 'ㄗㄠˇ ㄘㄢ', ticked: true },
+                  { wordId: 'w-unticked', zh: '晚餐', zhuyin: 'ㄨㄢˇ ㄘㄢ', ticked: false },
+                ],
+                sentences: [
+                  { id: 'tutor-a:w1', zh: '我吃早餐。', practice: true },
+                  { id: 'tutor-a:w2', zh: '只是看看。', practice: false },
+                ],
+              },
+            ],
+          },
+        }),
+      );
+    }) as unknown as typeof fetch;
+    const { sessions, items } = await pullTutorItems({ url: 'https://x/api/', code: 'tofu', profileId: 'ron', fetchFn });
+    expect(seen).toEqual([{ url: 'https://x/api/v1/sync/ron', code: 'tofu' }]);
+    expect(sessions).toBe(1);
+    expect(items).toEqual([
+      { kind: 'word', id: 'custom-zaocan', text: '早餐', zhuyin: 'ㄗㄠˇ ㄘㄢ' },
+      { kind: 'sentence', id: 'tutor-a:w1', text: '我吃早餐。' },
+    ]);
+
+    // the jobs: safe file names, the custom word read inside the sentence
+    const { jobs, skipped } = tutorJobs(lex, items);
+    expect(skipped).toEqual([]);
+    expect(jobs.map((j) => j.file)).toEqual(['words/custom-zaocan.mp3', expect.stringMatching(/^sentences\/tutor-a_w1-[0-9a-f]{10}\.mp3$/)]);
+    const client = new FakeClient();
+    const res = await buildAudio(jobs, { ...base(), client });
+    expect(res.made).toBe(2);
+    expect(res.manifest.sentences['tutor-a:w1']!.file).toBe(jobs[1]!.file);
+    expect(existsSync(path.join(dir, jobs[1]!.file!))).toBe(true);
+  });
+
+  it('a 401 says the household code was refused', async () => {
+    const fetchFn = (async () => new Response('{}', { status: 401 })) as unknown as typeof fetch;
+    await expect(pullTutorItems({ url: 'https://x', code: '', profileId: 'ron', fetchFn })).rejects.toThrow(/household code/);
+  });
+});

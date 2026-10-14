@@ -11,7 +11,7 @@ import {
 } from '@anan/core';
 import { SpeechError, type SpeechClient } from './azure.js';
 import { recognisedMatches } from './compare.js';
-import type { AudioJob } from './inputs.js';
+import type { AudioJob } from './jobs.js';
 
 export const ssmlHash = (voice: string, ssml: string): string =>
   createHash('sha256').update(`${voice}\n${ssml}`).digest('hex');
@@ -46,6 +46,8 @@ export interface BuildOptions {
   maxChars?: number;
   /** Re-roll clips that were `suspect` last time (same voice and SSML). See `fixSuspect`. */
   retrySuspect?: boolean;
+  /** Phase 40: checked before each new clip; a reason stops the run cleanly (the proxy's time budget). */
+  shouldStop?: () => string | null;
   log?: (msg: string) => void;
 }
 
@@ -56,10 +58,18 @@ export interface BuildResult {
   suspect: number;
   failed: number;
   stoppedEarly: string | null;
+  /** Phase 40: `kind:id` of each clip that failed (nothing stored for it). */
+  failedKeys: string[];
+  /** Phase 40: the error for each failed clip, same order as `failedKeys`. */
+  failedReasons: string[];
+  /** Phase 40: the jobs not reached because the run stopped early. */
+  notReached: number;
+  /** Phase 40: `kind:id` of each clip made this run. */
+  madeKeys: string[];
 }
 
 const section = (m: AudioManifest, kind: AudioJob['kind']) => (kind === 'word' ? m.words : m.sentences);
-const fileFor = (job: AudioJob) => `${job.kind === 'word' ? 'words' : 'sentences'}/${job.id}.mp3`;
+const fileFor = (job: AudioJob) => job.file ?? `${job.kind === 'word' ? 'words' : 'sentences'}/${job.id}.mp3`;
 
 /** Synthesize one clip, run the automatic check, write the file (to `writeTo`
  * under the audio root when given; the entry still names the real file). */
@@ -95,11 +105,22 @@ export async function buildAudio(jobs: readonly AudioJob[], opts: BuildOptions):
   const manifestFile = path.join(opts.outDir, 'manifest.json');
   const manifest = loadManifest(manifestFile, opts.now, opts.voice);
   manifest.meta = { version: 1, builtAt: opts.now.toISOString(), voice: opts.voice };
-  const result: BuildResult = { manifest, made: 0, unchanged: 0, suspect: 0, failed: 0, stoppedEarly: null };
+  const result: BuildResult = {
+    manifest,
+    made: 0,
+    unchanged: 0,
+    suspect: 0,
+    failed: 0,
+    stoppedEarly: null,
+    failedKeys: [],
+    failedReasons: [],
+    notReached: 0,
+    madeKeys: [],
+  };
 
   let sinceSave = 0;
   try {
-    for (const job of jobs) {
+    for (const [i, job] of jobs.entries()) {
       const ssml = job.buildSsml(opts.voice, false);
       if (!ssml) continue;
       const prev = section(manifest, job.kind)[job.id];
@@ -115,12 +136,20 @@ export async function buildAudio(jobs: readonly AudioJob[], opts: BuildOptions):
       }
       if (opts.maxChars !== undefined && opts.client.usage.billedChars >= opts.maxChars) {
         result.stoppedEarly = `character budget reached (${opts.client.usage.billedChars} billed this run)`;
+        result.notReached = jobs.length - i;
+        break;
+      }
+      const stop = opts.shouldStop?.();
+      if (stop) {
+        result.stoppedEarly = stop;
+        result.notReached = jobs.length - i;
         break;
       }
       try {
         const entry = await makeClip(job, ssml, opts.voice, opts);
         section(manifest, job.kind)[job.id] = entry;
         result.made++;
+        result.madeKeys.push(clipKey(job.kind, job.id));
         if (entry.status === 'suspect') {
           result.suspect++;
           log(`suspect ${job.kind} ${job.id} "${job.text}": heard "${entry.heard}"`);
@@ -133,9 +162,12 @@ export async function buildAudio(jobs: readonly AudioJob[], opts: BuildOptions):
       } catch (err) {
         if (err instanceof SpeechError && err.fatal) {
           result.stoppedEarly = String(err.message);
+          result.notReached = jobs.length - i;
           break;
         }
         result.failed++;
+        result.failedKeys.push(clipKey(job.kind, job.id));
+        result.failedReasons.push(String(err instanceof Error ? err.message : err));
         log(`failed ${job.kind} ${job.id} "${job.text}": ${String(err)}`);
       }
     }

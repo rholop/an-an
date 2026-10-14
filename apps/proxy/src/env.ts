@@ -42,6 +42,12 @@ const EnvSchema = z.object({
   SYNC_DIR: z.string().optional(),
   /** Where audio marks are written (phase 10). Default: apps/proxy/audio-data */
   AUDIO_DIR: z.string().optional(),
+  /** Phase 40 D.1: Azure Speech for tutoring audio (POST /v1/tutor-audio). Server-side only, never
+   * sent to the browser; unset = the class page says it is waiting for the speech key. */
+  AZURE_SPEECH_KEY: z.string().min(1).optional(),
+  AZURE_SPEECH_REGION: z.string().min(1).default('eastus'),
+  /** Phase 40 D.1: where tutoring clips are written, one folder per profile. Default: apps/proxy/tutor-audio */
+  TUTOR_AUDIO_DIR: z.string().optional(),
   /** Phase 12: folder holding data/curriculum/<book>/private/*.json (default: the repo's data/curriculum). */
   TEXTBOOK_DIR: z.string().optional(),
   PROMPT_VERSION: z.string().default('v1'),
