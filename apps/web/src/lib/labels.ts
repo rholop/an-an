@@ -284,6 +284,11 @@ export const CHAT_WORD_SOURCE: Record<'gap' | 'lookup' | 'glossed' | 'corrected'
 // --- Phase 24: graded stories ---------------------------------------------------------------
 export const STORIES = 'Stories';
 export const NEXT_STORY = 'Next story';
+/** The Reader's "New story" box: pick a topic, questions or not, then Write it. */
+export const NEW_STORY = 'New story';
+export const STORY_TOPIC = 'Topic';
+export const STORY_WITH_QUESTIONS = 'With questions';
+export const WRITE_STORY = 'Write it';
 /** Phase 25: the only thing a failed story write ever shows (never a raw error), with RETRY. */
 export const STORY_UNAVAILABLE = "Couldn't write a story right now. Try again.";
 export const RETRY = 'Retry';

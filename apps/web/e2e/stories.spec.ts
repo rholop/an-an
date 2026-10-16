@@ -5,7 +5,11 @@ type Handle = {
   learnerService: { recordBulk: (events: unknown[], now: Date) => Promise<unknown> };
   db: {
     evidence: { toArray: () => Promise<{ kind: string; context?: { source?: string } }[]> };
-    stories: { toArray: () => Promise<{ id: string; readAt?: unknown; score?: { right: number; of: number } }[]> };
+    stories: {
+      toArray: () => Promise<
+        { id: string; readAt?: unknown; score?: { right: number; of: number } }[]
+      >;
+    };
     items: { toArray: () => Promise<{ item: { id: string }; state: string }[]> };
   };
 };
@@ -20,7 +24,9 @@ test.describe('Graded stories (phase 24)', () => {
     // Phase 26: with a class lesson, stories carry this lesson's words (no random level words any more)
     await page.addInitScript(() => localStorage.removeItem('anan.study.disabled'));
     await page.goto('/?page=textbook');
-    await expect(page.getByRole('heading', { name: /來學華語/ }).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('heading', { name: /來學華語/ }).first()).toBeVisible({
+      timeout: 20_000,
+    });
     // the textbook page may still be settling (a late load re-renders the toggle): check until it holds
     await expect(async () => {
       await page.getByTestId('my-class-toggle').check({ timeout: 2000 });
@@ -42,13 +48,23 @@ test.describe('Graded stories (phase 24)', () => {
     await expect
       .poll(() =>
         page.evaluate(async () => {
-          const db = (window as unknown as { __anan: { db: { settings: { get: (k: string) => Promise<{ value?: unknown } | undefined> } } } }).__anan.db;
+          const db = (
+            window as unknown as {
+              __anan: {
+                db: { settings: { get: (k: string) => Promise<{ value?: unknown } | undefined> } };
+              };
+            }
+          ).__anan.db;
           return (await db.settings.get('storyDifficulty'))?.value;
         }),
       )
       .toBe('harder');
     await page.reload();
-    await expect(page.getByTestId('story-difficulty-harder')).toHaveAttribute('aria-checked', 'true', { timeout: 20_000 });
+    await expect(page.getByTestId('story-difficulty-harder')).toHaveAttribute(
+      'aria-checked',
+      'true',
+      { timeout: 20_000 },
+    );
     await page.getByTestId('story-difficulty-middle').click();
 
     await page.getByLabel('Use fake story writer (dev)').check();
@@ -71,9 +87,11 @@ test.describe('Graded stories (phase 24)', () => {
     await expect(page.locator('.an-popover')).toBeVisible();
     await expect
       .poll(async () =>
-        (await page.evaluate(() => (window as unknown as { __anan: Handle }).__anan.db.evidence.toArray())).some(
-          (e) => e.kind === 'chat_lookup_gloss' && e.context?.source === 'story',
-        ),
+        (
+          await page.evaluate(() =>
+            (window as unknown as { __anan: Handle }).__anan.db.evidence.toArray(),
+          )
+        ).some((e) => e.kind === 'chat_lookup_gloss' && e.context?.source === 'story'),
       )
       .toBe(true);
     await page.keyboard.press('Escape');
@@ -101,7 +119,9 @@ test.describe('Graded stories (phase 24)', () => {
 
     const summary = page.getByTestId('story-summary');
     await expect(summary).toBeVisible();
-    await expect(page.getByTestId('story-summary-line')).toHaveText(/You read \d+ characters · \d+% words you know/);
+    await expect(page.getByTestId('story-summary-line')).toHaveText(
+      /You read \d+ characters · \d+% words you know/,
+    );
     await expect(summary).toContainText(`${n} of ${n} right`);
     await expect(page.getByTestId('story-tapped')).toBeVisible();
     await expect(page.getByTestId('story-new-words')).toBeVisible();
@@ -110,10 +130,14 @@ test.describe('Graded stories (phase 24)', () => {
 
     // evidence: no word evidence for answers; due/learning words read without a lookup
     const kinds = await page.evaluate(() =>
-      (window as unknown as { __anan: Handle }).__anan.db.evidence.toArray().then((ev) => ev.map((e) => e.kind)),
+      (window as unknown as { __anan: Handle }).__anan.db.evidence
+        .toArray()
+        .then((ev) => ev.map((e) => e.kind)),
     );
     expect(kinds).toContain('story_read_no_lookup');
-    const stories = await page.evaluate(() => (window as unknown as { __anan: Handle }).__anan.db.stories.toArray());
+    const stories = await page.evaluate(() =>
+      (window as unknown as { __anan: Handle }).__anan.db.stories.toArray(),
+    );
     const read = stories.filter((s) => s.readAt);
     expect(read).toHaveLength(1);
     expect(read[0]!.score).toEqual({ right: n, of: n });
@@ -124,9 +148,17 @@ test.describe('Graded stories (phase 24)', () => {
 
     // another was written in the background for this lesson (2 kept ready): Home offers it
     await expect
-      .poll(async () => (await page.evaluate(() => (window as unknown as { __anan: Handle }).__anan.db.stories.toArray())).length, {
-        timeout: 20_000,
-      })
+      .poll(
+        async () =>
+          (
+            await page.evaluate(() =>
+              (window as unknown as { __anan: Handle }).__anan.db.stories.toArray(),
+            )
+          ).length,
+        {
+          timeout: 20_000,
+        },
+      )
       .toBeGreaterThanOrEqual(2);
     await page.goto('/?page=garden');
     const line = page.getByTestId('home-story');
@@ -136,15 +168,78 @@ test.describe('Graded stories (phase 24)', () => {
     await page.getByRole('button', { name: '← Back to home' }).click();
 
     await page.goto('/?page=progress');
-    await expect(page.getByTestId('progress-stories')).toHaveText(/Characters read this week: \d+ · 1 story finished/, {
-      timeout: 20_000,
+    await expect(page.getByTestId('progress-stories')).toHaveText(
+      /Characters read this week: \d+ · 1 story finished/,
+      {
+        timeout: 20_000,
+      },
+    );
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe('New story with a topic (Reader)', () => {
+  test('the New story box is open: pick a topic, turn questions off, Write it, finish without questions', async ({
+    page,
+  }) => {
+    test.setTimeout(60_000);
+    const errors: string[] = [];
+    page.on('pageerror', (err) => errors.push(String(err)));
+    await seedKnownWords(page);
+    await page.goto('/?page=reader');
+    const box = page.getByTestId('new-story');
+    await expect(box).toBeVisible({ timeout: 20_000 });
+    // the topics are shown, not folded away
+    await expect(page.getByTestId('story-topic-chip').first()).toBeVisible();
+    const questions = page.getByTestId('story-with-questions');
+    await expect(questions).toBeChecked();
+    await page.getByRole('radio', { name: /Food/ }).click();
+    await expect(page.getByRole('radio', { name: /Food/ })).toHaveAttribute('aria-checked', 'true');
+    await questions.uncheck();
+    await page.getByLabel('Use fake story writer (dev)').check();
+    await page.getByTestId('story-write').click();
+    await expect(page.getByTestId('story-view')).toBeVisible({ timeout: 20_000 });
+    if (await page.getByTestId('story-start-reading').isVisible())
+      await page.getByTestId('story-start-reading').click();
+    const done = page.getByTestId('story-done-reading');
+    await expect(done).toHaveText('Finish');
+    await expect(page.getByTestId('story-no-questions')).toHaveCount(0);
+    await done.click();
+    await expect(page.getByTestId('story-questions')).toHaveCount(0);
+    const saved = await page.evaluate(async () => {
+      const all = await (
+        window as unknown as {
+          __anan: {
+            db: {
+              stories: {
+                toArray: () => Promise<
+                  { topic: string; withQuestions?: boolean; questions: unknown[] }[]
+                >;
+              };
+            };
+          };
+        }
+      ).__anan.db.stories.toArray();
+      return all.map((s) => ({
+        topic: s.topic,
+        withQuestions: s.withQuestions,
+        n: s.questions.length,
+      }));
     });
+    // (the fake writer may also make the lesson's story ahead in the background)
+    expect(saved).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ topic: 'eating out in Taipei', withQuestions: false }),
+      ]),
+    );
     expect(errors).toEqual([]);
   });
 });
 
 test.describe('Story write failure (phase 25)', () => {
-  test('a model failure from the proxy shows "Try again" with Retry, never the raw error', async ({ page }) => {
+  test('a model failure from the proxy shows "Try again" with Retry, never the raw error', async ({
+    page,
+  }) => {
     test.setTimeout(60_000);
     await seedKnownWords(page);
     let calls = 0;
@@ -153,14 +248,22 @@ test.describe('Story write failure (phase 25)', () => {
       return route.fulfill({
         status: 503,
         contentType: 'application/json',
-        body: JSON.stringify({ error: 'story_failed', attempts: [{ model: 'gemini-x', reason: 'server_error' }, { model: 'gemini-y', reason: 'invalid_json' }] }),
+        body: JSON.stringify({
+          error: 'story_failed',
+          attempts: [
+            { model: 'gemini-x', reason: 'server_error' },
+            { model: 'gemini-y', reason: 'invalid_json' },
+          ],
+        }),
       });
     });
     await page.goto('/?page=reader');
     await expect(page.getByTestId('stories-section')).toBeVisible({ timeout: 20_000 });
     await page.getByTestId('next-story').click();
     const error = page.getByTestId('story-error');
-    await expect(error).toHaveText(/Couldn't write a story right now\. Try again\./, { timeout: 20_000 });
+    await expect(error).toHaveText(/Couldn't write a story right now\. Try again\./, {
+      timeout: 20_000,
+    });
     await expect(error).not.toContainText(/503|server_error|gemini|story_failed/);
     const before = calls;
     expect(before).toBeGreaterThan(0);
@@ -171,20 +274,31 @@ test.describe('Story write failure (phase 25)', () => {
 });
 
 test.describe('Story write on a used-up quota (phase 25)', () => {
-  test('rate-limited on every Gemini model: "The free AI quota is used up for now"', async ({ page }) => {
+  test('rate-limited on every Gemini model: "The free AI quota is used up for now"', async ({
+    page,
+  }) => {
     test.setTimeout(60_000);
     await seedKnownWords(page);
     await page.route('**/v1/story', (route) =>
       route.fulfill({
         status: 503,
         contentType: 'application/json',
-        body: JSON.stringify({ error: 'story_failed', attempts: [{ model: 'gemini-x', reason: 'rate_limited' }, { model: 'gemini-y', reason: 'quota' }] }),
+        body: JSON.stringify({
+          error: 'story_failed',
+          attempts: [
+            { model: 'gemini-x', reason: 'rate_limited' },
+            { model: 'gemini-y', reason: 'quota' },
+          ],
+        }),
       }),
     );
     await page.goto('/?page=reader');
     await expect(page.getByTestId('stories-section')).toBeVisible({ timeout: 20_000 });
     await page.getByTestId('next-story').click();
-    await expect(page.getByTestId('story-error')).toContainText('The free AI quota is used up for now. Try again in a few minutes.', { timeout: 20_000 });
+    await expect(page.getByTestId('story-error')).toContainText(
+      'The free AI quota is used up for now. Try again in a few minutes.',
+      { timeout: 20_000 },
+    );
     await expect(page.getByTestId('story-retry')).toBeVisible();
   });
 });

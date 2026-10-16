@@ -264,6 +264,18 @@ describe('StoryService (Phase 24)', () => {
     expect(await s.readyFor('N1', NOW)).toHaveLength(0);
   });
 
+  it('"With questions" off is kept on the story (questions kept, never shown); on again restores them', async () => {
+    await seedKnown();
+    const s = service(new FakeStoryLLM(scripted(GOOD)));
+    const story = await s.write({ level: 'N1', difficulty: 'middle', kind: 'lesson' }, NOW);
+    expect(story.withQuestions).toBeUndefined();
+    expect(await s.setQuestions(story, true, NOW)).toBe(story); // on is the default: nothing written
+    const off = await s.setQuestions(story, false, NOW);
+    expect(off).toMatchObject({ withQuestions: false, questions: story.questions });
+    expect((await s.get(story.id))?.withQuestions).toBe(false);
+    expect((await s.setQuestions(off, true, NOW)).withQuestions).toBe(true);
+  });
+
   it('summary lists the new words; Add to review makes them New cards (sessions take them within the caps)', async () => {
     await seedKnown();
     const s = service(new FakeStoryLLM(scripted(GOOD)));

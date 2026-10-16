@@ -74,7 +74,7 @@ export interface StoryAsk {
   continueFrom?: StoryRecord;
 }
 
-/** Topic chips under "What should it be about?" (English: the prompt is English). */
+/** Topic chips in the Reader's "New story" box (English: the prompt is English). */
 export const STORY_TOPIC_CHIPS: ReadonlyArray<{ label: string; topic: string }> = [
   { label: '🍜 Food', topic: 'eating out in Taipei' },
   { label: '🏠 Family', topic: 'a family weekend' },
@@ -82,6 +82,14 @@ export const STORY_TOPIC_CHIPS: ReadonlyArray<{ label: string; topic: string }> 
   { label: '🚇 Getting around', topic: 'taking the MRT' },
   { label: '☔ Weather', topic: 'a rainy day' },
   { label: '🎉 Weekend', topic: 'plans for the weekend' },
+  { label: '☕ Café', topic: 'meeting a friend at a café' },
+  { label: '🏫 Class', topic: 'a day at Chinese class' },
+  { label: '💼 Work', topic: 'a day at work' },
+  { label: '🏥 Doctor', topic: 'feeling sick and seeing a doctor' },
+  { label: '🎂 Birthday', topic: 'a birthday party' },
+  { label: '🏖️ Trip', topic: 'a day trip outside Taipei' },
+  { label: '🐶 Pets', topic: 'a pet dog or cat' },
+  { label: '🏮 Festival', topic: 'a Taiwanese festival' },
 ];
 
 export interface StorySummary {
@@ -287,6 +295,14 @@ export class StoryService {
     );
     await this.db.stories.put(record);
     return record;
+  }
+
+  /** "With questions" on or off for this story (kept on the record, so re-reading shows the same). */
+  async setQuestions(story: StoryRecord, withQuestions: boolean, now: Date = new Date()): Promise<StoryRecord> {
+    if ((story.withQuestions ?? true) === withQuestions) return story;
+    const updated: StoryRecord = { ...story, withQuestions, updatedAt: now };
+    await this.db.stories.put(updated);
+    return updated;
   }
 
   // ---- the library ------------------------------------------------------------------

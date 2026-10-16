@@ -776,6 +776,8 @@ export interface StoryRecord {
   glosses: { zh: string; en: string }[];
   characters: string[];
   questions: StoryQuestion[];
+  /** "With questions" when it was asked for: false hides its questions (they are kept, never shown). */
+  withQuestions?: boolean;
   /** Word ids by rung (2–6) when it was written: underlined while reading, listed afterwards. */
   newWords: { wordId?: string; text: string; rung: VocabRung }[];
   /** Content word ids in the story (for "easier now"). */

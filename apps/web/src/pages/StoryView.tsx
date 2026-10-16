@@ -48,6 +48,8 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
   const [cards, setCards] = useState<Map<string, SkillCard>>(new Map());
   const lookedUp = useRef(new Set<string>());
   const [english, setEnglish] = useState<Set<number>>(new Set());
+  // "With questions" off: the story is read and finished without its questions.
+  const quiz = story.withQuestions === false ? [] : story.questions;
   const [answers, setAnswers] = useState<(number | undefined)[]>(() => initial.questions.map(() => undefined));
   const [checked, setChecked] = useState(false);
   const [qEnglish, setQEnglish] = useState(false);
@@ -91,8 +93,8 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
   }
 
   async function finish() {
-    const right = story.questions.filter((q, i) => answers[i] === q.answer).length;
-    const { story: read } = await service.finish(story, { lookedUp: lookedUp.current, right, of: story.questions.length });
+    const right = quiz.filter((q, i) => answers[i] === q.answer).length;
+    const { story: read } = await service.finish(story, { lookedUp: lookedUp.current, right, of: quiz.length });
     setStory(read);
     const sum = await service.summary(read, lookedUp.current);
     setSummary(sum);
@@ -206,18 +208,18 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
               ))}
             </p>
           )}
-          {story.questions.length === 0 && <p className="story-gloss" data-testid="story-no-questions">{NO_QUESTIONS}</p>}
+          {quiz.length === 0 && story.withQuestions !== false && <p className="story-gloss" data-testid="story-no-questions">{NO_QUESTIONS}</p>}
           <button
             type="button"
             className="btn-primary story-primary"
             data-testid="story-done-reading"
             onClick={() => {
-              if (story.questions.length === 0) return void finish();
+              if (quiz.length === 0) return void finish();
               setPhase('questions');
               window.scrollTo(0, 0);
             }}
           >
-            {story.questions.length === 0 ? 'Finish' : 'Questions →'}
+            {quiz.length === 0 ? 'Finish' : 'Questions →'}
           </button>
         </>
       )}
@@ -227,7 +229,7 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
           <label className="story-q-english">
             <input type="checkbox" checked={qEnglish} onChange={(e) => setQEnglish(e.target.checked)} /> Show English
           </label>
-          {story.questions.map((q, i) => (
+          {quiz.map((q, i) => (
             <fieldset className="story-question" key={i} data-testid="story-question">
               <legend lang="zh-Hant">
                 {i + 1}. {q.q_zh}
@@ -279,7 +281,7 @@ export function StoryView({ story: initial, service, lexicon, level, onExit, exi
           <p className="story-summary-line" data-testid="story-summary-line">
             {storyReadLine(summary.chars, summary.knownShare)}
           </p>
-          {story.score && <p className="story-score">{storyScoreLine(story.score.right, story.score.of)}</p>}
+          {story.score && story.score.of > 0 && <p className="story-score">{storyScoreLine(story.score.right, story.score.of)}</p>}
           {summary.newWords.length > 0 && (
             <>
               <h2>New words</h2>

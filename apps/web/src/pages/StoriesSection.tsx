@@ -1,23 +1,41 @@
 // Phase 24 Part C: the Stories section at the top of the Reader: Next story, Easier / Harder,
-// the topic picker and the library (newest first, lesson badge, read / unread).
+// the New story box (topic, With questions, Write it) and the library (newest first, lesson badge, read / unread).
 import { useEffect, useState } from 'react';
-import { storyMinutes, type Level, type Lexicon, type StoryDifficulty, type StoryRecord, type StoryStage } from '@anan/core';
+import {
+  storyMinutes,
+  type Level,
+  type Lexicon,
+  type StoryDifficulty,
+  type StoryRecord,
+  type StoryStage,
+} from '@anan/core';
 import {
   storyLessonBadge,
   EASIER_NOW,
+  NEW_STORY,
   NEXT_STORY,
   NO_LESSON_STORY,
   READ_LESSON_STORY,
   STORIES,
   STORY_DIFFICULTY,
+  STORY_TOPIC,
+  STORY_WITH_QUESTIONS,
   STORY_STAGE,
   RETRY,
   STORY_WRITING,
   TRY_ANOTHER_TOPIC,
+  WRITE_STORY,
   storyPitch,
 } from '../lib/labels.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
-import { FAKE_STORY_KEY, canWriteStories, prepareStories, storyFakeOn, storyLesson, useStoryDifficulty } from '../lib/stories.js';
+import {
+  FAKE_STORY_KEY,
+  canWriteStories,
+  prepareStories,
+  storyFakeOn,
+  storyLesson,
+  useStoryDifficulty,
+} from '../lib/stories.js';
 import { STORY_TOPIC_CHIPS, type StoryAsk, type StoryService } from '../lib/story-service.js';
 import { storyErrorText } from '../lib/story-errors.js';
 import './StoryView.css';
@@ -31,7 +49,12 @@ interface Props {
   onFakeChange?: (on: boolean) => void;
 }
 
-type TopicPick = { kind: 'lesson' } | { kind: 'chip'; text: string } | { kind: 'journal' } | { kind: 'continue' } | { kind: 'typed' };
+type TopicPick =
+  | { kind: 'lesson' }
+  | { kind: 'chip'; text: string }
+  | { kind: 'journal' }
+  | { kind: 'continue' }
+  | { kind: 'typed' };
 
 export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) {
   const [difficulty, setDifficulty] = useStoryDifficulty();
@@ -42,12 +65,18 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
   const [catchUp, setCatchUp] = useState<ReadonlySet<string>>(new Set());
   const [pick, setPick] = useState<TopicPick>({ kind: 'lesson' });
   const [typed, setTyped] = useState('');
+  /** Questions after the story: on unless turned off for this one. */
+  const [withQuestions, setWithQuestions] = useState(true);
   const [busy, setBusy] = useState(false);
+  /** Which button started the write (it shows the writer's stage). */
+  const [busyFrom, setBusyFrom] = useState<'next' | 'write'>('next');
   /** Phase 26 Part F: what the writer is doing now. */
   const [stage, setStage] = useState<StoryStage | null>(null);
   const [noLessonStory, setNoLessonStory] = useState(false);
   /** The ask that failed (Retry repeats it), or null. */
-  const [failed, setFailed] = useState<Omit<StoryAsk, 'level' | 'difficulty'> | 'next' | null>(null);
+  const [failed, setFailed] = useState<Omit<StoryAsk, 'level' | 'difficulty'> | 'next' | null>(
+    null,
+  );
   const [errorText, setErrorText] = useState('');
   const [tick, setTick] = useState(0);
   const [fake, setFake] = useState(storyFakeOn());
@@ -90,8 +119,9 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
         ask === 'next'
           ? await service.next(level, difficulty, new Date(), setStage)
           : await service.write({ ...ask, level, difficulty }, new Date(), setStage);
+      const shown = await service.setQuestions(story, withQuestions);
       setTick((t) => t + 1);
-      onOpen(story);
+      onOpen(shown);
     } catch (err) {
       setErrorText(storyErrorText(err));
       setFailed(ask);
@@ -103,7 +133,9 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
 
   /** Phase 26 Part F: never a dead end after a refusal. */
   function tryAnotherTopic() {
-    const chips = STORY_TOPIC_CHIPS.filter((c) => !(failed && failed !== 'next' && failed.text === c.topic));
+    const chips = STORY_TOPIC_CHIPS.filter(
+      (c) => !(failed && failed !== 'next' && failed.text === c.topic),
+    );
     const chip = chips[Math.floor(Math.random() * chips.length)]!;
     setPick({ kind: 'chip', text: chip.topic });
     void run({ kind: 'chip', text: chip.topic });
@@ -113,15 +145,18 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
     const story = await service.nextLessonStory(level).catch(() => undefined);
     if (!story) return setNoLessonStory(true);
     setFailed(null);
+    const shown = await service.setQuestions(story, withQuestions);
     setTick((t) => t + 1);
-    onOpen(story);
+    onOpen(shown);
   }
 
   function writeChosen() {
+    setBusyFrom('write');
     if (pick.kind === 'lesson') return void run('next');
     if (pick.kind === 'chip') return void run({ kind: 'chip', text: pick.text });
     if (pick.kind === 'journal') return void run({ kind: 'journal' });
-    if (pick.kind === 'continue' && lastRead) return void run({ kind: 'continue', continueFrom: lastRead });
+    if (pick.kind === 'continue' && lastRead)
+      return void run({ kind: 'continue', continueFrom: lastRead });
     if (pick.kind === 'typed' && typed.trim()) return void run({ kind: 'typed', text: typed });
   }
 
@@ -132,15 +167,39 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
     <section className="stories-section" data-testid="stories-section" aria-labelledby="stories-h">
       <h2 id="stories-h">📖 {STORIES}</h2>
       <p className="stories-pitch" data-testid="stories-pitch">
-        {next ? storyPitch(storyMinutes(next.chars), storyLesson(next)) : `Short stories made from words you know. Topic: ${lessonTopic || '…'}`}
+        {next
+          ? storyPitch(storyMinutes(next.chars), storyLesson(next))
+          : `Short stories made from words you know. Topic: ${lessonTopic || '…'}`}
       </p>
       <div className="stories-row">
-        <button type="button" className="btn-primary" data-testid="next-story" disabled={busy || (!next && !canWrite)} aria-busy={busy} onClick={() => void run('next')}>
-          {busy ? (stage ? STORY_STAGE[stage] : STORY_WRITING) : `${NEXT_STORY} →`}
+        <button
+          type="button"
+          className="btn-primary"
+          data-testid="next-story"
+          disabled={busy || (!next && !canWrite)}
+          aria-busy={busy}
+          onClick={() => {
+            setBusyFrom('next');
+            void run('next');
+          }}
+        >
+          {busy && busyFrom === 'next'
+            ? stage
+              ? STORY_STAGE[stage]
+              : STORY_WRITING
+            : `${NEXT_STORY} →`}
         </button>
         <div className="stories-row" role="radiogroup" aria-label="Story difficulty">
           {(Object.keys(STORY_DIFFICULTY) as StoryDifficulty[]).map((d) => (
-            <button key={d} type="button" role="radio" aria-checked={difficulty === d} className="stories-chip" data-testid={`story-difficulty-${d}`} onClick={() => setDifficulty(d)}>
+            <button
+              key={d}
+              type="button"
+              role="radio"
+              aria-checked={difficulty === d}
+              className="stories-chip"
+              data-testid={`story-difficulty-${d}`}
+              onClick={() => setDifficulty(d)}
+            >
               {STORY_DIFFICULTY[d]}
             </button>
           ))}
@@ -150,13 +209,28 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
         <p className="stories-error" role="status" data-testid="story-error">
           {errorText}{' '}
           <span className="stories-actions">
-            <button type="button" data-testid="story-retry" disabled={busy} onClick={() => void run(failed)}>
+            <button
+              type="button"
+              data-testid="story-retry"
+              disabled={busy}
+              onClick={() => void run(failed)}
+            >
               {RETRY}
             </button>
-            <button type="button" data-testid="story-other-topic" disabled={busy} onClick={tryAnotherTopic}>
+            <button
+              type="button"
+              data-testid="story-other-topic"
+              disabled={busy}
+              onClick={tryAnotherTopic}
+            >
               {TRY_ANOTHER_TOPIC}
             </button>
-            <button type="button" data-testid="story-lesson-story" disabled={busy || noLessonStory} onClick={() => void readLessonStory()}>
+            <button
+              type="button"
+              data-testid="story-lesson-story"
+              disabled={busy || noLessonStory}
+              onClick={() => void readLessonStory()}
+            >
               {READ_LESSON_STORY}
             </button>
           </span>
@@ -164,11 +238,25 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
         </p>
       )}
 
-      <details className="stories-topics">
-        <summary>Pick a topic</summary>
-        <div className="stories-row" role="radiogroup" aria-label="Story topic" data-testid="story-topics">
-          <button type="button" role="radio" className="stories-chip" aria-checked={pick.kind === 'lesson'} onClick={() => setPick({ kind: 'lesson' })}>
-            This lesson
+      <section className="stories-new" aria-labelledby="new-story-h" data-testid="new-story">
+        <h3 id="new-story-h">{NEW_STORY}</h3>
+        <p className="stories-new-label" id="story-topic-h">
+          {STORY_TOPIC}
+        </p>
+        <div
+          className="stories-row"
+          role="radiogroup"
+          aria-labelledby="story-topic-h"
+          data-testid="story-topics"
+        >
+          <button
+            type="button"
+            role="radio"
+            className="stories-chip"
+            aria-checked={pick.kind === 'lesson'}
+            onClick={() => setPick({ kind: 'lesson' })}
+          >
+            📘 This lesson
           </button>
           {STORY_TOPIC_CHIPS.map((c) => (
             <button
@@ -176,44 +264,80 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
               type="button"
               role="radio"
               className="stories-chip"
+              data-testid="story-topic-chip"
               aria-checked={pick.kind === 'chip' && pick.text === c.topic}
               onClick={() => setPick({ kind: 'chip', text: c.topic })}
             >
               {c.label}
             </button>
           ))}
-          <button type="button" role="radio" className="stories-chip" aria-checked={pick.kind === 'journal'} onClick={() => setPick({ kind: 'journal' })}>
+          <button
+            type="button"
+            role="radio"
+            className="stories-chip"
+            aria-checked={pick.kind === 'journal'}
+            onClick={() => setPick({ kind: 'journal' })}
+          >
             ✏️ From my journal
           </button>
           {lastRead && (
-            <button type="button" role="radio" className="stories-chip" aria-checked={pick.kind === 'continue'} onClick={() => setPick({ kind: 'continue' })}>
+            <button
+              type="button"
+              role="radio"
+              className="stories-chip"
+              aria-checked={pick.kind === 'continue'}
+              onClick={() => setPick({ kind: 'continue' })}
+            >
               ➡️ Continue a story
             </button>
           )}
         </div>
+        <input
+          className="stories-topic-input"
+          data-testid="story-topic-input"
+          aria-label="Your own topic"
+          placeholder="Or type your own topic…"
+          value={typed}
+          maxLength={200}
+          onChange={(e) => {
+            setTyped(e.target.value);
+            setPick(e.target.value.trim() ? { kind: 'typed' } : { kind: 'lesson' });
+          }}
+        />
         <div className="stories-row">
-          <input
-            className="stories-topic-input"
-            data-testid="story-topic-input"
-            placeholder="Or type a topic…"
-            value={typed}
-            maxLength={200}
-            onChange={(e) => {
-              setTyped(e.target.value);
-              setPick({ kind: 'typed' });
-            }}
-          />
-          <button type="button" data-testid="story-write" disabled={busy || !canWrite} onClick={writeChosen}>
-            Write it
+          <label className="stories-questions-toggle">
+            <input
+              type="checkbox"
+              data-testid="story-with-questions"
+              checked={withQuestions}
+              onChange={(e) => setWithQuestions(e.target.checked)}
+            />
+            {STORY_WITH_QUESTIONS}
+          </label>
+          <button
+            type="button"
+            className="btn-primary"
+            data-testid="story-write"
+            disabled={busy || !canWrite}
+            aria-busy={busy}
+            onClick={writeChosen}
+          >
+            {busy && busyFrom === 'write'
+              ? stage
+                ? STORY_STAGE[stage]
+                : STORY_WRITING
+              : `${WRITE_STORY} →`}
           </button>
         </div>
-      </details>
+      </section>
 
       {easier.map((s) => (
         <p className="stories-easier" key={`e-${s.id}`}>
           {EASIER_NOW}:{' '}
           <button type="button" className="stories-item" onClick={() => onOpen(s)}>
-            <span lang="zh-Hant" className="stories-item-title">{s.titleZh}</span>
+            <span lang="zh-Hant" className="stories-item-title">
+              {s.titleZh}
+            </span>
           </button>
         </p>
       ))}
@@ -224,10 +348,26 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
             const l = storyLesson(s);
             return (
               <li key={s.id}>
-                <button type="button" className="stories-item" data-testid="story-item" data-read={s.readAt ? '1' : '0'} onClick={() => onOpen(s)}>
-                  <span lang="zh-Hant" className="stories-item-title">{s.titleZh}</span>
-                  {l && <span className="stories-badge" data-testid="story-lesson-badge">{storyLessonBadge(l.n, l.bookId, catchUp.has(s.lessonId ?? ''))}</span>}
-                  {s.readAt ? <span className="stories-badge">✓ read</span> : <span className="stories-unread">Unread</span>}
+                <button
+                  type="button"
+                  className="stories-item"
+                  data-testid="story-item"
+                  data-read={s.readAt ? '1' : '0'}
+                  onClick={() => onOpen(s)}
+                >
+                  <span lang="zh-Hant" className="stories-item-title">
+                    {s.titleZh}
+                  </span>
+                  {l && (
+                    <span className="stories-badge" data-testid="story-lesson-badge">
+                      {storyLessonBadge(l.n, l.bookId, catchUp.has(s.lessonId ?? ''))}
+                    </span>
+                  )}
+                  {s.readAt ? (
+                    <span className="stories-badge">✓ read</span>
+                  ) : (
+                    <span className="stories-unread">Unread</span>
+                  )}
                 </button>
               </li>
             );
@@ -258,14 +398,25 @@ export function StoriesSection({ service, level, onOpen, onFakeChange }: Props) 
 }
 
 /** Phase 24 Part D: Home's "Today's story" line, under the Home buttons; hidden when none is ready. */
-export function HomeStoryLine({ service, level, onOpen }: { service: StoryService; level: Level; onOpen: (story: StoryRecord) => void }) {
+export function HomeStoryLine({
+  service,
+  level,
+  onOpen,
+}: {
+  service: StoryService;
+  level: Level;
+  onOpen: (story: StoryRecord) => void;
+}) {
   const [difficulty] = useStoryDifficulty();
   const [story, setStory] = useState<StoryRecord | null>(null);
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       const now = new Date();
-      const [ready, { ladder }] = await Promise.all([service.readyFor(level, now), service.ladderFor(level, now)]);
+      const [ready, { ladder }] = await Promise.all([
+        service.readyFor(level, now),
+        service.ladderFor(level, now),
+      ]);
       if (cancelled) return;
       setStory(ready.find((s) => s.difficulty === difficulty) ?? ready[0] ?? null);
       prepareStories(service, level, difficulty, ladder.lessons.active?.lessonId ?? '-');

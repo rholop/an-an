@@ -526,6 +526,7 @@ export const StoryRowSchema = z.object({
   readAt: z.coerce.date().optional(),
   score: z.object({ right: z.number(), of: z.number() }).optional(),
   readCount: z.number().optional(),
+  withQuestions: z.boolean().optional(),
   readDates: z.array(z.coerce.date()).optional(),
   report: z.object({ reason: z.string(), note: z.string().optional(), at: z.coerce.date() }).optional(),
 });
