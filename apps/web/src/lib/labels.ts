@@ -169,6 +169,20 @@ export const FACE_LABEL = {
   grammar: 'Grammar',
 } as const;
 export const PINYIN_TAB = 'Pinyin & tones';
+// --- Phase 43: calm review sessions ------------------------------------------------------------
+/** The block header in Review: "Meaning · 12". */
+export const blockHeader = (block: keyof typeof FACE_LABEL, left: number): string =>
+  `${block === 'pick' ? 'Pick the Mandarin' : block === 'recall' ? 'Recall the Mandarin' : FACE_LABEL[block]} · ${left}`;
+/** "12 more are waiting for this evening". */
+export const waitingForNextSession = (n: number, next: 'morning' | 'evening'): string =>
+  `${n} more ${n === 1 ? 'is' : 'are'} waiting for ${next === 'evening' ? 'this evening' : 'tomorrow morning'}`;
+/** The third Again in a sitting: "We'll come back to 餅乾 next time". */
+export const comeBackNextTime = (word: string): string => `We'll come back to ${word} next time`;
+/** Part F.4, shown once: "We spread out your backlog: 40 now, the rest over the next few sessions." */
+export const BACKLOG_SPREAD = (now: number): string =>
+  `We spread out your backlog: ${now} now, the rest over the next few sessions.`;
+/** Home and Garden, only when there is one: "Backlog: 50 cards over the next few sessions". */
+export const backlogLine = (n: number): string => `Backlog: ${n} card${n === 1 ? '' : 's'} over the next few sessions`;
 /** "Pinyin 80%": share of Learned words whose reading card is Learned too. */
 export const pinyinShareLine = (share: number): string => `Pinyin ${pct(share)}`;
 const toneName = (t: number) => (t === 5 ? 'neutral' : ['1st', '2nd', '3rd', '4th'][t - 1] ?? `${t}`);

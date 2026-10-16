@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { activeEvidence, buildLedger, DEFAULT_SESSION_SETTINGS, emptyCard, pileReport, type SkillCard, type Word } from '@anan/core';
+import { activeEvidence, emptyCard, pileReport, type SkillCard, type Word } from '@anan/core';
 import { DexieLearnerRepo } from '../db/learner-repo.js';
 import { AnanDB } from '../db/schema.js';
 import { LearnerService, setLookupGate } from './learner-service.js';
 import { applyCleanup, cleanupPreview, removedWords } from './review-cleanup.js';
-import { pickReviewCards } from './review-session.js';
 
 let db: AnanDB;
 let repo: DexieLearnerRepo;
@@ -15,9 +14,6 @@ const DAY = 86_400_000;
 /** Phase 29: this review session's cards and the listening queue come from the ledger. */
 const inSession = async () => (await service.ledger(NOW)).session().cards;
 const listeningDue = async () => (await service.ledger(NOW)).practice('listening').due;
-const allowanceFor = (cards: SkillCard[]) =>
-  buildLedger({ cards, evidence: [], knownItems: [], session: DEFAULT_SESSION_SETTINGS, masteryShare: 0.8, now: NOW }).newAllowance('review');
-
 beforeEach(() => {
   db = new AnanDB(`anan-test-${Math.random()}`);
   repo = new DexieLearnerRepo(db);
@@ -81,27 +77,12 @@ describe('Nope in the app (Phase 20)', () => {
     await repo.putCards([card('a', 'recognition'), card('b', 'recognition')]);
     await service.nope({ kind: 'word', id: 'a' }, 'never', {}, NOW);
     await service.nope({ kind: 'word', id: 'b' }, 'known', {}, NOW);
-    expect(await inSession()).toHaveLength(0);
+    // (Phase 43: a word marked known may start its next card type, Pick, as one of the day's new faces)
+    expect((await inSession()).filter((c) => c.skill === 'recognition')).toHaveLength(0);
     expect((await service.ledger(NOW)).learnedWordIds().has('b')).toBe(true);
     // Restore brings "never" back
     await service.restore({ kind: 'word', id: 'a' }, NOW);
     expect((await inSession()).map((c) => c.item.id)).toEqual(['a']);
-  });
-});
-
-describe('daily cap (Phase 20)', () => {
-  it('300 cards due: a session of at most 80, and no new cards that day', () => {
-    const due = Array.from({ length: 300 }, (_, i) => card(`w${i}`, 'recognition'));
-    const r = pickReviewCards({ due, doneThisSession: 0, cap: 80, now: NOW, allowance: allowanceFor(due) });
-    expect(r.due).toHaveLength(80);
-    expect(r.held).toBe(220);
-    expect(r.newItems).toHaveLength(0);
-    expect(r.newPaused).toBe(true);
-  });
-
-  it('reviews already done today count toward the cap', () => {
-    const due = Array.from({ length: 50 }, (_, i) => card(`w${i}`, 'recognition'));
-    expect(pickReviewCards({ due, doneThisSession: 60, cap: 80, now: NOW, allowance: allowanceFor(due) }).due).toHaveLength(20);
   });
 });
 

@@ -82,25 +82,37 @@ describe('review sessions (Phase 23 Part A)', () => {
     expect(early.window?.name).toBe('evening');
   });
 
-  it('the cap is per session: 80 in the morning, 80 in the evening; the 81st waits for the next one', () => {
-    const cards = Array.from({ length: 90 }, (_, i) => card(`w${i}`, ny(10, 8, 5)));
-    // 80 answered this morning: those cards moved on (they're finished this session)
-    const evidence = Array.from({ length: 80 }, (_, i) => answer(`w${i}`, 'review_good', ny(10, 8, 6)));
-    const morning = reviewStatus({ cards, evidence, now: ny(10, 8, 9), settings: S, baseNew: 5 });
-    expect(morning.doneThisSession).toBe(80);
-    expect(morning.capLeft).toBe(0);
-    expect(morning.reviewAll).toBe(0);
-    expect(morning.sessionCards).toBe(10);
-    expect(morning.newState).toBe('limit_reached');
-    expect(morning.newMessage).toBe("You've done this session's 80 reviews. New words return next session.");
+  it('Phase 43: a session holds at most the ceiling (40), the most urgent first; the rest wait for the next one', () => {
+    // 90 cards due this morning; the 10 most overdue (lowest recall chance) must be in the session
+    const cards = Array.from({ length: 90 }, (_, i) =>
+      card(`w${i}`, ny(10, 8, 5), i < 10 ? { card: { ...createEmptyCard(ny(9, 1, 0)), due: ny(10, 8, 5), reps: 2, stability: 1, last_review: ny(9, 20, 0) } as SkillCard['card'] } : {}),
+    );
+    const morning = reviewStatus({ cards, evidence: [], now: ny(10, 8, 7), settings: S });
+    expect(morning.sessionCards).toBe(40);
+    expect(morning.reviewAll).toBe(40);
+    expect(morning.waiting).toBe(50);
+    const ids = sessionCards({ cards, evidence: [], now: ny(10, 8, 7), settings: S }).cards.map((c) => c.item.id);
+    for (let i = 0; i < 10; i++) expect(ids).toContain(`w${i}`);
+    // the next session holds at most the ceiling too
+    expect(morning.nextSession.count).toBeLessThanOrEqual(40);
 
-    const left = cards.slice(80);
-    const evening = reviewStatus({ cards: left, evidence, now: ny(10, 8, 17), settings: S, baseNew: 5 });
+    // 40 answered this morning: those cards moved on; the other 50 wait (the session isn't refilled)
+    const evidence = Array.from({ length: 40 }, (_, i) => answer(ids[i]!, 'review_good', ny(10, 8, 8)));
+    const later = reviewStatus({
+      cards,
+      evidence,
+      now: ny(10, 8, 9),
+      settings: S,
+      fixed: [{ key: '2026-10-08:morning', at: ny(10, 8, 8), cardKeys: ids.map((id) => `word:${id}|recognition`), newKeys: [] }],
+    });
+    expect(later.doneThisSession).toBe(40);
+    expect(later.sessionCards).toBe(0);
+    expect(later.waiting).toBe(50);
+
+    const evening = reviewStatus({ cards: cards.filter((c) => !ids.includes(c.item.id)), evidence, now: ny(10, 8, 17), settings: S });
     expect(evening.doneThisSession).toBe(0);
-    expect(evening.capLeft).toBe(80);
-    expect(evening.reviewAll).toBe(10);
-    expect(evening.newState).toBe('open');
-    expect(evening.newAllowed).toBe(5);
+    expect(evening.sessionCards).toBe(40);
+    expect(evening.waiting).toBe(10);
   });
 
   it('Again repeats count once; a finished card (even a short learning step) waits for the next session', () => {
@@ -122,7 +134,7 @@ describe('review sessions (Phase 23 Part A)', () => {
     expect(sessionCards({ cards, evidence, now: ny(10, 8, 9), settings: S }).cards.map((c) => c.item.id)).toEqual(['b']);
   });
 
-  it('New, unseen, removed and listening cards are never in a session; reading and production are', () => {
+  it('unseen, removed and listening cards are never in a session; reading, production and (Phase 43) the day\'s new cards are', () => {
     const due = ny(10, 8, 6);
     const cards = [
       card('r', due),
@@ -135,9 +147,10 @@ describe('review sessions (Phase 23 Part A)', () => {
       { ...card('gram', due), item: { kind: 'grammar' as const, id: 'gram-le' } },
     ];
     const s = reviewStatus({ cards, evidence: [], now: ny(10, 8, 7), settings: S });
-    expect(s.sessionCards).toBe(4);
-    expect(s.thirstyWords).toBe(1);
-    expect(s.thirstyWordIds).toEqual(['r']);
+    expect(s.sessionCards).toBe(5);
+    expect(s.newCards).toBe(1);
+    expect(s.thirstyWords).toBe(2);
+    expect(s.thirstyWordIds.sort()).toEqual(['new', 'r']);
   });
 
   it('the backlog pause shows only when more is in the session than its cap', () => {

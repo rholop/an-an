@@ -34,6 +34,8 @@ import { NOTHING_DUE, UNDO, wateredSummary } from '../lib/labels.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { useAnswerInputMode, useReadingSettings } from '../lib/reading.js';
 import { getLedgerNow } from '../lib/ledger.js';
+import { fixSession } from '../lib/calm-review.js';
+import { markStudyDirty } from '../lib/study-dirty.js';
 import { useSaveWhenDone } from '../lib/save-progress.js';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -247,6 +249,8 @@ function WaterSession({
 
   async function answer(e: Entry, evidence: Evidence, ok: boolean) {
     const before = { entries, index, correct };
+    // Phase 43 Part C.1: the first answer fixes this review session (nothing new joins it after).
+    if (await fixSession(db, await getLedgerNow(evidence.at)).catch(() => false)) markStudyDirty();
     watered.current.add(e.card.item.id);
     const recorded = learnerService.recordUndoable(evidence, evidence.at);
     pending.current = recorded;

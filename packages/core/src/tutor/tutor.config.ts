@@ -14,9 +14,6 @@ export const TUTOR_CONFIG = {
   recentClasses: 3,
   /** Phase 40 Part E.4: a new class shows on Home for this many days. */
   homeDays: 3,
-  /** Phase 42 (owner, 2026-10-14): at most this many tutoring words start a day (profile time zone),
-   * oldest class first; the rest wait and are spread over the next days. */
-  newWordsPerDay: 25,
 };
 
 /**

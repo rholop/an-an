@@ -22,7 +22,7 @@ import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { LevelChips } from '../components/LevelPicker.js';
 import { db } from '../db/instance.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
-import { allWateredLine, NOTHING_DUE, nextSessionTip, TERM, tutorClassTitle, tutorHomeLine, TUTORING_ONLY, REVIEW_NOW } from '../lib/labels.js';
+import { allWateredLine, backlogLine, NOTHING_DUE, nextSessionTip, TERM, tutorClassTitle, tutorHomeLine, TUTORING_ONLY, REVIEW_NOW } from '../lib/labels.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { loadGameSnapshot, type GameSnapshot } from '../lib/game-data.js';
 import { useLexicon } from '../lib/useLexicon.js';
@@ -204,6 +204,11 @@ export function GardenPage() {
       {snapshot.plants.length > 0 && snapshot.status.thirstyWords === 0 && (
         <p className="garden-meta garden-watered" data-testid="garden-watered">
           {allWateredLine(snapshot.status.nextSession, snapshot.status.nextSessionWordIds.length, snapshot.status.timeZone)}
+        </p>
+      )}
+      {snapshot.status.waiting > 0 && (
+        <p className="garden-meta" data-testid="garden-backlog">
+          {backlogLine(snapshot.status.waiting)}
         </p>
       )}
       <PlantLegend extra={<span>⚠ tricky word (never {TERM.mastered})</span>} />

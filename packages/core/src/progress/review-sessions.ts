@@ -4,6 +4,7 @@
 // covers everything up to the next one and nothing is ever "due at 3:40 pm". All times are in the
 // profile's time zone. Pure; time is always injected.
 
+import { PROGRESS_CONFIG } from './progress.config.js';
 import { isValidTimeZone, zonedDate, zonedParts, zonedStartOfDay } from './time.js';
 
 export * from './time.js';
@@ -18,7 +19,12 @@ export interface SessionSettings {
   eveningOpens: string;
   /** The evening ends at this time the next day when it is not after `eveningOpens`. */
   eveningEnds: string;
+  /** Phase 43 Part C.3: the most cards one session holds (the due-card ceiling, owner: 40). */
   capPerSession: number;
+  /** Phase 43 Part A: new words a day (5–50). */
+  newWordsPerDay: number;
+  /** Phase 43 Part A: new card types (later faces) a day (5–50). */
+  newFacesPerDay: number;
 }
 
 export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
@@ -27,8 +33,13 @@ export const DEFAULT_SESSION_SETTINGS: SessionSettings = {
   morningEnds: '10:00',
   eveningOpens: '16:00',
   eveningEnds: '04:00',
-  capPerSession: 80,
+  capPerSession: 40,
+  newWordsPerDay: PROGRESS_CONFIG.newPerDay.words,
+  newFacesPerDay: PROGRESS_CONFIG.newPerDay.faces,
 };
+
+/** Phase 43: the cap per session before Phase 43 (80): a profile that still has it moves to 40. */
+export const OLD_DEFAULT_CAP = 80;
 
 /** One session on one local day. */
 export interface SessionWindow {
@@ -75,6 +86,8 @@ export function sanitizeSessionSettings(v: unknown): SessionSettings {
   if (!(ee > eo || ee <= mo)) ee = mo;
   const cap =
     typeof o.capPerSession === 'number' && Number.isFinite(o.capPerSession) ? Math.round(o.capPerSession) : d.capPerSession;
+  const perDay = (x: unknown, def: number) =>
+    typeof x === 'number' && Number.isFinite(x) ? Math.min(50, Math.max(5, Math.round(x))) : def;
   return {
     timeZone,
     morningOpens: fromMinutes(mo),
@@ -82,6 +95,8 @@ export function sanitizeSessionSettings(v: unknown): SessionSettings {
     eveningOpens: fromMinutes(eo),
     eveningEnds: fromMinutes(ee),
     capPerSession: Math.min(500, Math.max(10, cap)),
+    newWordsPerDay: perDay(o.newWordsPerDay, d.newWordsPerDay),
+    newFacesPerDay: perDay(o.newFacesPerDay, d.newFacesPerDay),
   };
 }
 
@@ -152,9 +167,27 @@ export function countWindowStart(pos: SessionPosition): Date {
   return pos.current ? pos.current.opensAt : pos.previous.endsAt;
 }
 
-/** The earliest evidence time a status needs (the count window and the local day). */
+/** The earliest evidence time a status needs: the count window, the local day, and (Phase 43) the
+ * two sessions before the current or next one (skipped sessions) and the opening of its session day
+ * (the day's new-card limits). */
 export function statusEvidenceSince(now: Date, s: SessionSettings): Date {
-  const start = countWindowStart(sessionAt(now, s));
-  const day = zonedStartOfDay(now, s.timeZone);
-  return start < day ? start : day;
+  const pos = sessionAt(now, s);
+  const target = pos.current ?? pos.next;
+  const windows = sessionWindows(now, s, 2);
+  const i = windows.findIndex((w) => w.day === target.day && w.name === target.name);
+  const times = [countWindowStart(pos), zonedStartOfDay(now, s.timeZone)];
+  const two = windows[Math.max(0, i - 2)];
+  if (two) times.push(two.opensAt);
+  const morning = windows.find((w) => w.day === target.day && w.name === 'morning');
+  if (morning) times.push(morning.opensAt);
+  return new Date(Math.min(...times.map((t) => t.getTime())));
 }
+
+/** Phase 43: a stable name for a session ("2026-10-16:morning"): the one `at` falls in, or between
+ * sessions the next one (Review early counts toward it). */
+export function sessionKeyAt(at: Date, s: SessionSettings = DEFAULT_SESSION_SETTINGS): string {
+  const pos = sessionAt(at, s);
+  return windowKey(pos.current ?? pos.next);
+}
+
+export const windowKey = (w: Pick<SessionWindow, 'day' | 'name'>): string => `${w.day}:${w.name}`;

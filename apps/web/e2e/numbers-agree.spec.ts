@@ -60,11 +60,12 @@ async function seed(page: Page) {
     async ({ due, lessonWords, grammar, lastWeek }) => {
       const anan = (window as unknown as { __anan: AnanHandle }).__anan;
       const when = new Date(lastWeek);
-      // Lesson 1: passed "I already know this" (words both ways, extras too, its grammar points)
+      // Lesson 1: passed "I already know this" (every face, extras too, its grammar points; so no
+      // new Say it card joins the sessions below, Phase 43)
       await anan.learnerService.recordBulk(
         [
           ...lessonWords.flatMap((id) =>
-            (['recognition', 'production'] as const).map((skill) => ({ item: { kind: 'word', id }, skill, kind: 'known_check_passed', at: when })),
+            (['recognition', 'production', 'reading'] as const).map((skill) => ({ item: { kind: 'word', id }, skill, kind: 'known_check_passed', at: when })),
           ),
           ...grammar.map((id) => ({ item: { kind: 'grammar', id }, skill: 'recognition', kind: 'known_check_passed', at: when })),
         ],
@@ -97,7 +98,8 @@ async function seed(page: Page) {
             clozeStreak: 0,
             familiarity: 0,
             readingDependence: 0,
-            flags: {},
+            // Phase 43: Meaning not yet Good in two sessions, so no Pick card joins the sessions below
+            flags: { goodRun: 0 },
             updatedAt: new Date(lastWeek),
           })),
         ),

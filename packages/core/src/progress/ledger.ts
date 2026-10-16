@@ -14,10 +14,11 @@ import { lessonProgress, lessonDone, type LessonProgress } from '../textbook/pro
 import type { ClassScope } from '../textbook/scope.js';
 import type { Evidence, ItemRef, Skill, Word } from '../types.js';
 import type { PriorityConfig } from '../curriculum/priority.config.js';
-import { faceGateOpen, faceStage, knownFaceKeys } from './face-order.js';
+import { faceStage } from './face-order.js';
+import { faceReleased } from './good-run.js';
 import { recentTutorWordIds, tutorLessonItems, TUTOR_FACES, type TutorLesson } from '../tutor/session.js';
 import { TUTOR_CONFIG } from '../tutor/tutor.config.js';
-import { extrasCountForMastery, getStudyFocus, lessonIndex, type StudyFocus, type StudySettings } from '../study/study-focus.js';
+import { extrasCountForMastery, getStudyFocus, lessonIndex, studyRank, type StudyFocus, type StudySettings } from '../study/study-focus.js';
 import { pickNewForSession } from '../study/queue.js';
 import { computeStreak, streakDays, type StreakConfig, type StreakDay, type StreakResult } from '../game/streak.js';
 import { knownCharacters } from '../learner/char-stats.js';
@@ -32,13 +33,15 @@ import {
 } from './review-sessions.js';
 import {
   newWordState,
+  planSession,
   reviewStatus,
   sessionCardKey,
-  sessionCards,
   sessionForecast,
+  type FixedSession,
   type ForecastDay,
   type NewState,
   type ReviewStatus,
+  type SessionPlan,
 } from './review-status.js';
 import {
   grammarDots,
@@ -65,8 +68,8 @@ import { vocabLadder, type VocabLadder, type VocabLadderOptions } from './vocabL
 
 type EvidenceLike = Pick<Evidence, 'item' | 'skill' | 'kind' | 'at'> & Partial<Pick<Evidence, 'context'>>;
 
-/** The queues that add new items (Phase 29 Part B.4). */
-export type NewQueue = keyof ProgressConfig['newPerQueue'];
+/** The queues that add new items (Phase 29 Part B.4). Review takes its share of the day's limits. */
+export type NewQueue = 'review' | keyof ProgressConfig['newPerQueue'];
 
 export interface LedgerStudyInputs {
   lexicon: Pick<Lexicon, 'allWords' | 'byId'>;
@@ -108,6 +111,8 @@ export interface LedgerInputs {
   /** Phase 38: overrides the study context's `resolves` (tests). A card that doesn't resolve is held
    * out of every count and session and listed by `unresolved()`. */
   resolves?: (item: ItemRef) => boolean;
+  /** Phase 43 Part C.1: sessions as fixed at their first answer (the synced `reviewSessions/…` rows). */
+  fixedSessions?: readonly FixedSession[];
 }
 
 /** Phase 38: which items the ledger can show: the study context's check, else words the study
@@ -147,8 +152,15 @@ export interface TutorSessionView extends LearnedMastered {
 
 export interface SessionView {
   status: ReviewStatus;
-  /** This session's cards (with `early` between sessions, the next session's). */
+  /** This session's cards (with `early` between sessions, the next session's): new cards first. */
   cards: SkillCard[];
+  /** Phase 43: the new cards among `cards` (this session's share of the day's limits). */
+  fresh: SkillCard[];
+  /** Phase 43: a fixed session's new items that have no card yet ("word:id|recognition"). */
+  pendingNewKeys: string[];
+  /** Phase 43: cards due in this session over the ceiling (they wait for the next one). */
+  waiting: number;
+  started: boolean;
   window?: SessionWindow;
   /** Distinct words among `cards`. */
   words: string[];
@@ -158,7 +170,7 @@ export interface NewAllowance {
   state: NewState;
   /** New items this queue may add in one session. */
   allowed: number;
-  /** Review only: new Pick / Say it faces of words already being learned. */
+  /** Phase 43: always 0 (new faces are part of the session the ledger plans). */
   faces: number;
   message?: string;
 }
@@ -209,6 +221,7 @@ export class Ledger {
   private readonly study?: LedgerStudyInputs;
   private readonly storedActiveDays: ReadonlySet<string>;
   private readonly grammarUses: Map<string, GrammarUse>;
+  private readonly fixedSessions: readonly FixedSession[];
   private memo = new Map<string, unknown>();
 
   constructor(inputs: LedgerInputs) {
@@ -229,6 +242,7 @@ export class Ledger {
     const since = statusEvidenceSince(inputs.now, inputs.session).getTime();
     this.evidence = inputs.evidence.filter((e) => e.at.getTime() >= since && e.at.getTime() <= inputs.now.getTime());
     this.study = inputs.study;
+    this.fixedSessions = inputs.fixedSessions ?? [];
     this.storedActiveDays = new Set(inputs.activeDays ?? []);
     // Phase 25: a grammar point's days are the profile's days.
     this.grammarUses = grammarUsesFromEvidence(inputs.evidence, this.cfg, this.timeZone);
@@ -382,17 +396,50 @@ export class Ledger {
 
   /** This session's status: the only "due" numbers (Home, Review, Garden, the badge). */
   get status(): ReviewStatus {
-    return this.once('status', () =>
-      reviewStatus({
-        cards: this.allCards,
-        evidence: this.evidence,
-        now: this.now,
-        settings: this.settings,
-        baseNew: this.cfg.newPerQueue.review,
-        newHalfShare: this.cfg.newHalfShare,
-        ...(this.tutorWordIds().size > 0 ? { tutor: this.tutorCardTest(), tutorOrder: this.tutorOrder() } : {}),
-      }),
-    );
+    return this.once('status', () => reviewStatus({ ...this.sessionInput(), plan: this.plan(false) }));
+  }
+
+  private sessionInput() {
+    return {
+      cards: this.allCards,
+      evidence: this.evidence,
+      now: this.now,
+      settings: this.settings,
+      fixed: this.fixedSessions,
+      newRank: this.newRank(),
+      ...(this.tutorWordIds().size > 0 ? { tutor: this.tutorCardTest(), tutorOrder: this.tutorOrder() } : {}),
+    };
+  }
+
+  /** Phase 43: the study order of new items that aren't tutoring words (lower first). */
+  private newRank(): ((c: SkillCard) => number) | undefined {
+    const focus = this.focus();
+    const idx = this.lessonIdx();
+    if (!focus?.enabled || !idx) return undefined;
+    return (c) => studyRank(focus, (i) => idx.get(`${i.kind}:${i.id}`), c.item);
+  }
+
+  private plan(early: boolean): SessionPlan {
+    return this.once(`plan:${early}`, () => planSession({ ...this.sessionInput(), ...(early ? { early: true } : {}) }));
+  }
+
+  /** Phase 43 Part A: what is left of today's new words and new card types (Settings → Review). */
+  newToday(): { wordsLeft: number; facesLeft: number } {
+    return this.status.newToday;
+  }
+
+  /** Phase 43 Part C.1: the session the next answer would fix (its key and cards), or undefined when
+   * it is already fixed or no session is open (with `early`, the next session). */
+  sessionToFix(opts: { early?: boolean } = {}): FixedSession | undefined {
+    const p = this.plan(!!opts.early);
+    if (!p.window || p.started) return undefined;
+    const fresh = p.fresh.map(sessionCardKey);
+    return {
+      key: `${p.window.day}:${p.window.name}`,
+      at: this.now,
+      cardKeys: [...fresh, ...p.due.map(sessionCardKey)],
+      newKeys: fresh,
+    };
   }
 
   /** Phase 40 Part E: is this card one of a tutoring word's (any saved class, ticked)? */
@@ -416,16 +463,19 @@ export class Ledger {
   /** This session's cards (or with `early`, between sessions, the next session's). */
   session(opts: { early?: boolean } = {}): SessionView {
     return this.once(`session:${opts.early ? 'early' : 'now'}`, () => {
-      const picked = sessionCards({
-        cards: this.allCards,
-        evidence: this.evidence,
-        now: this.now,
-        settings: this.settings,
-        ...(opts.early ? { early: true } : {}),
-        ...(this.tutorWordIds().size > 0 ? { tutor: this.tutorCardTest(), tutorOrder: this.tutorOrder() } : {}),
-      });
-      const words = [...new Set(picked.cards.filter((c) => c.item.kind === 'word').map((c) => c.item.id))];
-      return { status: this.status, ...picked, words };
+      const p = this.plan(!!opts.early);
+      const cards = [...p.fresh, ...p.due];
+      const words = [...new Set(cards.filter((c) => c.item.kind === 'word').map((c) => c.item.id))];
+      return {
+        status: this.status,
+        cards,
+        fresh: p.fresh,
+        pendingNewKeys: p.pendingNewKeys,
+        waiting: p.waiting,
+        started: p.started,
+        ...(p.window ? { window: p.window } : {}),
+        words,
+      };
     });
   }
 
@@ -470,28 +520,24 @@ export class Ledger {
   // -------------------------------------------------------------------------------------------
   // New items (Part B.4: one allowance for every queue)
 
-  /** New items `queue` may add this session, from the one backlog state. */
+  /** New items `queue` may add this session. Phase 43: Review's new words are this session's share
+   * of the day's limits (`status.newAllowed`: study-order words with no card yet; the session's new
+   * cards are already in `session()`); Cloze keeps its own limit inside that share; pinyin and
+   * listening keep their own practice limits. */
   newAllowance(queue: NewQueue): NewAllowance {
     const st = this.status;
+    const message = st.newMessage ? { message: st.newMessage } : {};
+    if (queue === 'review') return { state: st.newState, allowed: st.newAllowed, faces: 0, ...message };
+    if (queue === 'cloze')
+      return { state: st.newState, allowed: Math.min(this.cfg.newPerQueue.cloze, st.newAllowed), faces: 0, ...message };
     const n = newWordState({
-      // Phase 40: tutoring cards never hold the other new words back (they're outside the cap).
-      dueNow: st.sessionCards - st.tutorCards,
+      dueNow: st.sessionCards,
       capLeft: st.capLeft,
       cap: st.cap,
       baseNew: this.cfg.newPerQueue[queue],
       newHalfShare: this.cfg.newHalfShare,
     });
-    const faces =
-      queue !== 'review'
-        ? 0
-        : n.newState === 'open'
-          ? this.cfg.newFacesPerSession
-          : n.newState === 'reduced'
-            ? Math.floor(this.cfg.newFacesPerSession / 2)
-            : 0;
-    // Phase 40 Part E: tutoring words are added on top of the textbook order, never in place of it, so
-    // they no longer use up the allowance (Phase 39 counted them against it).
-    return { state: n.newState, allowed: n.newAllowed, faces, ...(n.newMessage ? { message: n.newMessage } : {}) };
+    return { state: n.newState, allowed: n.newAllowed, faces: 0, ...(n.newMessage ? { message: n.newMessage } : {}) };
   }
 
   // -------------------------------------------------------------------------------------------
@@ -544,34 +590,38 @@ export class Ledger {
   }
 
   /**
-   * Phase 40 Part E.2–E.3: the ticked tutoring words' faces to introduce now (New cards, in the
-   * session at once): every face in `TUTOR_FACES` the word has no card for yet, for every word not
-   * Learned or removed, oldest class first. No per-session limit (owner, 2026-10-14).
+   * The ticked tutoring words' cards to introduce now, oldest class first: a word's Meaning card at
+   * Save; Phase 43 Part B: a later face only once the face before it is consistently known. A New
+   * card is only made; which ones are in a session is the day's limit (`planSession`).
    */
   tutorToIntroduce(): Array<{ item: ItemRef; sessionId: string; skills: Skill[] }> {
     return this.once('tutorToIntroduce', () => {
       const out: Array<{ item: ItemRef; sessionId: string; skills: Skill[] }> = [];
       const seen = new Set<string>();
-      const carded = new Set(this.allCards.filter((c) => c.item.kind === 'word').map((c) => `${c.skill}|${c.item.id}`));
-      // Phase 42: faces enter in order (Meaning, Pick, Say it): a face is added once the one before
-      // it was rated Good or Easy. (Which New cards are in the session is `tutorNowFilter`'s daily limit.)
-      const known = knownFaceKeys(this.allCards);
+      const byKey = new Map(this.allCards.filter((c) => c.item.kind === 'word').map((c) => [`${c.skill}|${c.item.id}`, c]));
+      const carded = (s: Skill, id: string) => {
+        const c = byKey.get(`${s}|${id}`);
+        return !!c && c.state !== 'unseen';
+      };
       const learnedHere = new Set(
         this.allCards
           .filter((c) => c.item.kind === 'word' && c.skill === 'recognition' && !c.flags.knownChecked && !c.flags.markedKnown && !c.flags.imported)
           .map((c) => c.item.id),
       );
-      const ready = (s: Skill, id: string) => s === 'recognition' || known.has(`${s === 'production' ? 'recognition' : 'production'}|${id}`);
+      const released = (s: Skill, id: string) => {
+        const c = byKey.get(`${s}|${id}`);
+        return !!c && c.state !== 'unseen' && faceReleased(c);
+      };
+      const ready = (s: Skill, id: string) => s === 'recognition' || released(s === 'production' ? 'recognition' : 'production', id);
       for (const l of this.tutorLessons())
         for (const id of l.wordIds) {
           const item: ItemRef = { kind: 'word', id };
           if (seen.has(id)) continue;
           seen.add(id);
           if (this.index.removed(item) || !this.resolvesItem(item)) continue;
-          // "I already know this" / imported words need no introduction; a word learned by rating it
-          // here still gets its later faces (Phase 42: Easy on Meaning releases Pick).
+          // "I already know this" / imported words need no introduction
           if (this.learned(item) && !learnedHere.has(id)) continue;
-          const skills = TUTOR_FACES.filter((s) => !carded.has(`${s}|${id}`) && ready(s, id));
+          const skills = TUTOR_FACES.filter((s) => !carded(s, id) && ready(s, id));
           if (skills.length > 0) out.push({ item, sessionId: l.id, skills });
         }
       return out;
@@ -612,13 +662,9 @@ export class Ledger {
     );
   }
 
-  /** Phase 42: the New cards Review may introduce now: a Pick card waits for its word's Meaning to be
-   * rated Good or Easy, a Say it card for Pick (lesson words and tutoring words alike). */
+  /** Phase 43: the New cards in this review session (the day's share, tutoring first, faces in order). */
   reviewNewCards(): SkillCard[] {
-    return this.once('reviewNewCards', () => {
-      const known = knownFaceKeys(this.allCards);
-      return this.newCards().filter((c) => faceGateOpen(c, known));
-    });
+    return this.session().fresh;
   }
 
   /** New cards (introduced, never answered, not removed) of the Review skills. */
@@ -639,12 +685,17 @@ export class Ledger {
       scenarioTags?: readonly string[];
       /** The level the general candidates come from (default: My level, else the frontier). */
       level?: Level;
+      /** Phase 43: words to show (the Reader's frontier, chat targets), not cards to start in Review:
+       * `allowed` alone limits them, not the session's share of the day's new words. */
+      candidates?: boolean;
+      /** false: only study-order items and New cards, never the level's general words (Review). */
+      general?: boolean;
     } = {},
   ): { cards: SkillCard[]; items: ItemRef[] } {
-    const allowance = this.newAllowance(queue);
+    const allowance = opts.candidates ? { allowed: Infinity } : this.newAllowance(queue);
     const focus = this.focus();
     // General (level) words join only when the study order allows them (no focus, or the gate is open).
-    const general = !focus?.enabled || focus.generalNewItemsAllowed;
+    const general = opts.general !== false && (!focus?.enabled || focus.generalNewItemsAllowed);
     const fallback = general ? this.levelCandidates(opts.scenarioTags, opts.level) : [];
     return pickNewForSession({
       // New words only: new faces (Pick / Say it) of words already learned have Review's own allowance.
@@ -652,7 +703,7 @@ export class Ledger {
       newCards: this.newCards().filter((c) => c.skill === 'recognition' && !this.isTutorCard(c)),
       ...(focus ? { focus } : {}),
       ...(this.lessonIdx() ? { lessonIdx: this.lessonIdx()! } : {}),
-      allowed: Math.min(allowance.allowed, opts.allowed ?? Infinity),
+      allowed: Math.min(allowance.allowed, opts.allowed ?? (opts.candidates ? this.cfg.newPerDay.words : Infinity)),
       ...(opts.onlyItems ? { onlyItems: opts.onlyItems } : {}),
       extraItems: [...(opts.extraItems ?? []), ...fallback],
       resolves: this.resolvesItem,
@@ -817,7 +868,7 @@ export class Ledger {
         if (c.item.kind !== 'word' || isPracticeSkill(c.skill) || c.state === 'unseen') continue;
         if (!isActiveCard(c) && !c.flags.markedKnown) continue;
         const id = c.item.id;
-        if (this.inSession(c)) dueIds.add(id);
+        if (this.inSession(c) && !isNewCard(c)) dueIds.add(id);
         if (knownIds.has(id)) continue;
         if (isNewCard(c)) newIds.add(id);
         else learningIds.add(id);

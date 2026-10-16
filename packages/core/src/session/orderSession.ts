@@ -53,6 +53,11 @@ export function sessionMeta<T>(cards: readonly T[]): OrderMeta<T> | undefined {
   return (cards as Partial<OrderedSession<T>>)[ORDERED_SESSION];
 }
 
+/** Mark a list as built by the shared order (Phase 43: block-by-block sessions are built from it). */
+export function markOrderedSession<T>(cards: T[], meta: OrderMeta<T>): OrderedSession<T> {
+  return mark(cards, meta);
+}
+
 function mark<T>(cards: T[], meta: OrderMeta<T>): OrderedSession<T> {
   Object.defineProperty(cards, ORDERED_SESSION, { value: meta, enumerable: false });
   return cards as OrderedSession<T>;

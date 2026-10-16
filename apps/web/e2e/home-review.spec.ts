@@ -57,7 +57,7 @@ async function seedCards(page: Page, ids: string[], dueIn: number | 'later-today
   );
 }
 
-/** `n` review answers today, each a different card (they count toward the daily cap). */
+/** `n` review answers today, each a different card (they start this session). */
 async function seedReviewsDone(page: Page, n: number) {
   await page.evaluate(async (count) => {
     const at = new Date(Date.now() - 60_000);
@@ -119,14 +119,14 @@ test("the owner's scenario (Phase 23): 2 pm, morning review done, 3 cards due be
   await expect(page.getByTestId('review-counts')).toContainText(/^3 due · 0 new/);
 });
 
-test('the cap is per session: 85 answers this evening hold the rest and pause new words until the next session', async ({ page }) => {
+test('Phase 43: once this session has answers, new words wait for the start of the next one', async ({ page }) => {
   await open(page, 'garden');
   await seedCards(page, WORDS.slice(0, 3), -60_000);
   await seedReviewsDone(page, 85);
   await open(page, 'garden');
-  await expect(page.getByTestId('home-new-state')).toHaveText("You've done this session's 80 reviews. New words return next session.");
+  await expect(page.getByTestId('home-new-state')).toHaveText('New words join at the start of a session, never partway through.');
   await page.getByRole('button', { name: 'Review', exact: true }).click();
-  await expect(page.getByTestId('review-cap-note')).toContainText("You've done this session's 80 reviews.");
+  await expect(page.getByTestId('review-cap-note')).toContainText('New words join at the start of a session');
 });
 
 test('changing the session times in Settings updates Home and Review without a reload', async ({ page }) => {

@@ -52,6 +52,11 @@ describe('Review faces (Phase 23 Part B)', () => {
     expect(c).toMatchObject({ prodRung: 'pick', prodStreak: 0 });
     c = applyEvidence(c, ans('review_good', 'pick', NOW), NOW).card!;
     c = applyEvidence(c, ans('review_hard', 'pick', NOW), NOW).card!;
+    // Phase 43 Part B.5: 2 right picks aren't enough while the card is weak and not consistently known
+    expect(c.prodRung).toBe('pick');
+    const strong = { ...c, card: { ...c.card, stability: 30 }, flags: { ...c.flags, goodRun: 1, goodRunSession: '2026-01-01:morning' } };
+    c = applyEvidence(strong, ans('review_good', 'pick', NOW), NOW).card!;
+    expect(c.flags.goodRun).toBe(2);
     expect(c.prodRung).toBe('recall');
     expect(reviewFace(c)).toBe('recall');
     c = applyEvidence(c, ans('review_good', 'recall', NOW), NOW).card!;

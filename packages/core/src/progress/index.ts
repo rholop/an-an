@@ -16,6 +16,8 @@ export {
   type SessionName,
   type SessionSettings,
   type SessionWindow,
+  sessionKeyAt,
+  OLD_DEFAULT_CAP,
 } from './review-sessions.js';
 export {
   addDaysToKey,
@@ -31,6 +33,7 @@ export {
   newStateMessage,
   REVIEW_ANSWER_KINDS,
   sessionCardKey,
+  type FixedSession,
   type ForecastDay,
   type NewState,
   type ReviewStatus,
@@ -63,6 +66,8 @@ export {
 } from './terms.js';
 
 export { faceGateOpen, faceStage, knownFace, knownFaceKeys } from './face-order.js';
+// Phase 43: the Good run that releases a word's next face (and its one-time migration).
+export { faceReleased, goodRunsFromHistory, type RunAnswer } from './good-run.js';
 
 // Phase 27: learning steps finish in the sitting (one rule for every flashcard sitting).
 export {

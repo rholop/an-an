@@ -254,12 +254,36 @@ export function ReviewSettingsPage() {
             onChange={(e) => void updateReviewSettings({ capPerSession: Number(e.target.value) })}
             data-testid="session-cap"
           />{' '}
-          reviews a session
+          cards a session
+        </label>
+        <label className="review-settings-row">
+          New words a day:{' '}
+          <input
+            type="number"
+            min={5}
+            max={50}
+            value={settings.newWordsPerDay}
+            onChange={(e) => void updateReviewSettings({ newWordsPerDay: Number(e.target.value) })}
+            data-testid="new-words-per-day"
+          />
+        </label>
+        <label className="review-settings-row">
+          New card types a day:{' '}
+          <input
+            type="number"
+            min={5}
+            max={50}
+            value={settings.newFacesPerDay}
+            onChange={(e) => void updateReviewSettings({ newFacesPerDay: Number(e.target.value) })}
+            data-testid="new-faces-per-day"
+          />
         </label>
         <p className="review-settings-muted">
-          When a session holds more, review shows the most important first (your current lesson and level, then the
-          words you're most likely to forget). The rest wait for the next session. New words pause until you catch
-          up.
+          A session holds the cards you're most likely to forget first (your tutoring words first among equals); the
+          rest wait for the next session. New words come in at the start of a session, never partway through: about
+          half the day's in the morning, the rest in the evening, your tutoring words first. A word's next card type
+          (Meaning, then Pick the Mandarin, then Say it, then Recall) starts once you've rated the one before Good or
+          Easy in two different sessions.
         </p>
       </section>
 

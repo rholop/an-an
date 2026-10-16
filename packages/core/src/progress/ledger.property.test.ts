@@ -290,18 +290,24 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
   });
 
   // (Phase 40: a tutoring word's New cards are the one exception, tested below; this state has none.)
-  it('a New card is never in a session; a New or removed card never gets read credit', () => {
+  // Phase 43: a New card is in a session only as one of the session's share of the day's new cards.
+  it('a New card is in a session only as one of its new cards (within the day\'s limits and the ceiling); a New or removed card never gets read credit', () => {
     fc.assert(
       fc.property(stateArb, (s) => {
         const ledger = ledgerOf(s);
-        const inAny = new Set([...ledger.session().cards, ...ledger.session({ early: true }).cards].map(keyOf));
-        for (const c of ledger.cards) {
-          if (isNewCard(c)) {
-            expect(ledger.inSession(c)).toBe(false);
-            expect(inAny.has(keyOf(c))).toBe(false);
-          }
-          if (isNewCard(c) || !isActiveCard(c)) expect(ledger.creditsRead(c)).toBe(false);
+        for (const early of [false, true]) {
+          const view = ledger.session(early ? { early: true } : {});
+          const fresh = new Set(view.fresh.map(keyOf));
+          for (const c of view.cards) if (isNewCard(c)) expect(fresh.has(keyOf(c))).toBe(true);
+          expect(view.cards.length).toBeLessThanOrEqual(ledger.settings.capPerSession);
+          const words = view.fresh.filter((c) => c.item.kind === 'grammar' || c.skill === 'recognition').length;
+          expect(words).toBeLessThanOrEqual(ledger.settings.newWordsPerDay);
+          expect(view.fresh.length - words).toBeLessThanOrEqual(ledger.settings.newFacesPerDay);
+          // a word never shows a new face beside another of its cards (Part B.3)
+          const faces = view.fresh.filter((c) => c.item.kind === 'word' && c.skill !== 'recognition');
+          for (const f of faces) expect(view.cards.filter((c) => c.item.kind === 'word' && c.item.id === f.item.id)).toHaveLength(1);
         }
+        for (const c of ledger.cards) if (isNewCard(c) || !isActiveCard(c)) expect(ledger.creditsRead(c)).toBe(false);
       }),
       RUNS,
     );
@@ -338,16 +344,18 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
       fc.property(stateArb, (s) => {
         const ledger = ledgerOf(s);
         const state = ledger.newAllowance('review').state;
-        for (const q of QUEUES) expect(ledger.newAllowance(q).state).toBe(state);
+        // Phase 43: Review and Cloze share the day's new words; pinyin and listening keep their own limits
+        const shared: NewQueue[] = ['review', 'cloze'];
+        for (const q of shared) expect(ledger.newAllowance(q).state).toBe(state);
         if (state !== 'paused_backlog' && state !== 'limit_reached') return;
-        for (const q of QUEUES) {
+        expect(ledger.session().fresh).toHaveLength(0);
+        if (state === 'paused_backlog') expect(ledger.status.sessionCards).toBeGreaterThan(0);
+        for (const q of shared) {
           expect(ledger.newAllowance(q).allowed).toBe(0);
           const picked = ledger.pickNew(q, { level: 'N1' });
           expect(picked.cards.length + picked.items.length).toBe(0);
         }
         expect(ledger.newAllowance('review').faces).toBe(0);
-        expect(ledger.practice('listening').fresh).toHaveLength(0);
-        expect(ledger.practice('reading').fresh).toHaveLength(0);
       }),
       RUNS,
     );
@@ -355,7 +363,7 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
 
   // Phase 39 (owner, 2026-10-13): tutoring words go into study as soon as a class is saved, ahead of
   // the textbook's, outside the allowance (20 a session at most); the textbook gets what is left.
-  it('tutoring words: in the session at once (any time of day), outside the allowance and the picks', () => {
+  it('tutoring words: first among the day\'s new words, never picked by the other queues', () => {
     const tutorIds = ['w14', 'w15', 'w16', 'w17', 'w18', 'w19'];
     const tutorLessons: TutorLesson[] = [
       { id: 'tutor-b', date: '2026-10-13', wordIds: tutorIds.slice(3), grammarIds: [] },
@@ -378,12 +386,14 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
           if (ledger.learned(item)) expect(skills).not.toContain('recognition');
           expect(skills.length).toBeGreaterThan(0);
         }
-        // every tutoring New card is in this session, whatever the time of day (Phase 40 Part E.1)
-        const inSession = new Set(ledger.session().cards.map(keyOf));
+        // Phase 43: tutoring words lead the day's new words: a textbook word is new in this session only
+        // once every waiting tutoring Meaning card is too
+        const fresh = new Set(ledger.session().fresh.map(keyOf));
+        const otherNewWord = ledger.session().fresh.some((c) => c.skill === 'recognition' && !tutorKeys.has(`word:${c.item.id}`));
         for (const c of ledger.tutorNewCards()) {
           expect(tutorKeys.has(`word:${c.item.id}`)).toBe(true);
           expect(ledger.learned(c.item)).toBe(false);
-          expect(inSession.has(keyOf(c))).toBe(true);
+          if (otherNewWord) expect(fresh.has(keyOf(c))).toBe(true);
         }
         // the badge is the session's size, tutoring cards included
         expect(ledger.status.sessionCards).toBe(ledger.session().cards.length);

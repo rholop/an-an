@@ -30,13 +30,26 @@ export const PROGRESS_CONFIG = {
   /** Phase 29 (was a literal in review/faces.ts): a production card this stable (days) in review
    * moves from Pick the Mandarin to Recall. */
   recallStabilityDays: 7,
-  /** Phase 29 Part B.4: new items each queue may add in one session when nothing holds new words
-   * back. The backlog state (open / reduced / paused / limit reached) applies to all of them. */
-  newPerQueue: { review: 5, cloze: 5, pinyin: 10, listening: 4 },
-  /** Phase 23: new Pick / Say it faces of words already being learned, per Review session. */
-  newFacesPerSession: 8,
-  /** Share of the session cap above which new items are halved ("reduced"). */
+  /** Phase 29 Part B.4: the practice queues' own limits on new items in one session (Phase 43: Review
+   * has no per-session number any more; it takes its share of the day's `newPerDay`, and Cloze is
+   * also held to what is left of that). */
+  newPerQueue: { cloze: 5, pinyin: 10, listening: 4 },
+  /** Phase 43 Part A (owner, 2026-10-16: "15 new words plus up to 25 new card types a day"): first-time
+   * cards per session day (the day the morning session opens). `words` = a word's first card
+   * (Meaning) or a grammar point's; `faces` = a later face (Pick, Say it) entering for the first time.
+   * Per profile in Settings → Review (`SessionSettings.newWordsPerDay` / `newFacesPerDay`). */
+  newPerDay: { words: 15, faces: 25 },
+  /** Share of the session cap above which new items are halved (practice queues). */
   newHalfShare: 0.5,
+  /** Phase 43 Part A.4: at most this share of each daily limit in the morning session (rounded up). */
+  morningNewShare: 0.5,
+  /** Phase 43 Part B.2 (owner: "2"): Good/Easy answers in a row, each in a different review session,
+   * that release a word's next face. Again or Hard resets the run. */
+  faceReleaseGoodRuns: 2,
+  /** Phase 43 Part E: an Again card comes back at least this many cards later (or last in its block). */
+  againGap: 10,
+  /** Phase 43 Part E.2: the Again that puts a card aside until the next session (counted per session). */
+  againsBeforePark: 3,
   /** Phase 29 Part B.3: a card whose next learning step is due within this many minutes comes back
    * in the same sitting (Review, lesson study, Water all, Cloze). */
   sittingStepMinutes: 20,

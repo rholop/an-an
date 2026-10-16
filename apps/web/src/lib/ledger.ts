@@ -13,7 +13,8 @@ import { currentSession, db, onSessionChange } from '../db/instance.js';
 import type { AnanDB } from '../db/schema.js';
 import { peekCurrentLevel, useCurrentLevel } from './current-level.js';
 import { setLedgerSource } from './learner-service.js';
-import { getReviewSettings, useReviewSettings, type ReviewSettings } from './review-settings.js';
+import { getReviewSettings, reloadReviewSettings, useReviewSettings, type ReviewSettings } from './review-settings.js';
+import { ensureCalmMigration, loadFixedSessions } from './calm-review.js';
 import { markStudyDirty, onStudyDirty, studyVersion } from './study-dirty.js';
 
 /**
@@ -59,15 +60,22 @@ export async function ledgerFrom(
   const settings = opts.settings ?? (await getReviewSettings());
   // Phase 32: a profile restored before any device back-filled its streak gets it once, here.
   await database.ensureActiveDaysBackfill().catch(() => undefined);
-  const [cards, evidence, activeDays] = await Promise.all([
+  // Phase 43: once per profile, the old backlog is calmed (Good runs, the 40-card ceiling).
+  if (await ensureCalmMigration(database, settings, now).catch(() => false)) {
+    reloadReviewSettings();
+    markStudyDirty();
+  }
+  const [cards, evidence, activeDays, fixedSessions] = await Promise.all([
     allCards(database),
     ledgerEvidence(database, now, settings),
     database.activeDays.toCollection().primaryKeys() as Promise<string[]>,
+    loadFixedSessions(database),
   ]);
   return buildLedger({
     cards,
     evidence,
     activeDays,
+    fixedSessions,
     knownItems: opts.knownItems ?? [],
     session: settings,
     masteryShare: opts.masteryShare ?? 0.8,

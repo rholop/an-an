@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { ensureFaceCards } from './lib/face-cards.js';
+import { ensureTutorCards } from './lib/tutoring/introduce.js';
 import { useLookupGateRegistration } from './lib/lookup-gate.js';
 import {
   classLevelHint,
@@ -12,6 +14,7 @@ import { useProfile } from './components/ProfileGate.js';
 import { PROFILES } from './profiles.js';
 import { initCurrentLevelIfUnset, useCurrentLevel } from './lib/current-level.js';
 import { useLexicon } from './lib/useLexicon.js';
+import { useTextbook } from './lib/textbook-data.js';
 import { useMediaQuery } from './lib/useMediaQuery.js';
 import { installViewportTracking } from './lib/viewport.js';
 import { useMyClass } from './lib/my-class.js';
@@ -262,6 +265,17 @@ export function App() {
   useStudyContextRegistration();
   useLookupGateRegistration();
   useApplyZhTextSize();
+  // Phase 43: a session counts its new cards, so every screen sees the same cards: the faces and
+  // tutoring cards that are due to exist are made on each page change, not only when Review opens.
+  // (After the study context registers, so the word list is loaded and held cards are left alone.)
+  const lexiconReady = useLexicon().status === 'ready';
+  const textbookReady = useTextbook().status !== 'loading';
+  useEffect(() => {
+    if (!lexiconReady || !textbookReady) return;
+    void ensureFaceCards()
+      .then(() => ensureTutorCards())
+      .catch(() => 0);
+  }, [route, lexiconReady, textbookReady]);
   const [moreOpen, setMoreOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
 

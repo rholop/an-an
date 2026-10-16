@@ -18,7 +18,7 @@ export interface ReviewPileConfig {
 }
 
 export const REVIEW_PILE_CONFIG: ReviewPileConfig = {
-  dailyCap: 80,
+  dailyCap: 40,
   newHalfShare: PROGRESS_CONFIG.newHalfShare,
   knownStabilityDays: PROGRESS_CONFIG.knownStabilityDays,
   bulkSpreadMinDays: 14,

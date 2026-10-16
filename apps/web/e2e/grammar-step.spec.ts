@@ -89,7 +89,11 @@ test('Review: a due grammar point is one exercise from the same builders, and a 
   await page.waitForFunction(() => Boolean((window as unknown as { __anan?: unknown }).__anan));
   await page.evaluate(async () => {
     const now = Date.now();
-    const db = (window as unknown as { __anan: { db: { items: { put: (r: unknown) => Promise<unknown> } } } }).__anan.db;
+    const db = (window as unknown as { __anan: { db: { items: { put: (r: unknown) => Promise<unknown> }; evidence: { add: (r: unknown) => Promise<unknown> } } } }).__anan
+      .db;
+    // Phase 43: this session already has an answer, so no new words join it (a grammar point's block
+    // comes after the Meaning block, which would otherwise hold the session's new words).
+    await db.evidence.add({ item: { kind: 'word', id: 'done-0' }, skill: 'recognition', kind: 'review_good', at: new Date(now - 60_000), uid: 'seed-done-0' });
     await db.items.put({
       pk: 'grammar:gram-ne-followup:recognition',
       item: { kind: 'grammar', id: 'gram-ne-followup' },

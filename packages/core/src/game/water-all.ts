@@ -6,7 +6,7 @@
 
 import { hashText } from '../hash.js';
 import type { SkillCard } from '../learner/types.js';
-import { isReviewSkill } from '../progress/terms.js';
+import { isNewCard, isReviewSkill } from '../progress/terms.js';
 import { describeSkillCard, keepDeferred, orderSession } from '../session/orderSession.js';
 
 export type WaterEntry<S> =
@@ -38,7 +38,9 @@ export function planWaterAll<S>(
   },
 ): WaterEntry<S>[] {
   const entries = cards.map((card): WaterEntry<S> => {
+    // Phase 43: a new card (never answered) is met as a flashcard first, never a cloze
     const pick =
+      !isNewCard(card) &&
       parseInt(hashText(`${opts.seed}|${card.item.kind}:${card.item.id}|${card.skill}`), 36) % 2 ===
       0;
     const item = pick ? opts.clozeFor(card) : null;

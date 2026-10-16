@@ -63,7 +63,8 @@ function cardsFrom(events: Evidence[]): SkillCard[] {
 const events: Evidence[] = [
   { item: ref('core-a'), skill: 'recognition', kind: 'known_check_passed', at: new Date(now.getTime() - 30 * DAY) },
   { item: ref('core-b'), skill: 'recognition', kind: 'known_check_passed', at: new Date(now.getTime() - 30 * DAY) },
-  { item: ref('extra-a'), skill: 'recognition', kind: 'review_again', at: new Date(now.getTime() - 2 * DAY) },
+  // (answered in last evening's session, so no session was skipped: Phase 43 Part C.2)
+  { item: ref('extra-a'), skill: 'recognition', kind: 'review_again', at: zonedDate(2026, 10, 12, 20, 0, TZ) },
 ];
 const ledgerWith = (lexicon: Lexicon) =>
   buildLedger({

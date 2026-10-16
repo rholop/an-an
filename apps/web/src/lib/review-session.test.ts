@@ -5,13 +5,15 @@ import {
   emptyCard,
   isOrderedSession,
   Lexicon,
+  requeueInBlock,
+  reviewBlock,
   planListenSession,
   type Lesson,
   type SkillCard,
   type Word,
 } from '@anan/core';
 import { buildQuickCheck } from '../components/QuickKnownCheck.js';
-import { buildReviewSession, lessonSessionCards, pickReviewCards } from './review-session.js';
+import { buildReviewSession, lessonSessionCards, reviewSessionCards } from './review-session.js';
 import { buildLessonGrammarStep } from './textbook-session.js';
 
 const NOW = new Date('2026-10-07T12:00:00Z');
@@ -104,11 +106,16 @@ describe('lesson session (Phase 19)', () => {
     expect(off.newItems.map((i) => i.id)).toEqual(core);
   });
 
-  it('Phase 21: New cards are capped in Review like new items (My class cards no longer uncapped)', () => {
-    const newCards = WORDS.map((w) => card(w.id, 'recognition'));
-    const r = pickReviewCards({ due: [], newCards, doneThisSession: 0, cap: 80, now: NOW, allowance: { state: 'open', allowed: 3, faces: 8 } });
-    expect(r.fresh).toHaveLength(3);
-    expect(r.due).toHaveLength(0);
+  it('Phase 43: Review shows the ledger\'s session as planned, plus pending new items, each once', () => {
+    const fresh = [card('w1', 'recognition')];
+    const due = [card('w2', 'recognition', 3)];
+    const r = reviewSessionCards({
+      session: { cards: [...fresh, ...due], fresh, pendingNewKeys: ['word:w3|recognition', 'word:w1|recognition'] },
+      newItems: [{ kind: 'word', id: 'w4' }, { kind: 'word', id: 'w3' }],
+      now: NOW,
+    });
+    expect(r.due.map((c) => c.item.id)).toEqual(['w2']);
+    expect(r.fresh.map((c) => c.item.id)).toEqual(['w1', 'w3', 'w4']);
   });
 
   it('the normal review screen never shows a word’s two cards side by side, and new production follows recognition', () => {
@@ -167,26 +174,40 @@ describe('every session builder uses orderSession (Phase 19)', () => {
     expect(isOrderedSession(buildQuickCheck(lesson, lex, [], [], 'x'))).toBe(true);
   });
 
-  it('Phase 40 Tests 7: a 30-word class is in review with every face, first; the cap drops other cards first', () => {
-    const tutorWordIds = new Set(Array.from({ length: 30 }, (_, i) => `t${i}`));
-    const tutorCards = [...tutorWordIds].flatMap((id) => (['recognition', 'production', 'reading'] as const).map((f) => card(id, f)));
-    const others = Array.from({ length: 100 }, (_, i) => card(`o${i}`, 'recognition', 3));
-    const r = pickReviewCards({
-      due: [...others, ...tutorCards],
-      doneThisSession: 0,
-      cap: 80,
-      capLeft: 80,
-      now: NOW,
-      allowance: { state: 'open', allowed: 5, faces: 8 },
-      tutorWordIds,
-    });
-    expect(r.due.filter((c) => tutorWordIds.has(c.item.id))).toHaveLength(90);
-    expect(r.due.filter((c) => !tutorWordIds.has(c.item.id))).toHaveLength(80);
-    const ordered = buildReviewSession({ due: r.due, fresh: r.fresh, seed: 'tutor', tutorWordIds });
-    // the tutoring cards lead (the spacing rule may slip a word's last face a few places at the seam)
-    const firstOther = ordered.findIndex((c) => !tutorWordIds.has(c.item.id));
-    const lastTutor = ordered.map((c) => tutorWordIds.has(c.item.id)).lastIndexOf(true);
-    expect(firstOther).toBeGreaterThan(80);
-    expect(lastTutor).toBeLessThan(96);
+  it('Phase 43 Tests 6: the session runs in blocks, Meaning → Pick → Say it → Recall → grammar, no type mixed in', () => {
+    const recall = (id: string) => ({ ...card(id, 'production', 3), prodRung: 'recall' as const });
+    const gram = (id: string) => ({ ...card(id, 'recognition', 3), item: { kind: 'grammar' as const, id } });
+    const due = [
+      ...WORDS.slice(0, 4).map((w) => card(w.id, 'recognition', 3)),
+      ...WORDS.slice(4, 7).map((w) => card(w.id, 'production', 3)),
+      ...WORDS.slice(7, 9).map((w) => card(w.id, 'reading', 3)),
+      recall('w10'),
+      gram('gram-le'),
+    ];
+    const fresh = [card('t1', 'recognition'), card('t2', 'production')];
+    for (let s = 0; s < 20; s++) {
+      const ordered = buildReviewSession({ due: [...due].reverse(), fresh, seed: `b-${s}` });
+      expect(ordered).toHaveLength(due.length + fresh.length);
+      const blocks = ordered.map(reviewBlock);
+      // each block is one run, in the face order
+      const runs = blocks.filter((b, i) => i === 0 || blocks[i - 1] !== b);
+      expect(runs).toEqual(['meaning', 'pick', 'say', 'recall', 'grammar']);
+      // new cards lead their block
+      expect(ordered[0]!.item.id).toBe('t1');
+    }
+  });
+
+  it('Phase 43 Tests 7: an Again card goes back as the last card of its block', () => {
+    const queue = [
+      ...WORDS.slice(0, 4).map((w) => card(w.id, 'recognition', 3)),
+      ...WORDS.slice(4, 8).map((w) => card(w.id, 'production', 3)),
+    ];
+    const q = requeueInBlock(queue, 0, reviewBlock);
+    expect(q).toHaveLength(9);
+    expect(q[4]!.item.id).toBe('w1');
+    expect(q.slice(5).every((c) => c.skill === 'production')).toBe(true);
+    // the block's last card shows again at once
+    const last = requeueInBlock(queue, 3, reviewBlock);
+    expect(last[4]!.item.id).toBe('w4');
   });
 });

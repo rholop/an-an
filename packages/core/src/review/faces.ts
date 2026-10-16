@@ -5,7 +5,6 @@ import type { SkillCard } from '../learner/types.js';
 import { capDueCards } from '../learner/review-pile.js';
 import type { Skill } from '../types.js';
 import { startsAtRecall } from '../progress/terms.js';
-import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 
 export type ReviewFace = 'meaning' | 'pick' | 'recall' | 'say' | 'grammar';
 
@@ -15,15 +14,11 @@ export interface ReviewFaceConfig {
   shares: Record<'recognition' | 'production' | 'reading', number>;
   /** Correct picks in a row that move production from Pick to Recall. */
   pickToRecall: number;
-  /** New production / reading cards of words already being learned that may join one session
-   * (on top of the new-word allowance; never in a backlog, halved while one builds). */
-  newFacesPerSession: number;
 }
 
 export const REVIEW_FACE_CONFIG: ReviewFaceConfig = {
   shares: { recognition: 0.4, production: 0.4, reading: 0.2 },
   pickToRecall: 2,
-  newFacesPerSession: PROGRESS_CONFIG.newFacesPerSession,
 };
 
 /** Where a production card is on the ladder. */
@@ -49,11 +44,15 @@ export function nextProductionRung(
   face: 'pick' | 'recall',
   correct: boolean,
   cfg: ReviewFaceConfig = REVIEW_FACE_CONFIG,
+  /** Phase 43 Part B.5: may it move to Recall yet (the Good run and `recallStabilityDays`)? Absent: yes. */
+  opts: { recallReady?: boolean } = {},
 ): { prodRung: 'pick' | 'recall'; prodStreak: number } {
   if (face === 'recall') return correct ? { prodRung: 'recall', prodStreak: 0 } : { prodRung: 'pick', prodStreak: 0 };
   if (!correct) return { prodRung: 'pick', prodStreak: 0 };
   const streak = (current.prodRung === 'pick' || !current.prodRung ? (current.prodStreak ?? 0) : 0) + 1;
-  return streak >= cfg.pickToRecall ? { prodRung: 'recall', prodStreak: 0 } : { prodRung: 'pick', prodStreak: streak };
+  return streak >= cfg.pickToRecall && opts.recallReady !== false
+    ? { prodRung: 'recall', prodStreak: 0 }
+    : { prodRung: 'pick', prodStreak: streak };
 }
 
 type MixSkill = 'recognition' | 'production' | 'reading';

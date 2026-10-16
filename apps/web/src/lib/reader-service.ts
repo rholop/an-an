@@ -96,7 +96,7 @@ export class ReaderService {
       study: { lexicon, books: [], settings: { ...DEFAULT_STUDY_SETTINGS, enabled: false } },
     });
     const { knownIds, dueIds, learningIds } = ledger.comprehensible();
-    const picked = ledger.pickNew('review', { allowed: FRONTIER_POOL, level });
+    const picked = ledger.pickNew('review', { allowed: FRONTIER_POOL, level, candidates: true });
     const frontier = [...picked.cards.map((c) => c.item), ...picked.items]
       .filter((i) => i.kind === 'word')
       .flatMap((i) => lexicon.byId(i.id) ?? []);

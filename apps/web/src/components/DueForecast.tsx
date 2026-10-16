@@ -1,6 +1,7 @@
 import type { Ledger } from '@anan/core';
 import {
   ALL_WATERED,
+  backlogLine,
   forecastDayLabel,
   nextSessionLine,
   NOTHING_NEXT_SESSION,
@@ -90,10 +91,12 @@ export function DueForecast({ ledger }: { ledger: Ledger | undefined }) {
     <section className="due-forecast" data-testid="due-forecast" aria-label="Reviews due">
       <p className="due-forecast-now" data-testid="home-review-status">
         <DueIcon /> <strong>{sessionLine(s)}</strong>
-        {s.sessionCards > s.capLeft && s.capLeft > 0
-          ? ` (you'll see ${s.capLeft} this session, the session cap)`
-          : ''}
       </p>
+      {s.waiting > 0 && (
+        <p className="due-forecast-pause" data-testid="home-backlog">
+          {backlogLine(s.waiting)}
+        </p>
+      )}
       {s.newMessage && (
         <p className="due-forecast-pause" data-testid="home-new-state">
           {s.newMessage}

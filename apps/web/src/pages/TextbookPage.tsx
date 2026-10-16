@@ -766,15 +766,20 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
       const lessonWords = new Set(lesson.vocab);
       // Phase 22: the same new-word rule and message as Home and Review.
       const allowance = ledger.newAllowance('review');
+      // Phase 43: the session's new words are the day's share; studying a lesson spends that share on
+      // the lesson's words first.
+      const view = ledger.session();
+      const sessionFresh = new Set(view.fresh);
       const picked = lessonSessionCards({
-        due: ledger.session().cards,
-        newCards: ledger.newCards(),
+        due: view.cards.filter((c) => !sessionFresh.has(c)),
+        newCards: [...view.fresh, ...(view.started ? [] : ledger.newCards().filter((c) => !sessionFresh.has(c) && c.skill === 'recognition'))],
         lesson,
         teachExtras: peekStudySettings().teachExtras,
         ...(focus ? { focus } : {}),
         lessonIdx: lessonIndexFor(getStudyBooks()),
         hasCard: (i) => ledger.hasCard(i),
-        allowedNew: allowance.allowed,
+        // the session's whole share of new words (this lesson's words take it first); none once started
+        allowedNew: view.started ? 0 : view.fresh.filter((c) => c.skill === 'recognition').length + allowance.allowed,
       });
       const left = ledger.lesson(lesson).stillToMaster.length;
       if (cancelled) return;

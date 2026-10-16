@@ -1,15 +1,13 @@
 import {
-  capMixedCards,
   emptyCard,
   lessonTaughtItems,
   pickNewForSession,
   describeSkillCard,
-  faceStage,
-  orderSession,
+  orderInBlocks,
+  reviewBlock,
   studyRank,
   type ItemRef,
   type Lesson,
-  type NewAllowance,
   type OrderedSession,
   type SkillCard,
   type StudyFocus,
@@ -36,19 +34,19 @@ export function newSessionCard(item: ItemRef, now: Date): SkillCard {
 
 /**
  * Phase 19: the review screen's session builder (normal review, Phase 14 study order, garden and
- * "Study this lesson" vocab). The caller picks the cards; this only orders them, through the one
- * shared `orderSession`: new items first, then due cards textbook-first (study order on), each
- * band a seeded shuffle with siblings kept apart.
+ * "Study this lesson" vocab). The caller picks the cards; this only orders them. Phase 43 Part D: in
+ * blocks by card type (Meaning, Pick, Say it, Recall, then grammar); inside a block the shared order
+ * (new items first, then due cards textbook-first, a seeded shuffle, siblings apart).
  */
 export function buildReviewSession(input: {
   due: readonly SkillCard[];
-  /** Brand-new items' first cards (recognition), introduced this session. */
+  /** Brand-new items' first cards and new faces, introduced this session. */
   fresh?: readonly SkillCard[];
   focus?: StudyFocus;
   lessonIdx?: ReadonlyMap<string, string>;
   seed: string;
   recent?: readonly (readonly string[])[];
-  /** Phase 40 Part E.4: tutoring words' cards lead with the new items (band 0). */
+  /** Tutoring words' cards lead their block with the new items (band 0). */
   tutorWordIds?: ReadonlySet<string>;
 }): OrderedSession<SkillCard> {
   const fresh = new Set(input.fresh ?? []);
@@ -59,17 +57,12 @@ export function buildReviewSession(input: {
     focus && idx ? studyRank(focus, (i) => idx.get(`${i.kind}:${i.id}`), item) : 0;
   // Phase 21: a journal "priority" word (a gap the learner hit while writing) comes right after
   // the new items, in Review as well as Cloze.
-  return orderSession(
+  return orderInBlocks(
     [...(input.fresh ?? []), ...input.due],
+    reviewBlock,
     (c) =>
       describeSkillCard(c, {
-        // Phase 42: new and tutoring cards lead in face order: Meaning, Pick, Say it, Recall.
-        band:
-          fresh.has(c) || (c.item.kind === 'word' && tutor.has(c.item.id))
-            ? faceStage(c) * 0.1
-            : c.flags.priority
-              ? 1
-              : 2 + rank(c.item),
+        band: fresh.has(c) || (c.item.kind === 'word' && tutor.has(c.item.id)) ? 0 : c.flags.priority ? 1 : 2 + rank(c.item),
       }),
     { seed: input.seed, recent: input.recent },
   );
@@ -111,80 +104,31 @@ export function lessonSessionCards(input: {
 }
 
 /**
- * Phase 20: this session's review cards under the cap (study order first, then the cards most
- * likely forgotten), and how many new items may join (none in a backlog, half when it's building).
- * Phase 23: per review session, mixed ~40/40/20 across meaning, production and reading when the cap
- * bites; new production / reading faces of words already being learned have their own allowance.
+ * Phase 43: what Review shows for the ledger's session: its answered cards, its new cards (the day's
+ * share, already picked by the ledger, tutoring first), a fixed session's new items that had no card
+ * yet, and (before the first answer) study-order words with no card yet up to what is left of the
+ * session's share (`ledger.pickNew('review')`).
  */
-export function pickReviewCards(input: {
-  due: readonly SkillCard[];
-  /** Phase 21: New cards (introduced, never answered), e.g. from My class or a lookup. */
-  newCards?: readonly SkillCard[];
-  /** Distinct cards answered in Review this session (`reviewStatus().doneThisSession`). */
-  doneThisSession: number;
-  cap: number;
-  focus?: StudyFocus;
-  lessonIdx?: ReadonlyMap<string, string>;
+export function reviewSessionCards(input: {
+  session: { cards: readonly SkillCard[]; fresh: readonly SkillCard[]; pendingNewKeys: readonly string[] };
+  /** Study-order items with no card yet (`ledger.pickNew('review').items`). */
+  newItems?: readonly ItemRef[];
   now: Date;
-  /** Phase 29 Part B.4: the Review queue's new-word allowance (`ledger.newAllowance('review')`). */
-  allowance: Pick<NewAllowance, 'state' | 'allowed' | 'faces' | 'message'>;
-  /** Phase 23: words due in the next session too (between sessions): their new faces wait as well. */
-  holdFaceWords?: Iterable<string>;
-  /** Phase 40 Part E.2: tutoring words (`ledger.tutorWordIds()`): their cards in `due` are never
-   * dropped by the cap (they come first; the cap applies to everything else). */
-  tutorWordIds?: ReadonlySet<string>;
-  /** Reviews left under the cap for the other cards (`status.capLeft`); default cap − done. */
-  capLeft?: number;
-}): {
-  due: SkillCard[];
-  /** New cards that join this session. */
-  fresh: SkillCard[];
-  /** Items with no card yet that join this session. */
-  newItems: ItemRef[];
-  held: number;
-  newPaused: boolean;
-  newReason?: string;
-} {
-  const focus = input.focus?.enabled ? input.focus : undefined;
-  const idx = input.lessonIdx;
-  const rank =
-    focus && idx ? (c: SkillCard) => studyRank(focus, (i) => idx.get(`${i.kind}:${i.id}`), c.item) : undefined;
-  const remaining = input.capLeft ?? Math.max(0, input.cap - input.doneThisSession);
-  const isTutor = (c: SkillCard) => c.item.kind === 'word' && !!input.tutorWordIds?.has(c.item.id);
-  const tutorDue = input.due.filter(isTutor);
-  const due = [
-    ...tutorDue,
-    ...capMixedCards(
-      input.due.filter((c) => !isTutor(c)),
-      { remaining, now: input.now, ...(rank ? { rank } : {}) },
-    ),
-  ];
-  // Phase 29 Part B.4: the one new-word allowance (the ledger's): paused only when more is due now
-  // than the whole cap, and "this session's limit" once the cap is used up (not a backlog).
-  const allowance = input.allowance;
-  const roomForNew = Math.max(0, remaining - (due.length - tutorDue.length));
-  // One "new" rule for every session (core `pickNewForSession`): New cards and study-order items
-  // together, never more than the allowance (Phase 20) — My class cards are no longer uncapped.
-  // Phase 23: a word's new Pick / Say it card waits while the word itself is due this session, so
-  // it never pushes the due card out (a word's cards are kept apart, Phase 19).
-  const dueWords = new Set([...due.map((c) => `${c.item.kind}:${c.item.id}`), ...(input.holdFaceWords ?? [])]);
-  const newCards = (input.newCards ?? []).filter(
-    (c) => !isTutor(c) && (c.skill === 'recognition' || !dueWords.has(`${c.item.kind}:${c.item.id}`)),
-  );
-  const picked = pickNewForSession({
-    newCards,
-    ...(focus ? { focus } : {}),
-    ...(idx ? { lessonIdx: idx } : {}),
-    allowed: Math.min(allowance.allowed, roomForNew),
-    // new faces follow the same pause / halving as new words
-    allowedFaces: Math.min(allowance.faces, Math.max(0, roomForNew - allowance.allowed)),
+}): { due: SkillCard[]; fresh: SkillCard[] } {
+  const fresh = new Set(input.session.fresh);
+  const pending = input.session.pendingNewKeys.flatMap((k): ItemRef[] => {
+    const m = /^(word|grammar):(.+)\|recognition$/.exec(k);
+    return m ? [{ kind: m[1] as ItemRef['kind'], id: m[2]! }] : [];
+  });
+  const seen = new Set(input.session.cards.map((c) => `${c.item.kind}:${c.item.id}`));
+  const extra = [...pending, ...(input.newItems ?? [])].filter((i) => {
+    const k = `${i.kind}:${i.id}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
   });
   return {
-    due,
-    fresh: picked.cards,
-    newItems: picked.items,
-    held: input.due.length - due.length,
-    newPaused: allowance.allowed === 0 && allowance.state !== 'open',
-    ...(allowance.message ? { newReason: allowance.message } : {}),
+    due: input.session.cards.filter((c) => !fresh.has(c)),
+    fresh: [...input.session.fresh, ...extra.map((i) => newSessionCard(i, input.now))],
   };
 }

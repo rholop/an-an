@@ -77,6 +77,15 @@ export interface SkillCard {
     /** Phase 42: rated Good or Easy at least once ("I know this"): releases the word's next face
      * (Meaning → Pick → Say it). Cards from before it count when Learned (`progress/face-order.ts`). */
     knownFace?: boolean;
+    /** Phase 43 Part B.2: Good/Easy answers in a row, each from a different review session (Again or
+     * Hard resets it; the Rate your words page counts as one). Absent on cards from before Phase 43
+     * until the one-time migration (`progress/good-run.ts`). */
+    goodRun?: number;
+    /** The session (`sessionKeyAt`) of the last Good/Easy counted in `goodRun`. */
+    goodRunSession?: string;
+    /** When `goodRun` first reached `faceReleaseGoodRuns`: the word's next face may enter from the
+     * next session on (never the same one). Cleared by a reset. */
+    faceReleasedAt?: Date;
     /** Phase 42: Easy ratings toward Mastered (Again resets it); absent on older cards (`progress/easy-ratings.ts`). */
     easyCount?: number;
     /** When the card reached its Easy ratings (its re-check is due `recheckDays` later). */

@@ -224,12 +224,14 @@ describe('Tutoring sessions (phase 39), the owner\'s PDF', () => {
     expect(introduced).toBe(17);
     const ledger = await ledgerNow(NOW);
     expect(ledger.tutorNewCards().map((c) => c.item.id).sort()).toEqual(rec.words.filter((w) => w.ticked).map((w) => w.wordId).sort());
-    // Phase 42: in review now with their Meaning cards (Pick and Say it follow a Good/Easy), outside the textbook's new-word allowance
-    const inSession = new Set(ledger.session().cards.map((c) => `${c.item.id}|${c.skill}`));
-    for (const w of rec.words.filter((x) => x.ticked))
-      expect(inSession.has(`${w.wordId}|recognition`)).toBe(true);
-    expect([...inSession].some((k) => k.endsWith('|production') || k.endsWith('|reading'))).toBe(false);
-    expect(ledger.newAllowance('review').allowed).toBeGreaterThan(0);
+    // Phase 43: they lead the next session's new words (12:00 is between sessions), inside the day's
+    // limit, Meaning cards only (Pick and Say it follow once Meaning is consistently known)
+    const next = ledger.session({ early: true });
+    const ticked = rec.words.filter((x) => x.ticked).map((w) => w.wordId);
+    expect(next.fresh.length).toBeGreaterThan(0);
+    expect(next.fresh.length).toBeLessThanOrEqual(15);
+    expect(next.fresh.every((c) => c.skill === 'recognition' && ticked.includes(c.item.id))).toBe(true);
+    expect(next.cards.some((c) => c.skill === 'production' || c.skill === 'reading')).toBe(false);
   });
 
   it('a quota stop during the upload saves nothing; one at Save gets the plain scenario', async () => {

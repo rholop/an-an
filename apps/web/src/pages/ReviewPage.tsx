@@ -1,25 +1,33 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Evidence, SkillCard } from '@anan/core';
 import {
+  blockAt,
   keepDeferred,
   describePlanItem,
   describeSkillCard,
+  PROGRESS_CONFIG,
+  requeueInBlock,
+  reviewBlock,
+  sessionKeyAt,
   LISTENING_CONFIG,
   lessonIndex,
   newSessionSeed,
   placeExtras,
   planListenSession,
   inShortStep,
-  requeueInSitting,
   sessionMeta,
   stepInSitting,
   type PlanItem,
 } from '@anan/core';
-import { buildReviewSession, newSessionCard, pickReviewCards } from '../lib/review-session.js';
+import { buildReviewSession, reviewSessionCards } from '../lib/review-session.js';
 import { useReadingScript } from '../components/AnnotatedInline.js';
 import {
+  BACKLOG_SPREAD,
+  blockHeader,
+  comeBackNextTime,
   dueNewLine,
   learnedTodayLine,
+  waitingForNextSession,
   NOTHING_DUE,
   RELOAD,
   REVIEW_EARLY,
@@ -39,7 +47,10 @@ import type { NopeHandle } from '../lib/learner-service.js';
 import { logSessionOrder, noteShown, recentShown } from '../lib/session-recent.js';
 import { ensureListeningCards, useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { ListenPage, ListenRunner } from './ListenPage.js';
-import { learnerService } from '../db/instance.js';
+import { db, learnerService } from '../db/instance.js';
+import { fixSession, takeBacklogNotice } from '../lib/calm-review.js';
+import { markStudyDirty } from '../lib/study-dirty.js';
+import { getReviewSettings } from '../lib/review-settings.js';
 import { getStudyBooks, getStudyFocusNow } from '../lib/study.js';
 import { ensureFaceCards } from '../lib/face-cards.js';
 import { ensureTutorCards } from '../lib/tutoring/introduce.js';
@@ -125,8 +136,12 @@ export function ReviewPage({
   const [doneSlots, setDoneSlots] = useState<Set<number>>(new Set());
   const [slotCardIds, setSlotCardIds] = useState<Set<string>>(new Set());
   const [seed, setSeed] = useState<string>('');
-  // Phase 20: the daily cap's effect on this session, and the last Nope (for Undo / Change).
-  const [capNote, setCapNote] = useState<{ held: number; cap: number; newReason?: string } | null>(null);
+  // Phase 43: the session's new-word note, the cards waiting for the next session, the one-time
+  // backlog note, and Again counts in this sitting (the third puts a card aside).
+  const [capNote, setCapNote] = useState<{ waiting: number; next: 'morning' | 'evening'; newReason?: string } | null>(null);
+  const [backlogNote, setBacklogNote] = useState(false);
+  const [agains, setAgains] = useState<Map<string, number>>(new Map());
+  const [parked, setParked] = useState<string | null>(null);
   const [nope, setNope] = useState<{
     handle: NopeHandle;
     item: SkillCard['item'];
@@ -154,35 +169,27 @@ export function ReviewPage({
       // Phase 23: the cards of this review session (morning / evening), or the next one's when
       // "Review early" was asked for between sessions.
       await ensureFaceCards(now).catch(() => 0);
-      // Phase 40: a tutoring word's faces still missing (a class saved before Phase 40) join now.
+      // Tutoring words' cards still missing (Meaning, then each face once the one before is released).
       await ensureTutorCards(now).catch(() => 0);
       const ledger = await getLedgerNow(now);
       const { status } = ledger;
       tutorIds = ledger.tutorWordIds();
-      const inSession = ledger.session(early ? { early: true } : {});
-      // between sessions, the next session's words keep their new faces for that session
-      const upcoming = status.session === 'between' && !early ? ledger.session({ early: true }).cards : [];
-      const allowance = ledger.newAllowance('review');
-      const picked = pickReviewCards({
-        holdFaceWords: upcoming.map((c) => `${c.item.kind}:${c.item.id}`),
-        due: inSession.cards,
-        newCards: reviewAll ? [] : ledger.reviewNewCards(),
-        tutorWordIds: ledger.tutorWordIds(),
-        capLeft: status.capLeft,
-        doneThisSession: status.doneThisSession,
-        allowance: reviewAll ? { ...allowance, allowed: 0, faces: 0 } : allowance,
-        cap: status.cap,
-        ...(focus ? { focus } : {}),
-        lessonIdx: lessonIndex(getStudyBooks()),
-        now,
-      });
+      // Phase 43: the ledger plans the session (at most the ceiling, the day's new cards, faces in
+      // order); before its first answer, study-order words with no card may fill the rest of its share.
+      const view = ledger.session(early ? { early: true } : {});
+      // Between sessions nothing is in a session (new words included) unless Review early was asked for.
+      const closed = view.started || (!early && status.session === 'between');
+      const newItems = closed ? [] : ledger.pickNew('review', { general: false }).items.filter((i) => !ledger.hasCard(i));
+      const picked = reviewSessionCards({ session: view, newItems, now });
       due = picked.due;
-      fresh = [...picked.fresh, ...picked.newItems.map((item) => newSessionCard(item, now))];
+      fresh = picked.fresh;
+      const nextName = status.session === 'morning' ? 'evening' : status.session === 'evening' ? 'morning' : status.nextSession.name;
       setCapNote(
-        picked.held > 0 || picked.newReason
-          ? { held: picked.held, cap: status.cap, ...(picked.newReason ? { newReason: picked.newReason } : {}) }
+        view.waiting > 0 || status.newMessage
+          ? { waiting: view.waiting, next: nextName, ...(status.newMessage ? { newReason: status.newMessage } : {}) }
           : null,
       );
+      if (view.cards.length > 0 && (await takeBacklogNotice(db).catch(() => false))) setBacklogNote(true);
     }
     const sessionSeed = newSessionSeed('review');
     const ordered = buildReviewSession({
@@ -195,6 +202,8 @@ export function ReviewPage({
       recent: recentShown(now),
     });
     const next = keepEvery ? keepDeferred(ordered) : ordered;
+    setAgains(new Map());
+    setParked(null);
     logSessionOrder('review', sessionSeed, next.length, sessionMeta(next)?.deferred.length ?? 0);
     setSeed(sessionSeed);
     setFreshSet(new Set(fresh));
@@ -311,12 +320,23 @@ export function ReviewPage({
   async function rate(grade: Grade, extra: RateExtra) {
     if (!current || !queue) return;
     setNope(null);
+    const at = new Date();
+    // Phase 43 Part C.1: the first answer fixes the session (nothing new joins it afterwards).
+    if (!focusCards) {
+      const ledger = await getLedgerNow(at);
+      if (await fixSession(db, ledger, early ? { early: true } : {}).catch(() => false)) markStudyDirty();
+    }
     const evidence: Evidence = {
       item: current.item,
       skill: current.skill,
       kind: `review_${grade}`,
-      at: new Date(),
-      context: { source: 'review', face: extra.face, ...(extra.pickedId ? { pickedId: extra.pickedId } : {}) },
+      at,
+      context: {
+        source: 'review',
+        face: extra.face,
+        sessionKey: sessionKeyAt(at, await getReviewSettings()),
+        ...(extra.pickedId ? { pickedId: extra.pickedId } : {}),
+      },
     };
     if (extra.pickedId) noteConfusion(confusables, current.item.id, extra.pickedId);
     const before = { prevQueue: queue, prevIndex: index, prevSlots: slots, prevDone: doneSlots, prevAnswered: answered, prevRepeats: repeats };
@@ -326,10 +346,19 @@ export function ReviewPage({
     const w = current.item.kind === 'word' ? lexicon.byId(current.item.id) : undefined;
     noteShown([`${current.item.kind}:${current.item.id}`, ...(w ? [`zh:${w.headword}`] : [])]);
     if (handle.card) setAnswered((m) => new Map(m).set(`${current.item.kind}:${current.item.id}|${current.skill}`, handle.card!));
-    // Phase 27 (and Phase 19 rule 6): a card still in a short learning step comes back later in this
-    // sitting (≥5 cards on, away from siblings) until FSRS moves it out of the step.
-    if (stepInSitting(handle.card, evidence.at) && queue) {
-      const q = requeueInSitting(queue, index, describeSkillCard, { replace: handle.card! });
+    // Phase 27 / Phase 43 Part E: a card still in a short learning step comes back at the end of its
+    // block until FSRS moves it out of the step; the third Again in this sitting puts it aside for the
+    // next session.
+    const cardKey = `${current.item.kind}:${current.item.id}|${current.skill}`;
+    const againCount = (agains.get(cardKey) ?? 0) + (grade === 'again' ? 1 : 0);
+    if (grade === 'again') setAgains((m) => new Map(m).set(cardKey, againCount));
+    const putAside = grade === 'again' && againCount >= PROGRESS_CONFIG.againsBeforePark;
+    if (putAside) {
+      const w = current.item.kind === 'word' ? lexicon.byId(current.item.id) : undefined;
+      setParked(w?.headword ?? current.item.id);
+    }
+    if (!putAside && stepInSitting(handle.card, evidence.at) && queue) {
+      const q = requeueInBlock(queue, index, reviewBlock, handle.card!);
       if (q.length !== queue.length) {
         // Listening slots after the inserted card move down one with the cards around them.
         const at = q.lastIndexOf(handle.card!);
@@ -377,10 +406,8 @@ export function ReviewPage({
         <span className="review-meta" data-testid="review-counts">
           {dueNewLine(dueLeft, newLeft, againLeft)}
         </span>
-        {capNote && (
-          <InfoTip label="About today's cap" testId="review-cap-note">
-            {capNote.held > 0 &&
-              `Today's ${capNote.cap} most important reviews; ${capNote.held} more stay due for later (daily cap, Settings → Review). `}
+        {capNote?.newReason && (
+          <InfoTip label="About new words" testId="review-cap-note">
             {capNote.newReason}
           </InfoTip>
         )}
@@ -390,6 +417,30 @@ export function ReviewPage({
           </button>
         )}
       </div>
+
+      {current && !listenNow && (() => {
+        const b = blockAt(queue, index, reviewBlock);
+        return b ? (
+          <p className="review-block" data-testid="review-block">
+            {blockHeader(b.block, b.left)}
+          </p>
+        ) : null;
+      })()}
+      {capNote && capNote.waiting > 0 && (
+        <p className="review-settings-muted" data-testid="review-waiting">
+          {waitingForNextSession(capNote.waiting, capNote.next)}
+        </p>
+      )}
+      {backlogNote && ledgerNow && (
+        <p className="review-settings-muted" data-testid="review-backlog-note">
+          {BACKLOG_SPREAD(ledgerNow.status.sessionCards)}
+        </p>
+      )}
+      {parked && (
+        <p className="review-settings-muted" data-testid="review-parked">
+          {comeBackNextTime(parked)}
+        </p>
+      )}
 
       {heldCards > 0 && (
         <p className="review-settings-muted" data-testid="review-waiting-word-list">

@@ -136,6 +136,8 @@ export interface Evidence {
     refId?: string;
     /** Phase 5: a journal_misuse the learner corrected themselves. */
     selfFixed?: boolean;
+    /** Phase 43: the review session the answer was given in (`sessionKeyAt`), for the Good run. */
+    sessionKey?: string;
     /** Phase 20: which "nope" (review_nope). */
     choice?: NopeChoice;
     /** Phase 20: a lookup of a word outside the learner's bounds: logged, but no card is created. */
