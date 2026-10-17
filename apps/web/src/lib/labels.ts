@@ -273,6 +273,10 @@ export const IN_REVIEW = 'in review';
 export const SHOW_CORRECTIONS = 'Show corrections';
 /** Phase 41: Settings → Review. */
 export const SHOW_SIMPLIFIED = 'Show simplified characters on flashcards';
+/** Phase 44: Settings → Review, and the title of the review card's character row. */
+export const SHOW_CHAR_MEANINGS = 'Show what each character means';
+export const CHARACTERS = 'Characters';
+export const LEECH_BREAKDOWN = 'Leech — character breakdown';
 export const chatWordsCount = (n: number): string => `📚 ${n}`;
 export const CHAT_WORD_SOURCE: Record<'gap' | 'lookup' | 'glossed' | 'corrected', string> = {
   gap: 'your gap',

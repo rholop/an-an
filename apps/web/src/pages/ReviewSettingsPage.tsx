@@ -15,8 +15,9 @@ import { markStudyDirty } from '../lib/study-dirty.js';
 import { NOPE_LABELS, nopeSnapshot } from '../lib/nope.js';
 import { applyCleanup, cleanupPreview, removedWords } from '../lib/review-cleanup.js';
 import { updateReviewSettings, useReviewSettings } from '../lib/review-settings.js';
-import { SESSION_NAME, SHOW_CORRECTIONS, SHOW_SIMPLIFIED } from '../lib/labels.js';
+import { SESSION_NAME, SHOW_CHAR_MEANINGS, SHOW_CORRECTIONS, SHOW_SIMPLIFIED } from '../lib/labels.js';
 import { SIMPLIFIED_HINT_SETTING } from '../components/SimplifiedHint.js';
+import { CHAR_BREAKDOWN_SETTING } from '../lib/char-glosses.js';
 import { useSetting } from '../lib/useSetting.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { ReadingControls } from '../components/ReadingControls.js';
@@ -140,6 +141,8 @@ export function ReviewSettingsPage() {
   const settings = useReviewSettings();
   // Phase 41: per profile and synced, on by default
   const [showSimplified, setShowSimplified] = useSetting(SIMPLIFIED_HINT_SETTING, true);
+  // Phase 44: per profile and synced, on by default
+  const [showCharMeanings, setShowCharMeanings] = useSetting(CHAR_BREAKDOWN_SETTING, true);
   const [cards, setCards] = useState<SkillCard[] | null>(null);
   const [tick, setTick] = useState(0);
   const refresh = () => {
@@ -183,6 +186,20 @@ export function ReviewSettingsPage() {
           Small simplified characters above the traditional word, only when they differ (
           <span lang="zh-Hans">饼干</span> above <span lang="zh-Hant">餅乾</span>). On Pick and Recall cards they
           show only with the answer.
+        </p>
+        <label className="review-settings-radio">
+          <input
+            type="checkbox"
+            checked={showCharMeanings}
+            onChange={(e) => void setShowCharMeanings(e.target.checked)}
+            data-testid="show-char-meanings"
+          />{' '}
+          {SHOW_CHAR_MEANINGS}
+        </label>
+        <p className="review-settings-muted">
+          After the answer, each character of a longer word with its reading and a short meaning (
+          <span lang="zh-Hant">餅</span> bǐng · round flat cake, <span lang="zh-Hant">乾</span> gān · dry). Leech cards
+          always show it.
         </p>
       </section>
 

@@ -10,7 +10,8 @@ import { expect, test } from './fixtures.js';
  * face, Pinyin & tones, Cloze, Water all and the lesson Vocab and Grammar steps answer with no
  * vertical scroll and the answer buttons in view. The review card's Chinese is at least 44 px at
  * Normal. A phone (390×844) keeps its tab bar. With THEME_SCREENS=1 the 1280×650 screens are also
- * saved to docs/theme-screens/laptop/ for the owner to look at.
+ * saved to docs/theme-screens/laptop/ for the owner to look at. Phase 44: the character row under the
+ * answer fits too (it starts collapsed when it would not).
  */
 
 const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../docs/theme-screens/laptop');
@@ -204,6 +205,7 @@ for (const theme of THEMES) {
             await page.locator('[data-testid="review-pick-option"][data-right="true"]').click();
             const good = page.getByRole('button', { name: 'Good' });
             await expectFits(page, 'pick answered', good, `review-pick-answered-${tag}`);
+            await expect(card.getByTestId('char-breakdown'), 'pick character row').toBeVisible();
             await andNext(card, () => good.click());
             continue;
           }
@@ -213,6 +215,8 @@ for (const theme of THEMES) {
           await reveal.click();
           const grades = page.locator('.review-buttons .review-btn');
           await expectFits(page, `${face} answer`, grades, `review-${face}-answer-${tag}`);
+          // Phase 44: the character row is there (open, or collapsed when it would not fit)
+          await expect(card.getByTestId('char-breakdown'), `${face} character row`).toBeVisible();
           await andNext(card, () => page.getByRole('button', { name: 'Good' }).click());
         }
         expect([...faces].sort()).toEqual(['grammar', 'meaning', 'pick', 'recall', 'say']);

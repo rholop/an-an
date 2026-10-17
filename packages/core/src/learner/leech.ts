@@ -2,6 +2,7 @@ import { pickDistractors } from '../cloze/distractors.js';
 import { selectClozeSource, type ClozeSourceCandidate, type SelectClozeSourceOptions } from '../cloze/source.js';
 import type { Lexicon } from '../lexicon.js';
 import type { Word } from '../types.js';
+import { shortCharGloss } from './char-gloss.js';
 import { LEECH_TREATMENTS, type LeechTreatment, type SkillCard } from './types.js';
 
 /**
@@ -55,8 +56,19 @@ export interface CharInWord {
   /** This character's syllable IN THIS WORD (MOE reading of the word), e.g. 還 in 還是 = hái. */
   pinyin: string;
   zhuyin: string;
-  /** The character's own entry with that same reading, if it is one. */
+  /**
+   * Phase 44: a short meaning. The character's own entry with that same reading (its first one or
+   * two senses), else its shortened Unihan gloss, else none.
+   */
   glossEn?: string;
+}
+
+/** Phase 44: shortened Unihan glosses by character (`lexicon/char-glosses.v1.json`). */
+export type CharGlosses = ReadonlyMap<string, string> | Readonly<Record<string, string>>;
+
+function unihanGloss(glosses: CharGlosses | undefined, ch: string): string | undefined {
+  if (!glosses) return undefined;
+  return glosses instanceof Map ? glosses.get(ch) : (glosses as Readonly<Record<string, string>>)[ch];
 }
 
 const toneless = (numeric: string) => numeric.replace(/[0-9]/g, '').toLowerCase();
@@ -66,7 +78,11 @@ const toneless = (numeric: string) => numeric.replace(/[0-9]/g, '').toLowerCase(
  * word (from the word's MOE-verified reading), never the first dictionary entry of the character:
  * 還 in 還是 is hái, not huán; 長 in 長大 is zhǎng.
  */
-export function charsInWord(word: Pick<Word, 'chars' | 'pinyin' | 'pinyinNumeric' | 'zhuyin'>, lexicon: Lexicon): CharInWord[] {
+export function charsInWord(
+  word: Pick<Word, 'chars' | 'pinyin' | 'pinyinNumeric' | 'zhuyin'>,
+  lexicon: Lexicon,
+  charGlosses?: CharGlosses,
+): CharInWord[] {
   const py = word.pinyin.trim().split(/\s+/);
   const num = word.pinyinNumeric.trim().split(/\s+/);
   const zy = word.zhuyin.trim().split(/\s+/);
@@ -79,7 +95,8 @@ export function charsInWord(word: Pick<Word, 'chars' | 'pinyin' | 'pinyinNumeric
     const same =
       entries.find((w) => w.pinyinNumeric.trim() === n) ??
       entries.find((w) => n && toneless(w.pinyinNumeric) === toneless(n));
-    return { ch, pinyin, zhuyin, ...(same ? { glossEn: same.glossEn } : {}) };
+    const glossEn = shortCharGloss(same?.glossEn) || shortCharGloss(unihanGloss(charGlosses, ch));
+    return { ch, pinyin, zhuyin, ...(glossEn ? { glossEn } : {}) };
   });
 }
 

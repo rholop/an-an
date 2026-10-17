@@ -37,6 +37,7 @@ import { ReviewReport } from './lib/review-report.js';
 import { loadGrammarSupplementYaml, loadSupplementYaml } from './lib/supplement.js';
 import { applyLexiconOverrides, loadLexiconOverrides } from './lib/lexicon-overrides.js';
 import { addLessonSenses } from './lib/lesson-senses.js';
+import { writeBriefCharGlosses } from './lib/char-glosses.js';
 import { MISSING_LEVELS, readTocflWorkbook } from './lib/tocfl-source.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -478,6 +479,9 @@ async function main(): Promise<void> {
       'utf8',
     );
   }
+  // Phase 44: the shortened copy the review card ships (lexicon/char-glosses.v1.json in the app).
+  if (existsSync(path.join(BUILD_DIR, 'char-glosses.v1.json')))
+    writeBriefCharGlosses(path.join(BUILD_DIR, 'char-glosses.v1.json'), path.join(BUILD_DIR, 'char-glosses.brief.v1.json'));
 
   // Phase 25: hand fixes no source gets right (readings, a broken import, the book's spelling).
   const overridden = applyLexiconOverrides(words, loadLexiconOverrides(path.join(SUPPLEMENT_DIR, 'lexicon-overrides.yaml')));

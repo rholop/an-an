@@ -22,6 +22,7 @@
     "audit:data": "tsx src/audit-data.ts",
     "stories:build": "tsx src/build-stories.ts",
     "review-pile": "tsx src/review-pile-report.ts",
+    "build:char-glosses": "tsx src/build-char-glosses.ts",
     "gen:char-shapes": "tsx src/gen-char-shapes.ts",
     "patch:grammar": "tsx src/patch-lexicon-grammar.ts",
     "pipeline:levels": "tsx src/estimate-levels.ts"

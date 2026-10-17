@@ -68,6 +68,31 @@
   text-align: left;
 }
 .leech-title { font-weight: bold; margin-bottom: 0.5rem; font-size: 0.85rem; }
+/* Phase 44: the everyday character row, neutral and compact (the leech panel keeps its warning colour) */
+.char-panel {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.char-panel .leech-chars { justify-content: center; }
+.char-panel-toggle {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.char-panel .char-panel-toggle { font-weight: normal; opacity: 0.8; margin-bottom: 0.25rem; }
+/* collapsed on a short laptop: one plain line, no box */
+.char-panel[data-open='false'],
+.leech-panel[data-open='false'] { margin-top: 0.25rem; padding: 0; border: none; background: none; }
+.char-panel[data-open='false'] .char-panel-toggle,
+.leech-panel[data-open='false'] .char-panel-toggle { margin: 0 auto; font-size: 0.8rem; }
 .leech-chars { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .leech-char { text-align: center; }
 .leech-char-glyph { font-size: var(--zh-body); }

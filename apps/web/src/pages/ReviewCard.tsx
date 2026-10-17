@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { GrammarItem, Lexicon, ReviewFace, SkillCard, Word } from '@anan/core';
 import { useKeyboardShortcut } from '../lib/keyboard-shortcuts.js';
 import {
@@ -16,7 +16,9 @@ import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { NopeButton } from '../components/Nope.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { WithSimplified } from '../components/SimplifiedHint.js';
-import { FACE_LABEL, FEEDBACK_CORRECT, feedbackWrong, lessonLabel, NEXT } from '../lib/labels.js';
+import { CHARACTERS, FACE_LABEL, FEEDBACK_CORRECT, feedbackWrong, LEECH_BREAKDOWN, lessonLabel, NEXT } from '../lib/labels.js';
+import { CHAR_BREAKDOWN_SETTING, useCharGlosses } from '../lib/char-glosses.js';
+import { useSetting } from '../lib/useSetting.js';
 import { readingText } from '../lib/reading.js';
 import { GrammarExerciseCard, useSingleGrammarExercise } from './GrammarStep.js';
 import type { ConfusableContext } from '../lib/confusables.js';
@@ -122,7 +124,7 @@ export function ReviewCard({
           </div>
         </>
       ) : face === 'pick' && word && options ? (
-        <PickFace word={word} options={options} gloss={gloss} script={script} onRate={onRate} onNope={onNope} />
+        <PickFace card={card} word={word} options={options} gloss={gloss} lexicon={lexicon} script={script} onRate={onRate} onNope={onNope} />
       ) : (
         <FlipFace
           face={face}
@@ -248,7 +250,7 @@ function FlipFace({
             </p>
           ))}
           {word && <SpeakerButton kind="word" id={word.id} label={word.headword} />}
-          {card.leech && word && <LeechBreakdown card={card} word={word} lexicon={lexicon} script={script} />}
+          {word && <CharBreakdown card={card} word={word} lexicon={lexicon} script={script} />}
           <div className="review-actions">
             <div className="review-buttons">
               {GRADES.map(({ grade, label }) => (
@@ -281,16 +283,20 @@ function FlipFace({
 /** Pick the Mandarin: English shown, 4 same-length look-alikes; afterwards all four with their
  * pinyin and meaning, so the difference is visible. */
 function PickFace({
+  card,
   word,
   options,
   gloss,
+  lexicon,
   script,
   onRate,
   onNope,
 }: {
+  card: SkillCard;
   word: Word;
   options: Word[];
   gloss: string;
+  lexicon: Lexicon;
   script: AnnotationScript;
   onRate: (grade: Grade, extra: RateExtra) => void;
   onNope: () => void;
@@ -350,6 +356,7 @@ function PickFace({
           <p className={`review-typed ${right ? 'review-typed--ok' : 'review-typed--bad'}`} data-testid="review-pick-result">
             {right ? FEEDBACK_CORRECT : feedbackWrong(word.headword, readingText(word, script))}
           </p>
+          <CharBreakdown card={card} word={word} lexicon={lexicon} script={script} />
           <div className="review-actions">
             <div className="review-buttons">
               {right ? (
@@ -385,7 +392,26 @@ function PickFace({
   );
 }
 
-function LeechBreakdown({
+/**
+ * Phase 44 (from the Phase 2 leech breakdown): each character of the word with its reading in this
+ * word (Phase 21) and a short meaning, under the answer only, so it never gives the answer away.
+ * Every word of 2 or more characters when the setting is on; a leech card always, under its own
+ * title and warning colour. On a laptop where the row would push the buttons below the window it
+ * starts as a "Characters ▸" line that opens on tap (Phase 30).
+ */
+/**
+ * A laptop answers without scrolling (Phase 30); a phone may scroll, but the grade buttons stay in
+ * view above its tab bar. Either way the row starts collapsed when it would break that.
+ */
+function rowWouldNotFit(panel: HTMLElement): boolean {
+  const tabbar = document.querySelector('nav.tabbar');
+  const bottom = window.innerHeight - (tabbar ? tabbar.getBoundingClientRect().height : 0);
+  const buttons = panel.closest('[data-testid="review-card"]')?.querySelector('.review-buttons');
+  if (buttons && buttons.getBoundingClientRect().bottom > bottom) return true;
+  return window.innerWidth >= 700 && document.documentElement.scrollHeight > window.innerHeight;
+}
+
+function CharBreakdown({
   card,
   word,
   lexicon,
@@ -396,25 +422,60 @@ function LeechBreakdown({
   lexicon: Lexicon;
   script: AnnotationScript;
 }) {
+  const [enabled] = useSetting<boolean>(CHAR_BREAKDOWN_SETTING, true);
+  const show = card.leech || (enabled && word.chars.length >= 2);
+  const glosses = useCharGlosses(show);
+  const [open, setOpen] = useState(true);
+  const touched = useRef(false);
+  const panel = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (!show || touched.current || !open || !panel.current) return;
+    if (rowWouldNotFit(panel.current)) setOpen(false);
+  }, [show, open, glosses]);
+  if (!show) return null;
   // Phase 2 only actually implements the char_breakdown treatment (shown
   // below, unconditionally, since that's what this panel is); the other
   // three rotation slots are stubs — this note just previews what the
   // rotation would suggest trying next.
-  const treatment = nextLeechTreatment({ leechTreatmentsTried: card.leechTreatmentsTried });
+  const treatment = card.leech ? nextLeechTreatment({ leechTreatmentsTried: card.leechTreatmentsTried }) : null;
+  const title = card.leech ? LEECH_BREAKDOWN : CHARACTERS;
   return (
-    <div className="leech-panel">
-      <div className="leech-title">Leech — character breakdown</div>
-      <div className="leech-chars">
-        {/* Phase 21: each character's reading IN THIS WORD (MOE), not its first dictionary entry */}
-        {charsInWord(word, lexicon).map((c, i) => (
-          <div className="leech-char" key={i}>
-            <div className="leech-char-glyph">{c.ch}</div>
-            <div className="leech-char-reading">{readingText(c, script) || '?'}</div>
-            <div className="leech-char-gloss">{c.glossEn ?? '(not its own lexicon entry)'}</div>
-          </div>
-        ))}
-      </div>
-      {treatment !== 'char_breakdown' && (
+    <div
+      ref={panel}
+      className={card.leech ? 'leech-panel' : 'char-panel'}
+      data-testid="char-breakdown"
+      data-open={open ? 'true' : 'false'}
+    >
+      <button
+        type="button"
+        className="leech-title char-panel-toggle"
+        aria-expanded={open}
+        onClick={() => {
+          touched.current = true;
+          setOpen((o) => !o);
+        }}
+      >
+        {title} {open ? '▾' : '▸'}
+      </button>
+      {open && (
+        <div className="leech-chars">
+          {/* Phase 21: each character's reading IN THIS WORD (MOE), not its first dictionary entry */}
+          {charsInWord(word, lexicon, glosses).map((c, i) => (
+            <div className="leech-char" key={i} data-testid="char-tile">
+              <div className="leech-char-glyph" lang="zh-Hant">
+                {c.ch}
+              </div>
+              <div className="leech-char-reading">{readingText(c, script) || '?'}</div>
+              {c.glossEn && (
+                <div className="leech-char-gloss" data-testid="char-gloss">
+                  {c.glossEn}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {open && treatment && treatment !== 'char_breakdown' && (
         <div className="leech-stub-note">
           ({treatment.replace('_', ' ')} — coming in a later phase)
         </div>
