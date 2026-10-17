@@ -34,6 +34,8 @@ import {
 import {
   newWordState,
   planSession,
+  recallChance,
+  REVIEW_ANSWER_KINDS,
   reviewStatus,
   sessionCardKey,
   sessionForecast,
@@ -64,6 +66,7 @@ import {
   type WordSets,
 } from './terms.js';
 import { dayKey, weekRange, type WeekRange } from './time.js';
+import { REVIEW_BLOCKS, reviewBlock } from '../review/blocks.js';
 import { vocabLadder, type VocabLadder, type VocabLadderOptions } from './vocabLadder.js';
 
 type EvidenceLike = Pick<Evidence, 'item' | 'skill' | 'kind' | 'at'> & Partial<Pick<Evidence, 'context'>>;
@@ -745,6 +748,58 @@ export class Ledger {
     const fresh = mine.filter((c) => c.card.reps === 0).slice(0, allowance.allowed);
     const answered = mine.filter((c) => c.card.reps > 0).sort((a, b) => a.card.stability - b.card.stability);
     return { due, fresh, answered };
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Phase 45: "Practise these words" (a lesson's or a tutoring class's words, any time)
+
+  /**
+   * The cards `items`' words may practise: answered at least once (a New card waits for its session),
+   * not removed, shown by the word list, Review skills only. Only faces a word already has, so
+   * practice never releases a new card type or introduces a word. In blocks (Meaning, Pick, Say it,
+   * Recall), the weakest (lowest recall chance) first within a block.
+   */
+  practiceCards(items: readonly ItemRef[]): SkillCard[] {
+    const want = new Set(items.filter((i) => i.kind === 'word').map(itemKeyOf));
+    const blockIdx = (c: SkillCard) => REVIEW_BLOCKS.indexOf(reviewBlock(c));
+    return this.allCards
+      .filter(
+        (c) =>
+          want.has(itemKeyOf(c.item)) &&
+          c.skill !== 'listening' &&
+          c.state !== 'unseen' &&
+          !isNewCard(c) &&
+          isActiveCard(c) &&
+          !this.index.removed(c.item),
+      )
+      .map((c) => ({ c, b: blockIdx(c), r: recallChance(c, this.now) }))
+      .sort((a, b) => a.b - b.b || a.r - b.r || sessionCardKey(a.c).localeCompare(sessionCardKey(b.c)))
+      .map((x) => x.c);
+  }
+
+  /** Distinct words with a practice card ("Practise these words (N)"). */
+  practiceWordCount(items: readonly ItemRef[]): number {
+    return new Set(this.practiceCards(items).map((c) => c.item.id)).size;
+  }
+
+  /** Does a practice answer of this card count as a real review now? Only the card's first answer of
+   * the profile-zone day: none once it has a counted (Review or practice) answer today. */
+  practiceCounts(card: Pick<SkillCard, 'item' | 'skill'>): boolean {
+    const today = this.dayKey();
+    const key = sessionCardKey(card);
+    return !this.evidence.some((e) => REVIEW_ANSWER_KINDS.has(e.kind) && sessionCardKey(e) === key && this.dayKey(e.at) === today);
+  }
+
+  /** Words of `items` with no card yet (not removed, not already known): they start in the next
+   * sessions under the day's new-word limit ("4 words from this lesson start in the next sessions"). */
+  notStartedWords(items: readonly ItemRef[]): string[] {
+    return [
+      ...new Set(
+        items
+          .filter((i) => i.kind === 'word' && this.resolvesItem(i) && !this.index.hasCard(i) && !this.index.removed(i) && !this.learned(i))
+          .map((i) => i.id),
+      ),
+    ];
   }
 
   // -------------------------------------------------------------------------------------------

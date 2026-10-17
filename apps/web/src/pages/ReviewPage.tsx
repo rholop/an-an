@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Evidence, SkillCard } from '@anan/core';
 import {
   blockAt,
@@ -85,6 +85,7 @@ export function ReviewPage({
   reviewAll = false,
   reviewEarly = false,
   keepEvery = reviewAll || reviewEarly,
+  doneExtra,
 }: {
   focusCards?: SkillCard[];
   freshCards?: SkillCard[];
@@ -97,6 +98,8 @@ export function ReviewPage({
   /** Phase 29 Part B.5: the one Review early (Home, Garden and Review all open this). */
   reviewEarly?: boolean;
   keepEvery?: boolean;
+  /** Phase 45: shown when the session part is done (a lesson's or class's "Practise these words"). */
+  doneExtra?: ReactNode;
 } = {}) {
   const lexiconState = useLexicon();
   const script = useReadingScript();
@@ -504,6 +507,7 @@ export function ReviewPage({
           ) : (
             <p>{NOTHING_DUE}</p>
           )}
+          {doneExtra && <p>{doneExtra}</p>}
         </div>
       ) : (
         <ReviewCard

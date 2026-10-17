@@ -148,8 +148,6 @@ export const allWateredLine = (
 /** Phase 27: the faint droplet's tooltip ("Evening session"). */
 export const nextSessionTip = (name: 'morning' | 'evening'): string => `${name === 'morning' ? 'Morning' : 'Evening'} session`;
 /** Phase 27: the lesson page between sessions (the same cards as the garden plot). */
-export const lessonNothingThisSession = (next: { name: 'morning' | 'evening' }, count: number): string =>
-  `Nothing from this lesson to review in this session.${count > 0 ? ` ${count} word${count === 1 ? '' : 's'} from it in the ${next.name} session.` : ''}`;
 /** Phase 27: the lesson study end screen: words that left their short learning step. */
 export const learnedTodayLine = (n: number): string => `${TERM.learned} today: ${n} word${n === 1 ? '' : 's'}`;
 export const NOTHING_NEXT_SESSION = 'All watered 🌱 Nothing waiting for the next session yet.';
@@ -516,3 +514,15 @@ export const rateWordsLeft = (left: number): string => `${left} card${left === 1
 export const RATE_WORDS_INTRO =
   'Go through the cards you have already seen and say honestly how well you know each one. Good or Easy means "I know this" and lets the next kind of card for that word join Review; Easy also counts as one of the 3 Easy ratings a word needs to be Mastered. Not yet keeps it as it is. Rating here never changes when a card is due.';
 export const RATE_WORDS_DONE = 'All your seen cards are rated. New ones will appear here after you start them.';
+
+/** Phase 45: practise a lesson's or a tutoring class's words any time. */
+export const practiseTheseWords = (n: number): string => `Practise these words (${n})`;
+export const startInNextSessions = (n: number, where: 'lesson' | 'class'): string =>
+  `${n} word${n === 1 ? '' : 's'} from this ${where} start${n === 1 ? 's' : ''} in the next sessions`;
+export const PRACTISE_ANOTHER_ROUND = 'Practise another round';
+export const DONE = 'Done';
+/** Shown after a practice answer that counted as the card's review for the day. */
+export const PRACTICE_COUNTED = 'counted ✓';
+export const PRACTICE_NOTE = "Each card's first answer of the day counts as its review; more practice that day doesn't change its schedule.";
+export const practiceRoundDone = (n: number): string => `Round done: ${n} card${n === 1 ? '' : 's'} practised.`;
+export const LESSON_MASTERED = 'This lesson is mastered.';

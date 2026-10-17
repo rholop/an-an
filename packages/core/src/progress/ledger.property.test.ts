@@ -484,6 +484,60 @@ describe('the progress ledger: numbers agree (Phase 29 Part C.3)', () => {
   });
 });
 
+describe('Phase 45: practice answers', () => {
+  const PRACTICE: Evidence['kind'][] = ['practice_again', 'practice_hard', 'practice_good', 'practice_easy'];
+  it('practice-only answers are in no count: the session, status, summaries and new words are unchanged', () => {
+    fc.assert(
+      fc.property(
+        stateArb,
+        fc.array(fc.record({ item: fc.nat(WORDS.length - 1), skill: fc.nat(2), kind: fc.nat(3), minutesAgo: fc.integer({ min: 0, max: 600 }) }), { minLength: 1, maxLength: 20 }),
+        (s, extra) => {
+          const plain = ledgerOf(s);
+          const practised = ledgerOf(s, {
+            extra: (now) =>
+              extra.map((x) => ({
+                item: { kind: 'word' as const, id: WORDS[x.item]!.id },
+                skill: (['recognition', 'production', 'reading'] as const)[x.skill]!,
+                kind: PRACTICE[x.kind]!,
+                at: new Date(now.getTime() - x.minutesAgo * 60_000),
+                context: { source: 'review' as const, practice: true },
+              })),
+          });
+          const strip = (l: Ledger) => ({
+            session: l.session().cards.map(keyOf),
+            started: l.session().started,
+            dueNow: l.status.dueNow,
+            done: l.status.doneThisSession,
+            next: l.status.nextSession,
+            newToday: l.newToday(),
+            summary: l.summary(ITEMS),
+            mastered: ITEMS.map((i) => l.mastered(i)),
+            activeToday: l.activeToday(),
+          });
+          expect(strip(practised)).toEqual(strip(plain));
+        },
+      ),
+      { numRuns: 150 },
+    );
+  });
+
+  it('at most one counted practice answer per card per day', () => {
+    fc.assert(
+      fc.property(stateArb, fc.nat(WORDS.length - 1), (s, w) => {
+        const card = { item: { kind: 'word' as const, id: WORDS[w]!.id }, skill: 'recognition' as const };
+        const first = ledgerOf(s);
+        if (!first.practiceCounts(card)) return;
+        // the counted answer is a review_* with context.practice; after it nothing more counts today
+        const after = ledgerOf(s, {
+          extra: (now) => [{ ...card, kind: 'review_good', at: now, context: { source: 'review', practice: true } }],
+        });
+        expect(after.practiceCounts(card)).toBe(false);
+      }),
+      { numRuns: 150 },
+    );
+  });
+});
+
 describe('Phase 37: one cloze per word, credited on every card of the word in session', () => {
   it('a correct cloze answer drops Review\'s session by 2 (flag on) or 1 (flag off)', () => {
     fc.assert(

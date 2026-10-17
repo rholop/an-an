@@ -100,4 +100,7 @@ export {
   type ActivityHistory,
 } from './active-days.js';
 
+// Phase 45: practising a lesson's or class's words any time.
+export { isPracticeOnlyKind, practiceAnswerKind, PRACTICE_ROUND_SIZE, type PracticeGrade } from './practice.js';
+
 export { summarizeSavedCopy, type SavedCopySummary } from './saved-copy.js';

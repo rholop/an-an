@@ -1,4 +1,5 @@
 import {
+  isPracticeOnlyKind,
   applyEvidence,
   buildLedger,
   buildFsrs,
@@ -132,11 +133,13 @@ export class LearnerService {
     const prior = await this.repo.getCard(evidence.item, evidence.skill);
     const applied = applyEvidence(prior, evidence, now, this.config, this.fsrsInstance);
     // Phase 27: a short learning step finishes in the sitting, or waits for the next session.
-    const result = applied.card ? { ...applied, card: parkShortStep(applied.card, now, sessionSettings()) } : applied;
+    // Phase 45: a practice-only answer (practice_*) never moves a card or unlocks one.
+    const practiceOnly = isPracticeOnlyKind(evidence.kind);
+    const result = applied.card && !practiceOnly ? { ...applied, card: parkShortStep(applied.card, now, sessionSettings()) } : applied;
     const writes: SkillCard[] = result.card ? [result.card] : [];
     const events: Evidence[] = [evidence];
     const unlocked: Evidence[] = [];
-    if (result.card && evidence.skill === 'recognition') {
+    if (result.card && evidence.skill === 'recognition' && !practiceOnly) {
       const hasProduction = !!(await this.repo.getCard(evidence.item, 'production'));
       const production = productionUnlockFor(result.card, hasProduction, now);
       if (production) {

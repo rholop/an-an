@@ -5,6 +5,7 @@ import {
   courseLessonLevel,
   glossFor,
   courseOrdinal,
+  lessonTaughtItems,
   LAIXUE_COURSE,
   type GrammarItem,
   type Lesson,
@@ -35,7 +36,7 @@ import {
   lessonLabel,
   lessonOnly,
   lessonsMasteredLine,
-  lessonNothingThisSession,
+  LESSON_MASTERED,
   levelLabel,
   listeningLine,
   NEXT,
@@ -71,6 +72,7 @@ import { ListenPage } from './ListenPage.js';
 import { useListeningClips, useListeningEnabled } from '../lib/listening.js';
 import { JournalPage } from './JournalPage.js';
 import { ReviewPage } from './ReviewPage.js';
+import { PracticePage, PractiseEntry } from './PracticePage.js';
 import { StoryView } from './StoryView.js';
 import { useCurrentLevel } from '../lib/current-level.js';
 import { canWriteStories, useStoryDifficulty, useStoryService } from '../lib/stories.js';
@@ -410,6 +412,9 @@ function LessonDetail({
 }) {
   const ledger = useLedger();
   const [checking, setChecking] = useState(false);
+  // Phase 45: practise the lesson's words any time (only faces they already have).
+  const [practising, setPractising] = useState(false);
+  const practiceItems = useMemo(() => lessonTaughtItems(lesson, peekStudySettings().teachExtras), [lesson]);
   // Phase 15: listening stats show separately (they never count toward mastery).
   // Phase 21: practised = answered at least once (auto-created cards don't count); strong from the shared config.
   const [listenStats, setListenStats] = useState<{ practised: number; strong: number } | null>(null);
@@ -433,6 +438,16 @@ function LessonDetail({
   const exampleFor = (g: GrammarItem) =>
     g.examples.flatMap((id) => sentences.find((s) => s.id === id) ?? []).slice(0, 3);
 
+  if (practising)
+    return (
+      <PracticePage
+        items={practiceItems}
+        title={`${lessonLabel(lesson.n, bookId)} vocabulary`}
+        lesson={here}
+        onExit={() => setPractising(false)}
+        exitLabel={`← ${lessonLabel(lesson.n, bookId)}`}
+      />
+    );
   return (
     <div className="textbook-page">
       <button onClick={onBack}>← All lessons</button>
@@ -452,6 +467,7 @@ function LessonDetail({
       <button className="textbook-study-btn btn-primary" onClick={onStudy} data-testid="study-lesson">
         {STUDY_THIS_LESSON}
       </button>{' '}
+      <PractiseEntry items={practiceItems} where="lesson" onStart={() => setPractising(true)} />{' '}
       <button onClick={() => setChecking((c) => !c)} data-testid="mark-known">
         I already know this lesson
       </button>
@@ -751,10 +767,11 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
   const [plan, setPlan] = useState<{
     due: SkillCard[];
     fresh: SkillCard[];
-    paused?: string;
     left: number;
-    next: { name: 'morning' | 'evening'; words: number };
   } | null>(null);
+  // Phase 45: when the session part is empty or done, the lesson's words can be practised.
+  const [practising, setPractising] = useState(false);
+  const practiceItems = useMemo(() => lessonTaughtItems(lesson, peekStudySettings().teachExtras), [lesson]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -762,8 +779,6 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
       // Phase 29: the lesson's cards in this review session (the same set as the garden plot), and
       // "still to master" from `ledger.lesson()` (the same items and removed filter as the chip).
       const [ledger, focus] = await Promise.all([getLedgerNow(now), getStudyFocusNow(now).catch(() => undefined)]);
-      const status = ledger.status;
-      const lessonWords = new Set(lesson.vocab);
       // Phase 22: the same new-word rule and message as Home and Review.
       const allowance = ledger.newAllowance('review');
       // Phase 43: the session's new words are the day's share; studying a lesson spends that share on
@@ -786,12 +801,7 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
       setPlan({
         due: picked.due,
         fresh: [...picked.fresh, ...picked.newItems.map((i) => newSessionCard(i, now))],
-        ...(allowance.message ? { paused: allowance.message } : {}),
         left,
-        next: {
-          name: status.nextSession.name,
-          words: status.nextSessionWordIds.filter((id) => lessonWords.has(id)).length,
-        },
       });
     })();
     return () => {
@@ -800,13 +810,22 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
     // built once per lesson (later changes must not rebuild the running session)
   }, [lesson]);
   if (!plan) return <p>Loading…</p>;
+  if (practising)
+    return (
+      <PracticePage
+        items={practiceItems}
+        title={`${lessonLabel(lesson.n, bookId)} vocabulary`}
+        lesson={{ bookId, n: lesson.n }}
+        onExit={onDone}
+        exitLabel="Done with vocabulary →"
+      />
+    );
+  const practise = <PractiseEntry items={practiceItems} where="lesson" onStart={() => setPractising(true)} primary />;
   if (plan.due.length + plan.fresh.length === 0)
     return (
       <p data-testid="lesson-vocab-empty">
-        {plan.left > 0
-          ? `${lessonNothingThisSession(plan.next, plan.next.words)}${plan.paused ? ` ${plan.paused}` : ''}`
-          : 'This lesson is mastered.'}{' '}
-        <button onClick={onDone}>{NEXT}</button>
+        {plan.left === 0 && <>{LESSON_MASTERED} </>}
+        {practise} <button onClick={onDone}>{NEXT}</button>
       </p>
     );
   return (
@@ -817,6 +836,7 @@ function VocabStep({ lesson, bookId, onDone }: { lesson: Lesson; bookId: string;
       exitLabel="Done with vocabulary →"
       title={`${lessonLabel(lesson.n, bookId)} vocabulary`}
       lesson={{ bookId, n: lesson.n }}
+      doneExtra={practise}
     />
   );
 }

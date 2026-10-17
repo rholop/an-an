@@ -10,6 +10,7 @@ import {
   levelShort,
   tutorJournalPrompt,
   tutorLessonOf,
+  type ItemRef,
   type Ledger,
   type Level,
   type Lexicon,
@@ -74,16 +75,21 @@ import {
 import { ChatPage } from './ChatPage.js';
 import { GrammarExerciseCard, useSingleGrammarExercise } from './GrammarStep.js';
 import { ReviewPage } from './ReviewPage.js';
+import { PracticePage, PractiseEntry } from './PracticePage.js';
 import { StoryStep } from './TextbookPage.js';
 import './TextbookPage.css';
 import './TutoringPage.css';
+
+/** Phase 45: a class's words, for "Practise these words". */
+const classItems = (rec: TutorSessionRow): ItemRef[] => tutorLessonOf(rec).wordIds.map((id) => ({ kind: 'word', id }));
 
 type View =
   | { kind: 'list' }
   | { kind: 'check' }
   | { kind: 'class'; id: string }
   | { kind: 'study'; id: string }
-  | { kind: 'now'; id: string };
+  | { kind: 'now'; id: string }
+  | { kind: 'practice'; id: string };
 
 export function TutoringPage() {
   const lexiconState = useLexicon();
@@ -121,6 +127,15 @@ export function TutoringPage() {
   }
   const rec = view.kind !== 'list' ? rows.find((r) => r.id === view.id) : undefined;
   if (rec && view.kind === 'now') return <TutorReviewNow rec={rec} onExit={() => setView({ kind: 'class', id: rec.id })} />;
+  if (rec && view.kind === 'practice')
+    return (
+      <PracticePage
+        items={classItems(rec)}
+        title={`${tutorClassTitle(rec.tutor, rec.date)} vocabulary`}
+        onExit={() => setView({ kind: 'class', id: rec.id })}
+        exitLabel={`← ${tutorClassTitle(rec.tutor, rec.date)}`}
+      />
+    );
   if (rec && view.kind === 'study')
     return <TutorStudy rec={rec} lexicon={lexicon} onExit={() => setView({ kind: 'class', id: rec.id })} />;
   if (rec)
@@ -135,6 +150,7 @@ export function TutoringPage() {
         }}
         onStudy={() => setView({ kind: 'study', id: rec.id })}
         onReviewNow={() => setView({ kind: 'now', id: rec.id })}
+        onPractise={() => setView({ kind: 'practice', id: rec.id })}
       />
     );
   return <TutoringList rows={rows} lexicon={lexicon} onOpen={(id) => setView({ kind: 'class', id })} onDraft={() => setView({ kind: 'check' })} />;
@@ -447,6 +463,7 @@ function TutorClassPage({
   onBack,
   onStudy,
   onReviewNow,
+  onPractise,
 }: {
   rec: TutorSessionRow;
   lexicon: Lexicon;
@@ -454,6 +471,7 @@ function TutorClassPage({
   onBack: () => void;
   onStudy: () => void;
   onReviewNow: () => void;
+  onPractise: () => void;
 }) {
   const ledger = useLedger();
   const script = useReadingScript();
@@ -499,7 +517,8 @@ function TutorClassPage({
       )}{' '}
       <button type="button" className="textbook-study-btn" onClick={onStudy} data-testid="study-tutor-class">
         {STUDY_THIS_CLASS}
-      </button>
+      </button>{' '}
+      <PractiseEntry items={classItems(rec)} where="class" onStart={onPractise} />
       <AudioLine rec={rec} speech={speech} />
 
       <h2>Words ({rec.words.filter((w) => w.ticked).length})</h2>
@@ -595,6 +614,8 @@ function WordFaces({ ledger, wordId, hasClip }: { ledger: Ledger; wordId: string
 /** Phase 40 Part E.1: this class's cards in review now, at any time of day (not "Review early"). */
 function TutorReviewNow({ rec, onExit }: { rec: TutorSessionRow; onExit: () => void }) {
   const [cards, setCards] = useState<SkillCard[] | null>(null);
+  const [practising, setPractising] = useState(false);
+  const items = useMemo(() => classItems(rec), [rec]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -608,10 +629,20 @@ function TutorReviewNow({ rec, onExit }: { rec: TutorSessionRow; onExit: () => v
     };
   }, [rec.id]);
   if (!cards) return <p>Loading…</p>;
+  if (practising)
+    return (
+      <PracticePage
+        items={items}
+        title={`${tutorClassTitle(rec.tutor, rec.date)} vocabulary`}
+        onExit={onExit}
+        exitLabel={`← ${tutorClassTitle(rec.tutor, rec.date)}`}
+      />
+    );
+  const practise = <PractiseEntry items={items} where="class" onStart={() => setPractising(true)} primary />;
   if (cards.length === 0)
     return (
       <p data-testid="tutor-vocab-empty">
-        Nothing from this class to review right now.{' '}
+        {practise}{' '}
         <button type="button" onClick={onExit}>
           {NEXT}
         </button>
@@ -624,6 +655,7 @@ function TutorReviewNow({ rec, onExit }: { rec: TutorSessionRow; onExit: () => v
       onExit={onExit}
       exitLabel={`← ${tutorClassTitle(rec.tutor, rec.date)}`}
       title={`${tutorClassTitle(rec.tutor, rec.date)} vocabulary`}
+      doneExtra={practise}
     />
   );
 }
@@ -717,6 +749,9 @@ function TutorStudy({ rec, lexicon, onExit }: { rec: TutorSessionRow; lexicon: L
 /** The class's cards in review now (every face, at any time of day), then nothing else. */
 function TutorVocabStep({ rec, onDone }: { rec: TutorSessionRow; onDone: () => void }) {
   const [plan, setPlan] = useState<{ due: SkillCard[] } | null>(null);
+  // Phase 45: when the session part is empty or done, the class's words can be practised.
+  const [practising, setPractising] = useState(false);
+  const items = useMemo(() => classItems(rec), [rec]);
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -733,10 +768,20 @@ function TutorVocabStep({ rec, onDone }: { rec: TutorSessionRow; onDone: () => v
     // built once per class (later changes must not rebuild the running session)
   }, [rec.id]);
   if (!plan) return <p>Loading…</p>;
+  if (practising)
+    return (
+      <PracticePage
+        items={items}
+        title={`${tutorClassTitle(rec.tutor, rec.date)} vocabulary`}
+        onExit={onDone}
+        exitLabel="Done with vocabulary →"
+      />
+    );
+  const practise = <PractiseEntry items={items} where="class" onStart={() => setPractising(true)} primary />;
   if (plan.due.length === 0)
     return (
       <p data-testid="tutor-vocab-empty">
-        Nothing from this class to review this session.{' '}
+        {practise}{' '}
         <button type="button" onClick={onDone}>
           {NEXT}
         </button>
@@ -748,6 +793,7 @@ function TutorVocabStep({ rec, onDone }: { rec: TutorSessionRow; onDone: () => v
       onExit={onDone}
       exitLabel="Done with vocabulary →"
       title={`${tutorClassTitle(rec.tutor, rec.date)} vocabulary`}
+      doneExtra={practise}
     />
   );
 }

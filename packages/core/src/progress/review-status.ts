@@ -47,7 +47,12 @@ const AGAIN_KINDS: ReadonlySet<string> = new Set(['review_again', 'cloze_wrong',
 export type NewState = 'open' | 'reduced' | 'paused_backlog' | 'limit_reached';
 export type SessionState = SessionName | 'between';
 
-type EvidenceLike = Pick<Evidence, 'item' | 'skill' | 'kind' | 'at'>;
+type EvidenceLike = Pick<Evidence, 'item' | 'skill' | 'kind' | 'at'> & Partial<Pick<Evidence, 'context'>>;
+
+/** Phase 45: an answer given on "Practise these words" (counted or not). It never starts or fixes a
+ * session, never makes a session "done", and counts as done in a session only for that session's own
+ * cards. */
+const practised = (e: EvidenceLike): boolean => e.context?.practice === true;
 
 export interface ReviewStatus {
   /** The session open now, or 'between' sessions. */
@@ -150,7 +155,7 @@ export function distinctReviewedSince(
   evidence: readonly EvidenceLike[],
   since: Date,
   now: Date,
-  skip?: (e: Pick<SkillCard, 'item' | 'skill'>) => boolean,
+  skip?: (e: EvidenceLike) => boolean,
 ): number {
   const seen = new Set<string>();
   for (const e of evidence) {
@@ -233,7 +238,7 @@ interface SessionInput {
 const DAY_MS = 86_400_000;
 
 /** FSRS-style recall chance now (lower = more urgent); a card never answered is 1. */
-function recallChance(c: SkillCard, now: Date): number {
+export function recallChance(c: SkillCard, now: Date): number {
   const s = Math.max(0.1, c.card.stability || 0.1);
   const last = c.card.last_review ? new Date(c.card.last_review).getTime() : new Date(c.card.due).getTime() - s * DAY_MS;
   const t = Math.max(0, (now.getTime() - last) / DAY_MS);
@@ -343,7 +348,8 @@ export function planSession(input: SessionInput & { early?: boolean }): SessionP
   // A session with Review answers in it already (on another device, before its fixed copy synced)
   // is started too: new cards never join it partway through.
   const answeredHere =
-    !!pos.current && input.evidence.some((e) => REVIEW_ANSWER_KINDS.has(e.kind) && e.at.getTime() >= since.getTime() && e.at.getTime() <= now.getTime());
+    !!pos.current &&
+    input.evidence.some((e) => REVIEW_ANSWER_KINDS.has(e.kind) && !practised(e) && e.at.getTime() >= since.getTime() && e.at.getTime() <= now.getTime());
   const ceiling = s.capPerSession;
   const tutorFirst = (c: SkillCard) => (isTutor(c) ? 0 : 1);
   const ranked = candidates
@@ -397,7 +403,7 @@ export function planSession(input: SessionInput & { early?: boolean }): SessionP
 /** Did anyone answer in this session, or was it nothing to do? A session is "undone" when nobody
  * answered in it and cards it held are still waiting. */
 function undone(w: SessionWindow, evidence: readonly EvidenceLike[], cards: readonly SkillCard[], now: Date): boolean {
-  const answered = evidence.some((e) => RATED_KINDS.has(e.kind) && e.at >= w.opensAt && e.at < w.endsAt);
+  const answered = evidence.some((e) => RATED_KINDS.has(e.kind) && !practised(e) && e.at >= w.opensAt && e.at < w.endsAt);
   if (answered) return false;
   return cards.some((c) => inReviewQueue(c) && isActiveCard(c) && isDueBefore(c, w.cutoff) && c.card.due.getTime() <= now.getTime());
 }
@@ -479,7 +485,10 @@ export function reviewStatus(input: SessionInput & { plan?: SessionPlan }): Revi
   const left = current
     ? 0
     : input.cards.filter((c) => inReviewQueue(c) && isActiveCard(c) && !finished.has(cardKey(c)) && isDueBefore(c, pos.previous.endsAt)).length;
-  const doneThisSession = distinctReviewedSince(input.evidence, since, now);
+  // Phase 45: a practice answer is done in this session only for a card the (fixed) session holds.
+  const fixedNow = current ? input.fixed?.find((f) => f.key === windowKey(current)) : undefined;
+  const sessionKeys = new Set([...(fixedNow?.cardKeys ?? []), ...currentKeys]);
+  const doneThisSession = distinctReviewedSince(input.evidence, since, now, (e) => practised(e) && !sessionKeys.has(cardKey(e)));
   const capLeft = Math.max(0, cap - doneThisSession);
   const nt = plan.newToday;
   const newState: NewState = !current

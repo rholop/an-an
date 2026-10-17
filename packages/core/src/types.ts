@@ -129,7 +129,15 @@ export interface Evidence {
      * yet. Sets the "I know this" marker only (Easy also counts as one Easy); never moves the FSRS card. */
     | 'face_rating_good'
     | 'face_rating_easy'
-    | 'face_rating_not_yet';
+    | 'face_rating_not_yet'
+    /** Phase 45 "Practise these words": a practice answer after the card's one counted answer of the
+     * day. Changes nothing (no FSRS, Easy count, Good run or session number), except that Again sets
+     * `flags.priority` (first in its next session). The day's first practice answer is a `review_*`
+     * with `context.practice`. */
+    | 'practice_again'
+    | 'practice_hard'
+    | 'practice_good'
+    | 'practice_easy';
   at: Date;
   context?: {
     source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook' | 'pinyin' | 'story' | 'tutor';
@@ -154,6 +162,8 @@ export interface Evidence {
     pickedId?: string;
     /** Phase 23 reading_tone_wrong: per wrong syllable, the right tone and the one given (5 = neutral). */
     tones?: { expected: number; given: number }[];
+    /** Phase 45: given on "Practise these words" (a `review_*` that counted, or a `practice_*`). */
+    practice?: boolean;
   };
 }
 

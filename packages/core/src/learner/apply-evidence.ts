@@ -7,7 +7,7 @@ import { REVIEW_PILE_CONFIG } from './review-pile.config.js';
 import { cardSourceFor } from './review-pile.js';
 import { nextEasyFlags } from '../progress/easy-ratings.js';
 import { answerSessionKey, nextGoodRun } from '../progress/good-run.js';
-import { fsrsDue, isInReview, isScheduledCard, startsAtRecall } from '../progress/terms.js';
+import { fsrsDue, isInReview, isNewCard, isScheduledCard, startsAtRecall } from '../progress/terms.js';
 import { nextProductionRung } from '../review/faces.js';
 import {
   DEFAULT_LEARNER_CONFIG,
@@ -385,6 +385,15 @@ function applyFaceRating(current: SkillCard | undefined, kind: 'good' | 'easy' |
   };
 }
 
+/** Phase 45 practice_*: an answer after the card's one counted answer of the day changes nothing,
+ * except that Again marks the card so it comes first in its next session. */
+function applyPracticeAnswer(current: SkillCard | undefined, again: boolean, now: Date): ModelUpdate {
+  // practice only ever shows answered cards; a New one is left as it is
+  if (!current || isNewCard(current)) return { card: undefined, appliedEffect: 'ignored:no-answered-card' };
+  if (!again || current.flags.priority) return { card: undefined, appliedEffect: 'practice' };
+  return { card: { ...current, flags: { ...current.flags, priority: true }, updatedAt: now }, appliedEffect: 'practice + priority' };
+}
+
 /** Phase 21 production_unlocked / listening_unlocked (Phase 23: reading_unlocked): create the card (New, due now) if missing. */
 function applyUnlock(current: SkillCard | undefined, evidence: Evidence, now: Date): ModelUpdate {
   // eslint-disable-next-line anan/progress-from-ledger -- persistence: an unlock only creates a missing card
@@ -446,8 +455,15 @@ function applyReviewAnswer(
   const fsrsRated = applyFsrsRating(current, evidence, now, grade, config, fsrsInstance);
   // Phase 43 Part B.2: the Good run that releases the word's next face (one per review session).
   const run = nextGoodRun(current, grade, now, answerSessionKey(now, evidence.context?.sessionKey));
+  // Phase 45: a practice Again's priority lasts until the card's next answer in a real session.
+  const flagsAfter = (f: SkillCard['flags']): SkillCard['flags'] => {
+    const withNewRun = withRun(f, run);
+    if (evidence.context?.practice || !withNewRun.priority) return withNewRun;
+    const { priority: _p, ...rest } = withNewRun;
+    return rest;
+  };
   const rated: ModelUpdate = fsrsRated.card
-    ? { ...fsrsRated, card: { ...fsrsRated.card, flags: withRun(fsrsRated.card.flags, run) } }
+    ? { ...fsrsRated, card: { ...fsrsRated.card, flags: flagsAfter(fsrsRated.card.flags) } }
     : fsrsRated;
   const face = evidence.context?.face;
   if (!rated.card || evidence.skill !== 'production' || (face !== 'pick' && face !== 'recall')) return rated;
@@ -533,6 +549,10 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   face_rating_good: (c, e, n) => applyFaceRating(c, 'good', n, e.context?.sessionKey),
   face_rating_easy: (c, e, n) => applyFaceRating(c, 'easy', n, e.context?.sessionKey),
   face_rating_not_yet: (c, e, n) => applyFaceRating(c, 'not_yet', n, e.context?.sessionKey),
+  practice_again: (c, _e, n) => applyPracticeAnswer(c, true, n),
+  practice_hard: (c, _e, n) => applyPracticeAnswer(c, false, n),
+  practice_good: (c, _e, n) => applyPracticeAnswer(c, false, n),
+  practice_easy: (c, _e, n) => applyPracticeAnswer(c, false, n),
 };
 
 /**

@@ -130,6 +130,11 @@ const EvidenceKindSchema = z.enum([
   'face_rating_good',
   'face_rating_easy',
   'face_rating_not_yet',
+  // Phase 45
+  'practice_again',
+  'practice_hard',
+  'practice_good',
+  'practice_easy',
 ]);
 
 export const EvidenceSchema = z.object({
@@ -166,6 +171,8 @@ export const EvidenceSchema = z.object({
       face: z.enum(['meaning', 'pick', 'recall', 'say', 'grammar']).optional(),
       pickedId: z.string().optional(),
       tones: z.array(z.object({ expected: z.number(), given: z.number() })).optional(),
+      // Phase 45: answered on "Practise these words".
+      practice: z.boolean().optional(),
     })
     .optional(),
 });
