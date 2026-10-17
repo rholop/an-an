@@ -131,8 +131,8 @@ test.describe('Textbook / My class (phase 12)', () => {
     await page.screenshot({ path: 'screenshots/textbook-chat.png' });
 
     await goNav(page, 'Reader');
-    await expect(page.getByRole('radio', { name: 'Lesson' })).toBeVisible();
-    await page.getByRole('radio', { name: 'Lesson' }).click();
+    await expect(page.getByRole('radio', { name: 'Lesson', exact: true })).toBeVisible();
+    await page.getByRole('radio', { name: 'Lesson', exact: true }).click();
     await page.getByRole('button', { name: /New sentence/ }).click();
     await expect(page.locator('.reader-reason, .reader-source').first()).toBeVisible();
     await page.screenshot({ path: 'screenshots/textbook-reader-lesson.png' });
@@ -141,7 +141,7 @@ test.describe('Textbook / My class (phase 12)', () => {
     await page.getByRole('button', { name: /Textbook/ }).click();
     await page.getByTestId('my-class-toggle').uncheck();
     await goNav(page, 'Reader');
-    await expect(page.getByRole('radio', { name: 'Lesson' })).toHaveCount(0);
+    await expect(page.getByRole('radio', { name: 'Lesson', exact: true })).toHaveCount(0);
   });
 
   test('the series: four books on one path, a book picker, "My class" at book 2 lesson 3 (Phase 13)', async ({
