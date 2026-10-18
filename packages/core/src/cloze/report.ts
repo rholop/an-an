@@ -1,4 +1,5 @@
 import type { ClozeReport, ClozeReportReason, ErrorItem } from '../journal/types.js';
+import { unknownAnswerWords, type AnswerKnown } from '../journal/answer-words.js';
 
 export const CLOZE_REPORT_REASONS: readonly { id: ClozeReportReason; label: string }[] = [
   { id: 'garbled', label: "The sentence is garbled / doesn't make sense" },
@@ -35,10 +36,14 @@ export function isUsableSentence(zh: string, excluded: ReadonlySet<string> | und
 }
 
 /** Only `active` items built by Phase 17 (`version: 2`) are shown. The older
- * one-span-patched items are never shown: the migration rebuilds or blocks them. */
+ * one-span-patched items are never shown: the migration rebuilds or blocks them.
+ * Phase 47 Part B: with `known` (the ledger's comprehensible set), only when every word of the
+ * answer is known too; otherwise the item waits (`ledger.errorItems`). */
 export const isShowableErrorItem = (
-  i: Pick<ErrorItem, 'status' | 'flagged' | 'version'>,
-): boolean => i.status === 'active' && !i.flagged && i.version === 2;
+  i: Pick<ErrorItem, 'status' | 'flagged' | 'version'> &
+    Partial<Pick<ErrorItem, 'original' | 'corrected' | 'span' | 'itemRef' | 'blank'>>,
+  known?: AnswerKnown,
+): boolean => i.status === 'active' && !i.flagged && i.version === 2 && (!known || unknownAnswerWords(i, known).length === 0);
 
 export function reportErrorItem(item: ErrorItem, report: ClozeReport): ErrorItem {
   return { ...item, status: 'reported', report };

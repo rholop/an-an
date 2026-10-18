@@ -378,19 +378,24 @@ describe('mixed session', () => {
     expect(words).toEqual(['貓']);
   });
 
-  it('leads with recurring-pattern error items', () => {
+  it('Phase 47: picks recurring patterns first, but word clozes lead and fixes are never side by side', () => {
     const second = { ...errorItem, id: 'e2:0', journalEntryId: 'e2' };
     const solo = { ...errorItem, id: 'e3:0', journalEntryId: 'e3', pattern: 'other' };
-    const session = buildMixedSession([dueCard('貓')], {
-      lexicon,
-      knownIds: new Set(),
-      learnerLevel: 'L1',
-      errorItems: [solo, errorItem, second],
-      now,
+    const opts = { lexicon, knownIds: new Set<string>(), learnerLevel: 'L1' as const, errorItems: [solo, errorItem, second], now, rng: () => 0.5 };
+    // one word cloze: room for one fix, a recurring one, after the word
+    const one = buildMixedSession([dueCard('貓')], opts);
+    expect(one.map((e) => e.kind)).toEqual(['card', 'error']);
+    expect(one[1]).toMatchObject({ kind: 'error', error: { pattern: 'p' } });
+    // many words: at most 3 fixes, spread out
+    const many = buildMixedSession(['我', '你', '他', '她', '我們', '搭', '去', '貓'].map((hw) => dueCard(hw)), {
+      ...opts,
+      errorItems: [solo, errorItem, second, { ...solo, id: 'e4:0' }, { ...solo, id: 'e5:0' }],
+      config: { wordsPerErrorItem: 1 },
     });
-    expect(session[0]).toMatchObject({ kind: 'error' });
-    expect(session[1]).toMatchObject({ kind: 'error' });
-    expect(session.filter((e) => e.kind === 'error')).toHaveLength(3);
+    const kinds = many.map((e) => e.kind);
+    expect(kinds[0]).toBe('card');
+    expect(kinds.filter((k) => k === 'error')).toHaveLength(3);
+    for (let i = 1; i < kinds.length; i++) expect(kinds[i] === 'error' && kinds[i - 1] === 'error').toBe(false);
   });
 });
 

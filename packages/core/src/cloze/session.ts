@@ -1,16 +1,21 @@
 import type { ClozeRung, SkillCard } from '../learner/types.js';
 import type { Lexicon } from '../lexicon.js';
 import type { ErrorItem } from '../journal/types.js';
-import {
-  normalisePattern,
-  patternCounts,
-  RECURRING_PATTERN_MIN,
-  selectDueErrorItems,
-} from '../journal/error-bank.js';
+import { selectDueErrorItems } from '../journal/error-bank.js';
 import type { Evidence, Word } from '../types.js';
+import type { AnswerKnown } from '../journal/answer-words.js';
+import { practiceAnswerKind, type PracticeGrade } from '../progress/practice.js';
 import { CLOZE_CONFIG } from './cloze.config.js';
 import { compareOverdue, isNewCard } from '../progress/terms.js';
-import { itemKey, orderSession, seededRng, type OrderedSession, type SessionCard } from '../session/orderSession.js';
+import {
+  itemKey,
+  markOrderedSession,
+  orderSession,
+  seededRng,
+  sessionMeta,
+  type OrderedSession,
+  type SessionCard,
+} from '../session/orderSession.js';
 import {
   selectClozeSource,
   type ClozeSourceCandidate,
@@ -36,13 +41,17 @@ export interface SessionConfig {
   /** Total items in the session. Default 20 (phase doc §"A full 20-item
    * session works offline"). */
   maxItems: number;
-  /** Phase 5: error-bank clozes per session (recurring patterns first). */
+  /** Phase 5: error-bank clozes per session (recurring patterns first). Phase 47: 3 (was 5), and
+   * one for every `wordsPerErrorItem` word clozes at most, so word clozes always lead. */
   maxErrorItems: number;
+  /** Phase 47 Part B.2: word clozes per journal fix (a session with 6 word clozes gets 1 fix). */
+  wordsPerErrorItem: number;
 }
 
 export const DEFAULT_SESSION_CONFIG: SessionConfig = {
   maxItems: 20,
-  maxErrorItems: 5,
+  maxErrorItems: 3,
+  wordsPerErrorItem: 6,
 };
 
 /** rung 1/2 are recognition-style (word bank / multiple choice); rung 3 is
@@ -75,6 +84,9 @@ export interface BuildSessionOptions extends SelectClozeSourceOptions {
   seed?: string;
   /** Phase 19: keys of the cards shown just before (see orderSession's `recent`). */
   recent?: readonly (readonly string[])[];
+  /** Phase 47 practice: the cards come already ranked (weakest first); take them in that order
+   * instead of shuffling (the session itself is still mixed). */
+  keepOrder?: boolean;
 }
 
 const describeItem = (item: SessionItem): SessionCard => ({
@@ -172,7 +184,7 @@ export function buildSession(dueCards: SkillCard[], options: BuildSessionOptions
       ),
     ),
   ];
-  const orderedReview = byRank(shuffle(reviewGroups, rng));
+  const orderedReview = options.keepOrder ? reviewGroups : byRank(shuffle(reviewGroups, rng));
 
   const usedZh = new Set<string>();
   const skippedNoFreshSentence: string[] = [];
@@ -228,13 +240,15 @@ export type SessionEntry =
 export interface BuildMixedSessionOptions extends BuildSessionOptions {
   errorItems: readonly ErrorItem[];
   now: Date;
+  /** Phase 47 Part B: the ledger's comprehensible set; an error item whose answer has a word outside
+   * it waits. Absent: every showable item (tests, tools). */
+  known?: AnswerKnown;
 }
 
 /**
- * Phase 5 §7: the Phase 4 session plus due error-bank clozes. Error items
- * take up to `maxErrorItems` of the `maxItems` slots (recurring patterns
- * first — see selectDueErrorItems); word cards fill the rest. Entries are
- * interleaved, except that recurring-pattern error items lead the session.
+ * Phase 5 §7: the Phase 4 session plus due error-bank clozes. Phase 47 Part B.2: word clozes lead
+ * and fill most of it; at most `maxErrorItems` journal fixes (recurring patterns picked first), one
+ * per `wordsPerErrorItem` word clozes, spread out so two are never side by side.
  */
 export function buildMixedSession(
   dueCards: SkillCard[],
@@ -242,29 +256,56 @@ export function buildMixedSession(
 ): OrderedSession<SessionEntry> {
   const rng = options.rng ?? (options.seed ? seededRng(`${options.seed}:mix`) : Math.random);
   const config = { ...DEFAULT_SESSION_CONFIG, ...options.config };
-  const errors = selectDueErrorItems(options.errorItems, options.now, config.maxErrorItems);
+  const wanted = selectDueErrorItems(options.errorItems, options.now, config.maxErrorItems, options.known);
   const cards = buildSession(dueCards, {
     ...options,
-    config: { ...options.config, maxItems: Math.max(0, config.maxItems - errors.length) },
+    config: { ...options.config, maxItems: Math.max(0, config.maxItems - wanted.length) },
   });
+  const room = Math.min(cards.length, Math.ceil(cards.length / Math.max(1, config.wordsPerErrorItem)));
+  const errors = wanted.slice(0, room);
 
-  const counts = patternCounts(options.errorItems);
-  const recurring = errors.filter(
-    (e) => e.pattern && (counts.get(normalisePattern(e.pattern)) ?? 0) >= RECURRING_PATTERN_MIN,
-  );
-  const rest = errors.filter((e) => !recurring.includes(e));
-
-  // Phase 19: recurring-pattern error items lead (band 0), the rest is the shared order.
-  const entries: Array<{ e: SessionEntry; band: number }> = [
-    ...recurring.map((error) => ({ e: { kind: 'error', error } as SessionEntry, band: 0 })),
-    ...cards.map((item) => ({ e: { kind: 'card', item } as SessionEntry, band: 1 })),
-    ...rest.map((error) => ({ e: { kind: 'error', error } as SessionEntry, band: 1 })),
-  ];
-  const bandOf = new Map(entries.map((x) => [x.e, x.band]));
   const ordered = orderSession(
-    entries.map((x) => x.e),
-    (e) => ({ ...describeEntry(e), band: bandOf.get(e) ?? 1 }),
+    cards.map((item) => ({ kind: 'card', item }) as SessionEntry),
+    describeEntry,
     { seed: seedFrom(options, rng), recent: options.recent },
   );
-  return withClozeMeta(ordered, clozeSessionMeta(cards) ?? { skippedNoFreshSentence: [] });
+  return withClozeMeta(spreadErrors(ordered, errors), clozeSessionMeta(cards) ?? { skippedNoFreshSentence: [] });
+}
+
+/** Phase 47 Part B.2: the journal fixes spread evenly after the first word cloze, never two in a row. */
+function spreadErrors(ordered: OrderedSession<SessionEntry>, errors: readonly ErrorItem[]): OrderedSession<SessionEntry> {
+  if (errors.length === 0) return ordered;
+  const words = [...ordered];
+  const out: SessionEntry[] = [];
+  // fix k goes after word number ceil((k + 1) * n / (e + 1)): evenly spaced, each after at least one word
+  const after = errors.map((_, k) => Math.max(k + 1, Math.ceil(((k + 1) * words.length) / (errors.length + 1))));
+  let next = 0;
+  words.forEach((w, i) => {
+    out.push(w);
+    while (next < errors.length && after[next] === i + 1) out.push({ kind: 'error', error: errors[next++]! });
+  });
+  const meta = sessionMeta(ordered);
+  return meta ? markOrderedSession(out, meta) : (out as OrderedSession<SessionEntry>);
+}
+
+/** Phase 47 Part A.3: practice counting (Phase 45) for a cloze answer outside the review session.
+ * Each of the word's cards gets a `review_*` with `context.practice` when this is its first counted
+ * answer of the day (`counts`, the ledger's `practiceCounts`), else a `practice_*` that changes
+ * nothing but Again's priority. */
+export function clozePracticeEvidence(
+  item: Pick<SessionItem, 'card' | 'siblings'>,
+  kind: ClozeEvidenceKind,
+  at: Date,
+  counts: (card: Pick<SkillCard, 'item' | 'skill'>) => boolean,
+  config: { creditAllFacesOfWord: boolean } = CLOZE_CONFIG,
+): Evidence[] {
+  const grade: PracticeGrade = kind === 'cloze_correct_nohint' ? 'good' : kind === 'cloze_correct_hint' ? 'hard' : 'again';
+  const cards = [item.card, ...(config.creditAllFacesOfWord ? (item.siblings ?? []) : [])];
+  return cards.map((c) => ({
+    item: c.item,
+    skill: c.skill,
+    kind: practiceAnswerKind(grade, counts(c)),
+    at,
+    context: { source: 'cloze', practice: true },
+  }));
 }

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { answerUntilJournalFix, seedAnsweredWords } from './seed-answered-words.js';
 
 interface Anan {
   db: { errorItems: { bulkPut: (rows: unknown[]) => Promise<unknown> } };
@@ -59,8 +60,11 @@ test('a journal card says what kind of fix it is and always shows what you wrote
     ]);
   }, card.toString());
 
+  // Phase 47: journal fixes come after word clozes
+  await seedAnsweredWords(page, 12);
   await page.goto('/?page=cloze');
-  await page.getByRole('button', { name: /Start session/ }).click({ timeout: 20000 });
+  await page.getByRole('button', { name: /^Practise/ }).click({ timeout: 20000 });
+  await answerUntilJournalFix(page);
   await expect(page.getByText("One word here doesn't belong. Tap it.")).toBeVisible();
   await expect(page.getByText('My surname is Yin.')).toBeVisible();
 

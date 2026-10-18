@@ -431,16 +431,27 @@ export const STREAK_KEEP_GROWING = 'Water something today to keep it growing';
 export const streakAria = (current: number, best: number, activeToday: boolean): string =>
   `${current}-day streak, best ${best}. ${activeToday ? 'Today counts already.' : `${STREAK_KEEP_GROWING}.`} Open Progress.`;
 
-/** Phase 37: Cloze's start button counts words (one question each) and journal sentences. */
-export const clozeStartLabel = (session: readonly { kind: 'card' | 'error' }[]): string => {
+/** Phase 37: Cloze's start button counts words (one question each) and journal sentences.
+ * Phase 47: "Start session (12 words due)" in the review session, "Practise (20 words)" outside it. */
+export const clozeStartLabel = (
+  session: readonly { kind: 'card' | 'error' }[],
+  mode: 'session' | 'practice' = 'session',
+): string => {
   const words = session.filter((e) => e.kind === 'card').length;
   const sentences = session.length - words;
   const parts = [
-    ...(words ? [`${words} word${words === 1 ? '' : 's'}`] : []),
+    ...(words ? [`${words} word${words === 1 ? '' : 's'}${mode === 'session' ? ' due' : ''}`] : []),
     ...(sentences ? [`${sentences} journal sentence${sentences === 1 ? '' : 's'}`] : []),
   ];
-  return `Start session (${parts.join(', ')})`;
+  return `${mode === 'practice' ? 'Practise' : 'Start session'} (${parts.join(', ')})`;
 };
+/** Phase 47: a practice cloze (outside the review session). */
+export const PRACTICE = 'Practice';
+/** Phase 47 Part A.4: too few answered words to practise. */
+export const LEARN_WORDS_FIRST = 'Learn a few words in Review first.';
+/** Phase 47 Part B.3: journal fixes waiting for words the learner hasn't learned yet. */
+export const clozeWaitingFixes = (n: number): string =>
+  `${n} journal fix${n === 1 ? ' is' : 'es are'} waiting for words you haven't learned yet`;
 /** Phase 37: a cloze retry later in the sitting. */
 export const AGAIN = 'Again';
 

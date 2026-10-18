@@ -235,11 +235,13 @@ function applyNope(current: SkillCard | undefined, evidence: Evidence, now: Date
 /** Phase 20 review_restore: back into review. Removed (not now / never / known) → due now;
  * no card yet ("Add to review") → introduced. */
 function applyRestore(current: SkillCard | undefined, evidence: Evidence, now: Date): ModelUpdate {
+  // Phase 47 Part B.3: "Add to review" on a waiting journal fix's word: the next new-word slot.
+  const priority = evidence.context?.priority ? { priority: true } : {};
   if (!current) {
     const base = blankSkillCard(evidence, emptyCard(now), now);
-    return { card: { ...base, state: 'introduced' }, appliedEffect: 'introduce (added)' };
+    return { card: { ...base, state: 'introduced', flags: { ...base.flags, ...priority } }, appliedEffect: 'introduce (added)' };
   }
-  const flags = { ...current.flags };
+  const flags = { ...current.flags, ...priority };
   const wasKnown = flags.markedKnown;
   delete flags.snoozed;
   delete flags.snoozedWhen;
@@ -465,6 +467,15 @@ function applyReviewAnswer(
   const rated: ModelUpdate = fsrsRated.card
     ? { ...fsrsRated, card: { ...fsrsRated.card, flags: flagsAfter(fsrsRated.card.flags) } }
     : fsrsRated;
+  // Phase 47: a counted cloze practice answer moves the cloze ladder too, as a cloze answer does.
+  if (rated.card && evidence.context?.source === 'cloze') {
+    const outcome: ClozeOutcome = grade === Rating.Again ? 'wrong' : grade === Rating.Hard ? 'correct_wrong_tone' : 'correct';
+    const step = nextLadderState({ rung: current?.clozeRung ?? 1, streak: current?.clozeStreak ?? 0 }, outcome);
+    return {
+      card: { ...rated.card, clozeRung: step.rung, clozeStreak: step.streak },
+      appliedEffect: `${rated.appliedEffect} + ladder:rung${step.rung}(streak ${step.streak})`,
+    };
+  }
   const face = evidence.context?.face;
   if (!rated.card || evidence.skill !== 'production' || (face !== 'pick' && face !== 'recall')) return rated;
   // Phase 43 Part B.5: Pick moves to Recall only once production is consistently known too.

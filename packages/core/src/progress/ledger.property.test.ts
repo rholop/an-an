@@ -20,6 +20,9 @@ import { activeDaysFromHistory } from './active-days.js';
 import { computeStreak } from '../game/streak.js';
 import { buildSession, clozeAnswerEvidence } from '../cloze/session.js';
 import { tutorIntroduceEvidence, type TutorLesson } from '../tutor/session.js';
+import { emptyCard } from '../learner/fsrs-instance.js';
+import { unknownAnswerWords } from '../journal/answer-words.js';
+import type { ErrorItem } from '../journal/types.js';
 
 const HEADWORDS = [...'貓狗魚鳥馬牛羊雞鴨豬茶水書筆車船門窗山河'];
 const word = (hw: string, i: number): Word => ({
@@ -558,6 +561,40 @@ describe('Phase 37: one cloze per word, credited on every card of the word in se
           extra: (now) => clozeAnswerEvidence(item, 'cloze_correct_nohint', now, { creditAllFacesOfWord: creditAll }),
         });
         expect(before.session().cards.length - after.session().cards.length).toBe(creditAll ? 2 : 1);
+      }),
+      { numRuns: 150 },
+    );
+  });
+});
+
+describe('Phase 47: journal fixes wait for the words of their answer', () => {
+  it('no error item is shown whose answer has a word outside comprehensible; none is lost', () => {
+    fc.assert(
+      fc.property(stateArb, fc.array(fc.tuple(fc.nat(WORDS.length - 1), fc.nat(WORDS.length - 1)), { minLength: 1, maxLength: 8 }), (s, pairs) => {
+        const ledger = ledgerOf(s);
+        const items: ErrorItem[] = pairs.map(([a, b], i) => {
+          const answer = `${HEADWORDS[a]}${HEADWORDS[b]}`;
+          return {
+            id: `e${i}:0`,
+            journalEntryId: `e${i}`,
+            original: `我x。`,
+            corrected: `我${answer}。`,
+            span: [1, 2],
+            blank: [1, 3],
+            type: 'error',
+            card: emptyCard(new Date(0)),
+            flagged: false,
+            createdAt: new Date(0),
+            version: 2,
+            status: 'active',
+          };
+        });
+        const { due, waiting } = ledger.errorItems(items);
+        const ids = ledger.comprehensible().ids;
+        for (const e of due) expect(unknownAnswerWords(e, { lexicon, ids })).toEqual([]);
+        for (const w of waiting) for (const id of w.wordIds) expect(ids.has(id)).toBe(false);
+        // every item is either shown or waiting (all are due: their cards are new)
+        expect(sorted([...due, ...waiting.map((w) => w.item)].map((e) => e.id))).toEqual(sorted(items.map((e) => e.id)));
       }),
       { numRuns: 150 },
     );

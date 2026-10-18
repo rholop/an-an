@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures.js';
+import { answerUntilJournalFix, seedAnsweredWords } from './seed-answered-words.js';
 
 interface Anan {
   db: {
@@ -60,8 +61,11 @@ test('reporting a journal cloze removes it at once, and Undo brings it back', as
     });
   }, due.toISOString());
 
+  // Phase 47: a journal fix comes after word clozes, and only once its answer (今天) is known
+  await seedAnsweredWords(page, 12, ['tocfl-74c7794307']);
   await page.goto('/?page=cloze');
-  await page.getByRole('button', { name: /Start session/ }).click({ timeout: 15000 });
+  await page.getByRole('button', { name: /^Practise/ }).click({ timeout: 15000 });
+  await answerUntilJournalFix(page);
   await expect(page.getByText('From your journal')).toBeVisible();
 
   const flag = page.getByRole('button', { name: /Something's wrong/ });
@@ -77,7 +81,8 @@ test('reporting a journal cloze removes it at once, and Undo brings it back', as
   expect(
     (await page.evaluate(() => window.__anan.db.errorItems.get('e2e:0')))?.report?.reason,
   ).toBe('garbled');
-  await expect(page.getByText('Session complete')).toBeVisible();
+  // the fix left the session at once (the word clozes go on)
+  await expect(page.locator('.cloze-badge', { hasText: 'From your journal' })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Undo' }).tap();
   await expect

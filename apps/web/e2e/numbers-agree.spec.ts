@@ -181,10 +181,13 @@ test.describe('numbers agree (Phase 29)', () => {
       // Cloze: this session's cards plus at most Cloze's new words (5, progress.config newPerQueue)
       await open(page, 'cloze');
       const start = page.getByTestId('cloze-start');
-      await expect(start.or(page.getByTestId('cloze-empty'))).toBeVisible();
-      const clozeItems = (await start.isVisible()) ? await num(start, /\((\d+) words?\)/) : 0;
+      await expect(start.or(page.getByTestId('cloze-empty')).or(page.getByTestId('cloze-few-words'))).toBeVisible();
+      // Phase 47: outside the session Cloze practises answered words ("Practise (N words)")
+      const sessionStart = (await start.isVisible()) && (await start.innerText()).startsWith('Start session');
+      const clozeItems = sessionStart ? await num(start, /\((\d+) words? due/) : 0;
       expect(clozeItems).toBeLessThanOrEqual(want.session + 5);
       if (want.session > 0) expect(clozeItems).toBeGreaterThan(0);
+      else expect(sessionStart).toBe(false);
 
       // Textbook: lesson 1 is Mastered on the chip, 100% on the lesson, and nothing is left in Vocab
       await open(page, 'textbook');

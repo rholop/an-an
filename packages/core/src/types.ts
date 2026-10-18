@@ -164,6 +164,8 @@ export interface Evidence {
     tones?: { expected: number; given: number }[];
     /** Phase 45: given on "Practise these words" (a `review_*` that counted, or a `practice_*`). */
     practice?: boolean;
+    /** Phase 47 review_restore: added from a waiting journal fix; the card takes the next new-word slot. */
+    priority?: boolean;
   };
 }
 

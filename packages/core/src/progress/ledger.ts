@@ -7,7 +7,11 @@
 // rule (Phase 29)"). Pure; time is always injected.
 
 import type { SkillCard } from '../learner/types.js';
-import type { Lexicon } from '../lexicon.js';
+import { Lexicon } from '../lexicon.js';
+import type { ErrorItem } from '../journal/types.js';
+import { unknownAnswerWords, type AnswerKnown } from '../journal/answer-words.js';
+import { selectDueErrorItems } from '../journal/error-bank.js';
+import { isShowableErrorItem } from '../cloze/report.js';
 import { LEVEL_IDS, type Level } from '../levels.config.js';
 import type { Textbook, Lesson } from '../textbook/types.js';
 import { lessonProgress, lessonDone, type LessonProgress } from '../textbook/progress.js';
@@ -73,6 +77,9 @@ type EvidenceLike = Pick<Evidence, 'item' | 'skill' | 'kind' | 'at'> & Partial<P
 
 /** The queues that add new items (Phase 29 Part B.4). Review takes its share of the day's limits. */
 export type NewQueue = 'review' | keyof ProgressConfig['newPerQueue'];
+
+/** Phase 45/47: answers that move a card's FSRS schedule: a later practice answer that day doesn't. */
+const COUNTED_ANSWER_KINDS: ReadonlySet<string> = new Set([...REVIEW_ANSWER_KINDS, 'cloze_correct_nohint', 'cloze_correct_hint', 'cloze_wrong']);
 
 export interface LedgerStudyInputs {
   lexicon: Pick<Lexicon, 'allWords' | 'byId'>;
@@ -783,11 +790,65 @@ export class Ledger {
   }
 
   /** Does a practice answer of this card count as a real review now? Only the card's first answer of
-   * the profile-zone day: none once it has a counted (Review or practice) answer today. */
+   * the profile-zone day: none once it has a counted (Review, Cloze or practice) answer today. */
   practiceCounts(card: Pick<SkillCard, 'item' | 'skill'>): boolean {
     const today = this.dayKey();
     const key = sessionCardKey(card);
-    return !this.evidence.some((e) => REVIEW_ANSWER_KINDS.has(e.kind) && sessionCardKey(e) === key && this.dayKey(e.at) === today);
+    return !this.evidence.some((e) => COUNTED_ANSWER_KINDS.has(e.kind) && sessionCardKey(e) === key && this.dayKey(e.at) === today);
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Phase 47: Cloze outside the review session, and journal fixes that wait for their words
+
+  /**
+   * Cloze practice (Part A.2): the practice cards (`practiceCards`) of every answered word, words only
+   * and no Say it, the weakest (lowest recall chance) first; among equals tutoring words, then the
+   * study order (the current lesson first).
+   */
+  clozePracticeCards(): SkillCard[] {
+    return this.once('clozePractice', () => {
+      const words = [...new Map(this.allCards.filter((c) => c.item.kind === 'word').map((c) => [c.item.id, c.item])).values()];
+      const rank = this.newRank();
+      return this.practiceCards(words)
+        .filter((c) => c.skill === 'recognition' || c.skill === 'production')
+        .map((c) => ({ c, r: Math.round(recallChance(c, this.now) * 100), t: this.isTutorCard(c) ? 0 : 1, s: rank?.(c) ?? 0 }))
+        .sort((a, b) => a.r - b.r || a.t - b.t || a.s - b.s || sessionCardKey(a.c).localeCompare(sessionCardKey(b.c)))
+        .map((x) => x.c);
+    });
+  }
+
+  /** Distinct words Cloze practice can use ("Learn a few words in Review first" below 10). */
+  clozePracticeWordCount(): number {
+    return new Set(this.clozePracticeCards().map((c) => c.item.id)).size;
+  }
+
+  /**
+   * Journal fixes (Part B): `due` are the items Cloze may show now (showable, due, and every word of
+   * the answer comprehensible); `waiting` are the showable items with an answer word the learner
+   * doesn't know yet, with those words. A waiting item is never deleted: it comes back once its words
+   * are Learned (or in session / learning).
+   */
+  errorItems(items: readonly ErrorItem[]): { due: ErrorItem[]; waiting: Array<{ item: ErrorItem; wordIds: string[] }>; known: AnswerKnown | undefined } {
+    const known = this.answerKnown();
+    const due = selectDueErrorItems(items, this.now, Infinity, known);
+    const waiting = known
+      ? items.flatMap((item) => {
+          if (!isShowableErrorItem(item)) return [];
+          const wordIds = unknownAnswerWords(item, known);
+          return wordIds.length ? [{ item, wordIds }] : [];
+        })
+      : [];
+    return { due, waiting, known };
+  }
+
+  /** The comprehensible set with a lexicon to find an answer's words (undefined without study context). */
+  private answerKnown(): AnswerKnown | undefined {
+    return this.once('answerKnown', () => {
+      const lex = this.study?.lexicon;
+      if (!lex) return undefined;
+      const lexicon = lex instanceof Lexicon ? lex : new Lexicon(lex.allWords());
+      return { lexicon, ids: this.comprehensible().ids };
+    });
   }
 
   /** Words of `items` with no card yet (not removed, not already known): they start in the next

@@ -10,6 +10,7 @@ import {
 import { blockErrorItem, isShowableErrorItem } from '../cloze/report.js';
 import { byDrillDue, isDrillDue } from '../progress/terms.js';
 import type { ErrorItem, Span } from './types.js';
+import type { AnswerKnown } from './answer-words.js';
 
 /** Where the blank sits in `corrected`. Items built with other corrections in
  * the same sentence carry it explicitly; older ones derive it from the span
@@ -119,11 +120,13 @@ export function topErrorPatterns(items: readonly ErrorItem[], limit = 5, since?:
 export const RECURRING_PATTERN_MIN = 2;
 
 /** Due, unflagged error items; recurring-pattern ones first (most frequent
- * pattern leading), then oldest-due. */
+ * pattern leading), then oldest-due. Phase 47: with `known`, only items whose answer words are all
+ * known (the rest wait). */
 export function selectDueErrorItems(
   items: readonly ErrorItem[],
   now: Date,
   limit: number,
+  known?: AnswerKnown,
 ): ErrorItem[] {
   const counts = patternCounts(items);
   const weight = (i: ErrorItem) => {
@@ -131,7 +134,7 @@ export function selectDueErrorItems(
     return c >= RECURRING_PATTERN_MIN ? c : 0;
   };
   return items
-    .filter((i) => isShowableErrorItem(i) && isDrillDue(i.card, now))
+    .filter((i) => isShowableErrorItem(i, known) && isDrillDue(i.card, now))
     .sort((a, b) => weight(b) - weight(a) || byDrillDue(a.card, b.card))
     .slice(0, limit);
 }

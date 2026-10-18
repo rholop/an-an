@@ -20,10 +20,12 @@ import {
   buildMixedSession,
   buildWordBankOptions,
   clozeAnswerEvidence,
+  clozePracticeEvidence,
   clozeSessionMeta,
+  CLOZE_CONFIG,
   gradeClozeAnswer,
   reviewErrorItem,
-  selectDueErrorItems,
+  type AnswerKnown,
   type ChoiceOption,
   type ClozeInputMode,
   type ErrorItem,
@@ -107,13 +109,21 @@ import {
   UNDO,
   AGAIN,
   clozeStartLabel,
+  clozeWaitingFixes,
   feedbackWrong,
+  LEARN_WORDS_FIRST,
+  PRACTICE,
 } from '../lib/labels.js';
 import { glossFor } from '@anan/core';
 import { GrammarRound } from './GrammarStep.js';
 import './ClozePage.css';
 
 export type Outcome = 'correct' | 'correct_wrong_tone' | 'wrong';
+
+/** Open another page (App listens for `anan:go`), at a section when `anchor` is given. */
+function goTo(route: string, anchor?: string) {
+  window.dispatchEvent(new CustomEvent('anan:go', { detail: { route, ...(anchor ? { anchor } : {}) } }));
+}
 
 function evidenceKindFor(
   outcome: Outcome,
@@ -149,7 +159,16 @@ export function ClozePage() {
   const [knownIds, setKnownIds] = useState<Set<string> | null>(null);
   const [chatLines, setChatLines] = useState<Awaited<ReturnType<typeof allChatLines>> | null>(null);
   const [journalSentences, setJournalSentences] = useState<JournalSentenceSource[] | null>(null);
+  // Phase 47 Part B: the journal fixes Cloze may show (every answer word known), and how many wait.
   const [errorItems, setErrorItems] = useState<ErrorItem[] | null>(null);
+  const [waitingFixes, setWaitingFixes] = useState(0);
+  const [answerKnown, setAnswerKnown] = useState<AnswerKnown | undefined>(undefined);
+  // Phase 47 Part A: outside the review session, Cloze practises every answered word.
+  const [practiceCards, setPracticeCards] = useState<SkillCard[]>([]);
+  const [practiceWords, setPracticeWords] = useState(0);
+  const practiceMode = useRef(false);
+  // cards whose counted answer of the day was just given (a guard while the ledger rebuilds)
+  const countedToday = useRef(new Set<string>());
   // Phase 16: sentences reported earlier — never offered as a cloze again.
   const [excluded, setExcluded] = useState<Set<string> | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -212,7 +231,12 @@ export function ClozePage() {
       if (cancelled) return;
       setExcluded(ex);
       setJournalSentences(journal);
-      setErrorItems(errors);
+      const fixes = ledger.errorItems(errors);
+      setErrorItems(fixes.due);
+      setWaitingFixes(fixes.waiting.length);
+      setAnswerKnown(fixes.known);
+      setPracticeCards(ledger.clozePracticeCards());
+      setPracticeWords(ledger.clozePracticeWordCount());
       // Phase 23: reading cards (pinyin and tones) are practised in Review's Say it and their own tab.
       setDueCards(ledger.session().cards.filter((c) => c.skill !== 'reading'));
       setNewCards(ledger.newCards());
@@ -301,9 +325,7 @@ export function ClozePage() {
     journalSentences !== null &&
     excluded !== null &&
     errorItems !== null;
-  const dueErrorCount = errorItems
-    ? selectDueErrorItems(errorItems, new Date(), Infinity).length
-    : 0;
+  const dueErrorCount = errorItems?.length ?? 0;
 
   const lessonIdx = useMemo(() => lessonIndex(getStudyBooks()), [studyFocus]);
 
@@ -345,7 +367,7 @@ export function ClozePage() {
       .filter((i) => i.kind === 'word' && lexiconState.lexicon.byId(i.id))
       .map((i): SkillCard => ({ ...newSessionCard(i, now), state: 'introduced' }));
     const fresh = [...picked.cards, ...freshItems];
-    const built = buildMixedSession([...dueCards!, ...fresh], {
+    const shared = {
       seed,
       recent: recentShown(),
       lexicon: lexiconState.lexicon,
@@ -373,14 +395,27 @@ export function ClozePage() {
         ...lessonSentences.rest,
       ],
       errorItems: errorItems!,
+      ...(answerKnown ? { known: answerKnown } : {}),
       now,
-    });
-    return { built, seed };
-  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, lessonSentences, studyFocus, newAllowed, learnerLevel, tutorSessions, tutorIds]);
+    };
+    // Phase 47 Part A.1: the review session's cards (and its new share) while it has any word clozes.
+    // Once the session is done (or between sessions) its new share is spent too: practice instead.
+    const sessionOpen = dueCards!.some((c) => c.item.kind === 'word');
+    const built = buildMixedSession(sessionOpen ? [...dueCards!, ...fresh] : [], shared);
+    if (built.some((e) => e.kind === 'card')) return { built, seed, mode: 'session' as const };
+    // Part A.2/A.4: otherwise practice over every answered word (weakest first), never a new word;
+    // under 10 answered words there is nothing to practise yet.
+    if (practiceWords < CLOZE_CONFIG.practiceMinWords) return { built: [] as SessionEntry[], seed, mode: 'few' as const };
+    const { rank: _rank, ...noRank } = shared;
+    const practice = buildMixedSession(practiceCards, { ...noRank, keepOrder: true });
+    return { built: practice, seed, mode: 'practice' as const };
+  }, [ready, dueCards, newCards, knownIds, journalSentences, chatLines, excluded, errorItems, answerKnown, practiceCards, practiceWords, lessonSentences, studyFocus, newAllowed, learnerLevel, tutorSessions, tutorIds]);
 
   function startSession() {
     if (!planned || lexiconState.status !== 'ready') return;
     const { built, seed } = planned;
+    practiceMode.current = planned.mode === 'practice';
+    countedToday.current.clear();
     logSessionOrder('cloze', seed, built.length, sessionMeta(built)?.deferred.length ?? 0);
     // Phase 37: words left out because their only sentences were already in this session.
     const skipped = clozeSessionMeta(built)?.skippedNoFreshSentence ?? [];
@@ -439,19 +474,34 @@ export function ClozePage() {
     const now = new Date();
     noteShown(describeClozeEntry({ kind: 'card', item }).keys, now);
     // Phase 37: one cloze per word; the answer counts for each of the word's cards in this session.
-    const [evidence, ...others] = clozeAnswerEvidence(item, evidenceKindFor(outcome), now);
+    // Phase 47 Part A.3: in practice, a card's first answer of the day is a counted review, later
+    // ones that day are practice only (Phase 45).
+    const practising = practiceMode.current;
+    const cardKey = (c: Pick<SkillCard, 'item' | 'skill'>) => `${c.item.kind}:${c.item.id}|${c.skill}`;
+    let all = clozeAnswerEvidence(item, evidenceKindFor(outcome), now);
+    if (practising) {
+      const ledger = await getLedgerNow(now);
+      all = clozePracticeEvidence(item, evidenceKindFor(outcome), now, (c) => !countedToday.current.has(cardKey(c)) && ledger.practiceCounts(c));
+      for (const e of all) if (e.kind.startsWith('review_')) countedToday.current.add(cardKey(e));
+    }
+    const [evidence, ...others] = all;
     const handle = await learnerService.recordUndoable(evidence!, now);
     const otherHandles: { undo: () => Promise<void> }[] = [];
     for (const e of others) otherHandles.push(await learnerService.recordUndoable(e, now));
-    const prevSession = stepInSitting(handle.card, now)
-      ? requeueStep({ kind: 'card', item: { ...item, card: handle.card! } })
-      : undefined;
+    const prevSession = practising
+      ? outcome === 'wrong'
+        ? requeueMissed({ kind: 'card', item: { ...item, card: handle.card ?? item.card } })
+        : undefined
+      : stepInSitting(handle.card, now)
+        ? requeueStep({ kind: 'card', item: { ...item, card: handle.card! } })
+        : undefined;
     answered.current.set(index, {
       outcome,
       ...(prevSession ? { prevSession } : {}),
       undo: async () => {
         for (const h of [...otherHandles].reverse()) await h.undo();
         await handle.undo();
+        for (const e of all) countedToday.current.delete(cardKey(e));
       },
       redo: async () => {
         for (const e of [evidence!, ...others]) await learnerService.record(e, now);
@@ -657,6 +707,14 @@ export function ClozePage() {
         {lexiconState.status === 'ready' && <GrammarRound lexicon={lexiconState.lexicon} />}
         {!ready || !planned ? (
           <p>Loading your review queue…</p>
+        ) : planned.mode === 'few' ? (
+          <>
+            <EmptySprout />
+            <p data-testid="cloze-few-words">{LEARN_WORDS_FIRST}</p>
+            <button className="btn-primary" data-testid="cloze-go-review" onClick={() => goTo('review')}>
+              Open Review
+            </button>
+          </>
         ) : planned.built.length === 0 ? (
           <>
             <EmptySprout />
@@ -664,16 +722,23 @@ export function ClozePage() {
           </>
         ) : (
           <>
-            {dueErrorCount > 0 && (
+            {dueErrorCount > 0 && planned.built.some((e) => e.kind === 'error') && (
               <p className="cloze-level-note">
                 {dueErrorCount} sentence{dueErrorCount === 1 ? '' : 's'} from your journal
                 corrections {dueErrorCount === 1 ? 'is' : 'are'} due.
               </p>
             )}
             <button className="btn-primary" onClick={startSession} data-testid="cloze-start">
-              {clozeStartLabel(planned.built)}
+              {clozeStartLabel(planned.built, planned.mode)}
             </button>
           </>
+        )}
+        {ready && waitingFixes > 0 && (
+          <p className="cloze-level-note" data-testid="cloze-waiting-fixes">
+            <button type="button" className="link-button" onClick={() => goTo('reported', 'waiting-fixes')}>
+              {clozeWaitingFixes(waitingFixes)}
+            </button>
+          </p>
         )}
       </div>
     );
@@ -792,6 +857,7 @@ export function ClozePage() {
           </span>
           {undoEl}
         {item.again && <span className="cloze-badge" data-testid="cloze-again">{AGAIN}</span>}
+        {practiceMode.current && <span className="cloze-badge" data-testid="cloze-practice">{PRACTICE}</span>}
         <span className="cloze-badge">Rung {item.card.clozeRung}</span>
         <span className="cloze-badge">{item.card.skill}</span>
       </div>

@@ -364,8 +364,10 @@ export function planSession(input: SessionInput & { early?: boolean }): SessionP
   const newToday = newTodayFor(input, s, window, ranked.length) ?? empty;
 
   let room = Math.max(0, ceiling - due.length);
+  // Phase 47 Part B.3: a word added from a waiting journal fix (`flags.priority`) is tutoring-level:
+  // after the classes' own words, ahead of the study order.
   const order = (c: SkillCard) =>
-    isTutor(c) ? -1e9 + (input.tutorOrder?.get(c.item.id) ?? 1e6) : (input.newRank?.(c) ?? 0);
+    isTutor(c) ? -1e9 + (input.tutorOrder?.get(c.item.id) ?? 1e6) : c.flags.priority ? -1e9 + 2e6 : (input.newRank?.(c) ?? 0);
   const byOrder = (a: SkillCard, b: SkillCard) =>
     order(a) - order(b) || new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime() || cardKey(a).localeCompare(cardKey(b));
   const newCards = live.filter((c) => isNewCard(c));

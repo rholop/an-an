@@ -26,6 +26,7 @@ import { stillAMistake, YOU_ARE_RIGHT_REMOVED } from '../lib/labels.js';
 import { getProtectedTerms } from '../lib/journal-protected.js';
 import { FetchTutorLLM } from '../lib/tutor-llm.js';
 import { useLexicon } from '../lib/useLexicon.js';
+import { WaitingFixes } from '../components/WaitingFixes.js';
 
 const reasonLabel = (id: string) => CLOZE_REPORT_REASONS.find((r) => r.id === id)?.label ?? id;
 
@@ -187,6 +188,7 @@ export function ReportedPage() {
   return (
     <div className="reported-page">
       <h1>Reported</h1>
+      {lexiconState.status === 'ready' && <WaitingFixes lexicon={lexiconState.lexicon} />}
       <h2>Sentences</h2>
       {rows.length === 0 ? (
         <p>No sentences reported or held back.</p>

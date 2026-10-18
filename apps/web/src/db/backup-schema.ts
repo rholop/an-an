@@ -173,6 +173,8 @@ export const EvidenceSchema = z.object({
       tones: z.array(z.object({ expected: z.number(), given: z.number() })).optional(),
       // Phase 45: answered on "Practise these words".
       practice: z.boolean().optional(),
+      // Phase 47: added to review from a waiting journal fix (next new-word slot).
+      priority: z.boolean().optional(),
     })
     .optional(),
 });
