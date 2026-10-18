@@ -360,13 +360,21 @@ export function loadStoryPromptTemplates(version: string): { write: string; chec
 }
 
 /** Phase 39: tutoring sessions (extraction from page images, the sentence check, the class scenario). */
-export function loadTutorPromptTemplates(version: string): { extract: string; check: string; scenario: string; classify: string } {
+export function loadTutorPromptTemplates(version: string): {
+  extract: string;
+  check: string;
+  scenario: string;
+  classify: string;
+  grammarPractice: string;
+} {
   return {
     extract: loadPromptFile(`tutor-extract.${version}.md`),
     check: loadPromptFile(`tutor-check.${version}.md`),
     scenario: loadPromptFile(`tutor-scenario.${version}.md`),
     // Phase 40: levels and topics the code couldn't work out
     classify: loadPromptFile(`tutor-classify.${version}.md`),
+    // Phase 46: practice sentences for a grammar point with too few
+    grammarPractice: loadPromptFile(`tutor-grammar-practice.${version}.md`),
   };
 }
 

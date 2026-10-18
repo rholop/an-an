@@ -9,6 +9,8 @@ import { loadTaiwanConverters } from '../opencc.js';
 import { getActiveProfileForApi } from '../api.js';
 import { readSetting } from '../useSetting.js';
 import { requestTutorAudio } from './tutor-audio.js';
+import { loadTextbookSentences } from '../textbook-data.js';
+import { practiceBank } from '../grammar-practice.js';
 import { TutoringService, type DraftResult } from './tutoring-service.js';
 
 export function appTutoringService(lexicon: Lexicon): TutoringService {
@@ -25,6 +27,11 @@ export function appTutoringService(lexicon: Lexicon): TutoringService {
       const res = await requestTutorAudio({ ...rec, words: rec.words.filter((w) => w.ticked) }, profileId);
       const status = res.status === 'speech_not_configured' ? 'waiting_key' : res.status;
       return { status, at: new Date(), made: res.made + res.unchanged };
+    },
+    // Phase 46: the sources a grammar point's practice sentences come from
+    practiceSources: async () => {
+      const [textbook, bank] = await Promise.all([loadTextbookSentences(), practiceBank()]);
+      return { textbook, bank };
     },
   });
 }
@@ -65,4 +72,18 @@ export async function migrateTutorLevelsOnce(lexicon: Lexicon, now: Date = new D
   if ((await db.tutorSessions.count()) === 0) return; // nothing to fix; a class saved later is done at Save
   await appTutoringService(lexicon).recheckLevelsAndTopics(now);
   await db.settings.put({ key: TUTOR_RECHECK_KEY, value: now.toISOString() });
+}
+
+/**
+ * Phase 46 Parts C.2 and D.5: classes saved before Phase 46 get their grammar text in Taiwan
+ * characters and their matches re-checked, once per profile.
+ */
+export const TUTOR_GRAMMAR_MIGRATION_KEY = 'tutorGrammarConvertedAt';
+const grammarMigrated = new WeakSet<object>();
+export async function migrateTutorGrammarOnce(lexicon: Lexicon, now: Date = new Date()): Promise<void> {
+  if (grammarMigrated.has(lexicon)) return;
+  grammarMigrated.add(lexicon);
+  if (await db.settings.get(TUTOR_GRAMMAR_MIGRATION_KEY)) return;
+  if ((await db.tutorSessions.count()) > 0) await appTutoringService(lexicon).migrateGrammar(now);
+  await db.settings.put({ key: TUTOR_GRAMMAR_MIGRATION_KEY, value: now.toISOString() });
 }

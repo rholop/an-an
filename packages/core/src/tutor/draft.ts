@@ -13,7 +13,7 @@ import { charLevelIndex, estimateWordLevel, type CharLevelIndex } from '../level
 import { topicTagsFor, topicWordTag, type TopicTag } from '../topics.js';
 import type { GrammarItem, ItemRef, Word } from '../types.js';
 import type { TutorCheckResponse, TutorExtraction } from './schema.js';
-import { TUTOR_CONFIG, TUTOR_GRAMMAR_RULES } from './tutor.config.js';
+import { TUTOR_COMPARE_CUE, TUTOR_CONFIG, TUTOR_GRAMMAR_RULES } from './tutor.config.js';
 
 export interface TutorDraftDeps {
   lexicon: Pick<Lexicon, 'lookup' | 'byId' | 'grammarItemById' | 'allWords' | 'prefixesOf' | 'maxHeadwordLength'>;
@@ -95,6 +95,8 @@ export interface TutorDraftGrammar {
   /** The app's grammar item this point is, or undefined = a session grammar note (no cards). */
   matchId?: string;
   matchPattern?: string;
+  /** Phase 46 Part D.2: every item it matched (two for a point comparing two items); first = matchId. */
+  matches?: Array<{ id: string; pattern: string }>;
 }
 
 export interface TutorDraft {
@@ -109,6 +111,12 @@ export interface TutorDraft {
   unmappedTopics: Array<{ zh: string; en: string }>;
   words: TutorDraftWord[];
   grammar: TutorDraftGrammar[];
+}
+
+/** Phase 46 Part C: tutor text (a grammar name, an explanation with Chinese in it) in Taiwan
+ * characters: OpenCC cn → twp, then any simplified character left from the table. English is untouched. */
+export function taiwanText(text: string, deps: Pick<TutorDraftDeps, 'toTaiwan'>): string {
+  return replaceSimplifiedChars(deps.toTaiwan(text).trim());
 }
 
 /** The same class (date and tutor) always gets the same id: a re-upload updates it. */
@@ -228,6 +236,9 @@ function draftSentence(
   swaps: ReadonlyMap<string, string>,
   sessionIds: ReadonlySet<string>,
   extra: Pick<TutorDraftSentence, 'wordId' | 'grammarId'>,
+  /** Phase 46 Part B.1.2: a grammar point's own example is practised whatever words it uses (it is
+   * only a grammar exercise, never a Cloze card): only Taiwan wording and the check decide. */
+  anyWords = false,
 ): TutorDraftSentence {
   let zh = replaceSimplifiedChars(deps.toTaiwan(printed.zh).trim());
   // The class's own mainland words are taught in their Taiwan form, so their examples use it too.
@@ -238,23 +249,37 @@ function draftSentence(
   if (tw.simplifiedChars.length > 0) return { ...base, practice: false, reason: 'Simplified characters left' };
   if (tw.mainlandTerms.length > 0)
     return { ...base, practice: false, reason: `Mainland wording (${tw.mainlandTerms.map((t) => `${t.matched} → ${t.taiwan}`).join(', ')})` };
-  const unknown = unknownWordsIn(zh, deps, sessionIds);
+  const unknown = anyWords ? [] : unknownWordsIn(zh, deps, sessionIds);
   if (unknown.length > TUTOR_CONFIG.maxUnknownWordsInExample)
     return { ...base, practice: false, reason: `Uses ${unknown.length} words you haven't met (${unknown.join('、')})` };
   return { ...base, practice: true };
 }
 
-/** Part B.6: the app's grammar item a point is, by its name. */
+/**
+ * Part B.6 / Phase 46 Part D: the app's grammar items a point is. A rule matches only when the
+ * point's name has the item's marker and the class example uses it too. A point comparing two items
+ * ("可以 vs 能不能") matches every item it names when the lexicon has them all and the example uses
+ * one of them; otherwise it is a note. Empty = a note.
+ */
 export function matchTutorGrammar(
   name: string,
+  exampleZh: string,
   lexicon: Pick<Lexicon, 'grammarItemById'>,
-): GrammarItem | undefined {
-  for (const r of TUTOR_GRAMMAR_RULES) {
-    if (!r.match.test(name)) continue;
-    const g = lexicon.grammarItemById(r.id);
-    if (g) return g;
+): GrammarItem[] {
+  const hits = TUTOR_GRAMMAR_RULES.filter((r) => r.name.test(name)).filter(
+    (r, i, all) => all.findIndex((x) => x.id === r.id) === i,
+  );
+  if (hits.length >= 2 && TUTOR_COMPARE_CUE.test(name)) {
+    const items = hits.map((r) => lexicon.grammarItemById(r.id));
+    if (items.some((g) => !g) || !hits.some((r) => r.example.test(exampleZh))) return [];
+    return items as GrammarItem[];
   }
-  return undefined;
+  for (const r of hits) {
+    if (!r.example.test(exampleZh)) continue;
+    const g = lexicon.grammarItemById(r.id);
+    if (g) return [g];
+  }
+  return [];
 }
 
 /** Parts B.1–B.6: the draft the check screen shows. Pure; nothing is stored. */
@@ -360,15 +385,21 @@ export function buildTutorDraft(extraction: TutorExtraction, deps: TutorDraftDep
   });
 
   const grammar: TutorDraftGrammar[] = extraction.grammar.map((g, i) => {
-    const name = replaceSimplifiedChars(deps.toTaiwan(g.name).trim());
-    const match = matchTutorGrammar(name, lexicon);
+    // Phase 46 Part C: the name and every Chinese run of the explanation in Taiwan characters too
+    // (OpenCC cn → twp, then the character table), never AI.
+    const name = taiwanText(g.name, deps);
+    const example = draftSentence(`${sessionId}:g${i}`, g.example, deps, swaps, sessionIds, {}, true);
+    const matches = matchTutorGrammar(name, example.zh, lexicon);
+    const first = matches[0];
     return {
       key: `g${i}`,
       printedName: g.name,
       name,
-      explanationEn: g.explanationEn.trim(),
-      example: draftSentence(`${sessionId}:g${i}`, g.example, deps, swaps, sessionIds, match ? { grammarId: match.id } : {}),
-      ...(match ? { matchId: match.id, matchPattern: match.pattern } : {}),
+      explanationEn: taiwanText(g.explanationEn, deps),
+      example: first ? { ...example, grammarId: first.id } : example,
+      ...(first
+        ? { matchId: first.id, matchPattern: first.pattern, matches: matches.map((m) => ({ id: m.id, pattern: m.pattern })) }
+        : {}),
     };
   });
 

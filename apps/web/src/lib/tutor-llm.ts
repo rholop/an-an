@@ -62,6 +62,9 @@ import {
   type TutorLLM,
   TutorCheckResponseSchema,
   TutorClassifyResponseSchema,
+  TutorGrammarPracticeResponseSchema,
+  type TutorGrammarPracticeRequest,
+  type TutorGrammarPracticeResponse,
   type TutorClassifyRequest,
   type TutorClassifyResponse,
   TutorExtractionSchema,
@@ -184,6 +187,11 @@ export class FetchTutorLLM implements TutorLLM, StoryLLM, TutoringLLM {
   /** Phase 40: levels and topics the code couldn't work out (checker chain). */
   async classifyTutorWords(req: TutorClassifyRequest): Promise<TutorClassifyResponse> {
     return TutorClassifyResponseSchema.parse(await this.post('/v1/tutor-classify', req));
+  }
+
+  /** Phase 46: practice sentences for a grammar point with too few (checker chain; checked after). */
+  async writeGrammarPractice(req: TutorGrammarPracticeRequest): Promise<TutorGrammarPracticeResponse> {
+    return TutorGrammarPracticeResponseSchema.parse(await this.post('/v1/tutor-grammar-practice', req));
   }
 
   async generateTurn(req: TurnRequest): Promise<TurnResponse> {

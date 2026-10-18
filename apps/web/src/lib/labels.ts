@@ -513,6 +513,18 @@ export const recheckDone = (n: number): string =>
 export const topicName = (t: string): string => t.charAt(0).toUpperCase() + t.slice(1);
 export const TUTOR_NO_CLASSES = 'No classes yet. Upload the summary your tutor sends after a class.';
 export const NOT_PRACTISED = 'shown only, not practised';
+// Phase 46: grammar points of a class
+export const NO_GRAMMAR_PRACTICE = 'No practice yet for this point.';
+export const WRITE_PRACTICE = 'Write practice';
+export const WRITING_PRACTICE = 'Writing practice…';
+export const NO_PRACTICE_WRITTEN = "Couldn't write sentences that passed the check this time. Try again later.";
+export const classNotesSaid = (notes: string): string => `Your class notes said: ${notes}`;
+export const MATCHED_TO = 'Matched to:';
+export const CHANGE_MATCH = 'Change';
+export const MAKE_NOTE = 'Make this a note';
+export const grammarRecheckLine = (n: number): string => `We re-checked ${n} grammar point${n === 1 ? '' : 's'}`;
+/** A flip card for a grammar point with no exercise: asks for the pattern from its meaning. */
+export const WHICH_PATTERN = 'Which pattern?';
 export const TUTORING_ONLY = 'Tutoring only';
 export const REVIEW_NOW = 'Review now';
 

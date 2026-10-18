@@ -1,0 +1,17 @@
+/* Phase 46: a grammar exercise's pattern (masked until the answer) and what follows the answer */
+.grammar-prompt-pattern {
+  color: var(--text-muted);
+  margin: 0.25rem 0;
+}
+.grammar-prompt-meaning {
+  margin: 0.25rem 0 0.5rem;
+}
+.grammar-after {
+  border-top: 1px solid var(--border);
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.grammar-after-notes {
+  color: var(--text-muted);
+}

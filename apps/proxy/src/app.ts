@@ -49,6 +49,8 @@ import {
   TutorCheckRequestSchema,
   TutorClassifyRequestSchema,
   TutorClassifyResponseSchema,
+  TutorGrammarPracticeRequestSchema,
+  TutorGrammarPracticeResponseSchema,
   TutorCheckResponseSchema,
   TutorExtractionSchema,
   TutorExtractRequestSchema,
@@ -83,6 +85,7 @@ import {
   CHAT_MEANING_CHECK_JSON_SCHEMA,
   TUTOR_CHECK_JSON_SCHEMA,
   TUTOR_CLASSIFY_JSON_SCHEMA,
+  TUTOR_GRAMMAR_PRACTICE_JSON_SCHEMA,
   TUTOR_EXTRACT_JSON_SCHEMA,
   TUTOR_SCENARIO_JSON_SCHEMA,
 } from './json-schema.js';
@@ -209,7 +212,10 @@ export interface AppDeps {
   /** Phase 24: graded stories (writer + independent checker prompts). */
   story?: { prompts: { write: string; check: string; repair: string }; orchestrator?: JsonOrchestrator };
   /** Phase 39: tutoring sessions (page-image extraction, the sentence check, the class scenario). */
-  tutor?: { prompts: { extract: string; check: string; scenario: string; classify?: string }; orchestrator?: JsonOrchestrator };
+  tutor?: {
+    prompts: { extract: string; check: string; scenario: string; classify?: string; grammarPractice?: string };
+    orchestrator?: JsonOrchestrator;
+  };
   /** Phase 40 D.1: Azure Speech clips for tutoring words and sentences (POST /v1/tutor-audio).
    * Absent, or `client: null` (no speech key): 503 speech_not_configured. */
   tutorAudio?: TutorAudioDeps;
@@ -1073,6 +1079,35 @@ export function createApp(deps: AppDeps): Hono {
       (req) => ({ systemPrompt: prompt, userMessage: JSON.stringify({ words: req.words, topics: req.topics, tags: req.tags }) }),
       tu.orchestrator,
       true,
+    );
+  });
+
+  // Phase 46: practice sentences for a grammar point with too few (checker chain; checked in code
+  // and by a fresh /v1/tutor-check before anything is kept). "Write practice" again skips the cache.
+  app.post('/v1/tutor-grammar-practice', (c) => {
+    const tu = deps.tutor;
+    if (!tu?.prompts.grammarPractice) return c.json({ error: 'tutoring is not configured' }, 501);
+    const prompt = tu.prompts.grammarPractice;
+    return journalRoute(
+      c,
+      '/v1/tutor-grammar-practice',
+      TutorGrammarPracticeRequestSchema,
+      TutorGrammarPracticeResponseSchema,
+      TUTOR_GRAMMAR_PRACTICE_JSON_SCHEMA,
+      (req) => ({
+        systemPrompt: prompt,
+        userMessage: JSON.stringify({
+          pattern: req.pattern,
+          explanationEn: req.explanationEn,
+          markers: req.markers,
+          learnerLevel: req.learnerLevel,
+          knownWords: req.knownWords,
+          count: req.count,
+        }),
+      }),
+      tu.orchestrator,
+      true,
+      (req) => req.retry === true,
     );
   });
 

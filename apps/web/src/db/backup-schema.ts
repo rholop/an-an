@@ -567,7 +567,15 @@ export const TutorSessionRowSchema = z.object({
     }),
   ),
   grammar: z.array(
-    z.object({ name: z.string(), explanationEn: z.string(), example: TutorExampleRow, grammarId: z.string().optional() }),
+    z.object({
+      name: z.string(),
+      explanationEn: z.string(),
+      example: TutorExampleRow,
+      grammarId: z.string().optional(),
+      // Phase 46: the class point a row is, and an owner's match
+      point: z.string().optional(),
+      matchedBy: z.literal('owner').optional(),
+    }),
   ),
   sentences: z.array(
     z.object({
@@ -577,6 +585,7 @@ export const TutorSessionRowSchema = z.object({
       wordId: z.string().optional(),
       grammarId: z.string().optional(),
       practice: z.boolean(),
+      written: z.boolean().optional(),
     }),
   ),
   scenario: ScenarioSchema.optional(),
@@ -584,6 +593,14 @@ export const TutorSessionRowSchema = z.object({
   topicTags: z.array(z.enum(TOPIC_TAGS)).optional(),
   audio: z.object({ status: z.enum(['ok', 'waiting_key', 'error']), at: z.coerce.date(), made: z.number().optional() }).optional(),
   recheckedAt: z.coerce.date().optional(),
+  // Phase 46: the one grammar re-check and what changed
+  grammarRecheck: z
+    .object({
+      at: z.coerce.date(),
+      changes: z.array(z.object({ name: z.string(), from: z.array(z.string()), to: z.array(z.string()) })),
+      seen: z.boolean().optional(),
+    })
+    .optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

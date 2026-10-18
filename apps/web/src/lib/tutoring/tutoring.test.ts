@@ -11,6 +11,8 @@ import {
   type GrammarItem,
   type TutorCheckRequest,
   type TutorCheckResponse,
+  type TutorGrammarPracticeRequest,
+  type TutorGrammarPracticeResponse,
   type TutorExtraction,
   type TutoringLLM,
   type TutorScenarioRequest,
@@ -185,7 +187,8 @@ describe('Tutoring sessions (phase 39), the owner\'s PDF', () => {
     expect(match['還沒還沒有動詞']).toBe('gram-hai-still');
     expect(match['的時候']).toBe('gram-de-shihou');
     expect(match['跟人一起或動詞']).toBe('gram-gen-yiqi');
-    expect(match['可以 vs 能不能']).toBe('gram-neng-possibility');
+    // Phase 46: a point comparing 可以 and 能 matches both (first 可以, the one its example uses)
+    expect(match['可以 vs 能不能']).toBe('gram-keyi-permission');
     expect(match['什麼在疑問句中的用法']).toBe('gram-shenme-question');
     expect(match['省略成分']).toBeUndefined();
   });
@@ -361,5 +364,114 @@ describe('Phase 40: levels, topics and Taiwan wording (the owner\'s PDF)', () =>
     expect(after.sentences[0]!.zh).toBe('我們吃飯。');
     // traditional text is never touched
     expect(after.words.map((w) => w.zh).filter((zh) => zh !== '餅乾')).toEqual(rec!.words.map((w) => w.zh).filter((zh) => zh !== '餅乾'));
+  });
+});
+
+describe('Phase 46: tutoring grammar in traditional characters, matched right, always practisable', () => {
+  const SIMPLIFIED_ONLY = /[们这说饭刚还动词没时语间点么后从厕吗]/;
+
+  it('every grammar name and explanation is traditional (還沒, 剛剛在動詞) after Save', async () => {
+    const svc = service(new FakeTutoringLLM());
+    const { draft } = await svc.draftFromExtraction(EXTRACTION, NOW);
+    for (const g of draft.grammar) {
+      expect(g.name).not.toMatch(SIMPLIFIED_ONLY);
+      expect(g.explanationEn).not.toMatch(SIMPLIFIED_ONLY);
+      expect(checkTaiwanness(g.explanationEn).simplifiedChars).toEqual([]);
+    }
+    expect(draft.grammar.find((g) => g.name === '剛剛在動詞')!.explanationEn).toContain('剛剛在動詞');
+    expect(draft.grammar.find((g) => g.name === '還沒還沒有動詞')!.explanationEn).toContain('“還沒” or “還沒有”');
+    const { record } = await svc.save(draft, 'N1', NOW);
+    for (const g of record.grammar) expect(`${g.name} ${g.explanationEn} ${g.example.zh}`).not.toMatch(SIMPLIFIED_ONLY);
+  });
+
+  it('可以 vs 能 is two rows of one point (both items), never only 能 with a 可以 explanation; nothing matches on 了 or 會 alone', async () => {
+    const svc = service(new FakeTutoringLLM());
+    const { draft } = await svc.draftFromExtraction(EXTRACTION, NOW);
+    const cmp = draft.grammar.find((g) => g.name === '可以 vs 能不能')!;
+    expect(cmp.matches!.map((m) => m.id)).toEqual(['gram-keyi-permission', 'gram-neng-possibility']);
+    for (const g of draft.grammar)
+      expect(g.matches?.map((m) => m.id) ?? []).not.toEqual(expect.arrayContaining(['gram-le-completion']));
+    expect(draft.grammar.find((g) => g.name === '省略成分')!.matchId).toBeUndefined();
+    const { record } = await svc.save(draft, 'N1', NOW);
+    const rows = record.grammar.filter((g) => g.name === '可以 vs 能不能');
+    expect(rows.map((r) => r.grammarId)).toEqual(['gram-keyi-permission', 'gram-neng-possibility']);
+    expect(new Set(rows.map((r) => r.point)).size).toBe(1);
+    expect(tutorLessonOf(record).grammarIds).toEqual(expect.arrayContaining(['gram-keyi-permission', 'gram-neng-possibility', 'gram-ganggang-just']));
+  });
+
+  it('Save writes checked practice sentences for a point with fewer than 3, and only then', async () => {
+    class WritingLLM extends FakeTutoringLLM {
+      practice: TutorGrammarPracticeRequest[] = [];
+      async writeGrammarPractice(req: TutorGrammarPracticeRequest): Promise<TutorGrammarPracticeResponse> {
+        this.practice.push(req);
+        // one simplified (converted), one without the marker (dropped), two good
+        return { sentences: [{ zh: '他刚刚回家。', en: 'He just went home.' }, { zh: '我在吃飯。', en: 'I am eating.' }, { zh: '你剛剛去哪裡？', en: 'Where did you just go?' }] };
+      }
+    }
+    const llm = new WritingLLM();
+    const learner = new LearnerService(new DexieLearnerRepo(db));
+    // no textbook or bank sentences at all: every matched point is short of sentences except by its
+    // class example and the supplement's own
+    const svc = new TutoringService(
+      db,
+      new Lexicon(lexFile.words, lexFile.grammar.map((g) => (g.id === 'gram-ganggang-just' ? { ...g, practice: [] } : g))),
+      llm,
+      ledgerNow,
+      loadTaiwanConverters,
+      (now) => ensureTutorCards(now, { ledger: ledgerNow, recordBulk: (e, n) => learner.recordBulk(e, n) }),
+      { practiceSources: async () => ({ textbook: [], bank: [] }) },
+    );
+    const { draft } = await svc.draftFromExtraction(EXTRACTION, NOW);
+    const { record } = await svc.save(draft, 'N1', NOW);
+    const asked = llm.practice.map((r) => r.markers.join('/'));
+    expect(asked).toContain('剛剛/剛');
+    const written = record.sentences.filter((s) => s.written && s.grammarId === 'gram-ganggang-just').map((s) => s.zh);
+    expect(written).toEqual(['他剛剛回家。', '你剛剛去哪裡？']);
+    // the written ones passed the fresh check too
+    expect(llm.checks.at(-1)!.sentences.map((s) => s.zh)).toContain('他剛剛回家。');
+    // a point with enough sentences (its supplement ones) is not written for
+    expect(asked).not.toContain('的時候');
+  });
+
+  it('the one-time fix converts a saved class\'s simplified notes and re-checks its matches (listed once)', async () => {
+    const svc = service(new FakeTutoringLLM());
+    const { draft } = await svc.draftFromExtraction(EXTRACTION, NOW);
+    const { record } = await svc.save(draft, 'N1', NOW);
+    // as Phase 39 saved it: simplified notes, 可以 vs 能 matched to 能 only
+    const old = record.grammar
+      .filter((g, i, all) => all.findIndex((x) => x.name === g.name) === i)
+      .map(({ point: _p, ...g }) => (g.name === '可以 vs 能不能' ? { ...g, grammarId: 'gram-neng-possibility' } : g))
+      // the notes' own (simplified) explanations, in the notes' order
+      .map((g, i) => ({ ...g, explanationEn: EXTRACTION.grammar[i]!.explanationEn }));
+    await db.tutorSessions.update(record.id, { grammar: old });
+    expect(await svc.migrateGrammar(NOW)).toBe(1);
+    const after = (await db.tutorSessions.get(record.id))!;
+    for (const g of after.grammar) expect(g.explanationEn).not.toMatch(SIMPLIFIED_ONLY);
+    expect(after.grammar.filter((g) => g.name === '可以 vs 能不能').map((g) => g.grammarId)).toEqual(['gram-keyi-permission', 'gram-neng-possibility']);
+    expect(after.grammarRecheck!.changes).toEqual([{ name: '可以 vs 能不能', from: ['S + (Adv) + 能 + V (O)'], to: ['S + 可以 + V (O)', 'S + (Adv) + 能 + V (O)'] }]);
+    await svc.markGrammarRecheckSeen(record.id);
+    expect((await db.tutorSessions.get(record.id))!.grammarRecheck!.seen).toBe(true);
+    // idempotent
+    expect(await svc.migrateGrammar(NOW)).toBe(0);
+  });
+
+  it('"Make this a note" removes the point\'s exercise and keeps the answers already recorded', async () => {
+    const svc = service(new FakeTutoringLLM());
+    const { draft } = await svc.draftFromExtraction(EXTRACTION, NOW);
+    const { record } = await svc.save(draft, 'N1', NOW);
+    const learner = new LearnerService(new DexieLearnerRepo(db));
+    const ev = { item: { kind: 'grammar' as const, id: 'gram-neng-possibility' }, skill: 'recognition' as const, kind: 'cloze_correct_nohint' as const, at: NOW, context: { source: 'tutor' as const, refId: record.id } };
+    await learner.record(ev, NOW);
+    const before = await db.evidence.count();
+    const idx = record.grammar.findIndex((g) => g.grammarId === 'gram-neng-possibility');
+    const next = (await svc.setGrammarMatch(record.id, idx, null, NOW))!;
+    expect(next.grammar.filter((g) => g.name === '可以 vs 能不能')).toEqual([expect.objectContaining({ matchedBy: 'owner' })]);
+    expect(next.grammar.find((g) => g.name === '可以 vs 能不能')!.grammarId).toBeUndefined();
+    expect(tutorLessonOf(next).grammarIds).not.toContain('gram-neng-possibility');
+    expect(await db.evidence.count()).toBeGreaterThanOrEqual(before);
+    expect((await db.evidence.toArray()).some((e) => e.item.id === 'gram-neng-possibility' && e.kind === 'cloze_correct_nohint')).toBe(true);
+    // the re-check never undoes the owner's choice
+    await svc.migrateGrammar(NOW);
+    expect((await db.tutorSessions.get(record.id))!.grammar.find((g) => g.name === '可以 vs 能不能')!.grammarId).toBeUndefined();
   });
 });

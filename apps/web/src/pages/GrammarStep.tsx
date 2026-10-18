@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
+  buildPointExercise,
   checkGrammarAnswer,
   extraExercise,
   fillSlots,
   grammarOutcome,
   PROGRESS_CONFIG,
   type FillExercise,
+  type GrammarItem,
   type GrammarStepExercise,
+  type PracticeSentence,
   type Lesson,
   type Lexicon,
   type PickExercise,
@@ -16,6 +19,7 @@ import {
 import { AnnotatedInline, useReadingScript } from '../components/AnnotatedInline.js';
 import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { GrammarDots } from '../components/GrammarDots.js';
+import { GrammarAfter, GrammarPrompt } from '../components/GrammarPrompt.js';
 import { db, learnerService } from '../db/instance.js';
 import { excludedZh } from '../lib/cloze-reports.js';
 import {
@@ -32,10 +36,11 @@ import {
   UNDO,
 } from '../lib/labels.js';
 import { logSessionOrder, noteShown } from '../lib/session-recent.js';
-import { useLedger } from '../lib/ledger.js';
+import { getLedgerNow, useLedger } from '../lib/ledger.js';
+import { practiceBank } from '../lib/grammar-practice.js';
 import { fetchPrivateTextbook, loadTextbookSentences, useTextbook, type BookData, type PrivateExample } from '../lib/textbook-data.js';
 import './TextbookPage.css';
-import { buildLessonGrammarStep, buildSingleGrammarExercise, type LessonGrammarStep } from '../lib/textbook-session.js';
+import { buildLessonGrammarStep, type LessonGrammarStep } from '../lib/textbook-session.js';
 
 const NEED = PROGRESS_CONFIG.mastered.grammarCorrectUses;
 
@@ -78,6 +83,8 @@ export function GrammarStep({
   const [tally, setTally] = useState({ right: 0, wrong: 0 });
   const [history, setHistory] = useState<Snapshot[]>([]);
   const [privateEx, setPrivateEx] = useState<PrivateExample[]>([]);
+  // Phase 46: which exercise has been answered (the pattern stays masked until then)
+  const [answeredKey, setAnsweredKey] = useState<string | null>(null);
 
   // Built once the sentences (and the books, for the tiles) are loaded: never from an empty list.
   const ready = sentences !== null && books !== null;
@@ -110,7 +117,8 @@ export function GrammarStep({
   if (!step) return <p>Loading…</p>;
   const base = step.plan.exercises.length;
   const current = queue[idx];
-  const pattern = (id: string) => data.grammarItems.find((g) => g.id === id)?.pattern ?? id;
+  const itemOf = (id: string) => data.grammarItems.find((g) => g.id === id);
+  const pattern = (id: string) => itemOf(id)?.pattern ?? id;
 
   async function record(ex: GrammarStepExercise, correct: boolean) {
     if (!step) return;
@@ -190,8 +198,13 @@ export function GrammarStep({
   }
 
   const next = () => setIdx(idx + 1);
-  const answer = (ok: boolean) => void record(current, ok);
   const key = `${idx}:${attempt}`;
+  const answer = (ok: boolean) => {
+    setAnsweredKey(key);
+    void record(current, ok);
+  };
+  const answered = answeredKey === key;
+  const item = itemOf(current.grammarId);
   return (
     <div
       className="textbook-exercise"
@@ -201,8 +214,7 @@ export function GrammarStep({
       data-sentence={current.sentenceId}
     >
       <p className="textbook-muted">
-        <span data-testid="grammar-position">{grammarStepPosition(idx + 1, base, queue.length - base)}</span> ·{' '}
-        <span lang="zh-Hant">{pattern(current.grammarId)}</span>{' '}
+        <span data-testid="grammar-position">{grammarStepPosition(idx + 1, base, queue.length - base)}</span>{' '}
         <GrammarDots dots={ledger?.item({ kind: 'grammar', id: current.grammarId }).dots ?? 0} testId="grammar-current-dots" />{' '}
         {history.length > 0 && (
           <button type="button" className="link-button" data-testid="grammar-undo" onClick={() => void undoLast()}>
@@ -210,6 +222,7 @@ export function GrammarStep({
           </button>
         )}
       </p>
+      {item && <GrammarPrompt key={key} item={item} ex={current} answered={answered} />}
       {current.type === 'fill' ? (
         <FillView key={key} ex={current} lexicon={lexicon} script={script} onAnswer={answer} onNext={next} />
       ) : current.type === 'pick' ? (
@@ -217,6 +230,7 @@ export function GrammarStep({
       ) : (
         <TileView key={key} ex={current} lexicon={lexicon} script={script} onAnswer={answer} onNext={next} />
       )}
+      {item && answered && <GrammarAfter item={item} />}
     </div>
   );
 }
@@ -367,22 +381,43 @@ function TileView({ ex, lexicon, script, onAnswer, onNext }: ViewProps<TileExerc
 }
 
 /**
- * Phase 25 B7: one exercise for a grammar point (Review and Cloze). undefined while loading, null when
- * the point has no textbook sentences (the caller falls back to its own card).
+ * Phase 25 B7 / Phase 46 Part B: one exercise for a grammar point (Review, Cloze, the tutoring
+ * step). Sources in order: the point's textbook sentences, the class's own sentences
+ * (`classSentences`), then the banks (supplement sentences, any textbook sentence, every class,
+ * stories) with at most one word the learner doesn't know. undefined while loading, null when no
+ * source has a sentence ("No practice yet for this point").
  */
-export function useSingleGrammarExercise(grammarId: string | undefined, lexicon: Lexicon, seed: string): GrammarStepExercise | null | undefined {
+export function usePointExercise(
+  grammarId: string | undefined,
+  lexicon: Lexicon,
+  seed: string,
+  classSentences?: readonly PracticeSentence[],
+): GrammarStepExercise | null | undefined {
   const textbook = useTextbook();
-  const want = `${grammarId ?? ''}|${seed}`;
+  const classKey = (classSentences ?? []).map((s) => s.zh).join('|');
+  const want = `${grammarId ?? ''}|${seed}|${classKey}`;
   // Keyed by what was asked, so a new point never shows the previous point's exercise.
   const [got, setGot] = useState<{ key: string; ex: GrammarStepExercise | null } | null>(null);
   useEffect(() => {
-    if (!grammarId || textbook.status === 'missing') return setGot({ key: want, ex: null });
-    if (textbook.status !== 'ready') return;
+    if (!grammarId) return setGot({ key: want, ex: null });
+    if (textbook.status === 'loading') return;
     let cancelled = false;
-    void Promise.all([loadTextbookSentences(), excludedZh(db)]).then(([sentences, excluded]) => {
+    void Promise.all([
+      textbook.status === 'ready' ? loadTextbookSentences() : Promise.resolve([]),
+      excludedZh(db),
+      practiceBank(),
+      getLedgerNow().catch(() => undefined),
+    ]).then(([sentences, excluded, bank, ledger]) => {
       if (cancelled) return;
-      const items = textbook.data.flatMap((d) => d.grammarItems);
-      setGot({ key: want, ex: buildSingleGrammarExercise(grammarId, items, sentences, { lexicon, books: textbook.books, seed, excluded }) ?? null });
+      const items = textbook.status === 'ready' ? textbook.data.flatMap((d) => d.grammarItems) : [];
+      const known = ledger?.comprehensible().ids;
+      const ex = buildPointExercise(
+        grammarId,
+        [...items, ...lexicon.allGrammar().filter((g) => !items.some((t) => t.id === g.id))],
+        { textbook: sentences, classSentences: classSentences ?? [], bank, excluded, ...(known ? { known: (id: string) => known.has(id) } : {}) },
+        { lexicon, books: textbook.status === 'ready' ? textbook.books : [], seed },
+      );
+      setGot({ key: want, ex: ex ?? null });
     });
     return () => {
       cancelled = true;
@@ -392,23 +427,37 @@ export function useSingleGrammarExercise(grammarId: string | undefined, lexicon:
   return got?.key === want ? got.ex : undefined;
 }
 
-/** One grammar exercise outside the lesson step: answer, see the sentence, then Next reports it. */
+/**
+ * One grammar exercise outside the lesson step: answer, see the sentence, then Next reports it.
+ * Phase 46: with `item`, the pattern above it is masked until the answer (GrammarPrompt), and the
+ * explanation (plus `after`: class notes, the class example) appears below once answered.
+ */
 export function GrammarExerciseCard({
   ex,
   lexicon,
   script,
   onDone,
+  item,
+  lead,
+  after,
+  wrapPattern,
 }: {
   ex: GrammarStepExercise;
   lexicon: Lexicon;
   script: AnnotationScript;
   onDone: (ok: boolean) => void;
+  item?: Pick<GrammarItem, 'pattern' | 'explanationEn'>;
+  lead?: ReactNode;
+  after?: ReactNode;
+  wrapPattern?: (text: string) => ReactNode;
 }) {
   const [ok, setOk] = useState<boolean | null>(null);
   const props = { lexicon, script, onAnswer: (r: boolean) => setOk(r), onNext: () => ok !== null && onDone(ok) };
   return (
     <div className="textbook-exercise" data-testid="grammar-exercise" data-type={ex.type} data-grammar={ex.grammarId} data-sentence={ex.sentenceId}>
+      {item && <GrammarPrompt item={item} ex={ex} answered={ok !== null} lead={lead} {...(wrapPattern ? { wrapPattern } : {})} />}
       {ex.type === 'fill' ? <FillView ex={ex} {...props} /> : ex.type === 'pick' ? <PickView ex={ex} {...props} /> : <TileView ex={ex} {...props} />}
+      {item && ok !== null && <GrammarAfter item={item}>{after}</GrammarAfter>}
     </div>
   );
 }
@@ -431,13 +480,13 @@ export function GrammarRound({ lexicon }: { lexicon: Lexicon }) {
     setIds(ledger.grammarToPractise().slice(0, ROUND_SIZE));
   }, [ledger, ids]);
   const id = ids?.[i];
-  const ex = useSingleGrammarExercise(id, lexicon, `cloze|${id ?? ''}|${round}`);
+  const ex = usePointExercise(id, lexicon, `cloze|${id ?? ''}|${round}`);
   // a point with no sentence: move on
   useEffect(() => {
     if (id && ex === null) setI((k) => k + 1);
   }, [id, ex]);
   if (!ids || ids.length === 0 || skipped || !id || !ex) return ex === undefined && id && !skipped ? <p>Loading…</p> : null;
-  const pattern = lexicon.grammarItemById(id)?.pattern ?? id;
+  const item = lexicon.grammarItemById(id);
   async function done(ok: boolean) {
     const now = new Date();
     await learnerService.record(
@@ -450,13 +499,13 @@ export function GrammarRound({ lexicon }: { lexicon: Lexicon }) {
   return (
     <section className="grammar-round" data-testid="grammar-round" aria-label="Grammar practice">
       <p className="textbook-muted">
-        Grammar practice · {i + 1} of {ids.length} · <span lang="zh-Hant">{pattern}</span>{' '}
+        Grammar practice · {i + 1} of {ids.length}{' '}
         <GrammarDots dots={ledger?.item({ kind: 'grammar', id }).dots ?? 0} />{' '}
         <button type="button" className="link-button" data-testid="grammar-round-skip" onClick={() => setSkipped(true)}>
           {SKIP}
         </button>
       </p>
-      <GrammarExerciseCard key={`${id}:${round}`} ex={ex} lexicon={lexicon} script={script} onDone={(ok) => void done(ok)} />
+      <GrammarExerciseCard key={`${id}:${round}`} ex={ex} lexicon={lexicon} script={script} onDone={(ok) => void done(ok)} {...(item ? { item } : {})} />
     </section>
   );
 }

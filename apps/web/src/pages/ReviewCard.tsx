@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { GrammarItem, Lexicon, ReviewFace, SkillCard, Word } from '@anan/core';
+import { maskChinese, type GrammarItem, type Lexicon, type ReviewFace, type SkillCard, type Word } from '@anan/core';
 import { useKeyboardShortcut } from '../lib/keyboard-shortcuts.js';
 import {
   charsInWord,
@@ -16,11 +16,11 @@ import type { AnnotationScript } from '../components/AnnotatedText.js';
 import { NopeButton } from '../components/Nope.js';
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { WithSimplified } from '../components/SimplifiedHint.js';
-import { CHARACTERS, FACE_LABEL, FEEDBACK_CORRECT, feedbackWrong, LEECH_BREAKDOWN, lessonLabel, NEXT } from '../lib/labels.js';
+import { CHARACTERS, FACE_LABEL, FEEDBACK_CORRECT, feedbackWrong, LEECH_BREAKDOWN, lessonLabel, NEXT, WHICH_PATTERN } from '../lib/labels.js';
 import { CHAR_BREAKDOWN_SETTING, useCharGlosses } from '../lib/char-glosses.js';
 import { useSetting } from '../lib/useSetting.js';
 import { readingText } from '../lib/reading.js';
-import { GrammarExerciseCard, useSingleGrammarExercise } from './GrammarStep.js';
+import { GrammarExerciseCard, usePointExercise } from './GrammarStep.js';
 import type { ConfusableContext } from '../lib/confusables.js';
 
 export type Grade = 'again' | 'hard' | 'good' | 'easy';
@@ -94,8 +94,9 @@ export function ReviewCard({
   }, [word, confusables, card]);
   let face = grammar ? 'grammar' : reviewFace(card);
   if (face === 'pick' && !options) face = 'recall';
-  // Phase 25 B7: a grammar card is one exercise from the lesson step's builders (else the flip card).
-  const grammarEx = useSingleGrammarExercise(grammar?.id, lexicon, `${card.item.id}|${answeredAt}`);
+  // Phase 25 B7 / Phase 46: a grammar card is one exercise from the lesson step's builders, from any
+  // source that has a sentence for the point (else the flip card).
+  const grammarEx = usePointExercise(grammar?.id, lexicon, `${card.item.id}|${answeredAt}`);
   // Phase 38: a card whose word or grammar point the loaded word list lacks is never shown.
   if (!word && !grammar) return null;
 
@@ -115,10 +116,15 @@ export function ReviewCard({
         <p>Loading…</p>
       ) : grammar && grammarEx ? (
         <>
-          <div className="review-card-front review-card-front--small" lang="zh-Hant">
-            <WithSimplified text={grammar.pattern}>{grammar.pattern}</WithSimplified>
-          </div>
-          <GrammarExerciseCard ex={grammarEx} lexicon={lexicon} script={script} onDone={(ok) => onRate(ok ? 'good' : 'again', { face: 'grammar' })} />
+          {/* Phase 46: the pattern is masked until the answer (GrammarPrompt), never the card's front */}
+          <GrammarExerciseCard
+            ex={grammarEx}
+            item={grammar}
+            lexicon={lexicon}
+            script={script}
+            wrapPattern={(text) => <WithSimplified text={text}>{text}</WithSimplified>}
+            onDone={(ok) => onRate(ok ? 'good' : 'again', { face: 'grammar' })}
+          />
           <div className="review-actions">
             <NopeButton onNope={onNope} />
           </div>
@@ -143,6 +149,14 @@ export function ReviewCard({
       )}
     </div>
   );
+}
+
+/** Phase 46: the front of a grammar flip card: the explanation's meaning with the pattern's own
+ * Chinese hidden ("＿＿…＿＿ means "together with…" and goes before the main verb."). */
+function grammarFlipFront(grammar: GrammarItem): string {
+  const runs = grammar.pattern.match(/\p{Script=Han}+/gu) ?? [];
+  const first = grammar.explanationEn.split(/(?<=[.!?])\s+/u)[0] ?? grammar.explanationEn;
+  return `${WHICH_PATTERN} ${maskChinese(first.replace(/[:：][^:：]*\p{Script=Han}[^:：]*$/u, '.'), runs, runs)}`;
 }
 
 /** Meaning, Recall, Say it and grammar: show the front, reveal, rate. */
@@ -176,7 +190,9 @@ function FlipFace({
   const [typed, setTyped] = useState('');
   const zhFront = face === 'meaning' || face === 'say';
   // Phase 38: Review never renders a card the word list can't show, so there is no fallback text.
-  const front = grammar ? grammar.pattern : zhFront ? (word?.headword ?? '') : gloss;
+  // Phase 46: a grammar flip card asks for the pattern from its meaning (its Chinese hidden); the
+  // pattern itself is only on the back.
+  const front = grammar ? grammarFlipFront(grammar) : zhFront ? (word?.headword ?? '') : gloss;
   const typedOk =
     face === 'recall' && word && typed.trim()
       ? [word.headword, ...word.variants].map(normaliseAnswer).includes(normaliseAnswer(typed))
@@ -192,9 +208,9 @@ function FlipFace({
 
   return (
     <>
-      <div className="review-card-front" lang={grammar || zhFront ? 'zh-Hant' : undefined}>
+      <div className={`review-card-front${grammar ? ' review-card-front--small' : ''}`} lang={zhFront ? 'zh-Hant' : undefined}>
         {/* Phase 41: a Chinese front shows its simplified form from the start; an English one never */}
-        {grammar || zhFront ? <WithSimplified text={front}>{front}</WithSimplified> : front}
+        {zhFront ? <WithSimplified text={front}>{front}</WithSimplified> : front}
       </div>
       {face === 'say' && !revealed && <p className="review-card-ask">Say it aloud: what are the pinyin and tones?</p>}
       {face === 'recall' && !revealed && (
@@ -216,7 +232,13 @@ function FlipFace({
         <>
           <div className="review-card-back" data-testid="review-back">
             {grammar ? (
-              grammar.explanationEn
+              <>
+                <span lang="zh-Hant" data-testid="grammar-pattern" data-masked="no">
+                  <WithSimplified text={grammar.pattern}>{grammar.pattern}</WithSimplified>
+                </span>
+                <br />
+                {grammar.explanationEn}
+              </>
             ) : face === 'meaning' ? (
               <>
                 {reading} — {gloss}

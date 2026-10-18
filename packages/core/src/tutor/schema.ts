@@ -119,6 +119,31 @@ export const TutorClassifyResponseSchema = z.object({
 });
 export type TutorClassifyResponse = z.infer<typeof TutorClassifyResponseSchema>;
 
+/**
+ * Phase 46 Part B.1.4: POST /v1/tutor-grammar-practice (checker chain): 3 short Taiwan Mandarin
+ * sentences for a grammar point with too few practice sentences, from the learner's known words.
+ * Checked in code (traditional characters, Taiwan wording, the point's marker) and then by a fresh
+ * /v1/tutor-check before anything is kept.
+ */
+export const TutorGrammarPracticeRequestSchema = z.object({
+  pattern: z.string().max(120),
+  explanationEn: z.string().max(800),
+  /** The point's fixed words; every sentence must use one of them as the pattern does. */
+  markers: z.array(z.string().max(20)).min(1).max(6),
+  /** Words the learner can read (traditional headwords): the sentences use only these plus the markers. */
+  knownWords: z.array(z.string().max(20)).max(300),
+  learnerLevel: LevelSchema,
+  count: z.number().int().min(1).max(5),
+  /** "Write practice" again: never answered from the cache. */
+  retry: z.boolean().optional(),
+});
+export type TutorGrammarPracticeRequest = z.infer<typeof TutorGrammarPracticeRequestSchema>;
+
+export const TutorGrammarPracticeResponseSchema = z.object({
+  sentences: z.array(TutorExampleSchema).max(8),
+});
+export type TutorGrammarPracticeResponse = z.infer<typeof TutorGrammarPracticeResponseSchema>;
+
 /** The three model calls a tutoring upload makes (apps/web implements them over the proxy). */
 export interface TutoringLLM {
   extractTutorSummary(req: TutorExtractRequest): Promise<TutorExtraction>;
@@ -126,4 +151,6 @@ export interface TutoringLLM {
   writeTutorScenario(req: TutorScenarioRequest): Promise<TutorScenarioResponse>;
   /** Phase 40: levels and topics the code couldn't work out (optional: older fakes lack it). */
   classifyTutorWords?(req: TutorClassifyRequest): Promise<TutorClassifyResponse>;
+  /** Phase 46: practice sentences for a grammar point with too few (optional: older fakes lack it). */
+  writeGrammarPractice?(req: TutorGrammarPracticeRequest): Promise<TutorGrammarPracticeResponse>;
 }

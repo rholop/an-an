@@ -72,6 +72,8 @@ const GrammarSupplementSchema = z.object({
   explanationEn: z.string(),
   focus: z.array(z.string()).optional(),
   matcher: z.string().optional(),
+  /** Phase 46: hand-written, checked practice sentences (N1 words), so the point can be practised. */
+  practice: z.array(z.object({ zh: z.string().min(1), en: z.string().min(1) })).optional(),
 });
 export type GrammarSupplementEntry = z.infer<typeof GrammarSupplementSchema>;
 

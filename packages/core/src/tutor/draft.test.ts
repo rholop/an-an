@@ -40,16 +40,18 @@ describe('splitPinyinForChars', () => {
   ] as const)('%s → %j', (p, n, want) => expect(splitPinyinForChars(p, n)).toEqual(want));
 });
 
-describe('matchTutorGrammar (names in Taiwan characters)', () => {
+describe('matchTutorGrammar (names in Taiwan characters; Phase 46: the example must use it too)', () => {
   it.each([
-    ['剛剛 + 動詞', 'gram-ganggang-just'],
-    ['還沒 + 動詞', 'gram-hai-still'],
-    ['主語 + 時間 + 地點 + 動作', 'gram-time-place-order'],
-    ['省略成分', undefined],
-  ])('%s → %s', (name, id) => expect(matchTutorGrammar(name, lexicon)?.id).toBe(id));
+    ['剛剛 + 動詞', '我剛剛到。', 'gram-ganggang-just'],
+    ['還沒 + 動詞', '我還沒吃飯。', 'gram-hai-still'],
+    ['主語 + 時間 + 地點 + 動作', '我昨天在學校學習。', 'gram-time-place-order'],
+    ['省略成分', '吃飯了嗎？', undefined],
+    // the marker is in the name but not in the class example: a note
+    ['還沒 + 動詞', '我不吃飯。', undefined],
+  ])('%s (%s) → %s', (name, ex, id) => expect(matchTutorGrammar(name, ex, lexicon)[0]?.id).toBe(id));
 
   it('a rule whose item the lexicon lacks is skipped (a note, not a broken id)', () => {
-    expect(matchTutorGrammar('的時候', lexicon)).toBeUndefined();
+    expect(matchTutorGrammar('的時候', '吃飯的時候', lexicon)).toEqual([]);
   });
 });
 

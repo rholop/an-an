@@ -106,6 +106,38 @@ describe('Phase 21 architecture', () => {
     expect(offenders(/\bloadSimplifier\b|opencc-js\/t2cn/, (rel) => ['apps/web/src/lib/opencc.ts', 'apps/web/src/components/SimplifiedHint.tsx'].includes(rel))).toEqual([]);
   });
 
+  it('no grammar exercise shows its pattern before the answer (Phase 46): only GrammarPrompt, masked until answered', () => {
+    const file = (rel: string) => FILES.find((f) => f.rel === rel)!.text;
+    /** A function's source, from its declaration to the next top-level function. */
+    const body = (text: string, name: string) => {
+      const at = text.search(new RegExp(`\\nfunction ${name}\\b|\\nexport function ${name}\\b`));
+      expect(at, name).toBeGreaterThanOrEqual(0);
+      const rest = text.slice(at + 1);
+      const end = rest.search(/\n(export )?function /);
+      return end >= 0 ? rest.slice(0, end) : rest;
+    };
+    const PATTERN = /\.pattern\b(?!\.match)|\bpattern\(/;
+    const steps = file('apps/web/src/pages/GrammarStep.tsx');
+    for (const fn of ['GrammarExerciseCard', 'GrammarRound', 'FillView', 'PickView', 'TileView'])
+      expect(body(steps, fn), fn).not.toMatch(PATTERN);
+    // the lesson step: the exercise part (the outcome list after the step may name the points)
+    const lesson = body(steps, 'GrammarStep');
+    expect(lesson.slice(lesson.indexOf('const next = () =>')), 'GrammarStep').not.toMatch(PATTERN);
+    expect(body(file('apps/web/src/pages/TutoringPage.tsx'), 'TutorGrammarStep'), 'TutorGrammarStep').not.toMatch(PATTERN);
+    // Review: the exercise goes through GrammarPrompt; the flip card shows the pattern only once revealed
+    const review = file('apps/web/src/pages/ReviewCard.tsx');
+    expect(body(review, 'ReviewCard'), 'ReviewCard').not.toMatch(PATTERN);
+    const flip = body(review, 'FlipFace');
+    const revealedAt = flip.indexOf('{revealed ? (');
+    flip.split('\n').forEach((line, i, lines) => {
+      if (PATTERN.test(line)) expect(lines.slice(0, i).join('\n').length, `FlipFace: ${line.trim()}`).toBeGreaterThan(revealedAt);
+    });
+    // GrammarPrompt: the full pattern only when answered
+    const prompt = file('apps/web/src/components/GrammarPrompt.tsx');
+    expect(prompt.match(/item\.pattern/g)).toEqual(['item.pattern', 'item.pattern']);
+    expect(prompt).toMatch(/answered \? item\.pattern : maskPatternFor\(item\.pattern, ex\)/);
+  });
+
   it('every colour is a theme token (Phase 22): none written outside src/theme.css', () => {
     const colour = /#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(|\b(Canvas|CanvasText|ButtonFace|ButtonText|GrayText)\b/;
     const css: { rel: string; text: string }[] = [];

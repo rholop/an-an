@@ -3,7 +3,17 @@
 // transaction). Phase 40: the ticked words are then introduced at once with every face, in review
 // right away (`introduce`); levels and topics the code can't work out take one checked call.
 import {
+  acceptGrammarPractice,
   applyTutorCheck,
+  countPracticeSentences,
+  draftGrammarPractice,
+  grammarPracticeRequest,
+  MIN_PRACTICE_SENTENCES,
+  recheckTutorGrammar,
+  setTutorGrammarMatch,
+  tutorLessonOf,
+  type PracticeSentence,
+  type SentenceBankEntry,
   applyTutorClassify,
   buildTutorDraft,
   charLevelIndex,
@@ -33,6 +43,7 @@ import {
 import type { AnanDB, CustomWordRow, TutorSessionRow } from '../../db/schema.js';
 import { markStudyDirty } from '../study-dirty.js';
 import type { TaiwanConverters } from '../opencc.js';
+import { classPracticeSentences } from '../grammar-practice.js';
 
 export interface DraftResult {
   draft: TutorDraft;
@@ -56,6 +67,9 @@ export class TutoringService {
       audio?: (rec: TutorSessionRow) => Promise<TutorSessionRow['audio']>;
       /** The lexicon changed (custom words written): rebuild it now. */
       lexiconChanged?: () => void;
+      /** Phase 46 Part B: the textbook sentences and the banks (to tell whether a grammar point of a
+       * class has 3 practice sentences; without it Save writes none). */
+      practiceSources?: () => Promise<{ textbook: SentenceBankEntry[]; bank: PracticeSentence[] }>;
     } = {},
   ) {}
 
@@ -128,9 +142,130 @@ export class TutoringService {
     this.options.lexiconChanged?.();
     // Owner, 2026-10-14: the class's words are in review the moment it is saved, every face.
     const introduced = await this.introduce(now);
+    // Phase 46 Part B.1.4: a matched grammar point with fewer than 3 practice sentences gets some
+    // written (one checked call each); a failure (the quota) leaves "Write practice" for later.
+    let record = saved!;
+    try {
+      record = await this.fillGrammarPractice(record, level, now);
+    } catch {
+      /* the class page offers "Write practice" */
+    }
     // the clips take a while (several server rounds): Save doesn't wait for them
-    const record = saved!;
     return { record, introduced, audio: this.withAudio(record) };
+  }
+
+  /** Phase 46: the class's grammar points (by item id) with fewer than 3 practice sentences. */
+  async grammarPointsNeedingPractice(rec: TutorSessionRow, now: Date = new Date()): Promise<string[]> {
+    if (!this.options.practiceSources) return [];
+    const [{ textbook, bank }, ledger] = await Promise.all([this.options.practiceSources(), this.ledger(now)]);
+    const known = ledger.comprehensible().ids;
+    const classSentences = classPracticeSentences(rec);
+    return tutorLessonOf(rec).grammarIds.filter((id) => {
+      const item = this.lexicon.grammarItemById(id);
+      if (!item) return false;
+      const sources = { textbook, classSentences, bank, known: (w: string) => known.has(w) };
+      return countPracticeSentences(item, sources, this.lexicon) < MIN_PRACTICE_SENTENCES;
+    });
+  }
+
+  private async fillGrammarPractice(rec: TutorSessionRow, level: Level, now: Date): Promise<TutorSessionRow> {
+    let current = rec;
+    for (const id of await this.grammarPointsNeedingPractice(rec, now)) {
+      const next = await this.writeGrammarPractice(current.id, id, level, now);
+      if (next) current = next;
+    }
+    return current;
+  }
+
+  /**
+   * Phase 46 Part B.1.4 / B.3: one call on the checker chain writes practice sentences for a
+   * class's grammar point from the learner's known words; they are converted and checked in code,
+   * then by a fresh check, and only the ones that pass are stored with the class. `retry` ("Write
+   * practice" again) is never answered from the proxy's cache. Returns the updated class, or
+   * undefined when nothing was kept.
+   */
+  async writeGrammarPractice(
+    sessionId: string,
+    grammarId: string,
+    level: Level,
+    now: Date = new Date(),
+    opts: { retry?: boolean } = {},
+  ): Promise<TutorSessionRow | undefined> {
+    const item = this.lexicon.grammarItemById(grammarId);
+    const rec = await this.db.tutorSessions.get(sessionId);
+    if (!item || !rec || !this.llm.writeGrammarPractice) return undefined;
+    const [conv, ledger] = await Promise.all([this.converters(), this.ledger(now)]);
+    const known = [...ledger.comprehensible().ids].flatMap((id) => {
+      const w = this.lexicon.byId(id);
+      return w ? [w.headword] : [];
+    });
+    const res = await this.llm.writeGrammarPractice(grammarPracticeRequest(item, known, level, opts.retry));
+    const written = rec.sentences.filter((s) => s.written && s.grammarId === grammarId).length;
+    const candidates = draftGrammarPractice(res, item, {
+      lexicon: this.lexicon,
+      toTaiwan: conv.toTaiwan,
+      idPrefix: `${sessionId}:gp:${grammarId}:${written + now.getTime().toString(36)}`,
+    }).filter((c) => !rec.sentences.some((s) => s.zh === c.zh));
+    if (candidates.length === 0) return undefined;
+    const check = await this.llm.checkTutorSentences({ sentences: candidates });
+    const kept = acceptGrammarPractice(candidates, check, item, this.lexicon);
+    if (kept.length === 0) return undefined;
+    const sentences = [...rec.sentences, ...kept];
+    await this.db.tutorSessions.update(sessionId, { sentences, updatedAt: now });
+    return { ...rec, sentences, updatedAt: now };
+  }
+
+  /**
+   * Phase 46 Part D.4: the owner's "Matched to … · Change" for one class point: an item, or null =
+   * "Make this a note" (its exercise goes; answers already recorded stay with their item).
+   */
+  async setGrammarMatch(sessionId: string, rowIndex: number, grammarId: string | null, now: Date = new Date()): Promise<TutorSessionRow | undefined> {
+    const rec = await this.db.tutorSessions.get(sessionId);
+    if (!rec) return undefined;
+    if (grammarId && !this.lexicon.grammarItemById(grammarId)) return undefined;
+    const grammar = setTutorGrammarMatch(rec.grammar, rowIndex, grammarId);
+    await this.db.tutorSessions.update(sessionId, { grammar, updatedAt: now });
+    markStudyDirty();
+    // a newly matched item gets its card, as at Save
+    await this.introduce(now);
+    return { ...rec, grammar, updatedAt: now };
+  }
+
+  /**
+   * Phase 46 Parts C.2 and D.5 (once per profile): every saved class's grammar names, notes and
+   * examples in Taiwan characters (OpenCC, never AI), and its matches re-checked with the stricter
+   * rules (an owner's match is kept). Changed matches are listed once on the class page. Returns how
+   * many classes changed.
+   */
+  async migrateGrammar(now: Date = new Date()): Promise<number> {
+    const sessions = await this.db.tutorSessions.toArray();
+    if (sessions.length === 0) return 0;
+    const conv = await this.converters();
+    let changed = 0;
+    let matchesChanged = false;
+    for (const s of sessions) {
+      const { grammar, changes } = recheckTutorGrammar(s, this.lexicon, conv);
+      if (JSON.stringify(grammar) === JSON.stringify(s.grammar)) continue;
+      changed++;
+      if (changes.length > 0) matchesChanged = true;
+      await this.db.tutorSessions.update(s.id, {
+        grammar,
+        ...(changes.length > 0 ? { grammarRecheck: { at: now, changes } } : {}),
+        updatedAt: now,
+      });
+    }
+    if (matchesChanged) {
+      markStudyDirty();
+      await this.introduce(now);
+    }
+    return changed;
+  }
+
+  /** The class page showed "We re-checked N grammar points": not again. */
+  async markGrammarRecheckSeen(sessionId: string, now: Date = new Date()): Promise<void> {
+    const rec = await this.db.tutorSessions.get(sessionId);
+    if (!rec?.grammarRecheck || rec.grammarRecheck.seen) return;
+    await this.db.tutorSessions.update(sessionId, { grammarRecheck: { ...rec.grammarRecheck, seen: true }, updatedAt: now });
   }
 
   /** Phase 40 Part D.1: the class's clips (made on the server); the answer is kept on the record. */

@@ -1,6 +1,10 @@
 import {
   buildLessonGrammarStep,
+  buildPointExercise,
   checkTaiwanness,
+  countPracticeSentences,
+  MIN_PRACTICE_SENTENCES,
+  sentenceFitsGrammar,
   courseOrdinal,
   homeLessonOfTags,
   isPunctTile,
@@ -44,7 +48,8 @@ export type AuditCheck =
   | 'lesson-proper-noun'
   | 'lesson-prompt-scope'
   | 'extra-repeat'
-  | 'extra-page';
+  | 'extra-page'
+  | 'grammar-practice';
 
 export const AUDIT_CHECKS: Record<AuditCheck, string> = {
   'lexicon-unresolved': 'A lesson word id that is not in the lexicon',
@@ -65,6 +70,7 @@ export const AUDIT_CHECKS: Record<AuditCheck, string> = {
   'lesson-prompt-scope': "A journal prompt using words or grammar beyond its lesson",
   'extra-repeat': 'A lesson extra that is already a core word of this or an earlier lesson',
   'extra-page': 'A lesson extra with no lesson and page in its word note',
+  'grammar-practice': 'A grammar point (book or supplement) with fewer than 3 exercise sentences from the textbook and sentence banks',
 };
 
 export interface AuditFinding {
@@ -346,6 +352,25 @@ export function runCurriculumAudit(inputs: AuditInputs): AuditResult {
         if (p.promptZh) checkText(bookId, l.n, `${p.id} model`, p.promptZh);
       }
     }
+  }
+
+  // ---------------------------------------------------------------- Phase 46: every point can be practised
+  // Every grammar point a book teaches or the supplement adds has at least 3 exercise sentences from
+  // sources 1–3 (its textbook sentences, the supplement's hand-written ones, any bank sentence using
+  // it), and its hand-written sentences are clean Taiwan Mandarin that really use it.
+  const supplement = lexicon.allGrammar().filter((g) => (g.tags ?? []).includes('supplement'));
+  for (const g of [...grammarById.values(), ...supplement.filter((x) => !grammarById.has(x.id))]) {
+    const full = lexicon.grammarItemById(g.id) ?? g;
+    for (const p of full.practice ?? []) {
+      const where = `${g.id} practice`;
+      const tw = checkTaiwanness(p.zh);
+      if (!tw.isClean) add('sentence-taiwan', where, `"${p.zh}"`);
+      if (!sentenceFitsGrammar(p.zh, full, lexicon)) add('grammar-practice', where, `"${p.zh}" does not use the pattern`);
+    }
+    const n = countPracticeSentences(full, { textbook: inputs.sentences }, lexicon);
+    if (n < MIN_PRACTICE_SENTENCES) add('grammar-practice', g.id, `only ${n} sentences`);
+    else if (!buildPointExercise(g.id, [full], { textbook: inputs.sentences }, { lexicon, books: textbooks, seed: 'audit' }))
+      add('grammar-practice', g.id, `${n} sentences but no exercise can be built`);
   }
 
   // ---------------------------------------------------------------- de-duplicate, apply allows

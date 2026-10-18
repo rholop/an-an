@@ -1,15 +1,40 @@
 # Phase 39: general grammar points that no textbook lesson teaches but tutoring classes do.
 # Merged into the lexicon's grammar list by build-lexicon.ts (tag `supplement`). A tutoring
 # session's grammar point that matches one of these joins its Grammar step.
+# Phase 46: `practice` sentences are written by hand with Novice words and checked by
+# `pnpm audit:curriculum` (Taiwan wording, the pattern's blank, at least 3 sentences a point).
 - id: gram-ganggang-just
   pattern: "S + 剛剛 / 剛 + V (O)"
   level: L1
   explanationEn: "剛剛 (or 剛) before a verb says the action happened just now, a very short time ago: 我剛剛到家. It goes after the subject and before the verb."
   focus: ["剛剛", "剛"]
   matcher: "剛剛?.{1,8}"
+  practice:
+    - { zh: "他剛剛回家。", en: "He just went home." }
+    - { zh: "我剛剛喝了一杯咖啡。", en: "I just had a cup of coffee." }
+    - { zh: "媽媽剛到學校。", en: "Mom just got to the school." }
+    - { zh: "你剛剛去哪裡？", en: "Where did you just go?" }
+    - { zh: "我剛剛看到老師了。", en: "I just saw the teacher." }
 - id: gram-de-shihou
   pattern: "Clause + 的時候，……"
   level: L1
   explanationEn: "的時候 after a clause means \"when …\" or \"while …\": 吃飯的時候，我喜歡看電視. The 的時候 clause comes first and sets the time for the rest of the sentence."
   focus: ["的時候"]
   matcher: ".+的時候"
+  practice:
+    - { zh: "我在家的時候，喜歡看書。", en: "When I'm at home, I like to read." }
+    - { zh: "你來的時候，請給我打電話。", en: "When you come, please call me." }
+    - { zh: "天氣冷的時候，我喜歡喝茶。", en: "When the weather is cold, I like to drink tea." }
+    - { zh: "我小的時候住在臺北。", en: "When I was little, I lived in Taipei." }
+    - { zh: "上課的時候，請不要說話。", en: "Please don't talk during class." }
+- id: gram-keyi-permission
+  pattern: "S + 可以 + V (O)"
+  level: N1
+  explanationEn: "可以 before a verb asks for or gives permission: 我可以坐這裡嗎？ Say 不可以 for \"may not\". Compare 能 (possible in the circumstances) and 會 (a skill you have learned)."
+  focus: ["可以"]
+  matcher: "可以"
+  practice:
+    - { zh: "我可以喝水嗎？", en: "May I drink some water?" }
+    - { zh: "你可以坐這裡。", en: "You can sit here." }
+    - { zh: "上課的時候不可以吃東西。", en: "You may not eat during class." }
+    - { zh: "我可以問你一個問題嗎？", en: "May I ask you a question?" }

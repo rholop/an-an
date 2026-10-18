@@ -39,6 +39,11 @@ export interface TutorSessionGrammar {
   example: { zh: string; en: string };
   /** The app's grammar item (joins the session's Grammar step), or absent = a note only. */
   grammarId?: string;
+  /** Phase 46 Part D.2: the class point this row is ("g5"). A point comparing two items (可以 vs 能)
+   * is one row per item, with the same name, notes and `point`. */
+  point?: string;
+  /** Phase 46 Part D.4: the owner set this match on the class page (a re-check never changes it). */
+  matchedBy?: 'owner';
 }
 
 export interface TutorSessionSentence {
@@ -49,6 +54,8 @@ export interface TutorSessionSentence {
   grammarId?: string;
   /** Checked and kept for practice (Cloze, the Grammar step); else shown with the class only. */
   practice: boolean;
+  /** Phase 46 Part B.1.4: written for the grammar point (at Save or by "Write practice"), checked. */
+  written?: boolean;
 }
 
 /** One class (Dexie `tutorSessions`, synced per profile). Never holds the PDF or its images. */
@@ -69,8 +76,18 @@ export interface TutorSessionRecord {
   audio?: { status: 'ok' | 'waiting_key' | 'error'; at: Date; made?: number };
   /** Phase 40: "Re-check levels and topics" (and the one-time migration) last ran. */
   recheckedAt?: Date;
+  /** Phase 46 Part D.5: the one re-check of grammar matches with the stricter rules, and what changed
+   * (listed once on the class page: `seen` after that). */
+  grammarRecheck?: { at: Date; changes: TutorGrammarChange[]; seen?: boolean };
   createdAt: Date;
   updatedAt: Date;
+}
+
+/** Phase 46 Part D.5: one grammar point whose match changed in the re-check (patterns, or [] = a note). */
+export interface TutorGrammarChange {
+  name: string;
+  from: string[];
+  to: string[];
 }
 
 /** What the study order needs of a session (core `getStudyFocus`, the ledger). */
@@ -194,12 +211,12 @@ export function finalizeTutorSession(
     custom: !!w.custom,
     ...(modelLevel(w.key) ? { estimatedLevel: modelLevel(w.key)!, levelSource: 'model' as const } : {}),
   }));
-  const grammar: TutorSessionGrammar[] = draft.grammar.map((g) => ({
-    name: g.name,
-    explanationEn: g.explanationEn,
-    example: { zh: g.example.zh, en: g.example.en },
-    ...(g.matchId ? { grammarId: g.matchId } : {}),
-  }));
+  // Phase 46 Part D.2: a point comparing two items is one row per item (each practises its own marker).
+  const grammar: TutorSessionGrammar[] = draft.grammar.flatMap((g) => {
+    const base = { name: g.name, explanationEn: g.explanationEn, example: { zh: g.example.zh, en: g.example.en }, point: g.key };
+    const ids = g.matches?.map((m) => m.id) ?? (g.matchId ? [g.matchId] : []);
+    return ids.length > 0 ? ids.map((grammarId) => ({ ...base, grammarId })) : [base];
+  });
   const sentences = [...draft.words.map((w) => w.example), ...draft.grammar.map((g) => g.example)]
     .filter((s) => s.zh)
     .map(toSentence);
@@ -282,7 +299,10 @@ export function tutorScenarioRequest(draft: TutorDraft, learnerLevel: Level): Tu
     tutor: draft.tutor.slice(0, 60),
     topics: draft.topics.slice(0, 12).map((t) => ({ zh: t.zh.slice(0, 60), en: t.en.slice(0, 120) })),
     words: draft.words.filter((w) => w.ticked).map((w) => w.zh).slice(0, TUTOR_CONFIG.scenarioTargetWords),
-    grammar: draft.grammar.flatMap((g) => (g.matchPattern ? [g.matchPattern.slice(0, 80)] : [])).slice(0, 12),
+    grammar: draft.grammar
+      .flatMap((g) => g.matches?.map((m) => m.pattern) ?? (g.matchPattern ? [g.matchPattern] : []))
+      .map((p) => p.slice(0, 80))
+      .slice(0, 12),
     learnerLevel,
   };
 }

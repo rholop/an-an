@@ -554,6 +554,13 @@ export const TUTOR_CLASSIFY_JSON_SCHEMA = {
   required: ['words', 'topics'],
 } as const;
 
+/** Phase 46: POST /v1/tutor-grammar-practice. */
+export const TUTOR_GRAMMAR_PRACTICE_JSON_SCHEMA = {
+  type: 'object',
+  properties: { sentences: { type: 'array', items: TUTOR_EXAMPLE } },
+  required: ['sentences'],
+} as const;
+
 export const TUTOR_SCENARIO_JSON_SCHEMA = {
   type: 'object',
   properties: {

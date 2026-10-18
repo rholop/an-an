@@ -56,4 +56,19 @@ describe('pnpm audit:curriculum', { timeout: 120_000 }, () => {
     expect(r.findings).toContainEqual(expect.objectContaining({ check: 'sentence-tag', where: 'x-tag' }));
     expect(r.findings).toContainEqual(expect.objectContaining({ check: 'sentence-duplicate', where: 'x-dup' }));
   });
+
+  it('Phase 46: fails a supplement grammar point with fewer than 3 exercise sentences (剛剛 before its sentences)', () => {
+    const grammar = inputs.lexicon.allGrammar().map((g) => (g.id === 'gram-ganggang-just' || g.id === 'gram-de-shihou' ? { ...g, practice: [] } : g));
+    const r = runCurriculumAudit({ ...inputs, lexicon: new Lexicon(inputs.lexicon.allWords(), grammar) });
+    const bad = r.findings.filter((f) => f.check === 'grammar-practice').map((f) => f.where);
+    expect(bad).toContain('gram-ganggang-just');
+    // 的時候 is also in textbook sentences (the banks): enough even without its own
+    expect(bad).not.toContain('gram-de-shihou');
+    // and a hand-written sentence must really use its pattern
+    const wrong = inputs.lexicon
+      .allGrammar()
+      .map((g) => (g.id === 'gram-de-shihou' ? { ...g, practice: [...(g.practice ?? []), { zh: '我在家看書。', en: 'I read at home.' }] } : g));
+    const r2 = runCurriculumAudit({ ...inputs, lexicon: new Lexicon(inputs.lexicon.allWords(), wrong) });
+    expect(r2.findings).toContainEqual(expect.objectContaining({ check: 'grammar-practice', where: 'gram-de-shihou practice' }));
+  });
 });

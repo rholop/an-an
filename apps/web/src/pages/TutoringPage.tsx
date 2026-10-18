@@ -8,6 +8,7 @@ import {
   glossFor,
   isEstimatedLevel,
   levelShort,
+  tutorGrammarPoints,
   tutorJournalPrompt,
   tutorLessonOf,
   type ItemRef,
@@ -59,6 +60,15 @@ import {
   NEXT,
   NOT_PRACTISED,
   NOTE_ONLY,
+  NO_GRAMMAR_PRACTICE,
+  WRITE_PRACTICE,
+  WRITING_PRACTICE,
+  NO_PRACTICE_WRITTEN,
+  classNotesSaid,
+  MATCHED_TO,
+  CHANGE_MATCH,
+  MAKE_NOTE,
+  grammarRecheckLine,
   notesSaid,
   READING_NOTES,
   TUTOR_EXTRACT_FAILED,
@@ -73,7 +83,8 @@ import {
   UPLOAD_CLASS_SUMMARY,
 } from '../lib/labels.js';
 import { ChatPage } from './ChatPage.js';
-import { GrammarExerciseCard, useSingleGrammarExercise } from './GrammarStep.js';
+import { GrammarExerciseCard, usePointExercise } from './GrammarStep.js';
+import { classPracticeSentences } from '../lib/grammar-practice.js';
 import { ReviewPage } from './ReviewPage.js';
 import { PracticePage, PractiseEntry } from './PracticePage.js';
 import { StoryStep } from './TextbookPage.js';
@@ -427,7 +438,7 @@ function TutorCheckScreen({
             <strong lang="zh-Hant">{g.name}</strong>{' '}
             {g.matchId ? (
               <span className="textbook-chip textbook-chip--soft">
-                → <span lang="zh-Hant">{g.matchPattern}</span>
+                → <span lang="zh-Hant">{(g.matches?.map((m) => m.pattern) ?? [g.matchPattern]).join(', ')}</span>
               </span>
             ) : (
               <span className="textbook-chip textbook-chip--soft">{NOTE_ONLY}</span>
@@ -555,29 +566,161 @@ function TutorClassPage({
           })}
       </ul>
 
-      <h2>Grammar ({rec.grammar.length})</h2>
-      {rec.grammar.map((g, i) => {
-        const item = g.grammarId ? lexicon.grammarItemById(g.grammarId) : undefined;
+      <h2>Grammar ({tutorGrammarPoints(rec.grammar).length})</h2>
+      <GrammarRecheckNote rec={rec} lexicon={lexicon} />
+      {tutorGrammarPoints(rec.grammar).map((rows) => {
+        const first = rows[0]!;
+        const rowIndex = rec.grammar.indexOf(first);
+        const items = rows.flatMap((r) => {
+          const item = r.grammarId ? lexicon.grammarItemById(r.grammarId) : undefined;
+          return item ? [item] : [];
+        });
         return (
-          <article key={i} className="textbook-grammar" data-testid={item ? 'tutor-grammar-point' : 'tutor-grammar-note'}>
-            <h3>
-              <span lang="zh-Hant">{item?.pattern ?? g.name}</span>{' '}
-              {item ? <GrammarDots dots={ledger?.item({ kind: 'grammar', id: item.id }).dots ?? 0} /> : <small className="textbook-muted">{NOTE_ONLY}</small>}
-            </h3>
-            <p>{g.explanationEn || item?.explanationEn}</p>
-            {g.example.zh && (
+          <article key={rowIndex} className="textbook-grammar" data-testid={items.length > 0 ? 'tutor-grammar-point' : 'tutor-grammar-note'}>
+            {items.length > 0 ? (
+              items.map((item) => (
+                <div key={item.id}>
+                  <h3>
+                    <span lang="zh-Hant">{item.pattern}</span> <GrammarDots dots={ledger?.item({ kind: 'grammar', id: item.id }).dots ?? 0} />
+                  </h3>
+                  <p>{item.explanationEn}</p>
+                </div>
+              ))
+            ) : (
+              <h3>
+                <span lang="zh-Hant">{first.name}</span> <small className="textbook-muted">{NOTE_ONLY}</small>
+              </h3>
+            )}
+            {items.length > 0 ? (
+              first.explanationEn && (
+                <p className="grammar-after-notes" data-testid="tutor-class-notes">
+                  {classNotesSaid(first.explanationEn)}
+                </p>
+              )
+            ) : (
+              <p>{first.explanationEn}</p>
+            )}
+            {first.example.zh && (
               <p className="textbook-example">
                 <span lang="zh-Hant">
-                  <AnnotatedInline text={g.example.zh} lexicon={lexicon} script={script} />
+                  <AnnotatedInline text={first.example.zh} lexicon={lexicon} script={script} />
                 </span>
                 <br />
-                <small className="textbook-muted">{g.example.en}</small>
+                <small className="textbook-muted">{first.example.en}</small>
               </p>
             )}
+            <MatchLine rec={rec} rowIndex={rowIndex} name={first.name} items={items} lexicon={lexicon} />
           </article>
         );
       })}
     </div>
+  );
+}
+
+/** Phase 46 Part D.4: "Matched to: S + 能 + V · Change" (a grammar item, or "Make this a note"). */
+function MatchLine({
+  rec,
+  rowIndex,
+  name,
+  items,
+  lexicon,
+}: {
+  rec: TutorSessionRow;
+  rowIndex: number;
+  name: string;
+  items: ReadonlyArray<{ id: string; pattern: string }>;
+  lexicon: Lexicon;
+}) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const all = useMemo(() => lexicon.allGrammar(), [lexicon]);
+  async function change(value: string) {
+    setBusy(true);
+    try {
+      await appTutoringService(lexicon).setGrammarMatch(rec.id, rowIndex, value === '' ? null : value);
+      notifyTutorSessionsChanged();
+      setOpen(false);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <p className="textbook-muted tutoring-match" data-testid="tutor-grammar-match">
+      {MATCHED_TO} <span lang="zh-Hant">{items.length > 0 ? items.map((g) => g.pattern).join(', ') : NOTE_ONLY}</span>{' '}
+      {open ? (
+        <select
+          aria-label={`${MATCHED_TO} ${name}`}
+          disabled={busy}
+          defaultValue={items.length === 1 ? items[0]!.id : items.length === 0 ? '' : '-'}
+          onChange={(e) => void change(e.target.value)}
+          data-testid="tutor-grammar-match-select"
+          lang="zh-Hant"
+        >
+          {items.length > 1 && (
+            <option value="-" disabled>
+              {items.map((g) => g.pattern).join(', ')}
+            </option>
+          )}
+          <option value="">{MAKE_NOTE}</option>
+          {all.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.pattern}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <button type="button" className="link-button" onClick={() => setOpen(true)} data-testid="tutor-grammar-change">
+          {CHANGE_MATCH}
+        </button>
+      )}
+    </p>
+  );
+}
+
+/** Phase 46 Part D.5: the one re-check of saved classes, listed once on the class page. */
+function GrammarRecheckNote({ rec, lexicon }: { rec: TutorSessionRow; lexicon: Lexicon }) {
+  const r = rec.grammarRecheck;
+  const show = !!r && !r.seen && r.changes.length > 0;
+  useEffect(() => {
+    if (!show) return;
+    // shown during this visit; not again
+    return () => void appTutoringService(lexicon).markGrammarRecheckSeen(rec.id).catch(() => undefined);
+  }, [show, rec.id, lexicon]);
+  if (!show) return null;
+  return (
+    <div role="status" className="textbook-muted" data-testid="tutor-grammar-recheck">
+      <p>{grammarRecheckLine(r!.changes.length)}:</p>
+      <ul>
+        {r!.changes.map((c, k) => (
+          <li key={k} lang="zh-Hant">
+            {c.name}: {c.from.join(', ') || NOTE_ONLY} → {c.to.join(', ') || NOTE_ONLY}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Phase 46 Part D.3: after the answer, the class's own notes under the item's explanation, so the
+ * heading and the explanation always agree. */
+function ClassNotes({ point, lexicon, script }: { point: TutorSessionRow['grammar'][number]; lexicon: Lexicon; script: ReturnType<typeof useReadingScript> }) {
+  return (
+    <>
+      {point.explanationEn && (
+        <p className="grammar-after-notes" data-testid="tutor-class-notes">
+          {classNotesSaid(point.explanationEn)}
+        </p>
+      )}
+      {point.example.zh && (
+        <p className="textbook-example">
+          <span lang="zh-Hant">
+            <AnnotatedInline text={point.example.zh} lexicon={lexicon} script={script} />
+          </span>
+          <br />
+          <small className="textbook-muted">{point.example.en}</small>
+        </p>
+      )}
+    </>
   );
 }
 
@@ -798,16 +941,25 @@ function TutorVocabStep({ rec, onDone }: { rec: TutorSessionRow; onDone: () => v
   );
 }
 
-/** Matched points: one exercise each (from the textbook sentences, when there are some), with the
- * class's own example. Notes are shown with their example and have no exercise. */
+/**
+ * Matched points: one exercise each (Phase 46: from the textbook, the class's own sentences, or the
+ * banks). Before the answer the pattern is masked and only its English meaning shows; the item's
+ * explanation, the class's notes and example come below the exercise once it is answered. A point
+ * with no sentence anywhere says so and offers "Write practice". Notes have no exercise.
+ */
 function TutorGrammarStep({ rec, lexicon, onDone }: { rec: TutorSessionRow; lexicon: Lexicon; onDone: () => void }) {
   const script = useReadingScript();
   const ledger = useLedger();
+  const { level } = useCurrentLevel();
   const points = rec.grammar.filter((g) => g.grammarId && lexicon.grammarItemById(g.grammarId));
-  const notes = rec.grammar.filter((g) => !points.includes(g));
+  const notes = tutorGrammarPoints(rec.grammar.filter((g) => !points.includes(g))).map((p) => p[0]!);
   const [i, setI] = useState(0);
   const point = points[i];
-  const ex = useSingleGrammarExercise(point?.grammarId, lexicon, `tutor|${rec.id}|${point?.grammarId ?? ''}`);
+  // "Write practice" adds sentences to the class: they join its own sentences at once
+  const [extra, setExtra] = useState<TutorSessionRow['sentences']>([]);
+  const classSentences = useMemo(() => classPracticeSentences({ ...rec, sentences: [...rec.sentences, ...extra] }), [rec, extra]);
+  const ex = usePointExercise(point?.grammarId, lexicon, `tutor|${rec.id}|${point?.grammarId ?? ''}`, classSentences);
+  const [writing, setWriting] = useState<'idle' | 'busy' | 'none' | string>('idle');
 
   async function done(ok: boolean) {
     const now = new Date();
@@ -821,35 +973,61 @@ function TutorGrammarStep({ rec, lexicon, onDone }: { rec: TutorSessionRow; lexi
       },
       now,
     );
+    setWriting('idle');
     setI((k) => k + 1);
+  }
+
+  async function writePractice() {
+    setWriting('busy');
+    try {
+      const next = await appTutoringService(lexicon).writeGrammarPractice(rec.id, point!.grammarId!, level, new Date(), { retry: true });
+      if (next) {
+        setExtra(next.sentences.filter((s) => !rec.sentences.some((x) => x.id === s.id)));
+        notifyTutorSessionsChanged();
+        setWriting('idle');
+      } else setWriting('none');
+    } catch (err) {
+      setWriting(aiErrorText(err));
+    }
   }
 
   if (point) {
     const item = lexicon.grammarItemById(point.grammarId!)!;
+    const lead = (
+      <>
+        {i + 1} of {points.length} <GrammarDots dots={ledger?.item({ kind: 'grammar', id: item.id }).dots ?? 0} />{' '}
+      </>
+    );
     return (
       <section className="tutoring-grammar-step" data-testid="tutor-grammar-step">
-        <p className="textbook-muted">
-          {i + 1} of {points.length} · <span lang="zh-Hant">{item.pattern}</span>{' '}
-          <GrammarDots dots={ledger?.item({ kind: 'grammar', id: item.id }).dots ?? 0} />
-        </p>
-        <p>{point.explanationEn || item.explanationEn}</p>
-        {point.example.zh && (
-          <p className="textbook-example">
-            <span lang="zh-Hant">
-              <AnnotatedInline text={point.example.zh} lexicon={lexicon} script={script} />
-            </span>
-            <br />
-            <small className="textbook-muted">{point.example.en}</small>
-          </p>
-        )}
         {ex === undefined ? (
           <p>Loading…</p>
         ) : ex ? (
-          <GrammarExerciseCard key={`${rec.id}:${i}`} ex={ex} lexicon={lexicon} script={script} onDone={(ok) => void done(ok)} />
+          <GrammarExerciseCard
+            key={`${rec.id}:${i}`}
+            ex={ex}
+            item={item}
+            lead={lead}
+            lexicon={lexicon}
+            script={script}
+            onDone={(ok) => void done(ok)}
+            after={<ClassNotes point={point} lexicon={lexicon} script={script} />}
+          />
         ) : (
-          <button type="button" onClick={() => setI((k) => k + 1)}>
-            {NEXT}
-          </button>
+          <div data-testid="tutor-grammar-no-practice">
+            <p className="textbook-muted">{lead}</p>
+            <p>{NO_GRAMMAR_PRACTICE}</p>
+            <p>
+              <button type="button" onClick={() => void writePractice()} disabled={writing === 'busy'} aria-busy={writing === 'busy'} data-testid="tutor-write-practice">
+                {writing === 'busy' ? WRITING_PRACTICE : WRITE_PRACTICE}
+              </button>{' '}
+              <button type="button" onClick={() => setI((k) => k + 1)}>
+                {NEXT}
+              </button>
+            </p>
+            {writing === 'none' && <p role="status">{NO_PRACTICE_WRITTEN}</p>}
+            {writing !== 'idle' && writing !== 'busy' && writing !== 'none' && <p role="alert">{writing}</p>}
+          </div>
         )}
       </section>
     );

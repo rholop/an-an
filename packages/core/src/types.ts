@@ -69,6 +69,8 @@ export interface GrammarItem {
   focus?: string[];
   /** Phase 25: regex source matching sentences that use the pattern (the fill blank comes from its span). */
   matcher?: string;
+  /** Phase 46: hand-written, checked practice sentences (supplement points no lesson has sentences for). */
+  practice?: Array<{ zh: string; en: string }>;
 }
 
 export type ItemRef = { kind: 'word' | 'grammar'; id: string };
