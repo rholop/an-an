@@ -79,6 +79,8 @@ for (const [label, viewport] of [
           await expect(page.getByText('我想吃水餃')).toHaveCount(0);
           const input = page.locator('.cloze-page input').first();
           if (await input.isVisible()) {
+            // characters, not the pinyin mode a word cloze may have left on (a miss adds an Again retry)
+            await page.getByRole('button', { name: '中文', exact: true }).click();
             await input.fill('魚');
             await page.keyboard.press('Enter');
           } else await page.locator('.cloze-page button', { hasText: '魚' }).first().click();

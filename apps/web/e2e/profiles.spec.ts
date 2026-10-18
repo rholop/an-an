@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { startFreshIfAsked } from './gate.js';
+import { eveningZone } from './fixtures.js';
 
 declare global {
   interface Window {
@@ -71,11 +72,13 @@ test.describe('household code, who are you, switching', () => {
   }) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(String(e)));
-    await page.addInitScript(() => {
+    // inside a review session whatever the hour (between sessions a session holds no new cards)
+    await page.addInitScript((zone) => {
       localStorage.setItem('anan.siteCode', 'tofu');
       if (localStorage.getItem('anan.profile') === null)
         localStorage.setItem('anan.profile', 'ron');
-    });
+      localStorage.setItem('anan.sessions.defaultZone', zone);
+    }, eveningZone());
     await page.goto('/?page=reader');
     await startFreshIfAsked(page);
     await expect(page.getByTestId('profile-chip')).toContainText('羅恩', { timeout: 15000 });
@@ -128,11 +131,13 @@ test.describe('household code, who are you, switching', () => {
   test('level and display settings are per profile; an unsent journal draft is saved on switching', async ({
     page,
   }) => {
-    await page.addInitScript(() => {
+    // inside a review session whatever the hour (between sessions a session holds no new cards)
+    await page.addInitScript((zone) => {
       localStorage.setItem('anan.siteCode', 'tofu');
       if (localStorage.getItem('anan.profile') === null)
         localStorage.setItem('anan.profile', 'ron');
-    });
+      localStorage.setItem('anan.sessions.defaultZone', zone);
+    }, eveningZone());
     await page.goto('/?page=reader');
     await startFreshIfAsked(page);
     await expect(page.getByText(/Lexicon v2/)).toBeVisible({ timeout: 20000 });
