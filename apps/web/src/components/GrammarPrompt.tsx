@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { grammarMeaningHint, maskPatternFor, type GrammarItem, type GrammarStepExercise } from '@anan/core';
+import { GRAMMAR_EXPLANATION } from '../lib/labels.js';
 import './GrammarPrompt.css';
 
 /**
@@ -46,12 +47,57 @@ export function GrammarPrompt({
   );
 }
 
-/** After the answer: the item's own explanation, then whatever the caller adds (class notes, example). */
-export function GrammarAfter({ item, children }: { item: Pick<GrammarItem, 'explanationEn'>; children?: ReactNode }) {
+/**
+ * After the answer: the item's own explanation, then whatever the caller adds (class notes, example).
+ * `aside` (Review's Nope) sits beside it. With `collapseIfTight` (Review) it starts as a
+ * "What it means ▸" line when it would push the page past a laptop window (Phase 30), as the
+ * Phase 44 character row does.
+ */
+export function GrammarAfter({
+  item,
+  children,
+  aside,
+  collapseIfTight,
+}: {
+  item: Pick<GrammarItem, 'explanationEn'>;
+  children?: ReactNode;
+  aside?: ReactNode;
+  collapseIfTight?: boolean;
+}) {
+  const [open, setOpen] = useState(true);
+  const touched = useRef(false);
+  useLayoutEffect(() => {
+    if (!collapseIfTight || touched.current || !open) return;
+    if (window.innerWidth >= 700 && document.documentElement.scrollHeight > window.innerHeight) setOpen(false);
+  }, [collapseIfTight, open]);
+  const body = (
+    <>
+      {collapseIfTight && (
+        <button
+          type="button"
+          className="grammar-after-toggle"
+          aria-expanded={open}
+          data-testid="grammar-after-toggle"
+          onClick={() => {
+            touched.current = true;
+            setOpen((o) => !o);
+          }}
+        >
+          {GRAMMAR_EXPLANATION} {open ? '▾' : '▸'}
+        </button>
+      )}
+      {open && (
+        <>
+          <p>{item.explanationEn}</p>
+          {children}
+        </>
+      )}
+    </>
+  );
   return (
-    <div className="grammar-after" data-testid="grammar-after">
-      <p>{item.explanationEn}</p>
-      {children}
+    <div className={aside ? 'grammar-after grammar-after--aside' : 'grammar-after'} data-testid="grammar-after" data-open={open ? 'true' : 'false'}>
+      {aside ? <div className="grammar-after-body">{body}</div> : body}
+      {aside}
     </div>
   );
 }

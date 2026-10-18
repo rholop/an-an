@@ -274,6 +274,8 @@ export const SHOW_SIMPLIFIED = 'Show simplified characters on flashcards';
 /** Phase 44: Settings → Review, and the title of the review card's character row. */
 export const SHOW_CHAR_MEANINGS = 'Show what each character means';
 export const CHARACTERS = 'Characters';
+/** Phase 46: the grammar explanation's toggle on Review when it would not fit a short laptop. */
+export const GRAMMAR_EXPLANATION = 'What it means';
 export const LEECH_BREAKDOWN = 'Leech — character breakdown';
 export const chatWordsCount = (n: number): string => `📚 ${n}`;
 export const CHAT_WORD_SOURCE: Record<'gap' | 'lookup' | 'glossed' | 'corrected', string> = {

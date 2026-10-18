@@ -15,3 +15,23 @@
 .grammar-after-notes {
   color: var(--text-muted);
 }
+.grammar-after > p:first-child {
+  margin: 0.25rem 0;
+}
+.grammar-after--aside {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.grammar-after-body {
+  flex: 1;
+  min-width: 0;
+}
+.grammar-after-toggle {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0.25rem 0;
+}

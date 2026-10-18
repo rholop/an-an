@@ -24,11 +24,10 @@ test('b1 L4 grammar: 9 exercises round-robin, a miss comes back on another sente
     const sentence = (await ex.getAttribute('data-sentence'))!;
     const type = await ex.getAttribute('data-type');
     if (type === 'fill') {
-      // The right answer is the point's signal word (呢 / 的), which its pattern names.
-      const header = await ex.locator('p').first().innerText();
+      // The right answer is the point's signal word (呢 / 的); Phase 46 masks it in the pattern.
       const opts = ex.getByTestId('grammar-option');
       const texts = await opts.allInnerTexts();
-      const right = texts.findIndex((t) => header.includes(t));
+      const right = texts.findIndex((t) => t === '呢' || t === '的');
       await opts.nth(right >= 0 ? right : 0).click();
     } else if (type === 'pick') {
       await ex.getByTestId('grammar-option').first().click();

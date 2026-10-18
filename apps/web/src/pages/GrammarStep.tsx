@@ -230,7 +230,7 @@ export function GrammarStep({
       ) : (
         <TileView key={key} ex={current} lexicon={lexicon} script={script} onAnswer={answer} onNext={next} />
       )}
-      {item && answered && <GrammarAfter item={item} />}
+      {item && answered && <GrammarAfter item={item} collapseIfTight />}
     </div>
   );
 }
@@ -441,6 +441,8 @@ export function GrammarExerciseCard({
   lead,
   after,
   wrapPattern,
+  actions,
+  collapseAfter,
 }: {
   ex: GrammarStepExercise;
   lexicon: Lexicon;
@@ -450,6 +452,10 @@ export function GrammarExerciseCard({
   lead?: ReactNode;
   after?: ReactNode;
   wrapPattern?: (text: string) => ReactNode;
+  /** Review's Nope: its own row before the answer, beside the explanation after it. */
+  actions?: ReactNode;
+  /** Review: the explanation starts collapsed when it would not fit a short laptop window. */
+  collapseAfter?: boolean;
 }) {
   const [ok, setOk] = useState<boolean | null>(null);
   const props = { lexicon, script, onAnswer: (r: boolean) => setOk(r), onNext: () => ok !== null && onDone(ok) };
@@ -457,7 +463,13 @@ export function GrammarExerciseCard({
     <div className="textbook-exercise" data-testid="grammar-exercise" data-type={ex.type} data-grammar={ex.grammarId} data-sentence={ex.sentenceId}>
       {item && <GrammarPrompt item={item} ex={ex} answered={ok !== null} lead={lead} {...(wrapPattern ? { wrapPattern } : {})} />}
       {ex.type === 'fill' ? <FillView ex={ex} {...props} /> : ex.type === 'pick' ? <PickView ex={ex} {...props} /> : <TileView ex={ex} {...props} />}
-      {item && ok !== null && <GrammarAfter item={item}>{after}</GrammarAfter>}
+      {item && ok !== null ? (
+        <GrammarAfter item={item} aside={actions} collapseIfTight={collapseAfter}>
+          {after}
+        </GrammarAfter>
+      ) : (
+        actions
+      )}
     </div>
   );
 }

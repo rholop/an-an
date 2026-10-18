@@ -124,10 +124,13 @@ export function ReviewCard({
             script={script}
             wrapPattern={(text) => <WithSimplified text={text}>{text}</WithSimplified>}
             onDone={(ok) => onRate(ok ? 'good' : 'again', { face: 'grammar' })}
+            collapseAfter
+            actions={
+              <div className="review-actions">
+                <NopeButton onNope={onNope} />
+              </div>
+            }
           />
-          <div className="review-actions">
-            <NopeButton onNope={onNope} />
-          </div>
         </>
       ) : face === 'pick' && word && options ? (
         <PickFace card={card} word={word} options={options} gloss={gloss} lexicon={lexicon} script={script} onRate={onRate} onNope={onNope} />
