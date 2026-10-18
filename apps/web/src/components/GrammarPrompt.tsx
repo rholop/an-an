@@ -68,7 +68,15 @@ export function GrammarAfter({
   const touched = useRef(false);
   useLayoutEffect(() => {
     if (!collapseIfTight || touched.current || !open) return;
-    if (window.innerWidth >= 700 && document.documentElement.scrollHeight > window.innerHeight) setOpen(false);
+    const tight = () => window.innerWidth >= 700 && document.documentElement.scrollHeight > window.innerHeight;
+    if (tight()) return setOpen(false);
+    if (typeof ResizeObserver === 'undefined') return;
+    // late layout (web fonts, the answer's readings) can still push the page past the window
+    const watch = new ResizeObserver(() => {
+      if (!touched.current && tight()) setOpen(false);
+    });
+    watch.observe(document.body);
+    return () => watch.disconnect();
   }, [collapseIfTight, open]);
   const body = (
     <>

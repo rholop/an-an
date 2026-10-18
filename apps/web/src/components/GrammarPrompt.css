@@ -22,6 +22,9 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  /* Review: Nope's row before the answer, so the card grows only by the line itself */
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
 }
 .grammar-after-body {
   flex: 1;
