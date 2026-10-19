@@ -139,10 +139,14 @@ export interface Evidence {
     | 'practice_again'
     | 'practice_hard'
     | 'practice_good'
-    | 'practice_easy';
+    | 'practice_easy'
+    /** Phase 49 test drill: an item's result (reading accuracy only; never moves a card). The word's
+     * counted answer, if any, is its own `review_*` / `practice_*` row with `context.source: 'drill'`. */
+    | 'drill_correct'
+    | 'drill_wrong';
   at: Date;
   context?: {
-    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook' | 'pinyin' | 'story' | 'tutor';
+    source: 'chat' | 'journal' | 'cloze' | 'review' | 'placement' | 'reader' | 'textbook' | 'pinyin' | 'story' | 'tutor' | 'drill';
     refId?: string;
     /** Phase 5: a journal_misuse the learner corrected themselves. */
     selfFixed?: boolean;

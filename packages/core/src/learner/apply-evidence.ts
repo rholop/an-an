@@ -564,6 +564,9 @@ export const EVIDENCE_HANDLERS: Record<Evidence['kind'], EvidenceHandler> = {
   practice_hard: (c, _e, n) => applyPracticeAnswer(c, false, n),
   practice_good: (c, _e, n) => applyPracticeAnswer(c, false, n),
   practice_easy: (c, _e, n) => applyPracticeAnswer(c, false, n),
+  // Phase 49: a drill item's result feeds reading accuracy only.
+  drill_correct: () => ({ card: undefined, appliedEffect: 'ignored:drill-result' }),
+  drill_wrong: () => ({ card: undefined, appliedEffect: 'ignored:drill-result' }),
 };
 
 /**

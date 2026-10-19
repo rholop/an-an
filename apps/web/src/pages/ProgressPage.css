@@ -24,3 +24,30 @@
   display: block;
 }
 .progress-levels { list-style: none; padding: 0; display: grid; gap: 0.6rem; }
+
+/* Phase 49: TOCFL results */
+.progress-results {
+  padding-left: 1.1rem;
+}
+.progress-results li {
+  margin-bottom: 0.25rem;
+}
+.progress-warn {
+  color: var(--warn-text);
+}
+.progress-result-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.progress-result-skill {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  min-width: 0;
+}
+.progress-result-skill input[type='number'] {
+  width: 4.5rem;
+}

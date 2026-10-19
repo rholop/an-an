@@ -34,6 +34,8 @@ import { EmptySprout, NextDropIcon, PlantLegend, StageIcon } from '../components
 import { useLedger } from '../lib/ledger.js';
 import { useTutorSessions } from '../lib/tutoring/useTutorSessions.js';
 import { StreakBar } from '../components/StreakBar.js';
+import { ReadinessLine } from '../components/ReadinessLine.js';
+import { DrillPage } from './DrillPage.js';
 import { WaterAllPage } from './WaterAllPage.js';
 import { HomeStoryLine } from './StoriesSection.js';
 import { StoryView } from './StoryView.js';
@@ -73,7 +75,7 @@ export function GardenPage() {
   const tutorRows = useTutorSessions();
   const [focus, setFocus] = useState<SkillCard[] | null>(null);
   // Phase 22: Home's "Water all", "Review all" and "Review early" (Phase 23: the next session now).
-  const [session, setSession] = useState<'water-all' | 'review-all' | 'review-early' | { story: StoryRecord } | null>(null);
+  const [session, setSession] = useState<'water-all' | 'review-all' | 'review-early' | 'drill' | { story: StoryRecord } | null>(null);
   const ledger = useLedger();
   const stories = useOptionalStoryService(lexiconState.status === 'ready' ? lexiconState.lexicon : null);
   // Phase 14: tiles that belong to the active study step are highlighted.
@@ -114,6 +116,8 @@ export function GardenPage() {
     window.scrollTo(0, 0);
   };
   if (session === 'water-all') return <WaterAllPage onExit={backHome} />;
+  // Phase 49: the readiness line opens the test drill
+  if (session === 'drill') return <DrillPage onExit={backHome} exitLabel="← Back to home" />;
   if (session === 'review-all')
     return <ReviewPage reviewAll title="Review all" exitLabel="← Back to home" onExit={backHome} />;
   if (session && typeof session === 'object' && 'story' in session && lexiconState.status === 'ready')
@@ -171,6 +175,7 @@ export function GardenPage() {
         onReviewEarly={() => setSession('review-early')}
       />
       <StreakBar ledger={ledger} />
+      <ReadinessLine ledger={ledger} onDrill={() => setSession('drill')} />
       {ledger &&
         (tutorRows ?? [])
           .filter((r) => ledger.withinDays(r.createdAt, TUTOR_CONFIG.homeDays))

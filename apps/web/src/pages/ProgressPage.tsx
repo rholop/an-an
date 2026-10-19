@@ -19,6 +19,7 @@ import {
 import { JournalProgress } from '../components/JournalProgress.js';
 import { AnnotatedInline, useReadingScript } from '../components/AnnotatedInline.js';
 import { LearnedMastered } from '../components/LearnedMastered.js';
+import { TestResults } from '../components/TestResults.js';
 import { coverageLine, levelLabel, PINYIN_TAB, storyWeekLine, toneConfusionLine, toneLabel } from '../lib/labels.js';
 import { readTargetRetention } from '../lib/retention.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
@@ -192,6 +193,8 @@ export function ProgressPage() {
           </ul>
         </section>
       )}
+
+      <TestResults />
 
       {(
         <section data-testid="progress-pinyin">

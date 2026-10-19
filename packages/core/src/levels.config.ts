@@ -54,6 +54,13 @@ export function levelShort(level: Level): string {
   return levelInfo(level).id;
 }
 
+/** Phase 49: the test's own name for a level ("Level 1" for L1 入門級, "Novice 2" for N2): the
+ * readiness line and TOCFL results. */
+export function testLevelName(level: Level): string {
+  const l = levelInfo(level);
+  return l.id.startsWith('L') ? `Level ${l.id.slice(1)}` : l.nameEn;
+}
+
 /** "TOCFL L2": gate messages and study steps. */
 export function tocflLabel(level: Level): string {
   return `TOCFL ${levelShort(level)}`;

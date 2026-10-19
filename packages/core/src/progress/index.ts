@@ -104,3 +104,22 @@ export {
 export { isPracticeOnlyKind, practiceAnswerKind, PRACTICE_ROUND_SIZE, type PracticeGrade } from './practice.js';
 
 export { summarizeSavedCopy, type SavedCopySummary } from './saved-copy.js';
+
+// Phase 49: TOCFL test prep (settings, results, the drill's evidence kinds; numbers come from the ledger).
+export {
+  DEFAULT_TEST_PREP,
+  DRILL_KINDS,
+  levelsUpTo,
+  liveResults,
+  mustPassFor,
+  sanitizeTestPrep,
+  TEST_PREP_CONFIG,
+  underPassMarks,
+  type PassMark,
+  type ReadingAccuracy,
+  type TestPrepSettings,
+  type TestPrepView,
+  type TestReminder,
+  type TestResult,
+  type TestSkillResult,
+} from './test-prep.js';

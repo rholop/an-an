@@ -18,6 +18,7 @@ import {
   levelShort,
   quotaResetTime,
   stepName,
+  testLevelName,
   tocflLabel,
   type Level,
   type Word,
@@ -553,3 +554,37 @@ export const PRACTICE_COUNTED = 'counted ✓';
 export const PRACTICE_NOTE = "Each card's first answer of the day counts as its review; more practice that day doesn't change its schedule.";
 export const practiceRoundDone = (n: number): string => `Round done: ${n} card${n === 1 ? '' : 's'} practised.`;
 export const LESSON_MASTERED = 'This lesson is mastered.';
+
+// ---- Phase 49: TOCFL test prep
+export const TEST_PREP = 'TOCFL test prep';
+export const TEST_DRILL = 'Test drill';
+export const TOCFL_RESULTS = 'TOCFL results';
+export const END_TEST_PREP = 'End test prep';
+export const LOG_A_RESULT = 'Log a result';
+export const UNVERIFIED_PASS_MARK = '(unverified pass mark)';
+/** The test's own level name ("Level 1"). */
+export const testLevel = (level: Level): string => testLevelName(level);
+/** "Level 1 words 612/741" */
+export const testWordsLine = (level: Level, learned: number, total: number): string =>
+  `${testLevelName(level)} words ${learned.toLocaleString('en-US')}/${total.toLocaleString('en-US')}`;
+/** "Reading 78% (7 days)" / "Reading: not enough answers yet" */
+export const readingAccuracyLine = (share: number | null, days: number): string =>
+  share === null ? 'Reading: not enough answers yet' : `Reading ${pct(share)} (${days} days)`;
+/** One skill of a result: "reading 19" or "reading Level 1". */
+export const resultSkill = (name: 'listening' | 'reading', r: { score?: number; level?: Level } | undefined): string | undefined =>
+  r?.score !== undefined ? `${name} ${r.score}` : r?.level ? `${name} ${testLevelName(r.level)}` : undefined;
+/** "Last mock: reading 19, listening 21" */
+export const lastResultLine = (
+  r: { kind: 'mock' | 'official'; reading?: { score?: number; level?: Level }; listening?: { score?: number; level?: Level } } | undefined,
+): string => {
+  if (!r) return 'No mock logged yet';
+  const parts = [resultSkill('reading', r.reading), resultSkill('listening', r.listening)].filter(Boolean);
+  return `Last ${r.kind === 'official' ? 'test' : 'mock'}: ${parts.length ? parts.join(', ') : 'no scores'}`;
+};
+export const MOCK_REMINDER = 'A good week for a mock test';
+export const AFTER_TEST_REMINDER = 'Test day has passed';
+/** "4 / 5 right · 3 within time" */
+export const drillResultLine = (right: number, total: number, inTime: number): string => `${right} / ${total} right · ${inTime} within time`;
+/** "142 days to the test" (Settings and the results screen only; never on Home). */
+export const daysToTestLine = (days: number): string =>
+  days > 1 ? `${days} days to the test` : days === 1 ? 'The test is tomorrow' : days === 0 ? 'The test is today' : 'The test date has passed';

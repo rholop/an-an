@@ -4,6 +4,7 @@ import {
   buildLedger,
   ledgerEvidenceSince,
   PROGRESS_CONFIG,
+  TEST_PREP_CONFIG,
   type Evidence,
   type Ledger,
   type LedgerStudyInputs,
@@ -65,11 +66,14 @@ export async function ledgerFrom(
     reloadReviewSettings();
     markStudyDirty();
   }
-  const [cards, evidence, activeDays, fixedSessions] = await Promise.all([
+  // Phase 49: the logged TOCFL results, and with test prep on the last days of answers (reading accuracy).
+  const prepOn = opts.study?.settings.testPrep?.on === true;
+  const [cards, evidence, activeDays, fixedSessions, testPrep] = await Promise.all([
     allCards(database),
     ledgerEvidence(database, now, settings),
     database.activeDays.toCollection().primaryKeys() as Promise<string[]>,
     loadFixedSessions(database),
+    testPrepInputs(database, now, prepOn),
   ]);
   return buildLedger({
     cards,
@@ -81,7 +85,19 @@ export async function ledgerFrom(
     masteryShare: opts.masteryShare ?? 0.8,
     now,
     ...(opts.study ? { study: opts.study } : {}),
+    testPrep,
   });
+}
+
+/** Phase 49: the logged TOCFL results and the answers of the accuracy window (a day of slack for
+ * the profile's zone; the ledger keeps exactly its own days). */
+async function testPrepInputs(database: AnanDB, now: Date, withEvidence: boolean) {
+  const since = new Date(now.getTime() - (TEST_PREP_CONFIG.accuracyDays + 1) * 86_400_000);
+  const [results, recent] = await Promise.all([
+    database.testResults.toArray(),
+    withEvidence ? database.evidence.where('at').between(since, now, true, true).toArray() : Promise.resolve([]),
+  ]);
+  return { results, evidence: activeEvidence(recent) };
 }
 
 /** What the study module (lib/study.ts) gives the ledger; registered there so this module never
@@ -132,7 +148,7 @@ function watchWrites(database: AnanDB): void {
       markStudyDirty();
     }, 0);
   };
-  for (const table of [database.items, database.evidence, database.activeDays]) {
+  for (const table of [database.items, database.evidence, database.activeDays, database.testResults]) {
     table.hook('creating', changed);
     table.hook('updating', changed);
     table.hook('deleting', changed);
@@ -150,7 +166,7 @@ export async function getLedgerNow(now: Date = new Date()): Promise<Ledger> {
     session?.profileId ?? '',
     studyVersion(),
     JSON.stringify(settings),
-    study ? `${study.books.length}:${study.level ?? ''}:${study.settings.enabled}` : 'none',
+    study ? `${study.books.length}:${study.level ?? ''}:${study.settings.enabled}:${JSON.stringify(study.settings.testPrep ?? null)}` : 'none',
   ].join('|');
   if (cache && cache.key === key && Math.abs(now.getTime() - cache.at) < FRESH_MS) return cache.ledger;
   const ledger = ledgerFrom(db, now, {

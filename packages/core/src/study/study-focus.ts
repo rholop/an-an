@@ -9,12 +9,13 @@ import { PRIORITY_CONFIG, type PriorityConfig } from '../curriculum/priority.con
 import { PROGRESS_CONFIG } from '../progress/progress.config.js';
 import type { SkillCard } from '../learner/types.js';
 import type { Lexicon } from '../lexicon.js';
-import { LEVEL_IDS, tocflLabel, type Level } from '../levels.config.js';
+import { LEVEL_IDS, levelIndex, tocflLabel, type Level } from '../levels.config.js';
 import { bookTitle, courseBook, courseLessonLevel, courseOrdinal, LAIXUE_COURSE, lessonBadge, type Course } from '../textbook/course.js';
 import type { Lesson, Textbook } from '../textbook/types.js';
 import { lessonCoreItems, lessonCoreWordIds, lessonExtraWordIds, lessonTaughtItems, levelItems, ProgressIndex, type GrammarUse, type LearnedMastered } from '../progress/terms.js';
 import type { ItemRef } from '../types.js';
 import type { TutorLesson } from '../tutor/session.js';
+import type { TestPrepSettings } from '../progress/test-prep.js';
 
 export type StepRef =
   | { kind: 'lesson'; bookId: string; n: number; lessonId: string; level: Level; ordinal: number }
@@ -35,6 +36,8 @@ export interface StudySettings {
   knownItems: readonly string[];
   /** Phase 34: teach a lesson's extra words with the lesson (Settings → Study). */
   teachExtras: boolean;
+  /** Phase 49: TOCFL test prep (Settings → Study). Absent = off. */
+  testPrep?: TestPrepSettings;
 }
 
 export const DEFAULT_STUDY_SETTINGS: StudySettings = {
@@ -136,6 +139,8 @@ export interface StudyFocus {
   gatedLessonIds?: string[];
   /** Phase 21: lesson ids already mastered (skipped by "the next lessons" everywhere). */
   masteredLessonIds?: string[];
+  /** Phase 49: test prep is on: the target level (test words = TOCFL words at or below it). */
+  testTarget?: Level;
 }
 
 const itemKey = (i: ItemRef) => `${i.kind}:${i.id}`;
@@ -337,13 +342,29 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
     .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
     .flatMap((l) => l.wordIds.map((id): ItemRef => ({ kind: 'word', id })))
     .filter((i) => !idx.removed(i) && !idx.learned(i));
-  const newItemsAllowed = [
-    ...focusItems,
+  // Phase 49: with TOCFL test prep on, the test words no lesson teaches (the "rest" of each level up to
+  // the target, lowest level first, then frequency) come right after the active and catch-up lessons'
+  // new items, ahead of a lesson (or the words) above the target. Lessons up to the target keep their
+  // order: they are test words already. Only the order of new items changes.
+  const prep = profile.settings.testPrep?.on ? profile.settings.testPrep : undefined;
+  const aboveTarget = (s: StepRef | undefined): boolean => !!prep && !!s && levelIndex(s.level) > levelIndex(prep.target);
+  const testItems = prep
+    ? LEVEL_IDS.filter((lv) => levelIndex(lv) <= levelIndex(prep.target)).flatMap((level) =>
+        itemsOfStep({ kind: 'level', level }).filter((i) => !idx.mastered(i)),
+      )
+    : [];
+  const lessonItems = (above: boolean): ItemRef[] => [
+    ...(aboveTarget(active) === above ? focusItems : []),
     ...reviewLessons
-      .filter((s) => firstUnmasteredLevelBelow(s.level) === undefined)
+      .filter((s) => aboveTarget(s) === above && firstUnmasteredLevelBelow(s.level) === undefined)
       .flatMap((s) => itemsOfStep(s).filter((i) => !idx.mastered(i))),
-    ...passedLessons.flatMap((s) => extraItemsOf(s).filter((i) => !idx.removed(i))),
-    ...(active ? extraItemsOf(active).filter((i) => !idx.removed(i)) : []),
+    ...passedLessons.filter((s) => aboveTarget(s) === above).flatMap((s) => extraItemsOf(s).filter((i) => !idx.removed(i))),
+    ...(active && aboveTarget(active) === above ? extraItemsOf(active).filter((i) => !idx.removed(i)) : []),
+  ];
+  const newItemsAllowed = [
+    ...lessonItems(false),
+    ...testItems,
+    ...lessonItems(true),
   ].filter((i) => {
     const k = itemKey(i);
     if (idx.hasCard(i) || seenNew.has(k)) return false;
@@ -414,6 +435,7 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
       .filter((s): s is Extract<StepRef, { kind: 'lesson' }> => s.kind === 'lesson')
       .filter((s) => stepMastery(s).isMastered)
       .map((s) => s.lessonId),
+    ...(prep ? { testTarget: prep.target } : {}),
   };
 }
 

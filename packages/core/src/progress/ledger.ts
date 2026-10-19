@@ -72,6 +72,17 @@ import {
 import { dayKey, weekRange, type WeekRange } from './time.js';
 import { REVIEW_BLOCKS, reviewBlock } from '../review/blocks.js';
 import { vocabLadder, type VocabLadder, type VocabLadderOptions } from './vocabLadder.js';
+import {
+  levelsUpTo,
+  readingAccuracyOf,
+  sanitizeTestPrep,
+  testPrepView,
+  TEST_PREP_CONFIG,
+  type AccuracyEvidence,
+  type ReadingAccuracy,
+  type TestPrepView,
+  type TestResult,
+} from './test-prep.js';
 
 type EvidenceLike = Pick<Evidence, 'item' | 'skill' | 'kind' | 'at'> & Partial<Pick<Evidence, 'context'>>;
 
@@ -123,6 +134,9 @@ export interface LedgerInputs {
   resolves?: (item: ItemRef) => boolean;
   /** Phase 43 Part C.1: sessions as fixed at their first answer (the synced `reviewSessions/…` rows). */
   fixedSessions?: readonly FixedSession[];
+  /** Phase 49: logged TOCFL results (the synced `testResults` table) and the evidence of the last
+   * `TEST_PREP_CONFIG.accuracyDays` days (or more) for reading accuracy. */
+  testPrep?: { results: readonly TestResult[]; evidence: readonly AccuracyEvidence[] };
 }
 
 /** Phase 38: which items the ledger can show: the study context's check, else words the study
@@ -207,6 +221,15 @@ export interface ComprehensibleSets extends WordSets {
   ids: Set<string>;
 }
 
+/** Phase 49: TOCFL words Learned per level up to the target, and cumulatively ("Level 1 words 612/741"). */
+export interface TestCoverage {
+  target: Level;
+  mustPass: Level;
+  levels: Array<{ level: Level; learned: number; total: number }>;
+  /** Up to and including each level (the readiness line shows the must-pass and the target). */
+  upTo: Array<{ level: Level; learned: number; total: number }>;
+}
+
 export interface PracticeView {
   /** Answered cards of that skill in this review session's window. */
   due: SkillCard[];
@@ -232,6 +255,7 @@ export class Ledger {
   private readonly storedActiveDays: ReadonlySet<string>;
   private readonly grammarUses: Map<string, GrammarUse>;
   private readonly fixedSessions: readonly FixedSession[];
+  private readonly testInputs: NonNullable<LedgerInputs['testPrep']>;
   private memo = new Map<string, unknown>();
 
   constructor(inputs: LedgerInputs) {
@@ -253,6 +277,7 @@ export class Ledger {
     this.evidence = inputs.evidence.filter((e) => e.at.getTime() >= since && e.at.getTime() <= inputs.now.getTime());
     this.study = inputs.study;
     this.fixedSessions = inputs.fixedSessions ?? [];
+    this.testInputs = inputs.testPrep ?? { results: [], evidence: [] };
     this.storedActiveDays = new Set(inputs.activeDays ?? []);
     // Phase 25: a grammar point's days are the profile's days.
     this.grammarUses = grammarUsesFromEvidence(inputs.evidence, this.cfg, this.timeZone);
@@ -912,6 +937,58 @@ export class Ledger {
       }
       return LEVEL_IDS[LEVEL_IDS.length - 1]!;
     });
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Phase 49: TOCFL test prep
+
+  /** Test prep: settings, days to the test, the latest result and the reminder due (profile zone). */
+  testPrep(): TestPrepView {
+    return this.once('testPrep', () => testPrepView(sanitizeTestPrep(this.study?.settings.testPrep), this.testInputs.results, this.now, this.timeZone));
+  }
+
+  /** TOCFL words (official list, removed ones left out) at or below `target` (default: prep's target). */
+  testWords(target: Level = this.testPrep().target): ItemRef[] {
+    return this.once(`testWords:${target}`, () => {
+      const words = (this.study?.lexicon.allWords() ?? []) as Word[];
+      return levelsUpTo(target).flatMap((lv) => levelItems(lv, words)).filter((i) => !this.index.removed(i));
+    });
+  }
+
+  /** Learned / total TOCFL words per level up to the target, and cumulatively. Learned, not Mastered:
+   * the readiness bar (Mastered needs 3 Easy ratings and is too slow for a test date). */
+  testCoverage(): TestCoverage {
+    return this.once('testCoverage', () => {
+      const prep = this.testPrep();
+      const levels = levelsUpTo(prep.target).map((level) => {
+        const sum = this.summary(levelItems(level, (this.study?.lexicon.allWords() ?? []) as Word[]));
+        return { level, learned: sum.learned, total: sum.total };
+      });
+      let learned = 0;
+      let total = 0;
+      const upTo = levels.map((l) => {
+        learned += l.learned;
+        total += l.total;
+        return { level: l.level, learned, total };
+      });
+      return { target: prep.target, mustPass: prep.mustPass, levels, upTo };
+    });
+  }
+
+  /** Right first answers over the last `days` profile-zone days: drill items and the day's first
+   * Meaning answer on a test word. Never the `reading` (Say it) skill; null under 20 answers. */
+  readingAccuracy(days: number = TEST_PREP_CONFIG.accuracyDays): ReadingAccuracy | null {
+    return this.once(`readingAccuracy:${days}`, () => {
+      const test = new Set(this.testWords().map((i) => i.id));
+      return readingAccuracyOf(this.testInputs.evidence, (id) => test.has(id), this.now, this.timeZone, days);
+    });
+  }
+
+  /** The test words a drill may ask about: an answered Meaning card, not removed, weakest first. */
+  drillWordIds(): string[] {
+    return this.once('drillWords', () => [
+      ...new Set(this.practiceCards(this.testWords()).filter((c) => c.skill === 'recognition').map((c) => c.item.id)),
+    ]);
   }
 
   // -------------------------------------------------------------------------------------------

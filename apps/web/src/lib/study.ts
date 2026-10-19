@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import {
   DEFAULT_STUDY_SETTINGS,
   lessonIndex,
+  sanitizeTestPrep,
   classScope,
   tutorLessonOf,
   type ClassScope,
@@ -46,6 +47,8 @@ function sanitize(v: unknown): StudySettings {
     reached: Math.round(num(o.reached, 0, 0, 1000)),
     knownItems: Array.isArray(o.knownItems) ? o.knownItems.filter((x): x is string => typeof x === 'string') : [],
     teachExtras: o.teachExtras !== false,
+    // Phase 49: TOCFL test prep (off unless switched on)
+    ...(o.testPrep ? { testPrep: sanitizeTestPrep(o.testPrep) } : {}),
   };
 }
 

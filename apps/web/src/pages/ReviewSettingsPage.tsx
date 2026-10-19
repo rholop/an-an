@@ -24,6 +24,7 @@ import { ReadingControls } from '../components/ReadingControls.js';
 import { YourProgress } from '../components/YourProgress.js';
 import { AiUsage } from '../components/AiUsage.js';
 import { TutoringSettings } from '../components/TutoringSettings.js';
+import { TestPrepSettings } from '../components/TestPrepSettings.js';
 import { useAnswerInputMode, type AnswerInputMode } from '../lib/reading.js';
 import { readTargetRetention, RETENTION_MAX, RETENTION_MIN, setTargetRetention } from '../lib/retention.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
@@ -169,6 +170,8 @@ export function ReviewSettingsPage() {
       <h1>Settings</h1>
       <YourProgress />
       <SharedSettings />
+      <h2 className="review-settings-group">Study</h2>
+      <TestPrepSettings />
       <h2 className="review-settings-group">Review</h2>
 
       <section data-testid="settings-simplified">

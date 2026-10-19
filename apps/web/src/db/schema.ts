@@ -27,6 +27,7 @@ import type {
   SkillCard,
   StoryRecord,
   TurnToken,
+  TestResult,
   TutorSessionRecord,
   UsedWell,
   Word,
@@ -328,6 +329,9 @@ export type CustomWordRow = Word & { updatedAt?: Date };
 export type TutorSessionRow = TutorSessionRecord;
 export type ErrorItemRow = ErrorItem & { updatedAt?: Date };
 
+/** Phase 49: a logged TOCFL mock or official result (core `TestResult`; synced). */
+export type TestResultRow = TestResult;
+
 /** Tables whose rows change in place (so need `updatedAt` for last-writer-wins). */
 const STAMPED_TABLES = [
   'settings',
@@ -340,6 +344,7 @@ const STAMPED_TABLES = [
   'readerShown',
   'stories',
   'tutorSessions',
+  'testResults',
 ] as const;
 /** The stamped tables AS OF schema v5. The v5 upgrade must only touch tables
  * that exist at v5, so it uses this frozen list — never the live
@@ -375,6 +380,7 @@ const ALL_TABLES = [
   'stories',
   'activeDays',
   'tutorSessions',
+  'testResults',
 ] as const;
 
 const newUid = (): string => globalThis.crypto.randomUUID();
@@ -451,6 +457,8 @@ export class AnanDB extends Dexie {
   activeDays!: EntityTable<ActiveDayRow, 'day'>;
   /** Phase 39: tutoring sessions. */
   tutorSessions!: EntityTable<TutorSessionRow, 'id'>;
+  /** Phase 49: TOCFL mock and official results. */
+  testResults!: EntityTable<TestResultRow, 'id'>;
 
   constructor(name = 'anan') {
     super(name);
@@ -631,6 +639,12 @@ export class AnanDB extends Dexie {
 
     // v13 (Phase 39): tutoring sessions (one row per class, synced). Purely additive.
     this.version(13).stores({ tutorSessions: 'id, date' });
+
+    // v14 (Phase 49): TOCFL mock and official results (one row per result, synced). The upgrade has
+    // nothing to move: every older table and row stays as it is.
+    this.version(14)
+      .stores({ testResults: 'id, date' })
+      .upgrade(() => undefined);
 
     this.installHooks();
   }

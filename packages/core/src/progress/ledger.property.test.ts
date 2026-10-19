@@ -23,6 +23,7 @@ import { tutorIntroduceEvidence, type TutorLesson } from '../tutor/session.js';
 import { emptyCard } from '../learner/fsrs-instance.js';
 import { unknownAnswerWords } from '../journal/answer-words.js';
 import type { ErrorItem } from '../journal/types.js';
+import type { TestPrepSettings } from './test-prep.js';
 
 const HEADWORDS = [...'貓狗魚鳥馬牛羊雞鴨豬茶水書筆車船門窗山河'];
 const word = (hw: string, i: number): Word => ({
@@ -153,6 +154,9 @@ function ledgerOf(
     dropCards?: ReadonlySet<string>;
     /** Phase 39: tutoring classes, with the study order on. */
     tutorLessons?: readonly TutorLesson[];
+    /** Phase 49: test prep settings, and evidence only the accuracy window sees. */
+    testPrep?: TestPrepSettings;
+    accuracyExtra?: (now: Date) => Evidence[];
   } = {},
 ): Ledger {
   const settings: SessionSettings = { ...DEFAULT_SESSION_SETTINGS, timeZone: s.zone, capPerSession: s.cap };
@@ -193,8 +197,15 @@ function ledgerOf(
       books: [over.book ?? book],
       ...(over.config ? { config: over.config } : {}),
       ...(over.tutorLessons ? { tutorLessons: over.tutorLessons } : {}),
-      settings: { ...DEFAULT_STUDY_SETTINGS, enabled: !!over.tutorLessons, masteryShare: s.masteryShare, knownItems: s.knownItems },
+      settings: {
+        ...DEFAULT_STUDY_SETTINGS,
+        enabled: !!over.tutorLessons,
+        masteryShare: s.masteryShare,
+        knownItems: s.knownItems,
+        ...(over.testPrep ? { testPrep: over.testPrep } : {}),
+      },
     },
+    ...(over.testPrep ? { testPrep: { results: [], evidence: [...evidence, ...(over.accuracyExtra?.(now) ?? [])] } } : {}),
   });
 }
 
@@ -597,6 +608,44 @@ describe('Phase 47: journal fixes wait for the words of their answer', () => {
         expect(sorted([...due, ...waiting.map((w) => w.item)].map((e) => e.id))).toEqual(sorted(items.map((e) => e.id)));
       }),
       { numRuns: 150 },
+    );
+  });
+});
+
+describe('Phase 49: test prep numbers', () => {
+  const prep: TestPrepSettings = { on: true, target: 'L1' };
+
+  it('coverage = the lexicon\'s TOCFL words per level minus removed ones, Learned as the ledger counts it', () => {
+    fc.assert(
+      fc.property(stateArb, (s) => {
+        const ledger = ledgerOf(s, { testPrep: prep });
+        const cov = ledger.testCoverage();
+        let learned = 0;
+        let total = 0;
+        for (const row of cov.levels) {
+          const items = levelItems(row.level, WORDS).filter((i) => !ledger.removed(i));
+          expect(row.total).toBe(items.length);
+          expect(row.learned).toBe(items.filter((i) => ledger.learned(i)).length);
+          expect(row.learned).toBe(ledger.summary(items).learned);
+          learned += row.learned;
+          total += row.total;
+        }
+        expect(cov.upTo[cov.upTo.length - 1]).toMatchObject({ level: 'L1', learned, total });
+      }),
+      RUNS,
+    );
+  });
+
+  it('reading accuracy never reads the reading (Say it) skill, and is null under 20 answers', () => {
+    fc.assert(
+      fc.property(stateArb, (s) => {
+        const plain = ledgerOf(s, { testPrep: prep }).readingAccuracy();
+        const sayIt = (now: Date): Evidence[] =>
+          Array.from({ length: 30 }, (_, i) => ({ item: { kind: 'word', id: `w${i % 20}` }, skill: 'reading', kind: i % 2 ? 'review_good' : 'review_again', at: new Date(now.getTime() - i * 60_000) }) as Evidence);
+        expect(ledgerOf(s, { testPrep: prep, accuracyExtra: sayIt }).readingAccuracy()).toEqual(plain);
+        if (plain) expect(plain.total).toBeGreaterThanOrEqual(20);
+      }),
+      RUNS,
     );
   });
 });

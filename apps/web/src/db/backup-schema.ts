@@ -135,6 +135,9 @@ const EvidenceKindSchema = z.enum([
   'practice_hard',
   'practice_good',
   'practice_easy',
+  // Phase 49
+  'drill_correct',
+  'drill_wrong',
 ]);
 
 export const EvidenceSchema = z.object({
@@ -156,6 +159,7 @@ export const EvidenceSchema = z.object({
         'pinyin',
         'story',
         'tutor',
+        'drill',
       ]),
       refId: z.string().optional(),
       selfFixed: z.boolean().optional(),
@@ -605,6 +609,19 @@ export const TutorSessionRowSchema = z.object({
   updatedAt: z.coerce.date(),
 });
 
+/** Phase 49: one skill of a TOCFL result (a score or a level, whichever the report gives). */
+const TestSkillSchema = z.object({ score: z.number().optional(), level: LevelSchema.optional() });
+export const TestResultRowSchema = z.object({
+  id: z.string(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  kind: z.enum(['mock', 'official']),
+  listening: TestSkillSchema.optional(),
+  reading: TestSkillSchema.optional(),
+  deleted: z.boolean().optional(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
 export const BackupSchema = z.object({
   schemaVersion: z.number().int(),
   lexiconVersion: z.string().optional(),
@@ -635,6 +652,8 @@ export const BackupSchema = z.object({
   activeDays: z.array(z.object({ day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), at: z.coerce.date() })).default([]),
   // Phase 39: tutoring sessions. Defaulted so older backups still import.
   tutorSessions: z.array(TutorSessionRowSchema).default([]),
+  // Phase 49: TOCFL results. Defaulted so older backups still import.
+  testResults: z.array(TestResultRowSchema).default([]),
   // Phase 8 (schemaVersion 5): when each settings/meta key last changed, so
   // two devices can keep the later edit. Absent in older backups.
   settingsUpdatedAt: z.record(z.string(), z.coerce.date()).default({}),

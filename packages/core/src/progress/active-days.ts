@@ -24,6 +24,9 @@ export const ACTIVITY_EVIDENCE_KINDS: ReadonlySet<string> = new Set([
   'reading_tone_wrong',
   'reading_wrong',
   'known_check_passed',
+  // Phase 49: a test-drill answer
+  'drill_correct',
+  'drill_wrong',
 ]);
 
 /** Does this evidence row make its day active? */

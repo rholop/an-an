@@ -34,12 +34,14 @@ import { useTextbookSentences } from '../lib/textbook-data.js';
 import { useSetting } from '../lib/useSetting.js';
 import { useReadingSettings } from '../lib/reading.js';
 import { onStudyDirty } from '../lib/study-dirty.js';
-import { coverageLine } from '../lib/labels.js';
+import { coverageLine, TEST_DRILL } from '../lib/labels.js';
+import { useLedger } from '../lib/ledger.js';
 import { storyErrorText } from '../lib/story-errors.js';
 import { storyFakeOn, useStoryService } from '../lib/stories.js';
 import { showToast } from '../lib/toast.js';
 import { StoriesSection } from './StoriesSection.js';
 import { StoryView } from './StoryView.js';
+import { DrillPage } from './DrillPage.js';
 
 const SAMPLE = '我們搭捷運去便利商店，路上還遇到陳雅婷。他還沒還我錢，這件事情我做不了。';
 
@@ -116,6 +118,18 @@ function ReaderWithStories({ lexiconState }: { lexiconState: Extract<LexiconLoad
   const [fake, setFake] = useState(storyFakeOn());
   const stories = useStoryService(lexiconState.lexicon, fake);
   const [open, setOpen] = useState<StoryRecord | null>(null);
+  // Phase 49: Reader → Test drill (while TOCFL test prep is on)
+  const [drill, setDrill] = useState(false);
+  const prepOn = useLedger()?.testPrep().on ?? false;
+  if (drill)
+    return (
+      <DrillPage
+        onExit={() => {
+          setDrill(false);
+          window.scrollTo(0, 0);
+        }}
+      />
+    );
   if (open) {
     return (
       <StoryView
@@ -139,6 +153,14 @@ function ReaderWithStories({ lexiconState }: { lexiconState: Extract<LexiconLoad
   }
   return (
     <>
+      {prepOn && (
+        <section className="reader-drill-entry" data-testid="reader-test-drill">
+          <button type="button" onClick={() => setDrill(true)}>
+            {TEST_DRILL}
+          </button>{' '}
+          <span className="textbook-muted">Five short reading questions, about a minute each.</span>
+        </section>
+      )}
       <StoriesSection service={stories} lexicon={lexiconState.lexicon} level={level} onOpen={setOpen} onFakeChange={setFake} />
       <ReaderView lexiconState={lexiconState} />
     </>

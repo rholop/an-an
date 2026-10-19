@@ -84,7 +84,7 @@ describe('Phase 32: active days', () => {
     await seedV11(name, ownerHistory);
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(13);
+    expect(db.verno).toBe(14);
     const days = (await db.activeDays.toArray()).map((r) => r.day);
     expect(days).toEqual(Array.from({ length: 10 }, (_, i) => `2026-10-${String(i + 1).padStart(2, '0')}`));
     const flag = (await db.settings.get(STREAK_BACKFILL_KEY))?.value;

@@ -241,6 +241,13 @@ export function mergeBackups(local: Backup, remote: Backup): Backup {
       (s) => s.id,
       (s) => t(s.updatedAt),
     ),
+    // Phase 49: a result logged, edited or removed on either device keeps the later copy
+    testResults: mergeByKey(
+      local.testResults,
+      remote.testResults,
+      (r) => r.id,
+      (r) => t(r.updatedAt),
+    ),
   };
 }
 
@@ -267,6 +274,7 @@ export function sameContent(a: Backup, b: Backup): boolean {
       x.stories.map((s) => [s.id, t(s.updatedAt)]).sort(),
       x.activeDays.map((d) => [d.day, t(d.at)]).sort(),
       x.tutorSessions.map((s) => [s.id, t(s.updatedAt)]).sort(),
+      x.testResults.map((r) => [r.id, t(r.updatedAt)]).sort(),
     ]);
   return norm(a) === norm(b);
 }

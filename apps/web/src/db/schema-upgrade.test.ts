@@ -51,11 +51,13 @@ describe('schema upgrades (v6 phase 9, v8 phase 17)', () => {
 
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(13);
+    expect(db.verno).toBe(14);
     // Phase 24 (v10): the story library exists and starts empty
     expect(await db.stories.count()).toBe(0);
     // Phase 39 (v13): the tutoring classes table exists and starts empty
     expect(await db.tutorSessions.count()).toBe(0);
+    // Phase 49 (v14): the TOCFL results table exists and starts empty
+    expect(await db.testResults.count()).toBe(0);
     expect(await db.settings.get('currentLevel')).toMatchObject({ value: 'L2' });
     expect(await db.evidence.toArray()).toHaveLength(1);
     expect((await db.meta.get('readerEnabledAt'))?.value).toBeInstanceOf(Date);
@@ -142,7 +144,7 @@ describe('schema v9 (phase 20)', () => {
 
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(13);
+    expect(db.verno).toBe(14);
     const rows = await db.items.toArray();
     expect(rows.find((r) => r.item.id === 'w1')!.source).toBe('study_order');
     const imported = rows.filter((r) => r.item.id.startsWith('imp-'));
@@ -176,11 +178,45 @@ describe('schema v11 (phase 25)', () => {
 
     const db = new AnanDB(name);
     await db.open();
-    expect(db.verno).toBe(13);
+    expect(db.verno).toBe(14);
     const byUid = new Map((await db.evidence.toArray()).map((e) => [e.uid, e.item.id]));
     expect(byUid.get('b2')).toBe('gram-cong-dao');
     expect(byUid.get('b3')).toBe('gram-cong-dao-time');
     expect(byUid.get('ev-1')).toBe('w1');
+    db.close();
+  });
+});
+
+describe('schema v14 (Phase 49): TOCFL results', () => {
+  it('upgrades a v13 database without losing anything', async () => {
+    name = `anan-upgrade-v13-${Math.random()}`;
+    // the v13 stores, exactly as the app declares them (every table but testResults)
+    const probe = new AnanDB(`${name}-probe`);
+    await probe.open();
+    const stores = Object.fromEntries(
+      probe.tables
+        .filter((t) => t.name !== 'testResults')
+        .map((t) => [t.name, [t.schema.primKey.src, ...t.schema.indexes.map((i) => i.src)].join(', ')]),
+    );
+    probe.close();
+    await Dexie.delete(`${name}-probe`);
+    const old = new Dexie(name);
+    old.version(13).stores(stores);
+    await old.open();
+    await old.table('settings').put({ key: 'studyOrder', value: { enabled: true }, updatedAt: new Date('2026-10-01') });
+    await old.table('items').put({ pk: 'word:w1:recognition', item: { kind: 'word', id: 'w1' }, skill: 'recognition', state: 'review' });
+    await old.table('evidence').add({ item: { kind: 'word', id: 'w1' }, skill: 'recognition', kind: 'review_good', at: new Date('2026-10-01'), uid: 'e1' });
+    await old.table('activeDays').put({ day: '2026-10-01', at: new Date('2026-10-01') });
+    await old.table('tutorSessions').put({ id: 't1', date: '2026-10-13', tutor: 'Carl', updatedAt: new Date() });
+    const before = Object.fromEntries(await Promise.all(old.tables.map(async (t) => [t.name, await t.toArray()] as const)));
+    old.close();
+
+    const db = new AnanDB(name);
+    await db.open();
+    expect(db.verno).toBe(14);
+    for (const [table, rows] of Object.entries(before)) expect(await db.table(table).toArray(), table).toEqual(rows);
+    await db.testResults.put({ id: 'r1', date: '2026-11-20', kind: 'mock', reading: { score: 19 }, createdAt: new Date(), updatedAt: new Date() });
+    expect(await db.testResults.count()).toBe(1);
     db.close();
   });
 });
