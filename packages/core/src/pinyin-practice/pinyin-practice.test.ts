@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createEmptyCard } from 'ts-fsrs';
-import { ConfusableIndex } from '../confusables/index.js';
+import { ConfusableIndex, oddOneOut } from '../confusables/index.js';
 import { applyEvidence } from '../learner/apply-evidence.js';
 import type { SkillCard } from '../learner/types.js';
 import { pinyinToZhuyin, toPinyinNumeric } from '../pinyin.js';
@@ -210,7 +210,13 @@ describe('planPinyinSession', () => {
   it('all seven exercises appear, every word once, up to the session size', () => {
     const cards = ALL.map((x) => reading(x, -1));
     const plan = planPinyinSession({ queue: queueOf(cards), wordById: (id) => byId.get(id), now: NOW, seed: 's1', confusables: index, preferred: new Set(ALL.map((x) => x.id)) });
-    expect(kinds(plan)).toEqual(new Set(['tones', 'match', 'chars', 'type', 'which', 'sort', 'lookalike']));
+    // Phase 48: only words with close options get a choice exercise, so look across a few sessions
+    const seen = new Set(
+      ['s1', 's2', 's3', 's4', 's5', 's6'].flatMap((seed) => [
+        ...kinds(planPinyinSession({ queue: queueOf(cards), wordById: (id) => byId.get(id), now: NOW, seed, confusables: index, preferred: new Set(ALL.map((x) => x.id)) })),
+      ]),
+    );
+    expect(seen).toEqual(new Set(['tones', 'match', 'chars', 'type', 'which', 'sort', 'lookalike']));
     const ws = words(plan);
     expect(ws.length).toBe(30);
     expect(new Set(ws.map((x) => x.id)).size).toBe(ws.length);
@@ -255,8 +261,11 @@ describe('planPinyinSession', () => {
     const plan = planPinyinSession({ queue: queueOf(cards), wordById: (id) => byId.get(id), now: NOW, seed: 'q', confusables: index, only: ['chars', 'lookalike'] });
     for (const e of plan) {
       if (e.kind !== 'chars' && e.kind !== 'lookalike') continue;
-      expect(e.options).toHaveLength(4);
+      // Phase 48: 3 or 4 options, every wrong one close to the answer, never the odd one out
+      expect(e.options.length).toBeGreaterThanOrEqual(3);
+      expect(e.options.length).toBeLessThanOrEqual(4);
       expect(e.options.filter((o) => o.id === e.word.id)).toHaveLength(1);
+      expect(oddOneOut(e.word, e.options)).toBe(false);
       if (e.kind === 'lookalike') expect(e.options.filter((o) => o.pinyinNumeric === e.word.pinyinNumeric)).toHaveLength(1);
     }
   });

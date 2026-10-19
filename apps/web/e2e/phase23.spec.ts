@@ -151,7 +151,8 @@ test.describe('Pinyin & tones on a phone', () => {
           await ex.locator(`[data-testid="pinyin-match-reading"][data-id="${id}"]`).tap();
         }
       } else if (kind === 'chars' || kind === 'lookalike') {
-        await expect(ex.getByTestId('pinyin-pick-option')).toHaveCount(4);
+        // Phase 48: 3 or 4 options (fewer rather than filler)
+        expect(await ex.getByTestId('pinyin-pick-option').count()).toBeGreaterThanOrEqual(3);
         await ex.locator('[data-testid="pinyin-pick-option"][data-right="true"]').tap();
       } else if (kind === 'which') {
         await expect(ex.getByTestId('pinyin-which-option')).toHaveCount(2);

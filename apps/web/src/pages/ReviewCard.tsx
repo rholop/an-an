@@ -7,6 +7,7 @@ import {
   homeLessonOfTags,
   nextLeechTreatment,
   normaliseAnswer,
+  pickIsHard,
   reviewFace,
   sandhiNotes,
   shuffleIn,
@@ -85,12 +86,16 @@ export function ReviewCard({
   const answeredAt = new Date(card.updatedAt).getTime();
   const options = useMemo(() => {
     if (!word || !confusables || card.skill !== 'production') return null;
+    // Phase 48: every option close to the answer, never the odd one out, harder after 2 right picks;
+    // 3 options when only 2 are close, Recall when fewer (never filler)
     const picks = confusables.index.pick(word, {
       seed: `${card.item.id}|${answeredAt}`,
       preferred: confusables.preferred,
+      hard: pickIsHard(card),
+      ...(confusables.levelCap ? { levelCap: confusables.levelCap } : {}),
       ...(confusables.confusions.get(word.id) ? { confusedWith: confusables.confusions.get(word.id)! } : {}),
     });
-    return picks.length >= 3 ? shuffleIn(word, picks.slice(0, 3), `pick|${answeredAt}`) : null;
+    return picks.length >= 2 ? shuffleIn(word, picks.slice(0, 3), `pick|${answeredAt}`) : null;
   }, [word, confusables, card]);
   let face = grammar ? 'grammar' : reviewFace(card);
   if (face === 'pick' && !options) face = 'recall';

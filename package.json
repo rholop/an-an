@@ -24,6 +24,8 @@
     "curriculum:content": "pnpm --filter @anan/data-pipeline curriculum:content",
     "audit:curriculum": "pnpm --filter @anan/data-pipeline audit:curriculum",
     "audit:data": "pnpm --filter @anan/data-pipeline audit:data",
+    "build:distractors": "pnpm --filter @anan/data-pipeline build:distractors",
+    "audit:distractors": "pnpm --filter @anan/data-pipeline audit:distractors",
     "stories:build": "pnpm --filter @anan/data-pipeline stories:build",
     "eval:journal": "pnpm --filter @anan/proxy journal-cloze-eval",
     "eval:stories": "pnpm --filter @anan/proxy stories-eval",

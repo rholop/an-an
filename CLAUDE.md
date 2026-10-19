@@ -51,6 +51,13 @@ The game is **purely text-based: no audio, TTS, listening or speech features.** 
 - No LLM API keys in the browser, ever. The web app talks only to `/apps/proxy`.
 - LLM output is **data to validate**, never trusted: every LLM response is JSON, schema-checked (zod), then checked against the lexicon in code.
 - Text shown to the learner: traditional characters only. A simplified-character or mainland-term check runs on all generated Chinese.
+- **Multiple-choice options must be challenging (owner rule, 2026-10-19: "I need the options to be challenging").** It applies to every choice exercise: Review Pick the Mandarin, Cloze multiple choice and word bank, grammar choices, Listening and Pinyin & tones.
+  - The right answer must **never be the odd one out**.
+  - Each wrong option must be close to **the answer** on at least one axis: a shared or look-alike character, the same or a near sound, or the same meaning category (part of speech plus topic, e.g. 平常 → 常常 / 非常 / 平安; 冰淇淋 → 冰紅茶 / 巧克力 / 三明治).
+  - The wrong options must not share a character, pattern or category **with each other** that the answer lacks (no 廚師 / 醫師 / 老師 against 平常, no 星期四 / 星期五 / 星期日 against 冰淇淋).
+  - Never use random same-length filler.
+  - None may also be a correct answer.
+  - Single source: `core/confusables`, checked by `oddOneOut()` in tests and the `pnpm audit:distractors` CI report (Phase 48).
 
 ## Shared core types (the contract between phases)
 
@@ -220,6 +227,7 @@ Report, "✓ Correct", "Nothing due right now") also come from `labels.ts`.
 | 44 | Character breakdown on every card: after the answer (every face, Water all too), a word of 2+ characters shows each character, its reading in this word and a short meaning ("Characters"; leeches keep their own panel); meanings from the character's own lexicon entry (first 1–2 senses) else the Unihan gloss shortened in the pipeline (`shortCharGloss`, `data/build/char-glosses.brief.v1.json`, `build:char-glosses`) shipped as hashed `lexicon/char-glosses.v1.json`; collapsed to "Characters ▸" when it would not fit a laptop; Settings → Review → "Show what each character means" (`flashcardCharMeanings`, on by default) | `phase-briefs/44-character-breakdown-on-every-card.md` |
 | 45 | Practise a lesson's or class's words any time: "Practise these words (N)" (lesson page, class page, empty/done Vocab steps), the Review card for faces each word already has, 20 a round, the first answer per card per day is a real review, later ones are `practice_*` (Again sets priority) | `phase-briefs/45-practice-lesson-words-any-time.md` |
 | 47 | Cloze always has word games: practice clozes outside the review session (Phase 45 counting), journal fixes wait for words you know (Reported → Add to review), at most 3 fixes a session and never side by side | `phase-briefs/47-cloze-always-has-word-games.md` |
+| 48 | Challenging options everywhere (owner rule in Conventions): offline candidates per word on char/shape/sound/meaning axes (`pnpm build:distractors`, optional checked Gemini suggestions), every wrong option close to the answer, no odd one out (`oddOneOut`), mixed axes, fewer options rather than filler, harder as the card strengthens; same for Cloze, Pinyin, Listening and grammar; `pnpm audit:distractors` in CI | `phase-briefs/48-challenging-options.md`, rule and how it works in `docs/distractors.md`, report `docs/distractors-audit.md` |
 
 Ship each phase small and working before starting the next. Scope creep is the main project risk.
 

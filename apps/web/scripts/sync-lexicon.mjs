@@ -27,3 +27,12 @@ if (existsSync(GLOSSES)) {
 } else {
   console.warn('sync-lexicon: no data/build/char-glosses.brief.v1.json (pnpm --filter @anan/data-pipeline build:char-glosses)');
 }
+
+// Phase 48: the offline distractor candidates (`pnpm build:distractors`) every choice exercise reads.
+const DISTRACTORS = path.join(REPO_ROOT, 'data/build/distractors.v1.json');
+if (existsSync(DISTRACTORS)) {
+  const d = publishDataFile(DISTRACTORS, 'lexicon/distractors.v1.json');
+  console.log(`sync-lexicon: copied ${DISTRACTORS} -> public/${d}`);
+} else {
+  console.warn('sync-lexicon: no data/build/distractors.v1.json (pnpm build:distractors): choice options use the code axes alone');
+}

@@ -1,27 +1,63 @@
 import { useEffect, useState } from 'react';
-import { ConfusableIndex, confusionsFromEvidence, levelIndex, type Lexicon, type Word } from '@anan/core';
+import {
+  confusableIndexFor,
+  confusionsFromEvidence,
+  LEVEL_IDS,
+  levelIndex,
+  type ConfusableIndex,
+  type DistractorTable,
+  type Level,
+  type Lexicon,
+  type Word,
+} from '@anan/core';
 import { db, learnerService, onSessionChange } from '../db/instance.js';
 import { peekCurrentLevel } from './current-level.js';
+import { dataUrl, onDataFilesChanged } from './data-files.js';
 
 /**
- * Phase 23: what the look-alike pickers need (Review's "Pick the Mandarin", the Pinyin & tones
- * tab): one index per lexicon, the learner's known / due / current-level words (plausible options)
- * and their past mix-ups (wrong picks). Loaded once per page visit.
+ * Phase 23 / Phase 48: what every choice exercise needs (Review's "Pick the Mandarin", Cloze, the
+ * Pinyin & tones tab): one index per lexicon with the offline candidate table
+ * (`lexicon/distractors.v1.json`), the learner's known / due / current-level words (plausible
+ * options), their level + 1 (the highest level of an option they haven't met) and their past
+ * mix-ups (wrong picks). Loaded once per page visit. Tutoring and custom words are in the lexicon
+ * the moment they are saved, and the index finds their candidates from the same code axes (Part C).
  */
 export interface ConfusableContext {
   index: ConfusableIndex;
   preferred: ReadonlySet<string>;
   confusions: ReadonlyMap<string, ReadonlySet<string>>;
+  /** Phase 48 B.4: the learner's level + 1. */
+  levelCap?: Level;
 }
 
-const indexes = new WeakMap<Lexicon, ConfusableIndex>();
+export const DISTRACTORS_FILE = 'lexicon/distractors.v1.json';
+
+let table: Promise<DistractorTable | undefined> | null = null;
+function loadTable(): Promise<DistractorTable | undefined> {
+  table ??= (async () => {
+    try {
+      const res = await fetch(await dataUrl(DISTRACTORS_FILE));
+      return res.ok ? ((await res.json()) as DistractorTable) : undefined;
+    } catch {
+      table = null; // offline before it was ever cached: the code axes alone until next time
+      return undefined;
+    }
+  })();
+  return table;
+}
+onDataFilesChanged((changed) => {
+  if (changed.includes(DISTRACTORS_FILE)) table = null;
+});
+
+/** The lexicon's index (shared with core's Cloze and Listening builders), with the table once loaded. */
 export function confusableIndex(lexicon: Lexicon): ConfusableIndex {
-  let i = indexes.get(lexicon);
-  if (!i) {
-    i = new ConfusableIndex(lexicon.allWords());
-    indexes.set(lexicon, i);
-  }
-  return i;
+  return confusableIndexFor(lexicon);
+}
+
+/** The learner's level + 1 (options they haven't met go no higher). */
+export function optionLevelCap(): Level {
+  const li = levelIndex(peekCurrentLevel().level);
+  return LEVEL_IDS[Math.min(Math.max(li, 0) + 1, LEVEL_IDS.length - 1)]!;
 }
 
 let cached: { lexicon: Lexicon; value: Promise<Omit<ConfusableContext, 'index'>> } | null = null;
@@ -31,16 +67,19 @@ onSessionChange(() => {
 
 async function loadLearnerSide(lexicon: Lexicon): Promise<Omit<ConfusableContext, 'index'>> {
   const now = new Date();
-  const [ledger, picks] = await Promise.all([
+  const [ledger, picks, t] = await Promise.all([
     learnerService.ledger(now),
     db.evidence.filter((e) => typeof e.context?.pickedId === 'string').toArray(),
+    loadTable(),
   ]);
+  const index = confusableIndexFor(lexicon);
+  if (t) index.setTable(t);
   const li = levelIndex(peekCurrentLevel().level);
   const preferred = new Set<string>(ledger.comprehensible().ids);
   // the current level's words are plausible too (never above it)
   if (li >= 0)
     for (const w of lexicon.allWords() as Word[]) if (w.source === 'tocfl' && w.level && levelIndex(w.level) === li) preferred.add(w.id);
-  return { preferred, confusions: confusionsFromEvidence(picks) };
+  return { preferred, confusions: confusionsFromEvidence(picks), levelCap: optionLevelCap() };
 }
 
 export function useConfusables(lexicon: Lexicon | null): ConfusableContext | null {
@@ -51,7 +90,7 @@ export function useConfusables(lexicon: Lexicon | null): ConfusableContext | nul
     if (!cached || cached.lexicon !== lexicon) cached = { lexicon, value: loadLearnerSide(lexicon) };
     void cached.value
       .then((side) => !cancelled && setValue({ index: confusableIndex(lexicon), ...side }))
-      .catch(() => !cancelled && setValue({ index: confusableIndex(lexicon), preferred: new Set(), confusions: new Map() }));
+      .catch(() => !cancelled && setValue({ index: confusableIndex(lexicon), preferred: new Set(), confusions: new Map(), levelCap: optionLevelCap() }));
     return () => {
       cancelled = true;
     };

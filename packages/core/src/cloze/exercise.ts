@@ -2,7 +2,7 @@ import { MAINLAND_TERMS } from '../data/mainland-terms.generated.js';
 import type { Lexicon } from '../lexicon.js';
 import { segment } from '../segment.js';
 import type { Word } from '../types.js';
-import { pickDistractors } from './distractors.js';
+import { confusableIndexFor, seedFromRng, type ConfusableOptions } from '../confusables/index.js';
 import type { ClozeSourceCandidate } from './source.js';
 
 function shuffle<T>(arr: T[], rng: () => number): T[] {
@@ -51,21 +51,42 @@ export interface ChoiceOption {
   isCorrect: boolean;
 }
 
-function buildChoices(answer: Word, lexicon: Lexicon, count: number, preferConfusable: boolean, rng: () => number): ChoiceOption[] {
-  const distractors = pickDistractors(answer, lexicon, { count: count - 1, preferConfusable }, rng);
+/** Phase 48: what the learner knows and their level, for fair options (`core/confusables`). */
+export type ChoiceContext = Pick<ConfusableOptions, 'preferred' | 'confusedWith' | 'levelCap' | 'seed'> & {
+  /** The question shows a sentence (default): no meaning neighbours, they could fit it too. */
+  withSentence?: boolean;
+};
+
+/**
+ * Phase 48: the answer and up to `count - 1` distractors from `core/confusables`: every one close
+ * to the answer (a shared or look-alike character, a similar sound; a meaning neighbour only when
+ * there is no sentence), never the odd one out, never filler. Fewer options when fewer are close:
+ * under 3, the caller asks it typed instead.
+ */
+function buildChoices(answer: Word, lexicon: Lexicon, count: number, rng: () => number, ctx: ChoiceContext): ChoiceOption[] {
+  const distractors = confusableIndexFor(lexicon).pick(answer, {
+    n: count - 1,
+    mode: ctx.withSentence === false ? 'any' : 'cloze',
+    seed: ctx.seed ?? seedFromRng(rng),
+    ...(ctx.preferred ? { preferred: ctx.preferred } : {}),
+    ...(ctx.confusedWith ? { confusedWith: ctx.confusedWith } : {}),
+    ...(ctx.levelCap ? { levelCap: ctx.levelCap } : {}),
+  });
   const options: ChoiceOption[] = [{ word: answer, isCorrect: true }, ...distractors.map((word) => ({ word, isCorrect: false }))];
   return shuffle(options, rng);
 }
 
-/** Rung 1 (phase doc §3): "choose from 4-6 chips incl. the answer" — 5 total,
- * distractors picked without confusable preference (anything same-level). */
-export function buildWordBankOptions(answer: Word, lexicon: Lexicon, rng: () => number = Math.random): ChoiceOption[] {
-  return buildChoices(answer, lexicon, 5, false, rng);
+/** Fewest options a choice cloze shows (Phase 48: fewer rather than filler; below this, typed). */
+export const MIN_CHOICE_OPTIONS = 3;
+
+/** Rung 1 (phase doc §3): "choose from 4-6 chips incl. the answer" — up to 5. */
+export function buildWordBankOptions(answer: Word, lexicon: Lexicon, rng: () => number = Math.random, ctx: ChoiceContext = {}): ChoiceOption[] {
+  return buildChoices(answer, lexicon, 5, rng, ctx);
 }
 
-/** Rung 2: "multiple choice with confusable distractors" — 4 total. */
-export function buildMultipleChoiceOptions(answer: Word, lexicon: Lexicon, rng: () => number = Math.random): ChoiceOption[] {
-  return buildChoices(answer, lexicon, 4, true, rng);
+/** Rung 2: "multiple choice with confusable distractors" — up to 4. */
+export function buildMultipleChoiceOptions(answer: Word, lexicon: Lexicon, rng: () => number = Math.random, ctx: ChoiceContext = {}): ChoiceOption[] {
+  return buildChoices(answer, lexicon, 4, rng, ctx);
 }
 
 export interface ReorderExercise {

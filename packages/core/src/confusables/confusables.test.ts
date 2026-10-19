@@ -55,10 +55,11 @@ const 汽車 = w('汽車', 'qì chē', 'car; automobile');
 const 車子 = w('車子', 'chē zi', 'car; vehicle');
 const 吃 = w('吃', 'chī', 'to eat');
 const 賈 = w('賈', 'jiǎ', 'merchant (surname)', { source: 'supplement', level: null });
+const 老化 = w('老化', 'lǎo huà', 'to age (of people, materials)', { source: 'supplement', level: null });
 
 const ALL = [
   買, 賣, 是, 事, 市, 十, 老師, 老實, 教師, 老人, 爸爸, 父親, 還hai, 還huan, 己, 已, 人, 入, 未, 末, 喝, 渴,
-  捷運, 機車, 公車, 火車, 電車, 汽車, 車子, 吃, 賈,
+  捷運, 機車, 公車, 火車, 電車, 汽車, 車子, 吃, 賈, 老化,
 ];
 const index = new ConfusableIndex(ALL);
 
@@ -89,13 +90,16 @@ describe('confusables (Phase 23 Part B)', () => {
     [人, 入],
     [未, 末],
     [喝, 渴],
-  ])('%s: three same-length options, with its classic look-alike, none also right', (target, alike) => {
-    const picks = index.pick(target, { seed: 's' });
-    expect(picks).toHaveLength(3);
-    expect(picks.every((p) => [...p.headword].length === [...target.headword].length)).toBe(true);
-    expect(picks.map((p) => p.headword)).toContain(alike.headword);
-    expect(picks.some((p) => alsoCorrect(target, p))).toBe(false);
-    expect(new Set(picks.map((p) => p.headword)).size).toBe(3);
+  ])('%s: its classic look-alike, every option close, none also right, never filler', (target, alike) => {
+    const picks = index.pickDetailed(target, { seed: 's' });
+    expect(picks.map((p) => p.word.headword)).toContain(alike.headword);
+    expect(picks.length).toBeLessThanOrEqual(3);
+    for (const p of picks) {
+      expect([...p.word.headword]).toHaveLength([...target.headword].length);
+      expect(p.axes.size).toBeGreaterThan(0);
+      expect(alsoCorrect(target, p.word)).toBe(false);
+    }
+    expect(new Set(picks.map((p) => p.word.headword)).size).toBe(picks.length);
   });
 
   it('教師 is never offered for 老師 (it would also be right)', () => {
@@ -115,8 +119,8 @@ describe('confusables (Phase 23 Part B)', () => {
   });
 
   it('obscure dictionary extras are not offered unless the learner knows them', () => {
-    expect(index.pick(買, { seed: 's' }).map((p) => p.headword)).not.toContain('賈');
-    expect(index.pick(買, { seed: 's', preferred: new Set([賈.id]) }).map((p) => p.headword)).toContain('賈');
+    expect(index.pick(老師, { seed: 's' }).map((p) => p.headword)).not.toContain('老化');
+    expect(index.pick(老師, { seed: 's', preferred: new Set([老化.id]) }).map((p) => p.headword)).toContain('老化');
   });
 
   it('mix-ups are read from wrong picks, both ways', () => {

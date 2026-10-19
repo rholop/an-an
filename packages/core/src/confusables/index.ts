@@ -1,4 +1,4 @@
-// Phase 23 Part B: look-alike options for "Pick the Mandarin", the homophone picker and the
+// Phase 23 Part B, Phase 48: look-alike options for "Pick the Mandarin", the homophone picker and the
 // look-alike characters exercise. For a target word it picks distractors of the same length, scored
 // from what really gets confused: shape (a shared character, a shared phonetic component, the same
 // radical with a similar stroke count, a short hand-checked list of classic pairs), sound (the same
@@ -7,9 +7,20 @@
 // Pure; the seed makes the choice repeatable.
 
 import { CHAR_SHAPES } from '../data/char-shapes.generated.js';
+import { MAINLAND_TERMS } from '../data/mainland-terms.generated.js';
 import { glossFor } from '../gloss/context.js';
 import { hashText } from '../hash.js';
-import type { Word } from '../types.js';
+import { displayLevel } from '../level-estimate.js';
+import { levelIndex } from '../levels.config.js';
+import type { Level, Word } from '../types.js';
+import { meaningCategories, samePosFamily } from './categories.js';
+import { axesBetween, nearSyllable, oddOneOut, type DistractorAxis } from './fair.js';
+import type { DistractorTable } from './table.js';
+
+export * from './categories.js';
+export * from './fair.js';
+export * from './grammar.js';
+export * from './table.js';
 
 export interface CharShape {
   radical: number;
@@ -113,11 +124,20 @@ function glossPhrases(w: Pick<Word, 'glossEn' | 'senses' | 'primarySenseId' | 't
   return [...out];
 }
 
+/** Phase 48: Taiwan and mainland forms of the same word (計程車 / 出租車), both ways. */
+const mainlandTwins = new Map<string, Set<string>>();
+for (const t of MAINLAND_TERMS) {
+  const forms = [t.taiwan, ...t.mainland, ...(t.also ?? [])];
+  for (const f of forms) mainlandTwins.set(f, new Set([...(mainlandTwins.get(f) ?? []), ...forms.filter((x) => x !== f)]));
+}
+
 /** Would `other` also be a right answer for `target`? Same characters (another sense), a variant,
- * or a synonym (a gloss phrase in common, or most of their gloss words shared). */
+ * a Taiwan / mainland pair (Phase 48), or a synonym (a gloss phrase in common, or most of their
+ * gloss words shared). */
 export function alsoCorrect(target: Word, other: Word): boolean {
   if (other.id === target.id || other.headword === target.headword) return true;
   if (target.variants.includes(other.headword) || other.variants.includes(target.headword)) return true;
+  if (mainlandTwins.get(target.headword)?.has(other.headword)) return true;
   const a = glossPhrases(target);
   const b = new Set(glossPhrases(other));
   if (a.some((p) => b.has(p))) return true;
@@ -133,15 +153,36 @@ export function alsoCorrect(target: Word, other: Word): boolean {
 
 const toneless = (w: Pick<Word, 'pinyinNumeric'>) =>
   w.pinyinNumeric.trim().toLowerCase().split(/\s+/).map((s) => s.replace(/[0-5]$/, '')).join(' ');
+const nearSound = (w: Pick<Word, 'pinyinNumeric'>) => toneless(w).split(' ').map(nearSyllable).join(' ');
 
-/** Words used for distractors: the official list, textbook and the learner's own words (dictionary
- * extras only when the learner knows them). */
-const mainWord = (w: Word) => w.source !== 'supplement';
+/** Words used for distractors: the official list, textbook and the learner's own words; dictionary
+ * extras only with a level of their own (lesson extras such as 運動衫) or when the learner knows
+ * them (an estimate from easy characters is not enough: 每常, 周口店). */
+const mainWord = (w: Word) => w.source !== 'supplement' || w.level !== null;
+/** Names never: tagged ones, and dictionary extras glossed like a name ("Zhoukoudian …"). */
+const isName = (w: Word) =>
+  w.tags.includes('name') || w.tags.includes('proper-noun') || (w.source === 'supplement' && /^[A-Z][a-z]/.test(w.glossEn));
 
-export type ConfusableMode = 'any' | 'visual' | 'sound';
+/**
+ * Which axes count:
+ * - `any` (Review Pick, a Cloze question without a sentence): all of them;
+ * - `visual` (Pinyin & tones look-alikes): character and shape;
+ * - `sound` (the homophone picker, Listening): sound;
+ * - `cloze` (Cloze with a sentence): character, shape and sound, and never a word in the answer's
+ *   meaning category (it could fit the sentence too: 常常 for 平常, 巧克力 for 冰淇淋).
+ * The learner's own mix-ups always count.
+ */
+export type ConfusableMode = 'any' | 'visual' | 'sound' | 'cloze';
+
+const MODE_AXES: Record<ConfusableMode, ReadonlySet<DistractorAxis>> = {
+  any: new Set(['char', 'shape', 'sound', 'meaning', 'confused']),
+  visual: new Set(['char', 'shape', 'confused']),
+  sound: new Set(['sound', 'confused']),
+  cloze: new Set(['char', 'shape', 'sound', 'confused']),
+};
 
 export interface ConfusableOptions {
-  /** How many distractors (default 3). */
+  /** How many distractors at most (default 3). Fewer when fewer are close: never filler. */
   n?: number;
   mode?: ConfusableMode;
   /** Known, due and current-level word ids: plausible distractors come from these first. */
@@ -149,27 +190,59 @@ export interface ConfusableOptions {
   /** Word ids the learner mixed up with this target before. */
   confusedWith?: ReadonlySet<string>;
   seed?: string;
+  /** Phase 48 B.4: the highest level an option the learner hasn't met may have (their level + 1;
+   * the word's own level is always allowed). Absent: any level. */
+  levelCap?: Level;
+  /** Phase 48 B.5: after 2 right picks in a row, the closest candidates (shared character + same
+   * category) instead of a mix of axes. */
+  hard?: boolean;
+  /** Never a word read exactly the same (Listening: you'd hear both; look-alikes with pinyin shown). */
+  excludeSameReading?: boolean;
+}
+
+/** One option and the axes it is close to the answer on. */
+export interface ConfusableCandidate {
+  word: Word;
+  axes: ReadonlySet<DistractorAxis>;
 }
 
 /** A per-lexicon index so a session's distractors are found without scanning every word each time. */
 export class ConfusableIndex {
-  private readonly byLength = new Map<number, Word[]>();
   private readonly bySound = new Map<string, Word[]>();
+  private readonly bySyllable = new Map<string, Word[]>();
   private readonly byChar = new Map<string, Word[]>();
+  private readonly byCategory = new Map<string, Word[]>();
   private readonly byId = new Map<string, Word>();
   private readonly similarCache = new Map<string, string[]>();
+  private readonly candidateCache = new Map<string, ConfusableCandidate[]>();
   private readonly allChars: string[];
+  private table: DistractorTable | undefined;
 
-  constructor(words: readonly Word[]) {
+  constructor(words: readonly Word[], opts: { table?: DistractorTable } = {}) {
+    this.table = opts.table;
     for (const w of words) {
       this.byId.set(w.id, w);
+      if (!w.pinyinNumeric || isName(w)) continue;
       const len = [...w.headword].length;
-      if (!mainWord(w) || !w.pinyinNumeric) continue;
-      push(this.byLength, len, w);
-      push(this.bySound, toneless(w), w);
+      push(this.bySound, `${len}|${nearSound(w)}`, w);
+      toneless(w)
+        .split(' ')
+        .forEach((s, i) => push(this.bySyllable, `${len}|${i}|${s}`, w));
       for (const ch of new Set(w.headword)) push(this.byChar, ch, w);
+      for (const c of meaningCategories(w)) push(this.byCategory, `${len}|${c}`, w);
     }
     this.allChars = [...this.byChar.keys()];
+  }
+
+  /** Phase 48: attach the offline candidate table (loaded after the lexicon). */
+  setTable(table: DistractorTable | undefined): void {
+    if (table === this.table) return;
+    this.table = table;
+    this.candidateCache.clear();
+  }
+
+  word(id: string): Word | undefined {
+    return this.byId.get(id);
   }
 
   /** Characters in the lexicon that look like `ch`. */
@@ -182,95 +255,159 @@ export class ConfusableIndex {
     return out;
   }
 
-  /** Up to `n` distractors of the same length as `target`, best first. Fewer only when the
-   * lexicon has nothing else of that length. */
+  /**
+   * Every same-length word close to `target` on at least one axis, with its axes: from the table
+   * (Part A, with any checked Gemini suggestions) and the same code axes computed here (so tutoring
+   * and custom words have candidates too). Never a word that would also be right, never a name.
+   * Learner-independent, cached per word.
+   */
+  candidates(target: Word): ConfusableCandidate[] {
+    const hit = this.candidateCache.get(target.id);
+    if (hit) return hit;
+    const chars = [...target.headword];
+    const len = chars.length;
+    const pool = new Map<string, Word>();
+    const tableAxes = new Map<string, Set<DistractorAxis>>();
+    const add = (w: Word | undefined) => {
+      if (w && w.id !== target.id && [...w.headword].length === len && w.pinyinNumeric && !isName(w)) pool.set(w.id, w);
+    };
+    for (const w of this.bySound.get(`${len}|${nearSound(target)}`) ?? []) add(w);
+    if (len >= 2) toneless(target).split(' ').forEach((s, i) => (this.bySyllable.get(`${len}|${i}|${s}`) ?? []).forEach(add));
+    for (const ch of chars) {
+      for (const w of this.byChar.get(ch) ?? []) add(w);
+      for (const s of this.similarChars(ch)) for (const w of this.byChar.get(s) ?? []) add(w);
+    }
+    for (const c of meaningCategories(target)) for (const w of this.byCategory.get(`${len}|${c}`) ?? []) if (samePosFamily(target, w)) add(w);
+    for (const [id, axes] of this.table?.words[target.id] ?? []) {
+      const w = this.byId.get(id);
+      add(w);
+      if (w && axes.split('+').some((a) => a === 'suggest' || a === 'meaning')) tableAxes.set(w.id, new Set(['meaning']));
+    }
+    const out: ConfusableCandidate[] = [];
+    for (const w of pool.values()) {
+      if (alsoCorrect(target, w)) continue;
+      const axes = axesBetween(target, w, charSimilarity);
+      for (const a of tableAxes.get(w.id) ?? []) axes.add(a);
+      if (axes.size > 0) out.push({ word: w, axes });
+    }
+    this.candidateCache.set(target.id, out);
+    return out;
+  }
+
+  /** Up to `n` distractors of the same length as `target`, best first. Every one is close to the
+   * answer on an axis, they mix axes, and the set never makes the answer the odd one out (Phase 48).
+   * Fewer (or none) when fewer qualify: the caller shows fewer options or another face. */
   pick(target: Word, opts: ConfusableOptions = {}): Word[] {
+    return this.pickDetailed(target, opts).map((c) => c.word);
+  }
+
+  pickDetailed(target: Word, opts: ConfusableOptions = {}): ConfusableCandidate[] {
     const n = opts.n ?? 3;
     const mode = opts.mode ?? 'any';
+    const allowed = MODE_AXES[mode];
     const seed = opts.seed ?? '';
     const chars = [...target.headword];
     const len = chars.length;
     const preferred = opts.preferred ?? new Set<string>();
     const confused = opts.confusedWith ?? new Set<string>();
-    const pool = new Map<string, Word>();
-    const add = (w: Word | undefined) => {
-      if (w && [...w.headword].length === len && w.pinyinNumeric) pool.set(w.id, w);
-    };
-    if (mode !== 'visual') for (const w of this.bySound.get(toneless(target)) ?? []) add(w);
-    if (mode !== 'sound')
-      for (const ch of chars) {
-        for (const w of this.byChar.get(ch) ?? []) add(w);
-        for (const s of this.similarChars(ch)) for (const w of this.byChar.get(s) ?? []) add(w);
-      }
-    if (mode === 'sound') {
-      // near-homophones: one syllable the same, for words of 1–2 syllables
-      for (const ch of chars) for (const w of this.byChar.get(ch) ?? []) add(w);
+    const ownLevel = displayLevel(target);
+    const cap =
+      opts.levelCap === undefined
+        ? Infinity
+        : Math.max(levelIndex(opts.levelCap), ownLevel ? levelIndex(ownLevel) : -1);
+
+    const byId = new Map(this.candidates(target).map((c) => [c.word.id, { word: c.word, axes: new Set(c.axes) }]));
+    for (const id of confused) {
+      const w = this.byId.get(id);
+      if (!w || w.id === target.id || [...w.headword].length !== len || !w.pinyinNumeric || alsoCorrect(target, w)) continue;
+      const c = byId.get(id) ?? { word: w, axes: axesBetween(target, w, charSimilarity) };
+      c.axes.add('confused');
+      byId.set(id, c);
     }
-    for (const id of confused) add(this.byId.get(id));
-    for (const id of preferred) add(this.byId.get(id));
+    const tNum = target.pinyinNumeric.trim().toLowerCase();
+    const eligible = (w: Word): boolean => {
+      if (opts.excludeSameReading && w.pinyinNumeric.trim().toLowerCase() === tNum) return false;
+      if (preferred.has(w.id) || confused.has(w.id)) return true;
+      // dictionary extras and the learner's own words only when known; a level the learner can read
+      if (!mainWord(w) || w.source === 'custom') return false;
+      const lv = w.level;
+      return lv !== null && levelIndex(lv) <= cap;
+    };
 
     const tSyl = toneless(target).split(' ');
-    const tNum = target.pinyinNumeric.trim().toLowerCase();
-    const score = (w: Word): number => {
-      let s = 0;
+    const score = (c: { word: Word; axes: Set<DistractorAxis> }): number => {
+      const w = c.word;
       const wc = [...w.headword];
-      if (mode !== 'sound') {
+      let s = 0;
+      if (c.axes.has('char')) s += (wc.filter((ch, i) => ch === chars[i]).length / len) * 2 + 1;
+      if (c.axes.has('shape')) {
         let vis = 0;
-        for (let i = 0; i < len; i++) {
-          if (wc[i] === chars[i]) vis += 0.5;
-          else vis += charSimilarity(chars[i]!, wc[i]!);
-        }
-        // some position must actually look different-but-alike to count as a look-alike
-        if (wc.some((c, i) => c !== chars[i] && charSimilarity(chars[i]!, c) > 0)) vis += 0.5;
-        s += (vis / len) * 3;
-        if (wc.some((c) => chars.includes(c))) s += 0.3;
+        for (let i = 0; i < len; i++) if (wc[i] !== chars[i]) vis += charSimilarity(chars[i]!, wc[i]!);
+        s += (vis / len) * 3 + 0.5;
       }
-      if (mode !== 'visual') {
+      if (c.axes.has('sound')) {
         const wNum = w.pinyinNumeric.trim().toLowerCase();
         const wSyl = toneless(w).split(' ');
-        if (wNum === tNum) s += 3;
-        else if (wSyl.join(' ') === tSyl.join(' ')) s += 2.5;
-        else s += (wSyl.filter((x, i) => x === tSyl[i]).length / len) * 1.2;
+        s += wNum === tNum ? 3 : wSyl.join(' ') === tSyl.join(' ') ? 2.5 : (wSyl.filter((x, i) => x === tSyl[i]).length / len) * 1.5;
       }
-      if (confused.has(w.id)) s += 4;
+      if (c.axes.has('meaning')) s += 2;
+      if (c.axes.has('confused')) s += 4;
+      if (opts.hard) {
+        s += (c.axes.size - 1) * 1.5;
+        if (c.axes.has('char') && c.axes.has('meaning')) s += 2;
+      }
       if (preferred.has(w.id)) s += 1;
-      else if (w.source === 'supplement' || (w.source === 'tocfl' && w.level === null)) s -= 2;
       return s;
     };
     const tie = (w: Word) => parseInt(hashText(`${seed}|${target.id}|${w.id}`), 36) / 2 ** 32;
-    const ranked = [...pool.values()]
-      .filter((w) => !alsoCorrect(target, w))
-      .map((w) => ({ w, s: score(w) + tie(w) * 0.2 }))
-      .filter((x) => x.s > 0.6)
+    const ranked = [...byId.values()]
+      .map((c) => ({ ...c, axes: new Set([...c.axes].filter((a) => allowed.has(a))) }))
+      .filter((c) => c.axes.size > 0 && eligible(c.word))
+      // Cloze: a word in the answer's meaning category could complete the sentence too
+      .filter((c) => mode !== 'cloze' || !(byId.get(c.word.id)!.axes.has('meaning') && !c.axes.has('confused')))
+      .map((c) => ({ ...c, s: score(c) + tie(c.word) * 0.3 }))
       .sort((a, b) => b.s - a.s);
-    const out: Word[] = [];
+
+    const out: Array<{ word: Word; axes: Set<DistractorAxis> }> = [];
     const usedHead = new Set([target.headword]);
-    for (const { w } of ranked) {
-      if (out.length >= n) break;
-      if (usedHead.has(w.headword) || out.some((o) => alsoCorrect(o, w))) continue;
-      usedHead.add(w.headword);
-      out.push(w);
-    }
-    // Fallback: same-length words the learner knows, then any main word of that length.
-    if (out.length < n) {
-      const fill = [
-        ...[...preferred].map((id) => this.byId.get(id)).filter((w): w is Word => !!w && [...w.headword].length === len),
-        ...(this.byLength.get(len) ?? []).filter((w) => w.source === 'tocfl' && w.level !== null),
-      ];
-      const sorted = fill
-        .map((w, i) => ({ w, k: i < preferred.size ? tie(w) : 1 + tie(w) }))
-        .sort((a, b) => a.k - b.k)
-        .map((x) => x.w);
-      for (const w of sorted) {
+    const fits = (c: { word: Word }) =>
+      !usedHead.has(c.word.headword) &&
+      !out.some((o) => alsoCorrect(o.word, c.word)) &&
+      !oddOneOut(target, [...out.map((o) => o.word), c.word]);
+    const take = (c: (typeof ranked)[number]) => {
+      usedHead.add(c.word.headword);
+      out.push(c);
+    };
+    // Mix the axes: a mix-up first, then one look-alike, one sound-alike and one meaning neighbour,
+    // so no single shortcut finds the answer (hard cards: the closest first instead).
+    if (!opts.hard)
+      for (const group of [['confused'], ['char', 'shape'], ['sound'], ['meaning']] as DistractorAxis[][]) {
         if (out.length >= n) break;
-        if (usedHead.has(w.headword) || alsoCorrect(target, w) || out.some((o) => alsoCorrect(o, w))) continue;
-        usedHead.add(w.headword);
-        out.push(w);
+        const c = ranked.find((x) => group.some((a) => x.axes.has(a)) && fits(x));
+        if (c) take(c);
       }
+    for (const c of ranked) {
+      if (out.length >= n) break;
+      if (fits(c)) take(c);
     }
-    return out;
+    return out.sort((a, b) => score(b) - score(a));
   }
 }
+
+const lexiconIndexes = new WeakMap<object, ConfusableIndex>();
+
+/** One index per loaded word list (Review, Cloze, Pinyin, Listening and the leech panel share it). */
+export function confusableIndexFor(lexicon: { allWords(): readonly Word[] }): ConfusableIndex {
+  let i = lexiconIndexes.get(lexicon);
+  if (!i) {
+    i = new ConfusableIndex(lexicon.allWords());
+    lexiconIndexes.set(lexicon, i);
+  }
+  return i;
+}
+
+/** A seed string from an rng (callers that only have an rng). */
+export const seedFromRng = (rng: () => number): string => Math.floor(rng() * 2 ** 32).toString(36);
 
 function push<K, V>(m: Map<K, V[]>, k: K, v: V): void {
   const a = m.get(k);

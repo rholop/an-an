@@ -19,6 +19,7 @@ import {
   buildReorderExercise,
   buildMixedSession,
   buildWordBankOptions,
+  MIN_CHOICE_OPTIONS,
   clozeAnswerEvidence,
   clozePracticeEvidence,
   clozeSessionMeta,
@@ -88,6 +89,7 @@ import { ensureListeningCards, useListeningClips, useListeningEnabled } from '..
 import { SpeakerButton } from '../components/SpeakerButton.js';
 import { EmptySprout } from '../components/PlantIcons.js';
 import { useCurrentLevel } from '../lib/current-level.js';
+import { useConfusables } from '../lib/confusables.js';
 import { allChatLines, allJournalSentences } from '../db/queries.js';
 import { useLexicon } from '../lib/useLexicon.js';
 import { useScenarios } from '../lib/useScenarios.js';
@@ -911,6 +913,23 @@ export function ExerciseView({
   };
 
   const exercise = item.source ? buildClozeExercise(item.word, item.source, lexicon) : null;
+  // Phase 48: choice options from core/confusables (close to the answer, never the odd one out,
+  // never filler); with fewer than 3 the question is asked typed instead.
+  const confusables = useConfusables(lexicon);
+  const withSentence = exercise !== null;
+  const options = useMemo(() => {
+    if (item.exerciseKind === 'typed' || !confusables) return null;
+    const ctx = {
+      withSentence,
+      preferred: confusables.preferred,
+      ...(confusables.levelCap ? { levelCap: confusables.levelCap } : {}),
+      ...(confusables.confusions.get(item.word.id) ? { confusedWith: confusables.confusions.get(item.word.id)! } : {}),
+    };
+    return item.exerciseKind === 'word_bank'
+      ? buildWordBankOptions(item.word, lexicon, Math.random, ctx)
+      : buildMultipleChoiceOptions(item.word, lexicon, Math.random, ctx);
+  }, [confusables, item, lexicon, withSentence]);
+  const typed = item.exerciseKind === 'typed' || (options !== null && options.length < MIN_CHOICE_OPTIONS);
 
   if (item.exerciseKind === 'typed' && useReorder && item.source) {
     return (
@@ -925,7 +944,7 @@ export function ExerciseView({
     );
   }
 
-  if (item.exerciseKind === 'typed') {
+  if (typed) {
     return (
       <TypedExerciseView
         {...shared}
@@ -939,11 +958,13 @@ export function ExerciseView({
     );
   }
 
+  if (!options) return <p>Loading…</p>;
   return (
     <ChoiceExerciseView
       {...shared}
       item={item}
       lexicon={lexicon}
+      options={options}
       exercise={exercise}
       answered={answered}
       onAnswer={handleAnswer}
@@ -973,6 +994,7 @@ function SentenceWithBlank({
 function ChoiceExerciseView({
   item,
   lexicon,
+  options,
   exercise,
   answered,
   onAnswer,
@@ -981,16 +1003,13 @@ function ChoiceExerciseView({
 }: {
   item: SessionItem;
   lexicon: Lexicon;
+  /** Phase 48: built once by ExerciseView from core/confusables. */
+  options: ChoiceOption[];
   exercise: ReturnType<typeof buildClozeExercise>;
   answered: Outcome | null;
   onAnswer: (o: Outcome) => void;
   onNext: () => void;
 } & ViewShared) {
-  const [options] = useState<ChoiceOption[]>(() =>
-    item.exerciseKind === 'word_bank'
-      ? buildWordBankOptions(item.word, lexicon)
-      : buildMultipleChoiceOptions(item.word, lexicon),
-  );
   const [picked, setPicked] = useState<string | null>(null);
 
   function choose(option: ChoiceOption) {

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import type { GrammarItem, Lesson, Lexicon, SentenceBankEntry } from '@anan/core';
 import {
   buildGrammarCloze,
+  confusableIndexFor,
   glossFor,
   newSessionSeed,
   orderSession,
@@ -46,22 +47,30 @@ export function buildQuickCheck(
   const proper = new Set(lesson.properNouns);
   const words = [...new Set(lesson.vocab)].filter((id) => !proper.has(id)).flatMap((id) => lexicon.byId(id) ?? []);
   const qs: Q[] = [];
+  // Phase 48: options from core/confusables (close to the word, never the odd one out, never
+  // filler), the lesson's words first; a word with fewer than 2 close options isn't asked (and so
+  // isn't marked: it is studied as usual).
+  const index = confusableIndexFor(lexicon);
+  const lessonIds = new Set(words.map((x) => x.id));
+  const gloss = (x: Parameters<typeof glossFor>[0]) => glossFor(x, { textbook: true }).split(/[;,(]/)[0]!.trim();
   for (const w of words) {
-    const others = shuffle(words.filter((x) => x.id !== w.id), rng);
-    const gloss = (x: Parameters<typeof glossFor>[0]) => glossFor(x, { textbook: true }).split(/[;,(]/)[0]!.trim();
+    const picks = index
+      .pick(w, { seed: `${seed}|${w.id}`, preferred: lessonIds })
+      .filter((x, i, all) => gloss(x) !== gloss(w) && all.findIndex((y) => gloss(y) === gloss(x)) === i);
+    if (picks.length < 2) continue;
     qs.push({
       item: { kind: 'word', id: w.id },
       skill: 'recognition',
       prompt: w.headword,
       answer: gloss(w),
-      options: shuffle([gloss(w), ...others.slice(0, 3).map(gloss)], rng),
+      options: shuffle([gloss(w), ...picks.map(gloss)], rng),
     });
     qs.push({
       item: { kind: 'word', id: w.id },
       skill: 'production',
       prompt: gloss(w),
       answer: w.headword,
-      options: shuffle([w.headword, ...others.slice(0, 3).map((x) => x.headword)], rng),
+      options: shuffle([w.headword, ...picks.map((x) => x.headword)], rng),
     });
   }
   const pool = grammar.flatMap((g) => g.focus ?? []);

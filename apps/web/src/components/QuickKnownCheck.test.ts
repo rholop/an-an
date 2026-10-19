@@ -1,35 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import { Lexicon, type Lesson, type Word } from '@anan/core';
+import { Lexicon, oddOneOut, pinyinToZhuyin, toPinyinNumeric, type Lesson, type Word } from '@anan/core';
 import { buildQuickCheck } from './QuickKnownCheck.js';
 
 // Phase 19 Part A: the lesson's "I already know this lesson" check showed each word's
 // recognition card immediately followed by its production card, in book order.
-const w = (id: string, headword: string, glossEn: string): Word => ({
+const w = (id: string, headword: string, pinyin: string, glossEn: string): Word => ({
   id,
   headword,
   variants: [],
   pos: ['N'],
   level: 'N1',
   source: 'tocfl',
-  pinyin: '',
-  pinyinNumeric: '',
-  zhuyin: '',
+  pinyin,
+  pinyinNumeric: toPinyinNumeric(pinyin),
+  zhuyin: pinyinToZhuyin(pinyin),
   glossEn,
   chars: [...headword],
   tags: [],
 });
 
+// Phase 48: words with close neighbours (a shared character), so every word has fair options
 const WORDS = [
-  w('w1', '捷運', 'MRT'),
-  w('w2', '機車', 'scooter'),
-  w('w3', '便利商店', 'convenience store'),
-  w('w4', '垃圾車', 'garbage truck'),
-  w('w5', '老師', 'teacher'),
-  w('w6', '學生', 'student'),
-  w('w7', '咖啡', 'coffee'),
-  w('w8', '茶', 'tea'),
-  w('w9', '朋友', 'friend'),
-  w('w10', '臺灣', 'Taiwan'),
+  w('w1', '老師', 'lǎo shī', 'teacher'),
+  w('w2', '老人', 'lǎo rén', 'old person'),
+  w('w3', '老家', 'lǎo jiā', 'hometown'),
+  w('w4', '學生', 'xué shēng', 'student'),
+  w('w5', '學校', 'xué xiào', 'school'),
+  w('w6', '學期', 'xué qí', 'semester'),
+  w('w7', '先生', 'xiān shēng', 'Mr.; husband'),
+  w('w8', '生日', 'shēng rì', 'birthday'),
+  w('w9', '日期', 'rì qí', 'date'),
+  w('w10', '日本', 'rì běn', 'Japan'),
 ];
 
 const lesson: Lesson = {
@@ -72,5 +73,13 @@ describe('buildQuickCheck (Phase 19)', () => {
   it('still asks both directions for each word when the lesson is long enough', () => {
     const qs = buildQuickCheck(lesson, lex, [], [], 'seed-y');
     expect(qs).toHaveLength(WORDS.length * 2);
+  });
+
+  it('Phase 48: production options are close to the word and the answer is never the odd one out', () => {
+    for (const q of buildQuickCheck(lesson, lex, [], [], 'seed-z')) {
+      if (q.skill !== 'production') continue;
+      expect(q.options.length).toBeGreaterThanOrEqual(3);
+      expect(oddOneOut(q.answer, q.options)).toBe(false);
+    }
   });
 });

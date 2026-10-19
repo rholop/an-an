@@ -58,6 +58,12 @@ jobs:
       - name: Data id audit
         run: pnpm audit:data
 
+      # Phase 48: Review Pick options for every N1–L1 and textbook word (a beginner's known words,
+      # fixed seed): no odd one out, every option close to the answer, at most 5% shown as Recall
+      # (writes docs/distractors-audit.md).
+      - name: Distractor audit
+        run: pnpm audit:distractors
+
       - name: Unit tests
         run: pnpm test
 

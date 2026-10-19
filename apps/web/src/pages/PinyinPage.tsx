@@ -110,6 +110,7 @@ export function PinyinPage({ onOpenListen }: { onOpenListen?: () => void } = {})
         confusables: confusables.index,
         preferred: confusables.preferred,
         confusions: confusables.confusions,
+        ...(confusables.levelCap ? { levelCap: confusables.levelCap } : {}),
         extra,
       });
       if (cancelled) return;

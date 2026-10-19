@@ -75,9 +75,9 @@ describe('pickNewContextSentence', () => {
 
 describe('pickConfusableContrast', () => {
   it('picks a same-level, shared-character confusable word', () => {
-    const target = word({ id: 't1', headword: '快樂', pos: ['Vs'] });
-    const confusable = word({ id: 'c1', headword: '快速', pos: ['Vs'] });
-    const unrelated = word({ id: 'u1', headword: '桌子', pos: ['N'] });
+    const target = word({ id: 't1', headword: '快樂', pos: ['Vs'], pinyinNumeric: 'kuai4 le4' });
+    const confusable = word({ id: 'c1', headword: '快速', pos: ['Vs'], pinyinNumeric: 'kuai4 su4' });
+    const unrelated = word({ id: 'u1', headword: '桌子', pos: ['N'], pinyinNumeric: 'zhuo1 zi5' });
     const lexicon = new Lexicon([target, confusable, unrelated]);
 
     const result = pickConfusableContrast(target, lexicon, () => 0);

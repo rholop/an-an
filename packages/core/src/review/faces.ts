@@ -27,6 +27,12 @@ export function productionRung(c: Pick<SkillCard, 'prodRung' | 'state' | 'card'>
   return startsAtRecall(c) ? 'recall' : 'pick';
 }
 
+/** Phase 48 B.5: harder options after 2 right picks in a row (the card stays at Pick until Recall is
+ * ready): the closest candidates instead of a mix of axes. */
+export function pickIsHard(c: Pick<SkillCard, 'prodRung' | 'prodStreak'>, cfg: ReviewFaceConfig = REVIEW_FACE_CONFIG): boolean {
+  return c.prodRung !== 'recall' && (c.prodStreak ?? 0) >= cfg.pickToRecall;
+}
+
 /** The face a card shows in Review. */
 export function reviewFace(c: Pick<SkillCard, 'item' | 'skill' | 'prodRung' | 'state' | 'card'>): ReviewFace {
   if (c.item.kind === 'grammar') return 'grammar';

@@ -12,7 +12,9 @@ import {
   buildReorderExercise,
   buildWordBankOptions,
   LE_PLACEMENT_EXAMPLES,
+  MIN_CHOICE_OPTIONS,
 } from './exercise.js';
+import { oddOneOut } from '../confusables/index.js';
 
 function word(partial: Partial<Word> & Pick<Word, 'id' | 'headword'>): Word {
   return {
@@ -86,6 +88,41 @@ describe('buildWordBankOptions / buildMultipleChoiceOptions', () => {
   it('never offers two "correct" options', () => {
     const options = buildMultipleChoiceOptions(TARGET, lexicon);
     expect(options.filter((o) => o.isCorrect)).toHaveLength(1);
+  });
+});
+
+describe('Phase 48: choice clozes take fair options from core/confusables', () => {
+  const real = (id: string, headword: string, pinyinNumeric: string, glossEn: string, level: Word['level'] = 'L1') =>
+    word({ id, headword, pinyinNumeric, glossEn, level });
+  const 冰淇淋 = real('ice', '冰淇淋', 'bing1 qi2 lin2', 'ice cream');
+  const words = [
+    冰淇淋,
+    real('tea', '冰紅茶', 'bing1 hong2 cha2', 'iced black tea'),
+    real('cho', '巧克力', 'qiao3 ke4 li4', 'chocolate'),
+    real('san', '三明治', 'san1 ming2 zhi4', 'sandwich'),
+    real('ice2', '冰塊兒', 'bing1 kuai4 er5', 'ice cube'),
+    real('fri', '星期五', 'xing1 qi2 wu3', 'Friday', 'N1'),
+    real('thu', '星期四', 'xing1 qi2 si4', 'Thursday', 'N1'),
+    real('sun', '星期日', 'xing1 qi2 ri4', 'Sunday', 'N1'),
+  ];
+  const lex = new Lexicon(words);
+  const known = new Set(words.map((x) => x.id));
+
+  it('with a sentence: close options only, no meaning neighbour (巧克力 would fit 我想吃… too), never the odd one out', () => {
+    for (let k = 0; k < 10; k++) {
+      const options = buildMultipleChoiceOptions(冰淇淋, lex, () => k / 10, { preferred: known });
+      const heads = options.map((o) => o.word.headword);
+      expect(heads).toContain('冰淇淋');
+      expect(heads).not.toContain('巧克力');
+      expect(heads.filter((h) => h.startsWith('星期')).length).toBeLessThan(2);
+      expect(oddOneOut(冰淇淋, options.map((o) => o.word))).toBe(false);
+    }
+  });
+
+  it('without a sentence (meaning prompt) meaning neighbours may come', () => {
+    const options = buildWordBankOptions(冰淇淋, lex, () => 0.3, { preferred: known, withSentence: false });
+    expect(options.length).toBeGreaterThanOrEqual(MIN_CHOICE_OPTIONS);
+    expect(oddOneOut(冰淇淋, options.map((o) => o.word))).toBe(false);
   });
 });
 

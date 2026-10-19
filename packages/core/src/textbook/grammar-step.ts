@@ -2,6 +2,7 @@ import type { Lexicon } from '../lexicon.js';
 import { segment } from '../segment.js';
 import type { SentenceBankEntry } from '../cloze/sentence.js';
 import type { GrammarItem } from '../types.js';
+import { fairGrammarDistractors } from '../confusables/grammar.js';
 
 /**
  * Phase 25 Part B: the lesson grammar step, rebuilt.
@@ -295,10 +296,9 @@ export function buildFillExercise(
   const { at, answer } = blank;
   const twins = new Set(INTERCHANGEABLE.filter((set) => set.includes(answer)).flat());
   const wrong = [...new Set(pool)].filter((w) => w !== answer && !twins.has(w) && !s.zh.includes(w));
-  const ranked = shuffle(wrong, rng).sort(
-    (a, b) => Math.abs([...a].length - [...answer].length) - Math.abs([...b].length - [...answer].length),
-  );
-  const options = shuffle([answer, ...ranked.slice(0, GRAMMAR_STEP_CONFIG.fillOptions - 1)], rng);
+  // Phase 48: markers that compete in the same slot first, never the answer as the odd one out
+  const picked = fairGrammarDistractors(answer, wrong, GRAMMAR_STEP_CONFIG.fillOptions - 1, (a) => shuffle(a, rng));
+  const options = shuffle([answer, ...picked], rng);
   if (options.length < 3) return undefined;
   return {
     type: 'fill',

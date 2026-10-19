@@ -22,6 +22,11 @@ import { gradeSentenceDictation, gradeWordDictation, listeningEvidenceKind } fro
 import { toneCheckEligible, tonePattern, wordTones } from './tones.js';
 
 const NOW = new Date('2026-10-04T00:00:00Z');
+// real glosses: two ids like mai3 / mai4 would otherwise read as the same gloss (also correct)
+const GLOSS: Record<string, string> = {
+  mai3: 'to buy', mai4: 'to sell', mai2: 'to bury', tang1: 'soup', tang2: 'sugar', tang3: 'to lie down',
+  ls: 'teacher', lsh: 'honest', lss: 'mouse', kf: 'coffee', kl: 'curry', kfee: 'card fee',
+};
 const w = (id: string, headword: string, pinyin: string, zhuyin: string, over: Partial<Word> = {}): Word => ({
   id,
   headword,
@@ -32,7 +37,7 @@ const w = (id: string, headword: string, pinyin: string, zhuyin: string, over: P
   pinyin: '',
   pinyinNumeric: pinyin,
   zhuyin,
-  glossEn: id,
+  glossEn: GLOSS[id] ?? id,
   chars: [...headword],
   tags: [],
   ...over,
@@ -48,7 +53,13 @@ const GG = w('gg', '哥哥', 'ge1 ge5', 'ㄍㄜ ˙ㄍㄜ');
 const NI = w('ni', '你好', 'ni3 hao3', 'ㄋㄧˇ ㄏㄠˇ');
 const BU = w('bu', '不是', 'bu2 shi4', 'ㄅㄨˊ ㄕˋ');
 const YI = w('yi', '一個', 'yi2 ge5', 'ㄧˊ ˙ㄍㄜ');
-const WORDS = [MAI3, MAI4, TANG1, TANG2, LS, LSH, KF, GG, NI, BU, YI];
+// Phase 48: enough sound-alikes that hear-and-pick never needs filler
+const MAI2 = w('mai2', '埋', 'mai2', 'ㄇㄞˊ');
+const TANG3 = w('tang3', '躺', 'tang3', 'ㄊㄤˇ');
+const KL = w('kl', '咖哩', 'ka1 li3', 'ㄎㄚ ㄌㄧˇ');
+const KFEE = w('kfee', '卡費', 'ka3 fei4', 'ㄎㄚˇ ㄈㄟˋ');
+const LSS = w('lss', '老鼠', 'lao3 shu3', 'ㄌㄠˇ ㄕㄨˇ');
+const WORDS = [MAI3, MAI4, TANG1, TANG2, LS, LSH, KF, GG, NI, BU, YI, MAI2, TANG3, KL, KFEE, LSS];
 const lexicon = new Lexicon(WORDS);
 
 describe('tones', () => {
@@ -76,7 +87,10 @@ describe('distractors sound alike', () => {
     const pick = buildHearPick(TANG1, WORDS, () => 0.5)!;
     expect(pick.options).toContain('糖');
     expect(pick.options).toContain('湯');
-    expect(new Set(pick.options).size).toBe(4);
+    // Phase 48: 3 options rather than filler (湯 / 糖 / 躺 are all tang)
+    expect(new Set(pick.options)).toEqual(new Set(['湯', '糖', '躺']));
+    expect(soundAlikeDistractors(KF, WORDS, 3, () => 0.5).map((x) => x.headword).sort()).toEqual(['卡費', '咖哩'].sort());
+    expect(soundAlikeDistractors(NI, WORDS, 3, () => 0.5)).toEqual([]);
   });
 });
 

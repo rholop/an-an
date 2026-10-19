@@ -1,3 +1,4 @@
+import { fairGrammarDistractors } from '../confusables/grammar.js';
 import type { GrammarItem } from '../types.js';
 
 export interface GrammarClozeExercise {
@@ -51,12 +52,9 @@ export function buildGrammarCloze(
   const wrong = [...new Set(distractorPool)].filter(
     (w) => w !== answer && !sentence.zh.includes(w),
   );
-  // Prefer distractors of a similar length so the options look alike.
-  const ranked = shuffle(wrong, rng).sort(
-    (a, b) =>
-      Math.abs([...a].length - [...answer!].length) - Math.abs([...b].length - [...answer!].length),
-  );
-  const options = shuffle([answer, ...ranked.slice(0, 3)], rng);
+  // Phase 48: same-slot markers first, then a similar length; never the answer as the odd one out.
+  const picked = fairGrammarDistractors(answer, wrong, 3, (a) => shuffle(a, rng));
+  const options = shuffle([answer, ...picked], rng);
   if (options.length < 3) return undefined;
   return {
     grammarId: grammar.id,

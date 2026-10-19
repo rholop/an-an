@@ -11,7 +11,7 @@ import { glossFor } from '../gloss/context.js';
 import type { ConfusableIndex } from '../confusables/index.js';
 import type { SkillCard } from '../learner/types.js';
 import { orderSession, seededRng, seededShuffle } from '../session/orderSession.js';
-import type { Evidence, Word } from '../types.js';
+import type { Evidence, Level, Word } from '../types.js';
 
 export const PINYIN_PRACTICE_CONFIG = {
   /** Items (words) per session. */
@@ -365,6 +365,8 @@ export interface PinyinSessionInput {
   /** Known, due and current-level word ids (plausible options). */
   preferred?: ReadonlySet<string>;
   confusions?: ReadonlyMap<string, ReadonlySet<string>>;
+  /** Phase 48: the learner's level + 1 (options they haven't met go no higher). */
+  levelCap?: Level;
   size?: number;
   /** Also practise reading cards that aren't due (the "Practise anyway" button). */
   extra?: boolean;
@@ -454,6 +456,7 @@ function single(kind: PinyinExerciseKind, w: Word, input: PinyinSessionInput): P
   const opts = {
     seed,
     ...(input.preferred ? { preferred: input.preferred } : {}),
+    ...(input.levelCap ? { levelCap: input.levelCap } : {}),
     ...(confusedWith ? { confusedWith } : {}),
   };
   switch (kind) {
@@ -471,14 +474,15 @@ function single(kind: PinyinExerciseKind, w: Word, input: PinyinSessionInput): P
       const picks = input.confusables?.pick(w, { ...opts, mode: 'sound' }) ?? [];
       // one right answer: the English hint must tell them apart, and none may share the reading
       const options = picks.filter((p) => p.pinyin !== w.pinyin || glossFor(p) !== glossFor(w));
-      if (options.length < 3) return undefined;
+      // Phase 48: fewer options rather than filler (3 at least)
+      if (options.length < 2) return undefined;
       return { kind, word: w, options: shuffleIn(w, options.slice(0, 3), `${seed}|chars`) };
     }
     case 'lookalike': {
-      const picks = input.confusables?.pick(w, { ...opts, mode: 'visual' }) ?? [];
+      const picks = input.confusables?.pick(w, { ...opts, mode: 'visual', excludeSameReading: true }) ?? [];
       // the pinyin is shown too, so an option with the same reading would also be right
       const options = picks.filter((p) => p.pinyinNumeric !== w.pinyinNumeric);
-      if (options.length < 3) return undefined;
+      if (options.length < 2) return undefined;
       return { kind, word: w, options: shuffleIn(w, options.slice(0, 3), `${seed}|look`) };
     }
     default:

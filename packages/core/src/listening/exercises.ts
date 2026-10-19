@@ -3,7 +3,8 @@ import type { SkillCard } from '../learner/types.js';
 import { practiceStrengthOf } from '../progress/terms.js';
 import type { Lexicon } from '../lexicon.js';
 import type { SentenceBankEntry } from '../cloze/sentence.js';
-import { levelIndex, type Level } from '../levels.config.js';
+import { LEVEL_IDS, levelIndex, type Level } from '../levels.config.js';
+import { ConfusableIndex, confusableIndexFor, seedFromRng } from '../confusables/index.js';
 import type { Word } from '../types.js';
 import { orderSession, seededRng, type OrderedSession, type SessionCard } from '../session/orderSession.js';
 import { unlocksListening } from '../progress/terms.js';
@@ -61,49 +62,44 @@ const shuffle = <T,>(arr: readonly T[], rng: () => number): T[] => {
 
 const key = (w: Pick<Word, 'pinyinNumeric'>) => toneless(w).join(' ');
 
+const poolIndexes = new WeakMap<readonly Word[], ConfusableIndex>();
+const indexOf = (pool: readonly Word[] | ConfusableIndex): ConfusableIndex => {
+  if (pool instanceof ConfusableIndex) return pool;
+  let i = poolIndexes.get(pool);
+  if (!i) poolIndexes.set(pool, (i = new ConfusableIndex(pool)));
+  return i;
+};
+
 /**
  * Distractors that SOUND alike: the same syllables with different tones first (買/賣, 湯/糖),
- * then words sharing a syllable (老師/老實). Falls back to same-length words so the
- * exercise still works when the lexicon is sparse around a word.
+ * then words sharing a syllable (老師/老實). Phase 48: from `core/confusables` (sound axis), never
+ * a word read exactly the same (you'd hear both), never the odd one out, never filler: fewer when
+ * fewer are close. Unknown words up to one level above the word's own.
  */
 export function soundAlikeDistractors(
   word: Word,
-  pool: readonly Word[],
+  pool: readonly Word[] | ConfusableIndex,
   n: number,
   rng: () => number = Math.random,
 ): Word[] {
-  const myKey = key(word);
-  const syl = toneless(word);
-  const shown = (w: Word) => w.headword;
-  const used = new Set<string>([word.headword]);
-  const out: Word[] = [];
-  const take = (cands: Word[]) => {
-    for (const w of shuffle(cands, rng)) {
-      if (out.length >= n) return;
-      if (used.has(shown(w))) continue;
-      used.add(shown(w));
-      out.push(w);
-    }
-  };
-  const real = pool.filter((w) => w.id !== word.id && w.pinyinNumeric && [...w.headword].length > 0);
-  take(real.filter((w) => key(w) === myKey && w.pinyinNumeric !== word.pinyinNumeric));
-  take(
-    real.filter((w) => {
-      const s = toneless(w);
-      return s.length === syl.length && s.some((x, i) => x === syl[i]);
-    }),
-  );
-  take(real.filter((w) => toneless(w).length === syl.length && w.level === word.level));
-  return out;
+  const own = word.level ?? word.estimatedLevel;
+  const next = own ? LEVEL_IDS[Math.min(levelIndex(own) + 1, LEVEL_IDS.length - 1)] : undefined;
+  return indexOf(pool).pick(word, {
+    n,
+    mode: 'sound',
+    excludeSameReading: true,
+    seed: seedFromRng(rng),
+    ...(next ? { levelCap: next } : {}),
+  });
 }
 
 export function buildHearPick(
   word: Word,
-  pool: readonly Word[],
+  pool: readonly Word[] | ConfusableIndex,
   rng: () => number = Math.random,
 ): HearPick | undefined {
   const d = soundAlikeDistractors(word, pool, 3, rng);
-  if (d.length < 3) return undefined;
+  if (d.length < 2) return undefined; // Phase 48: 3 options rather than filler
   return {
     type: 'hear_pick',
     wordId: word.id,
@@ -302,7 +298,7 @@ export function planListenSession(input: ListenPlanInput): OrderedSession<PlanIt
     const options: Array<() => Exercise | undefined> = [];
     const verified = input.hasClip('word', word.id, true);
     for (const t of unlockedTypes(stab, config)) {
-      if (t === 'hear_pick') options.push(() => buildHearPick(word, all, rng));
+      if (t === 'hear_pick') options.push(() => buildHearPick(word, confusableIndexFor(input.lexicon), rng));
       else if (t === 'hear_type') options.push(() => ({ type: 'hear_type', wordId: word.id, headword: word.headword }));
       else if (t === 'tone_check' && verified) options.push(() => buildToneCheck(word, rng));
       else if (t === 'tone_pair' && verified) options.push(() => buildTonePair(word, pairs, rng));
@@ -316,7 +312,9 @@ export function planListenSession(input: ListenPlanInput): OrderedSession<PlanIt
           );
       }
     }
-    for (const pick of shuffle(options, rng)) {
+    // Phase 48: a word with too few sound-alikes for a fair hear-and-pick is typed instead
+    options.push(() => ({ type: 'hear_type', wordId: word.id, headword: word.headword }));
+    for (const pick of [...shuffle(options.slice(0, -1), rng), options[options.length - 1]!]) {
       const exercise = pick();
       if (!exercise) continue;
       plan.push({ exercise, ...(q.card ? { card: q.card } : {}), wordIds: [word.id] });

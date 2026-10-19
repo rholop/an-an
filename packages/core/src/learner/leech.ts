@@ -1,4 +1,4 @@
-import { pickDistractors } from '../cloze/distractors.js';
+import { confusableIndexFor, seedFromRng } from '../confusables/index.js';
 import { selectClozeSource, type ClozeSourceCandidate, type SelectClozeSourceOptions } from '../cloze/source.js';
 import type { Lexicon } from '../lexicon.js';
 import type { Word } from '../types.js';
@@ -41,13 +41,11 @@ export interface ConfusableContrast {
 
 /**
  * contrast_confusable leech treatment (phase doc §7): "side-by-side MC with
- * the word it's confused with" — reuses the same confusable-ranking
- * distractors.ts already uses for rung-2 multiple choice, just asking for
- * one. Returns null if the lexicon has no eligible confusable at all (e.g.
- * a word alone at its level).
+ * the word it's confused with": Phase 48's picker (`core/confusables`), its
+ * closest candidate. Returns null if nothing is close to the word.
  */
 export function pickConfusableContrast(target: Word, lexicon: Lexicon, rng: () => number = Math.random): ConfusableContrast | null {
-  const [confusable] = pickDistractors(target, lexicon, { count: 1, preferConfusable: true }, rng);
+  const [confusable] = confusableIndexFor(lexicon).pick(target, { n: 1, hard: true, seed: seedFromRng(rng) });
   return confusable ? { target, confusable } : null;
 }
 
