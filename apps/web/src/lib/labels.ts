@@ -238,6 +238,8 @@ export const FEEDBACK_CORRECT = '✓ Correct';
 export const FEEDBACK_WRONG_TONE = 'Right word, wrong tone';
 export const feedbackWrong = (answer: string, reading?: string): string =>
   `✗ Not quite — it's ${answer}${reading ? ` (${reading})` : ''}`;
+/** The lead-in when the answer follows as annotated text (the grammar step), so it isn't written twice. */
+export const FEEDBACK_WRONG_LEAD = "✗ Not quite — it's";
 
 // --- empty states ---------------------------------------------------------------------------
 export const NOTHING_DUE = 'Nothing due right now. Nice work.';

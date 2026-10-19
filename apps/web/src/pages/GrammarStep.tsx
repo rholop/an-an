@@ -25,7 +25,7 @@ import { excludedZh } from '../lib/cloze-reports.js';
 import {
   CHECK,
   FEEDBACK_CORRECT,
-  feedbackWrong,
+  FEEDBACK_WRONG_LEAD,
   GRAMMAR_BUILD_PROMPT,
   GRAMMAR_PICK_PROMPT,
   GRAMMAR_REORDER_PROMPT,
@@ -246,7 +246,8 @@ interface ViewProps<E> {
 function Result({ ok, zh, lexicon, script, onNext }: { ok: boolean; zh: string; lexicon: Lexicon; script: AnnotationScript; onNext: () => void }) {
   return (
     <p role="status">
-      {ok ? FEEDBACK_CORRECT : feedbackWrong(zh)}{' '}
+      {/* the answer once, with its readings (written twice it wrapped past a short laptop window) */}
+      {ok ? FEEDBACK_CORRECT : FEEDBACK_WRONG_LEAD}{' '}
       <span lang="zh-Hant" className="textbook-cloze-answered">
         <AnnotatedInline text={zh} lexicon={lexicon} script={script} textbook />
       </span>{' '}

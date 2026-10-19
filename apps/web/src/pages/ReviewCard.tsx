@@ -109,8 +109,11 @@ export function ReviewCard({
     <div className={`review-card review-card--${face}`} data-testid="review-card" data-face={face}>
       <div className="review-card-skill">
         {isNew && <span className="review-new-chip" data-testid="review-new">New · </span>}
-        <span data-testid="review-face">{FACE_LABEL[face]}</span>
-        {devPosition && <span data-testid="dev-session-position"> · {devPosition}</span>}
+        {/* the dev-only session position is a tooltip, so the dev card lays out as production does
+            (the laptop-fit checks measure it) */}
+        <span data-testid="review-face" title={devPosition}>
+          {FACE_LABEL[face]}
+        </span>
         {lesson !== undefined && (
           <span className="textbook-badge" lang="zh-Hant">
             {lessonLabel(lesson.n, lesson.bookId)}
