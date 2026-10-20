@@ -15,7 +15,7 @@ import type { Lesson, Textbook } from '../textbook/types.js';
 import { lessonCoreItems, lessonCoreWordIds, lessonExtraWordIds, lessonTaughtItems, levelItems, ProgressIndex, type GrammarUse, type LearnedMastered } from '../progress/terms.js';
 import type { ItemRef } from '../types.js';
 import type { TutorLesson } from '../tutor/session.js';
-import type { TestPrepSettings } from '../progress/test-prep.js';
+import { TEST_PREP_CONFIG, type TestPrepSettings } from '../progress/test-prep.js';
 
 export type StepRef =
   | { kind: 'lesson'; bookId: string; n: number; lessonId: string; level: Level; ordinal: number }
@@ -343,9 +343,10 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
     .flatMap((l) => l.wordIds.map((id): ItemRef => ({ kind: 'word', id })))
     .filter((i) => !idx.removed(i) && !idx.learned(i));
   // Phase 49: with TOCFL test prep on, the test words no lesson teaches (the "rest" of each level up to
-  // the target, lowest level first, then frequency) come right after the active and catch-up lessons'
-  // new items, ahead of a lesson (or the words) above the target. Lessons up to the target keep their
-  // order: they are test words already. Only the order of new items changes.
+  // the target, lowest level first, then frequency) are mixed into the active and catch-up lessons'
+  // new items, one in every `testWordEvery` (owner, 2026-10-20: "Mix them in"), all ahead of a lesson
+  // (or the words) above the target. Lessons up to the target keep their order: they are test words
+  // already. Only the order of new items changes, never how many.
   const prep = profile.settings.testPrep?.on ? profile.settings.testPrep : undefined;
   const aboveTarget = (s: StepRef | undefined): boolean => !!prep && !!s && levelIndex(s.level) > levelIndex(prep.target);
   const testItems = prep
@@ -361,16 +362,15 @@ export function getStudyFocus(profile: StudyProfile, _now: Date = new Date()): S
     ...passedLessons.filter((s) => aboveTarget(s) === above).flatMap((s) => extraItemsOf(s).filter((i) => !idx.removed(i))),
     ...(active && aboveTarget(active) === above ? extraItemsOf(active).filter((i) => !idx.removed(i)) : []),
   ];
-  const newItemsAllowed = [
-    ...lessonItems(false),
-    ...testItems,
-    ...lessonItems(true),
-  ].filter((i) => {
+  const fresh = (i: ItemRef): boolean => {
     const k = itemKey(i);
     if (idx.hasCard(i) || seenNew.has(k)) return false;
     seenNew.add(k);
     return true;
-  });
+  };
+  const below = lessonItems(false).filter(fresh);
+  const tests = testItems.filter(fresh);
+  const newItemsAllowed = [...mixEvery(below, tests, TEST_PREP_CONFIG.testWordEvery), ...lessonItems(true).filter(fresh)];
 
   // Gate message for the class: the class is beyond what the order has unlocked.
   if (classOrdinal !== undefined && active) {
@@ -490,4 +490,18 @@ export function orderDueCards<T extends { item: ItemRef }>(
   if (!focus.enabled) return [...cards];
   const rank = (c: T) => studyRank(focus, (i) => index.get(`${i.kind}:${i.id}`), c.item);
   return cards.map((c, i) => ({ c, i, r: rank(c) })).sort((a, b) => a.r - b.r || a.i - b.i).map((x) => x.c);
+}
+
+/** `main` with one item of `every`-th slot taken from `mixed` (slots 3, 6, 9… for 3), the rest of
+ * whichever list is left after the other runs out. */
+export function mixEvery<T>(main: readonly T[], mixed: readonly T[], every: number): T[] {
+  const out: T[] = [];
+  let a = 0;
+  let b = 0;
+  while (a < main.length || b < mixed.length) {
+    const mixSlot = every > 0 && (out.length + 1) % every === 0;
+    if ((mixSlot && b < mixed.length) || a >= main.length) out.push(mixed[b++]!);
+    else out.push(main[a++]!);
+  }
+  return out;
 }

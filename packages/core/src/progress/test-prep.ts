@@ -24,6 +24,9 @@ export const TEST_PREP_CONFIG = {
   /** Target levels the setting offers (from `levels.config.ts`). */
   targets: ['L1', 'L2'] as readonly Level[],
   defaultTarget: 'L2' as Level,
+  /** Study order (owner, 2026-10-20: "Mix them in"): every Nth new word is a test word no lesson
+   * teaches, the rest come from the lessons up to the target, until one list runs out. */
+  testWordEvery: 3,
   /** Drill: items per round and the gentle timer per item. */
   itemsPerRound: 5,
   secondsPerItem: 60,

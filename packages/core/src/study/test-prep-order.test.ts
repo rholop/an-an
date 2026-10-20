@@ -9,7 +9,7 @@ import type { Course } from '../textbook/course.js';
 import type { Lesson, Textbook } from '../textbook/types.js';
 import type { Word } from '../types.js';
 import { pickNewForSession } from './queue.js';
-import { DEFAULT_STUDY_SETTINGS, getStudyFocus, type StudyProfile } from './study-focus.js';
+import { DEFAULT_STUDY_SETTINGS, getStudyFocus, mixEvery, type StudyProfile } from './study-focus.js';
 
 const word = (id: string, level: Level, rank: number): Word => ({
   id,
@@ -117,8 +117,9 @@ describe('Phase 49: test prep in the study order', () => {
     expect(ids(getStudyFocus(profile({ on: true, target: 'L1' }), now))).toEqual(['N1-9', 'N2-9', 'L1-9', 'b3-a', 'b3-b']);
   });
 
-  it('a lesson up to the target keeps its place ahead of the other test words', () => {
-    // the N1 book's lesson is not done yet: it stays the active lesson, the other test words follow it
+  it('a lesson up to the target keeps its place, with a test word in every third slot', () => {
+    // the N1 book's lesson is not done yet: it stays the active lesson; slot 3 is a test word, and the
+    // other test words follow once the lesson has no new words left
     const early = getStudyFocus(
       {
         ...profile({ on: true, target: 'L2' }),
@@ -140,5 +141,14 @@ describe('Phase 49: test prep in the study order', () => {
     expect(pick.cards.map((c) => c.item.id)).toEqual(['L3-0']);
     expect(pick.items.map((i) => i.id)).toEqual(['N1-9', 'N2-9']);
     expect(pick.cards.length + pick.items.length).toBe(3);
+  });
+});
+
+describe('mixEvery (owner, 2026-10-20: "Mix them in")', () => {
+  it('puts one test word in every third slot, then the rest of whichever list is left', () => {
+    expect(mixEvery(['a', 'b', 'c', 'd', 'e'], ['T1', 'T2'], 3)).toEqual(['a', 'b', 'T1', 'c', 'd', 'T2', 'e']);
+    expect(mixEvery(['a', 'b'], ['T1', 'T2', 'T3'], 3)).toEqual(['a', 'b', 'T1', 'T2', 'T3']);
+    expect(mixEvery(['a', 'b', 'c'], [], 3)).toEqual(['a', 'b', 'c']);
+    expect(mixEvery([], ['T1'], 3)).toEqual(['T1']);
   });
 });

@@ -1,6 +1,6 @@
 // Phase 49: Settings → Study → "TOCFL test prep" (per profile, synced, off by default). While it is
-// on, the TOCFL words up to the target level that no lesson teaches come right after the current
-// lessons in the study order, inside the same daily limits. Days to the test show here and on the
+// on, the TOCFL words up to the target level that no lesson teaches are mixed into the current
+// lessons' new words (one in three), inside the same daily limits. Days to the test show here and on the
 // results screen only (never on Home).
 import { LEVEL_IDS, levelIndex, sanitizeTestPrep, TEST_PREP_CONFIG, type Level } from '@anan/core';
 import { daysToTestLine, END_TEST_PREP, levelLabel, TEST_PREP } from '../lib/labels.js';
@@ -25,8 +25,9 @@ export function TestPrepSettings() {
         Prepare for the TOCFL (listening and reading)
       </label>
       <p className="review-settings-muted">
-        Test words (TOCFL words up to your target) that no lesson teaches come right after your current lessons, before
-        anything above the target. Tutoring words still come first, and your daily limits stay the same.
+        Test words (TOCFL words up to your target) that no lesson teaches are mixed into your new words, about one in
+        three, and all come before anything above the target. Tutoring words still come first, and your daily limits
+        stay the same.
       </p>
       <label>
         Target level:{' '}
